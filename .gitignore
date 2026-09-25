@@ -45,3 +45,6 @@ yarn-error.*
 
 # Godot denemesi: motorun kendi önbelleği
 prototipler/godot/.godot/
+
+# Godot telefon paketleri (APK)
+/build/

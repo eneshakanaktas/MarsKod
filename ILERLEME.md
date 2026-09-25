@@ -1,6 +1,7 @@
 # İlerleme Notu — MarsKod (geçici isim)
 
 ## Şu an nerede
+- **(09-26 gün sonu, Ragıp)** Godot ile 4 görsel taslak yapıldı; en sonuncusu **godottaslak4** (Mars kanyonu, sinema görünümü, efekt kapatma anahtarı), telefon paketi `paketler/marskod-godottaslak4.apk`. Gün raporu: `docs/raporlar/2026-09-26-ragip-gun-sonu.md`. Sıradaki: Unity ile unitytaslak1 (yeni, temiz bir sohbette başlanmalı).
 - **Aşama 0 ve 1 bitti:** Expo iskeleti ve mini-Python motoru hazır. Motor 216 örnekte gerçek Python 3.12 ile birebir aynı sonucu veriyor (919 test). Türkçe hata açıklamaları da hazır.
 - **Görsel yön takıldı:** 4 deneme yapıldı (2 boyut → GPU doku → Kenney çizimleri → 3 boyut). Ragıp hiçbirini The Farmer Was Replaced seviyesinde bulmadı. **Oyun motoru değişikliği (Unity/Godot) gündemde.**
 - Ayrıntılı gün raporu: `docs/raporlar/2026-09-25-ragip-gun-sonu.md`. GitHub: https://github.com/eneshakanaktas/MarsKod (private).

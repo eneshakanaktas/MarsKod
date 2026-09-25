@@ -42,3 +42,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Godot denemesi: motorun kendi önbelleği
+prototipler/godot/.godot/

@@ -1,4 +1,6 @@
-# MarsKod — Godot görsel denemesi (taslak 3)
+# MarsKod — Godot görsel denemesi (taslak 4)
+
+> Taslak 3 (yüzen ada) arşivde: `prototipler/arsiv/godot-taslak-3/` (kendi `calistir.bat` dosyasıyla açılır).
 
 Bu klasör, oyunun Godot oyun motoruyla nasıl görüneceğini gösteren **deneme sahnesidir**. Ana uygulamadan (Expo) tamamen ayrıdır; ona dokunmaz.
 
@@ -8,17 +10,20 @@ Bu klasör, oyunun Godot oyun motoruyla nasıl görüneceğini gösteren **denem
 3. Düzenlemek isterseniz: Godot'yu açın → "Import" → bu klasördeki `project.godot`.
 
 ## Sahnede ne var
-- Uzayda yüzen Mars adası: kaya katmanları, kraterler, gökyüzünde nebula ve yanıp sönen yıldızlar.
-- Işık: sol önden sıcak güneş, arkadan mor kenar ışığı, adanın altından turuncu yansıma, yumuşak gölgeler, parlama (bloom), kenar yumuşatma.
-- Robot, kod panelindeki programı **satır satır çalıştırır**: o anki satır yanar, robot kayarak ilerler, tekerleklerinden toz kalkar, buzu toplarken kristal parçalara ayrılıp kaybolur, "+1 buz" yazısı yükselir, sayaç artar. Sonra sahne başa döner.
-- Canlılık: buz nefes alır gibi parlar, anten ışıkları yanıp söner, çanak anten döner, havada toz zerreleri uçuşur, kamera çok yavaş salınır.
-- Oyun alanının çevresinde süsler: roket, çanak anten, jeneratör, variller, astronotlar.
+- **Mars yüzeyi:** ufka kadar uzanan kumullar, uzakta dev kaya kütleleri (mesalar), toz sisi, altın saat gökyüzü (Mars'taki gibi güneş çevresi mavimsi).
+- **Kod bölgesi:** metal platform, turuncu uyarı şeridi, nabız gibi atan ışık çizgileri, köşelerde yanıp sönen işaret direkleri.
+- **Yaşayan koloni:** hangarlar, içi yeşil parlayan sera, çanak antenli laboratuvar, rampada roket (buhar çıkarır), astronotlar; gökyüzünden ara sıra bir uzay aracı geçer.
+- **Işık ve görüntü:** alçak güneşten uzun gölgeler, soğuk kenar ışığı, parlama (bloom), kenar yumuşatma, uzağı hafif bulanıklaştıran minyatür etkisi.
+- **Robotun kodu çalıştırması:** o anki satır parlak şeritle işaretlenir; robot gitmeden önce yolunu parlayan oklarla gösterir, kayarak ilerler, toz kaldırır; buzu tarayıcı ışınla toplar, kristal parçalanır, "+1 buz" yükselir, buz simgesi ekranda uçarak sayaca gider, sayaç ve görev çubuğu dolar. Sonra sahne başa döner.
+- **Arayüz:** arkasındaki sahneyi bulanık gösteren buzlu cam paneller, editör penceresi gibi kod paneli (başlık çubuğu, satır numaraları), simgeli düğmeler.
 
 ## Dosyalar
 | Dosya | Ne |
 |---|---|
-| `main.gd` | Sahnenin tamamı (harita, ışık, animasyon, arayüz) |
-| `space_sky.gdshader` | Uzay gökyüzü |
+| `main.gd` | Sahnenin tamamı (yüzey, koloni, ışık, animasyon, arayüz) |
+| `mars_sky.gdshader` | Mars gökyüzü |
+| `zone.gdshader` | Işıklı kod bölgesi zemini |
+| `glass.gdshader` | Buzlu cam panel |
 | `models/` | Kenney Space Kit 3D modelleri (CC0) |
 | `fonts/` | Chakra Petch + JetBrains Mono (Open Font License) |
 

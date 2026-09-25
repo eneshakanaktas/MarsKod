@@ -1,38 +1,35 @@
-# MarsKod — Godot görsel denemesi (godottaslak3, gerçekçi)
+# MarsKod — Godot görsel denemesi (godottaslak4, Godot'daki son taslak)
 
-> Önceki taslaklar arşivde: `prototipler/arsiv/godottaslak1/` (yüzen ada) ve `prototipler/arsiv/godottaslak2/` (Mars yüzeyi). Her birinin kendi `calistir.bat` dosyası var.
+> Önceki taslaklar arşivde: `prototipler/arsiv/godottaslak1/` (yüzen ada), `godottaslak2/` (Mars yüzeyi), `godottaslak3/` (meteorlu ova). Her birinin kendi `calistir.bat` dosyası var.
 
-Bu klasör, oyunun Godot oyun motoruyla nasıl görüneceğini gösteren **deneme sahnesidir**. Ana uygulamadan (Expo) tamamen ayrıdır; ona dokunmaz.
+Bu klasör, oyunun Godot oyun motoruyla nasıl görüneceğini gösteren **deneme sahnesidir**. Ana uygulamadan (Expo) tamamen ayrıdır.
 
 ## Nasıl açılır
-1. Godot 4.7 kurulu değilse: `winget install GodotEngine.GodotEngine` (ücretsiz, ~100 MB).
-2. Bu klasördeki **`calistir.bat`** dosyasına çift tıklayın. Telefon oranında bir pencere açılır.
-3. Düzenlemek isterseniz: Godot'yu açın → "Import" → bu klasördeki `project.godot`.
+- **Bilgisayarda:** `calistir.bat` dosyasına çift tıklayın (Godot 4.7 kurulu olmalı: `winget install GodotEngine.GodotEngine`).
+- **Android telefonda:** `build/marskod-godottaslak4.apk` dosyasını telefona atıp açın ("bilinmeyen kaynaklara izin ver" sorarsa izin verin). Dosya büyük olduğu için GitHub'a yüklenmez.
 
 ## Sahnede ne var
-- **Gerçekçi Mars zemini:** gerçek fotoğraflardan yapılmış toprak, kum ve kaya dokuları Mars kırmızısına boyanır; dik yamaçlar kendiliğinden kaya görünür. Ufukta dev mesalar, yerde yüzlerce kaya.
-- **Gökyüzü:** gerçek Mars'taki gibi güneşin çevresi mavi (Mars'ta gün batımı mavidir), uzak ufuk tozlu. Yıldızlar, Samanyolu, Dünya parlak mavi bir nokta olarak görünür. Phobos ve Deimos uyduları. Kayan yıldızlar.
-- **Meteorlar:** birkaç saniyede bir arkadaki araziye alevli bir meteor düşer. Ateş ve duman kuyruğu, çarpınca parlama, genişleyen şok dalgası halkası, kıvılcımlar, yükselen toz bulutu ve hafif ekran sarsıntısı.
-- **Robot:** NASA'nın Perseverance gezgini (farıyla), giderken toz kaldırır.
-- **Kod bölgesi:** yere yansıyan hologram ızgara (tarama dalgası), köşelerde projektör kuleleri.
-- **Buz kristalleri:** arkasındaki görüntüyü hafifçe kıran, içten mavi parlayan kristal kümeleri. Toplanınca parçalanır ve buhara dönüşür (Mars'ın ince havasında buz doğrudan buhar olur).
-- **Koloni:** kubbeli yaşam alanı, bağlantı tüneli, içinde bitkiler olan cam sera, dönen çanak antenli laboratuvar kulesi, güneş paneli tarlası, beton rampada çelik roket (buhar çıkarır).
-- **Arayüz:** godottaslak2'deki buzlu cam paneller, editör gibi kod paneli, satır satır çalışma, ekranda sayaca uçan buz simgesi.
+- **Mars kanyonu:** katman katman yükselen kayalıklar, kanyonun ucunda batan güneş (Mars'ta gün batımı mavidir), zemine uzanan uzun gölgeler, kanyon tabanında alçak toz sisi, uzakta ışıkları yanan küçük üs, altın folyolu iniş aracı.
+- **Canlı gökyüzü ve olaylar:** Phobos ve Deimos, yıldızlar, kayan yıldızlar, uzakta dönen toz hortumu, arada bir kanyonun ucuna düşen meteor (parlama, şok dalgası, toz bulutu, hafif sarsıntı).
+- **Sinema görünümü:** oyuna girişte kamera kanyona süzülerek iner (üstte ve altta film şeritleri, "Melas Kanyonu" yazısı); film greni, kenar karartma, sinema renk ayarı; buz toplanırken kamera o ana yaklaşır.
+- **Buz:** yere gömülü, tozlu, doğal buz parçaları. Toplanınca buhara dönüşür.
+- **Robot:** NASA'nın Perseverance gezgini.
+- **Animasyon ve efekt anahtarı:** giriş ekranında tek dokunuşla kapatılır; oyun içinde sağ üstteki "Efektler" düğmesiyle istenince açılıp kapanır. Kapalıyken meteor, toz, kamera hareketleri, gren ve bulanıklık durur; oyun sade ve hızlı çalışır.
 
 ## Dosyalar
 | Dosya | Ne |
 |---|---|
-| `main.gd` | Sahnenin tamamı |
-| `terrain.gdshader` | Fotoğraf dokulu Mars zemini |
-| `mars_twilight_sky.gdshader` | Mavi gün batımı, yıldızlar, kayan yıldızlar |
-| `hologrid.gdshader` | Hologram kod ızgarası |
-| `ice.gdshader` | Işığı kıran buz |
-| `glass.gdshader` | Buzlu cam panel |
-| `textures/` | ambientCG dokuları (CC0, serbest kullanım) |
-| `models/nasa/` | Perseverance modeli (NASA/JPL-Caltech) — lisans notu aşağıda |
-| `fonts/` | Chakra Petch + JetBrains Mono (Open Font License) |
+| `main.gd` | Sahnenin tamamı, giriş ekranı, efekt anahtarı |
+| `canyon.gdshader` | Katmanlı kanyon kayası + kum zemin |
+| `cinema.gdshader` | Film görünümü (renk ayarı, gren, film şeritleri) |
+| `dust_devil.gdshader` | Toz hortumu |
+| `ice.gdshader` | Doğal buz |
+| `mars_twilight_sky.gdshader` | Gökyüzü |
+| `hologrid.gdshader`, `glass.gdshader` | Kod ızgarası, buzlu cam panel |
+| `export_presets.cfg` | Android telefon paketi ayarı |
+| `textures/`, `models/nasa/`, `fonts/` | Dokular (CC0), NASA gezgini, yazı tipleri |
 
 ## Dikkat edilecekler
-- **NASA modeli:** NASA modelleri genelde serbesttir ama NASA logosu kullanılamaz ve "NASA onayladı" izlenimi verilemez. Satışa çıkmadan önce lisans kontrol edilmeli; gerekirse kendi gezginimizi yaparız.
-- **Boyut:** Perseverance modeli tek başına ~12 MB ve çok ayrıntılı; telefonda ağır gelebilir. Gerçek oyunda sadeleştirilmiş hâli kullanılmalı. Dokular ~7 MB.
-- Gerçek Python motoru henüz bağlı değil; robot sabit bir senaryoyu oynatıyor.
+- **NASA modeli:** NASA logosu kullanılamaz, "NASA onayladı" izlenimi verilemez; satıştan önce lisans kontrolü gerekir. Ayrıca ~12 MB, telefonda ağır; gerçek oyunda sadeleştirilmeli.
+- Telefon paketi deneme sürümüdür (~106 MB). Gerçek sürüm çok daha küçük olur.
+- Gerçek Python motoru bağlı değil; robot sabit bir senaryoyu oynatıyor.

@@ -1,0 +1,5 @@
+.superpowers/
+.impeccable/
+node_modules/
+.expo/
+.claude/settings.local.json

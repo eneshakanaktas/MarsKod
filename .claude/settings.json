@@ -1,0 +1,18 @@
+{
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true,
+    "ui-ux-pro-max@ui-ux-pro-max-skill": true,
+    "impeccable@impeccable": true,
+    "claude-mem@thedotmack": true,
+    "andrej-karpathy-skills@karpathy-skills": true,
+    "context7@context7-marketplace": true,
+    "token-optimizer@alexgreensh-token-optimizer": true
+  },
+  "extraKnownMarketplaces": {
+    "ui-ux-pro-max-skill": { "source": { "source": "github", "repo": "nextlevelbuilder/ui-ux-pro-max-skill" } },
+    "impeccable": { "source": { "source": "github", "repo": "pbakaus/impeccable" } },
+    "karpathy-skills": { "source": { "source": "github", "repo": "multica-ai/andrej-karpathy-skills" } },
+    "context7-marketplace": { "source": { "source": "github", "repo": "upstash/context7" } },
+    "alexgreensh-token-optimizer": { "source": { "source": "github", "repo": "alexgreensh/token-optimizer" } }
+  }
+}

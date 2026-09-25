@@ -27,3 +27,4 @@
 ## Günlük
 - **2026-09-25 — Enes:** Fikir netleşti (The Farmer Was Replaced mantığında, Mars temalı mobil Python oyunu), temel kararlar alındı, tasarım belgesi yazılıp onaylandı, GitHub deposu açıldı.
 - **2026-09-25 — Ragıp:** Kurulum (Python 3.12, GitHub CLI, EAS, SkillSpector, MarsKod_Telefon emülatörü; açılmazsa `.android/avd/MarsKod_Telefon.avd` içindeki `.lock` dosyalarını sil). Yapım planı yazıldı. Aşama 0 ve 1 bitti (Python motoru, 919 test, Türkçe hata açıklamaları). Kararlar: yaş 13+, tek ton, Maestro. 4 görsel deneme yapıldı, hiçbiri beğenilmedi; motor değişikliği konuşulacak. Ayrıntı: `docs/raporlar/2026-09-25-ragip-gun-sonu.md`.
+- **2026-09-26 — Hamza:** Kendi bilgisayarında kurulum: proje paketleri (`npm install`) ve Python 3.12 (`py install 3.12`). 919 test geçti, tip denetimi temiz.

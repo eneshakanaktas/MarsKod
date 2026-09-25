@@ -58,7 +58,15 @@ Uzun vadeli dünya planı:
 - 3 kademeli ipucu + jeton cüzdanı.
 - Telefonda kayıt + isteğe bağlı hesapla bulut yedeği.
 
-**Yok (sonraki sürümler):** Dünya 3, ikinci robot, konveyörler, sıralama tablosu, reklam/satın alma, İngilizce arayüz, başka programlama dilleri, yapay zeka özellikleri.
+**Yok (sonraki sürümler):** Dünya 3, ikinci robot, konveyörler, sıralama tablosu, reklam/satın alma, İngilizce arayüz, başka programlama dilleri, yapay zeka özellikleri, oyuncu çözümlerini toplama (aşağıda).
+
+**Ertelenen fikir — Oyuncu çözümlerini toplama (ileride tekrar gündeme getirilecek):**
+- Oyuncu, desteklenen komutlarla bizimkinden farklı ama görevi tamamlayan bir çözüm yazarsa → çözüm "alternatif doğru çözüm" olarak kaydedilir.
+- Oyuncu motorun bilmediği bir Python özelliği kullanırsa → kod ve eksik özellik "istenen özellik" olarak kaydedilir (doğruluğu telefonda bilinemez); en çok istenen özellik motora ilk eklenir.
+- Yan fırsatlar: "oyunun bilmediği bir yol buldun" rozeti, "senin çözümün daha kısa" karşılaştırması, ipuçlarını gerçek veriyle iyileştirme, ileride "başkaları nasıl çözdü?" ekranı.
+- Kodlar isimsiz, telefonda biriktirilip internet gelince buluta (Supabase) gönderilir.
+- **Açık karar:** Oyuncudan izin nasıl alınacak (bildir + kapatılabilir / oyuncu açar / her seferinde sor) ve KVKK/gizlilik metni. Bu karar verilene kadar özellik yapılmaz.
+- İlk sürüme etkisi: Motor, desteklemediği özelliği zaten türüyle tanıyıp "bu oyunda henüz yok" dediği için ileride bu özelliğe hazır olur; ek iş yok.
 
 ## 5. Sistemin parçaları
 

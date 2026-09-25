@@ -4,9 +4,9 @@
 > Esin kaynağı: *The Farmer Was Replaced* (oyun mantığı ve sadelik). Görseller tamamen özgün; tema çiftlik değil uzay.
 
 Telefondaki görüntüler (kod paneli ve sayaçlar şimdilik örnek; sağ üstteki dişli Expo'nun geliştirici düğmesi, oyunda görünmez):
-- [ilk-taslak-oyun-ekrani.png](ilk-taslak-oyun-ekrani.png): düz renkli şekiller. Yetersiz bulundu.
-- [ikinci-taslak-oyun-ekrani.png](ikinci-taslak-oyun-ekrani.png): ekran kartında hesaplanan arazi dokusu (kumullar, ışık-gölge), diorama yamacı, üst ve ön yüzlü 3 boyut hissi veren nesneler, parıltılar, toz.
-- [ucuncu-taslak-oyun-ekrani.png](ucuncu-taslak-oyun-ekrani.png) (**güncel**): karma yaklaşım. Depo, laboratuvar ve kayalar Kenney çizimi; robot, buz ve sera kendi çizimimiz. Yeni yazı tipleri ve canlılık animasyonları var (parıltılar yanıp söner, robot yaylanır, anten yanıp söner, toz sürüklenir).
+- [expotaslak1-a.png](expotaslak1-a.png): düz renkli şekiller. Yetersiz bulundu.
+- [expotaslak1-b.png](expotaslak1-b.png): ekran kartında hesaplanan arazi dokusu (kumullar, ışık-gölge), diorama yamacı, üst ve ön yüzlü 3 boyut hissi veren nesneler, parıltılar, toz.
+- [expotaslak1-c.png](expotaslak1-c.png) (**güncel**): karma yaklaşım. Depo, laboratuvar ve kayalar Kenney çizimi; robot, buz ve sera kendi çizimimiz. Yeni yazı tipleri ve canlılık animasyonları var (parıltılar yanıp söner, robot yaylanır, anten yanıp söner, toz sürüklenir).
 
 ## Kaynaklar ve lisanslar
 | Kaynak | Ne için | Lisans |

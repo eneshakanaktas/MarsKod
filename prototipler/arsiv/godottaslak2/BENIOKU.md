@@ -1,6 +1,6 @@
-# MarsKod — Godot görsel denemesi (taslak 4)
+# MarsKod — Godot görsel denemesi (godottaslak2)
 
-> Taslak 3 (yüzen ada) arşivde: `prototipler/arsiv/godot-taslak-3/` (kendi `calistir.bat` dosyasıyla açılır).
+> godottaslak1 (yüzen ada) arşivde: `prototipler/arsiv/godottaslak1/` (kendi `calistir.bat` dosyasıyla açılır).
 
 Bu klasör, oyunun Godot oyun motoruyla nasıl görüneceğini gösteren **deneme sahnesidir**. Ana uygulamadan (Expo) tamamen ayrıdır; ona dokunmaz.
 

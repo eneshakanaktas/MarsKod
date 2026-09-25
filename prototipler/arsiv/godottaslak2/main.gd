@@ -1,5 +1,5 @@
 extends Node3D
-## MarsKod görsel denemesi — taslak 4 (Godot). Sahnenin tamamını koddan kurar:
+## MarsKod görsel denemesi — godottaslak2. Sahnenin tamamını koddan kurar:
 ## ufka uzanan Mars yüzeyi, ışıklı kod bölgesi, arkada yaşayan koloni, robotun kodu satır satır
 ## çalıştırma animasyonu ve buzlu cam arayüz.
 ##

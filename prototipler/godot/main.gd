@@ -1,5 +1,5 @@
 extends Node3D
-## MarsKod görsel denemesi — taslak 5 (Godot, gerçekçi). Sahnenin tamamını koddan kurar:
+## MarsKod görsel denemesi — godottaslak3 (gerçekçi). Sahnenin tamamını koddan kurar:
 ## fotoğraf dokulu Mars arazisi, mavi Mars gün batımı, Phobos ve Deimos, kayan yıldızlar ve düşen meteorlar,
 ## NASA Perseverance gezgini, gerçekçi koloni, hologram kod bölgesi ve buzlu cam arayüz.
 ##

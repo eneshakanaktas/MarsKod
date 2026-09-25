@@ -1,6 +1,6 @@
-# MarsKod — Godot görsel denemesi (taslak 5, gerçekçi)
+# MarsKod — Godot görsel denemesi (godottaslak3, gerçekçi)
 
-> Önceki taslaklar arşivde: `prototipler/arsiv/godot-taslak-3/` (yüzen ada) ve `prototipler/arsiv/godot-taslak-4/` (Mars yüzeyi). Her birinin kendi `calistir.bat` dosyası var.
+> Önceki taslaklar arşivde: `prototipler/arsiv/godottaslak1/` (yüzen ada) ve `prototipler/arsiv/godottaslak2/` (Mars yüzeyi). Her birinin kendi `calistir.bat` dosyası var.
 
 Bu klasör, oyunun Godot oyun motoruyla nasıl görüneceğini gösteren **deneme sahnesidir**. Ana uygulamadan (Expo) tamamen ayrıdır; ona dokunmaz.
 
@@ -17,7 +17,7 @@ Bu klasör, oyunun Godot oyun motoruyla nasıl görüneceğini gösteren **denem
 - **Kod bölgesi:** yere yansıyan hologram ızgara (tarama dalgası), köşelerde projektör kuleleri.
 - **Buz kristalleri:** arkasındaki görüntüyü hafifçe kıran, içten mavi parlayan kristal kümeleri. Toplanınca parçalanır ve buhara dönüşür (Mars'ın ince havasında buz doğrudan buhar olur).
 - **Koloni:** kubbeli yaşam alanı, bağlantı tüneli, içinde bitkiler olan cam sera, dönen çanak antenli laboratuvar kulesi, güneş paneli tarlası, beton rampada çelik roket (buhar çıkarır).
-- **Arayüz:** taslak 4'teki buzlu cam paneller, editör gibi kod paneli, satır satır çalışma, ekranda sayaca uçan buz simgesi.
+- **Arayüz:** godottaslak2'deki buzlu cam paneller, editör gibi kod paneli, satır satır çalışma, ekranda sayaca uçan buz simgesi.
 
 ## Dosyalar
 | Dosya | Ne |

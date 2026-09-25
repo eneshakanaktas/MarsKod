@@ -1,4 +1,4 @@
-# MarsKod — Godot görsel denemesi (taslak 3)
+# MarsKod — Godot görsel denemesi (godottaslak1)
 
 Bu klasör, oyunun Godot oyun motoruyla nasıl görüneceğini gösteren **deneme sahnesidir**. Ana uygulamadan (Expo) tamamen ayrıdır; ona dokunmaz.
 

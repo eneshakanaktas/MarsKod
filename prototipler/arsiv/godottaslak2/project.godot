@@ -1,10 +1,10 @@
-; MarsKod — Godot görsel denemesi (taslak 3). Ana uygulamadan (Expo) bağımsızdır.
+; MarsKod — Godot görsel denemesi (godottaslak2). Ana uygulamadan (Expo) bağımsızdır.
 
 config_version=5
 
 [application]
 
-config/name="MarsKod Godot Taslak 4 (arşiv)"
+config/name="MarsKod godottaslak2 (arşiv)"
 run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 

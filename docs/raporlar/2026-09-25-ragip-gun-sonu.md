@@ -55,7 +55,7 @@ Oyunun görünümü için dört yol denendi. Ekran görüntüleri `docs/tasarim/
 | 1 | Kodla çizilen düz şekiller | Dama tahtası gibi, yetersiz |
 | 2 | Ekran kartında hesaplanan Mars dokusu + "havada yüzen ada" görünümü | Daha iyi ama yetersiz |
 | 3 | Ücretsiz Kenney çizimleri + canlılık animasyonları + yeni yazı tipleri | Ragıp beğenmedi |
-| 4 | **3 boyut** (Kenney Space Kit modelleri, gerçek ışık ve gölge) | Ragıp beğenmedi (`dorduncu-deneme-3d.png`) |
+| 4 | **3 boyut** (Kenney Space Kit modelleri, gerçek ışık ve gölge) | Ragıp beğenmedi (`expotaslak2.png`) |
 
 **Neden olmadı, dürüst değerlendirme:** The Farmer Was Replaced **Unity** oyun motoruyla yapılmış. Bizim kullandığımız yol (Expo) bir uygulama çatısı; 3 boyut, parlama efektleri, kenar yumuşatma ve hazır animasyon araçları gibi oyun motorlarının hazır verdiği şeyler burada ya yok ya da çok zahmetli. Ragıp'ın istediği seviye (bol animasyonlu, derinlikli, keskin) için **gerçek bir oyun motoru gerekiyor.**
 

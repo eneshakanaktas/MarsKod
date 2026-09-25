@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "NameError",
+    "message": "name 'abc' is not defined. Did you mean: 'abs'? Or did you forget to import 'abc'?",
+    "line": 1
+  }
+}

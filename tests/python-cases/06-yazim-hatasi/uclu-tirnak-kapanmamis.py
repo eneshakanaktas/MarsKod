@@ -1,0 +1,2 @@
+x = """uzun
+metin

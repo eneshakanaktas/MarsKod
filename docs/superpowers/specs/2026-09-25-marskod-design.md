@@ -10,6 +10,8 @@ Telefonda oynanan, oyun oynarken **gerçek Python** öğreten bir bulmaca oyunu.
 Hedef kitle:
 - Yazılım bilgisi olmayan, sıfırdan başlayanlar.
 - Biraz bilip yazım kurallarında (syntax) kendini geliştirmek isteyenler.
+- **Yaş: 13 yaş ve altı hedef kitle değildir** (karar: 2026-09-25, Ragıp). Oyun yaş sormaz ve yaşa göre farklı davranmaz. Sebep: Çocuklara yönelik uygulamalar Google Play Aileler politikasına ve KVKK'nın veli izni kurallarına girer; bu da reklam/satın alma, veri toplama ve geliştirmeyi zorlaştırır. Mağaza kaydında hedef yaş grubu buna göre seçilecek.
+- Anlatım tonu: Tek ton; sıcak ve sade, çocuksu değil. İleride ayarlara oyuncunun kendi seçeceği "Anlatım: Eğlenceli / Sade" seçeneği eklenecek (yaşa göre değil, tercihe göre). Metin sistemi buna hazır kurulur.
 
 İlk hedef para kazanmak değil; oyun sevilirse reklam/satın alma ve pazarlama sonradan düşünülecek.
 
@@ -105,7 +107,7 @@ Her parça tek bir iş yapar; birbirinden bağımsız test edilebilir.
 
 - **Motor:** Yüzlerce küçük Python kodu hem gerçek Python'da hem motorda çalıştırılıp sonuçlar ve hata mesajları otomatik karşılaştırılır.
 - **Bölümler:** Her bölümün doğru çözümü otomatik çalıştırılır; geçilemeyen bölüm yayınlanamaz.
-- **Ekranlar:** Playwright ile temel akışlar (aç, oyna, ipucu al, kaydet) otomatik denenir.
+- **Ekranlar:** Maestro ile (2026-09-25 kararı; önceden Playwright yazıyordu, o web içindir) temel akışlar (aç, oyna, ipucu al, kaydet) otomatik denenir.
 - **İnsan testi:** İlk 5 bölüm hazır olunca kod bilmeyen 2–3 kişiye oynatılıp takıldıkları yerler izlenir.
 
 ## 9. Riskler

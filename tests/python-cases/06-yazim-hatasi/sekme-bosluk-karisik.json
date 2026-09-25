@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "TabError",
+    "message": "inconsistent use of tabs and spaces in indentation",
+    "line": 3
+  }
+}

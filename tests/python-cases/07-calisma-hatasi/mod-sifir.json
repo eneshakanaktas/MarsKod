@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "ZeroDivisionError",
+    "message": "integer modulo by zero",
+    "line": 1
+  }
+}

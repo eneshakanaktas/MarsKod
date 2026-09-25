@@ -1,0 +1,5 @@
+{
+  "python": "3.12.10",
+  "output": "0 yanlış\n1 doğru\n'' yanlış\n'a' doğru\n[] yanlış\n[0] doğru\nNone yanlış\n0.0 yanlış\n-1 doğru\n2 0 1  True [1]\n",
+  "error": null
+}

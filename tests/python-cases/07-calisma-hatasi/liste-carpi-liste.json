@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "TypeError",
+    "message": "can't multiply sequence by non-int of type 'list'",
+    "line": 1
+  }
+}

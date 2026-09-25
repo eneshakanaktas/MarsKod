@@ -1,0 +1,6 @@
+print(1, 2, 3, sep='-')
+print('a', 'b', sep='', end='!')
+print()
+print('x', end='')
+print('y')
+print(sep=None, end=None)

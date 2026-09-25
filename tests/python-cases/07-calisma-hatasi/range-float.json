@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "TypeError",
+    "message": "'float' object cannot be interpreted as an integer",
+    "line": 1
+  }
+}

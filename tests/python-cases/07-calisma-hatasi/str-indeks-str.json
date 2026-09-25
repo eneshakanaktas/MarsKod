@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "TypeError",
+    "message": "string indices must be integers, not 'str'",
+    "line": 1
+  }
+}

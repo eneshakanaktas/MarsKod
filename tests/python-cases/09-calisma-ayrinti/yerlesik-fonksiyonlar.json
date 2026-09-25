@@ -1,0 +1,5 @@
+{
+  "python": "3.12.10",
+  "output": "1 9 a 3\n6 0.30000000000000004 10 4 2\n[1, 2, 3] ['a', 'b', 'c'] [3, 2, 1]\n<class 'int'> <class 'float'> <class 'str'> <class 'list'> <class 'NoneType'> <class 'bool'> <class 'range'>\nTrue True True True\n",
+  "error": null
+}

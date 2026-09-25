@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "SyntaxError",
+    "message": "cannot assign to literal here. Maybe you meant '==' instead of '='?",
+    "line": 1
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "SyntaxError",
+    "message": "keyword argument repeated: sep",
+    "line": 1
+  }
+}

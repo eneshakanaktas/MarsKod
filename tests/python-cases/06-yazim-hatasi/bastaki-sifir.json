@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "SyntaxError",
+    "message": "leading zeros in decimal integer literals are not permitted; use an 0o prefix for octal integers",
+    "line": 1
+  }
+}

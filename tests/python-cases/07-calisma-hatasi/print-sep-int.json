@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "TypeError",
+    "message": "sep must be None or a string, not int",
+    "line": 1
+  }
+}

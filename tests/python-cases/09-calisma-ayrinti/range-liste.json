@@ -1,0 +1,5 @@
+{
+  "python": "3.12.10",
+  "output": "range(0, 5) range(1, 4) range(0, 10, 3)\n[2, 5, 8] [5, 3, 1] []\n10 True ['a', 'b', 'c'] [1, 2]\n",
+  "error": null
+}

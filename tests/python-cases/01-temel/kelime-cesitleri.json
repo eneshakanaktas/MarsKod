@@ -1,0 +1,5 @@
+{
+  "python": "3.12.10",
+  "output": "satır\tsonu\n tek iç \"tırnak\"\nüç\nsatır\n1051\n1000.0 0.5 2.0\n3\n3\n1\n",
+  "error": null
+}

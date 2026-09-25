@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "TypeError",
+    "message": "f() takes from 1 to 2 positional arguments but 3 were given",
+    "line": 4
+  }
+}

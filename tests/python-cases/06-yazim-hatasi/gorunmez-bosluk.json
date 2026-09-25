@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "SyntaxError",
+    "message": "invalid non-printable character U+00A0",
+    "line": 1
+  }
+}

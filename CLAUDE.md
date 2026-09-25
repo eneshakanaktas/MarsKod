@@ -2,6 +2,13 @@
 
 Telefonda oynanan, gerçek Python öğreten bulmaca oyunu (Mars kolonisi teması). Tasarım: `docs/superpowers/specs/2026-09-25-marskod-design.md`.
 Teknik yol: Expo (React Native) + kendi mini-Python motorumuz. Önce Android.
+Yapım planı: `docs/superpowers/plans/2026-09-25-marskod-yapim-plani.md`. Expo kuralları: @AGENTS.md
+
+## Çalıştırma
+- `npm install` → `npx expo start` (telefonda Expo Go ile QR okut, ya da `a` ile Android emülatörü).
+- `npm test` (testler), `npm run typecheck` (tip denetimi). İş bitmeden ikisi de yeşil olmalı.
+- Motor testleri: `tests/python-cases/<grup>/*.py` örnekleri. Yeni örnek ekleyince `npm run python-referans` (Python 3.12 şart) ile gerçek Python sonucunu üret. Motor bir grubu destekleyince grubu `tests/python-cases.test.ts` içindeki `ENABLED_GROUPS` listesine ekle.
+- `src/engine` ve `src/world` saf mantıktır; React Native'e bağımlı olamaz.
 
 ## Genel kurallar
 - Ekipte kodlama bilgisi yok; her zaman sade Türkçe açıkla, jargon kullanma.

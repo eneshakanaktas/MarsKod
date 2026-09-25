@@ -1,0 +1,5 @@
+print(min(3, 1, 2), max([4, 9, 2]), min('bca'), max(2.5, 3))
+print(sum([1, 2, 3]), sum([0.1, 0.2]), sum([], 10), len('Mars'), len([1, 2]))
+print(sorted([3, 1, 2]), sorted('bca'), sorted([3, 1, 2], reverse=True))
+print(type(5), type(2.0), type('a'), type([]), type(None), type(True), type(range(1)))
+print(type(5) == int, isinstance(5, int), isinstance(True, int), isinstance('a', (int, str)))

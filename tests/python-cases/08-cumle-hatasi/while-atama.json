@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "SyntaxError",
+    "message": "invalid syntax. Maybe you meant '==' or ':=' instead of '='?",
+    "line": 2
+  }
+}

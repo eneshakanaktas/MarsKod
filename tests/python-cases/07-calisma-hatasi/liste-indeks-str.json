@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "TypeError",
+    "message": "list indices must be integers or slices, not str",
+    "line": 1
+  }
+}

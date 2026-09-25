@@ -1,0 +1,5 @@
+{
+  "python": "3.12.10",
+  "output": "[1, 'a', \"it's\", 'x\"y', 2.0, True, None, [], ()]\n(1,) ('a', 2) [[1, 2], [3]] ['satır\\n', 'tab\\t', 'ç']\na 'a' [1, 'b'] 'None'\n",
+  "error": null
+}

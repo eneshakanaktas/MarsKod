@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "SyntaxError",
+    "message": "closing parenthesis ']' does not match opening parenthesis '(' on line 1",
+    "line": 2
+  }
+}

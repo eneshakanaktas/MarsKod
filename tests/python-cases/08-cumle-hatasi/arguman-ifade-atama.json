@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "SyntaxError",
+    "message": "expression cannot contain assignment, perhaps you meant \"==\"?",
+    "line": 1
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "RecursionError",
+    "message": "maximum recursion depth exceeded",
+    "line": 2
+  }
+}

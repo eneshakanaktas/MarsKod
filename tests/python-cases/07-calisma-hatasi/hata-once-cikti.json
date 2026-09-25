@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "başla\n0\n1\n",
+  "error": {
+    "type": "ZeroDivisionError",
+    "message": "division by zero",
+    "line": 5
+  }
+}

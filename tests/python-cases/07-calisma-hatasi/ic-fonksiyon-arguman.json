@@ -1,0 +1,9 @@
+{
+  "python": "3.12.10",
+  "output": "",
+  "error": {
+    "type": "TypeError",
+    "message": "dis.<locals>.ic() missing 1 required positional argument: 'a'",
+    "line": 4
+  }
+}

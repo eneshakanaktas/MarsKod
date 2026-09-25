@@ -4,7 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { Ice, Rock } from './src/components/mars-art';
-import { MarsMap, type MapBuilding } from './src/components/MarsMap';
+import { MarsScene3D, type SceneBuilding } from './src/three/MarsScene3D';
 import { Starfield } from './src/components/Starfield';
 import { colors } from './src/theme/colors';
 import { fonts, FONT_FILES } from './src/theme/fonts';
@@ -20,7 +20,7 @@ const DEMO_CELLS: Cell[][] = [
   ['empty', 'empty', 'rock', 'empty', 'empty', 'ice'],
   ['empty', 'ice', 'empty', 'empty', 'rock', 'empty'],
 ];
-const DEMO_BUILDINGS: MapBuilding[] = [
+const DEMO_BUILDINGS: SceneBuilding[] = [
   { kind: 'depot', x: 3, y: 2 },
   { kind: 'lab', x: 4, y: 3 },
   { kind: 'greenhouse', x: 0, y: 5 },
@@ -70,7 +70,7 @@ export default function App() {
         </View>
 
         <View style={styles.mapFrame}>
-          <MarsMap cells={DEMO_CELLS} robot={{ x: 1, y: 2 }} buildings={DEMO_BUILDINGS} width={mapWidth} />
+          <MarsScene3D cells={DEMO_CELLS} robot={{ x: 1, y: 2 }} buildings={DEMO_BUILDINGS} width={width} height={width * 0.98} />
         </View>
 
         <View style={styles.mission}>
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   chipText: { color: colors.text, fontSize: 16, fontFamily: fonts.heading },
   chipGoal: { color: colors.textMuted, fontFamily: fonts.body },
   // Harita kendi kenarını ve yamacını çizer (diorama); çerçeve gerekmez.
-  mapFrame: { marginBottom: -8 },
+  mapFrame: { marginHorizontal: -16, marginVertical: -4 },
   mission: {
     backgroundColor: 'rgba(57, 213, 255, 0.08)',
     borderColor: 'rgba(57, 213, 255, 0.3)',

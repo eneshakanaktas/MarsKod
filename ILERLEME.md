@@ -18,6 +18,7 @@
 - Önce Android.
 
 ## Açık sorular
+- **Telefon paketleri (Ragıp, 09-26):** Arkadaşların kurabilmesi için godottaslak4 küçültülüp (106 MB → 57 MB; gereksiz sanal-telefon parçası ve hata ayıklama kısmı çıkarıldı, dokular telefon boyutuna indirildi) GitHub'a eklendi: `paketler/marskod-godottaslak4.apk` (kurulum `paketler/BENIOKU.md`). GitHub'a **yüklenmeyen**: `build/` klasöründeki büyük deneme paketleri (godottaslak3 ve 4'ün sanal telefon sürümleri, ~106 MB; GitHub 100 MB üstünü kabul etmez). Gerekirse Claude'a "telefon paketini üret" demek yeter.
 - **Oyun motoru** (yukarıda, en önemli karar).
 - **PC ve mobil (Ragıp):** PC sürümü de olsun mu? Claude'un görüşü: görseller aynı kalsın, sadece ekran düzeni değişsin. Önce mobil.
 - **Boyut:** Ragıp oyunun az yer kaplamasını istiyor. Unity/Godot'da boyut 60–120 MB olur (Expo ile 30–45 MB).

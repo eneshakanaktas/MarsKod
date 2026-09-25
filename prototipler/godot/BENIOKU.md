@@ -1,6 +1,6 @@
-# MarsKod — Godot görsel denemesi (taslak 4)
+# MarsKod — Godot görsel denemesi (taslak 5, gerçekçi)
 
-> Taslak 3 (yüzen ada) arşivde: `prototipler/arsiv/godot-taslak-3/` (kendi `calistir.bat` dosyasıyla açılır).
+> Önceki taslaklar arşivde: `prototipler/arsiv/godot-taslak-3/` (yüzen ada) ve `prototipler/arsiv/godot-taslak-4/` (Mars yüzeyi). Her birinin kendi `calistir.bat` dosyası var.
 
 Bu klasör, oyunun Godot oyun motoruyla nasıl görüneceğini gösteren **deneme sahnesidir**. Ana uygulamadan (Expo) tamamen ayrıdır; ona dokunmaz.
 
@@ -10,23 +10,29 @@ Bu klasör, oyunun Godot oyun motoruyla nasıl görüneceğini gösteren **denem
 3. Düzenlemek isterseniz: Godot'yu açın → "Import" → bu klasördeki `project.godot`.
 
 ## Sahnede ne var
-- **Mars yüzeyi:** ufka kadar uzanan kumullar, uzakta dev kaya kütleleri (mesalar), toz sisi, altın saat gökyüzü (Mars'taki gibi güneş çevresi mavimsi).
-- **Kod bölgesi:** metal platform, turuncu uyarı şeridi, nabız gibi atan ışık çizgileri, köşelerde yanıp sönen işaret direkleri.
-- **Yaşayan koloni:** hangarlar, içi yeşil parlayan sera, çanak antenli laboratuvar, rampada roket (buhar çıkarır), astronotlar; gökyüzünden ara sıra bir uzay aracı geçer.
-- **Işık ve görüntü:** alçak güneşten uzun gölgeler, soğuk kenar ışığı, parlama (bloom), kenar yumuşatma, uzağı hafif bulanıklaştıran minyatür etkisi.
-- **Robotun kodu çalıştırması:** o anki satır parlak şeritle işaretlenir; robot gitmeden önce yolunu parlayan oklarla gösterir, kayarak ilerler, toz kaldırır; buzu tarayıcı ışınla toplar, kristal parçalanır, "+1 buz" yükselir, buz simgesi ekranda uçarak sayaca gider, sayaç ve görev çubuğu dolar. Sonra sahne başa döner.
-- **Arayüz:** arkasındaki sahneyi bulanık gösteren buzlu cam paneller, editör penceresi gibi kod paneli (başlık çubuğu, satır numaraları), simgeli düğmeler.
+- **Gerçekçi Mars zemini:** gerçek fotoğraflardan yapılmış toprak, kum ve kaya dokuları Mars kırmızısına boyanır; dik yamaçlar kendiliğinden kaya görünür. Ufukta dev mesalar, yerde yüzlerce kaya.
+- **Gökyüzü:** gerçek Mars'taki gibi güneşin çevresi mavi (Mars'ta gün batımı mavidir), uzak ufuk tozlu. Yıldızlar, Samanyolu, Dünya parlak mavi bir nokta olarak görünür. Phobos ve Deimos uyduları. Kayan yıldızlar.
+- **Meteorlar:** birkaç saniyede bir arkadaki araziye alevli bir meteor düşer. Ateş ve duman kuyruğu, çarpınca parlama, genişleyen şok dalgası halkası, kıvılcımlar, yükselen toz bulutu ve hafif ekran sarsıntısı.
+- **Robot:** NASA'nın Perseverance gezgini (farıyla), giderken toz kaldırır.
+- **Kod bölgesi:** yere yansıyan hologram ızgara (tarama dalgası), köşelerde projektör kuleleri.
+- **Buz kristalleri:** arkasındaki görüntüyü hafifçe kıran, içten mavi parlayan kristal kümeleri. Toplanınca parçalanır ve buhara dönüşür (Mars'ın ince havasında buz doğrudan buhar olur).
+- **Koloni:** kubbeli yaşam alanı, bağlantı tüneli, içinde bitkiler olan cam sera, dönen çanak antenli laboratuvar kulesi, güneş paneli tarlası, beton rampada çelik roket (buhar çıkarır).
+- **Arayüz:** taslak 4'teki buzlu cam paneller, editör gibi kod paneli, satır satır çalışma, ekranda sayaca uçan buz simgesi.
 
 ## Dosyalar
 | Dosya | Ne |
 |---|---|
-| `main.gd` | Sahnenin tamamı (yüzey, koloni, ışık, animasyon, arayüz) |
-| `mars_sky.gdshader` | Mars gökyüzü |
-| `zone.gdshader` | Işıklı kod bölgesi zemini |
+| `main.gd` | Sahnenin tamamı |
+| `terrain.gdshader` | Fotoğraf dokulu Mars zemini |
+| `mars_twilight_sky.gdshader` | Mavi gün batımı, yıldızlar, kayan yıldızlar |
+| `hologrid.gdshader` | Hologram kod ızgarası |
+| `ice.gdshader` | Işığı kıran buz |
 | `glass.gdshader` | Buzlu cam panel |
-| `models/` | Kenney Space Kit 3D modelleri (CC0) |
+| `textures/` | ambientCG dokuları (CC0, serbest kullanım) |
+| `models/nasa/` | Perseverance modeli (NASA/JPL-Caltech) — lisans notu aşağıda |
 | `fonts/` | Chakra Petch + JetBrains Mono (Open Font License) |
 
-## Henüz yok
-- Gerçek Python motoru bağlı değil; robot sabit bir senaryoyu oynatıyor. Bu sahne yalnızca görünümü denemek için.
-- Telefon paketi (APK) henüz alınmadı; bilgisayarda telefon oranında çalışıyor.
+## Dikkat edilecekler
+- **NASA modeli:** NASA modelleri genelde serbesttir ama NASA logosu kullanılamaz ve "NASA onayladı" izlenimi verilemez. Satışa çıkmadan önce lisans kontrol edilmeli; gerekirse kendi gezginimizi yaparız.
+- **Boyut:** Perseverance modeli tek başına ~12 MB ve çok ayrıntılı; telefonda ağır gelebilir. Gerçek oyunda sadeleştirilmiş hâli kullanılmalı. Dokular ~7 MB.
+- Gerçek Python motoru henüz bağlı değil; robot sabit bir senaryoyu oynatıyor.

@@ -30,7 +30,7 @@ Hedef kitle:
 | Eğitime yönlendirme | Öner + ödüllendir; aynı hata 3–4 kez üst üste → ders zorunlu. Her 5 bölümde mini sınav (zorunlu). |
 | Kayıt | Telefonda; isteğe bağlı Google/Apple hesabıyla bulut yedeği. |
 | Platform | Android + iPhone tek kodla; önce Google Play. |
-| Teknik yol | Expo (React Native) + kendi mini-Python motorumuz. |
+| Teknik yol | ~~Expo (React Native)~~ → **Unity 6** (karar yönü 2026-09-26, Enes; Expo/Godot görsel taslakları beğenilmedi) + kendi mini-Python motorumuz (Unity'de C#'a taşınacak; mevcut 919 test kılavuz). |
 | Arayüz dili | Türkçe (İngilizce sonraki sürümlerde). |
 | Hata mesajı | Çift dilli: Türkçe açıklama + gerçek Python'un İngilizce hata mesajı. Başta Türkçe öne çıkar; oyuncu ilerledikçe İngilizce öne geçer, Türkçe dokununca açılır. |
 

@@ -1,7 +1,7 @@
 # MarsKod (geçici isim)
 
 Telefonda oynanan, gerçek Python öğreten bulmaca oyunu (Mars kolonisi teması). Tasarım: `docs/superpowers/specs/2026-09-25-marskod-design.md`.
-Teknik yol: Expo (React Native) + kendi mini-Python motorumuz. Önce Android.
+Teknik yol: Unity 6 + kendi mini-Python motorumuz (2026-09-26'da Expo'dan geçildi; motor C#'a taşınacak). Önce Android. Görsel hedef ve referanslar: `docs/referanslar/BENIOKU.md`.
 Yapım planı: `docs/superpowers/plans/2026-09-25-marskod-yapim-plani.md`. Expo kuralları: @AGENTS.md
 
 ## Çalıştırma

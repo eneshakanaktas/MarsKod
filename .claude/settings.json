@@ -7,7 +7,9 @@
     "andrej-karpathy-skills@karpathy-skills": true,
     "context7@context7-marketplace": true,
     "token-optimizer@alexgreensh-token-optimizer": true,
-    "expo@claude-plugins-official": true
+    "unity@claude-plugins-official": true,
+    "unity@awesome-gamedev-agent-skills": true,
+    "disciplines@awesome-gamedev-agent-skills": true
   },
   "extraKnownMarketplaces": {
     "ui-ux-pro-max-skill": {
@@ -38,6 +40,12 @@
       "source": {
         "source": "github",
         "repo": "alexgreensh/token-optimizer"
+      }
+    },
+    "awesome-gamedev-agent-skills": {
+      "source": {
+        "source": "github",
+        "repo": "gamedev-skills/awesome-gamedev-agent-skills"
       }
     }
   }

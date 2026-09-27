@@ -10,8 +10,8 @@ Yapım planı: `docs/superpowers/plans/2026-09-25-marskod-yapim-plani.md`.
 - `oyun/Assets/Dunya/` — Mars dünyası kuralları (saf C#): ızgara, robot, buz, oyun komutları (`move`, `collect`...). Oyuncu kodunu çalıştırıp olanları kaydeden: `ProgramRun.Execute`.
 - `motor-test/` — motor ve dünya testleri (.NET). Motoru Unity'nin sınırlarıyla derler (C# 9, .NET Standard 2.1).
 - `prototipler/` — görsel taslaklar (unitytaslak1, godot…). Dokunma; kural: `docs/tasarim/taslaklar.md`.
-- `src/`, `tests/python-cases.test.ts` — eski Expo/TypeScript kodu; motor C#'a taşındı, arşivlenecek. Yeni özellik eklenmez. `tests/python-cases/` örnekleri dilden bağımsız; C# motoru bunlarla sınanır.
-- `docs/arsiv/expo-kurallari.md` — eski Expo kuralları (yalnızca `src/`'ye dokunulursa).
+- `arsiv/expo/` — eski Expo/TypeScript kodu (TypeScript motoru dahil); motor C#'a taşındı. Dokunulmaz, yeni özellik eklenmez; son hâli git etiketi `expo-son`. `tests/python-cases/` örnekleri dilden bağımsız; C# motoru bunlarla sınanır.
+- `docs/arsiv/expo-kurallari.md` — eski Expo kuralları (yalnızca `arsiv/expo/`'ya dokunulursa).
 
 ## Çalıştırma (Unity)
 - Bilgisayarda açmak: `oyun/calistir.bat` (paket yoksa önce üretir). Kod değişince `oyun/Build/` silinip yeniden üretilmeli.
@@ -19,8 +19,8 @@ Yapım planı: `docs/superpowers/plans/2026-09-25-marskod-yapim-plani.md`.
 - Görsel kontrol: `oyun/Build/Win/MarsKod.exe -screen-width 450 -screen-height 975 -screen-fullscreen 0 -shots <klasör>` ekran görüntülerini alıp kapanır.
 - Unity içinde: Unity Hub → Add → `oyun/` → `Assets/Scenes/Oyun` → ▶. Menü: *MarsKod*.
 - Motor testleri: `motor-test` klasöründe `dotnet test` (Unity gerekmez, birkaç saniye). Unity'nin kendi ortamında: menü *MarsKod > Motor denetimi* ya da `-executeMethod MotorDenetimi.Calistir` (log'da `MOTOR DENETIMI:` satırı).
-- Yeni Python örneği eklenirse `npm run python-referans` (Python 3.12) beklenen sonucu üretir. Python sürümü değişirse `py -3.12 scripts/python_isimler.py` isim listelerini (`PythonNames.cs`) yeniler.
-- Eski TypeScript testleri (referans): `npm test`.
+- Yeni Python örneği eklenirse `py -3.12 scripts/python_referans.py` beklenen sonucu üretir. Python sürümü değişirse `py -3.12 scripts/python_isimler.py` isim listelerini (`PythonNames.cs`) yeniler.
+- Eski TypeScript testleri (referans): `arsiv/expo` klasöründe `npm install` + `npm test`.
 
 ## Unity kuralları
 - Motor ve dünya kuralları saf C#'tır (UnityEngine kullanmaz); Unity açmadan `dotnet test` ile test edilir. Unity C# 9 kullanır: motorda daha yeni C# özellikleri ve .NET Standard 2.1'de olmayan kitaplıklar kullanılmaz (`motor-test` bunu derlerken yakalar).

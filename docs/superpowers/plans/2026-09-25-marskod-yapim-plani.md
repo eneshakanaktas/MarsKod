@@ -21,7 +21,7 @@ oyun/                  Unity projesi (oyunun asıl evi). Açmak: oyun/calistir.b
   Assets/Bolumler/     Bölüm dosyaları (JSON). Kod bilmeyen ekip üyeleri de düzenleyebilir.
 motor-test/            Motor ve dünya için .NET test projesi (Unity açmadan, saniyeler içinde).
 tests/python-cases/    Motoru gerçek Python'la karşılaştıran 194 örnek (dilden bağımsız; aynen kullanılır).
-src/                   Eski Expo kodu (TypeScript motoru dahil): arşivlenecek; motorun C# hâli oyun/Assets/Motor.
+arsiv/expo/            Eski Expo kodu (TypeScript motoru dahil), arşivde; motorun C# hâli oyun/Assets/Motor.
 prototipler/           Görsel taslaklar (unitytaslak1, godot...). Dokunulmaz.
 ```
 
@@ -66,7 +66,7 @@ Aşama 1'deki TypeScript motoru (`src/engine`) C#'a birebir taşınır. Sıra: k
 - [x] `motor-test/`: .NET test projesi; motoru Unity'nin sınırlarıyla (C# 9, .NET Standard 2.1) derler, `tests/python-cases/` örneklerini gerçek Python sonuçlarıyla karşılaştırır. `motor-test` klasöründe `dotnet test`: **988 test, hepsi geçiyor** (194 örnek birebir).
 - [x] Unity içinde denetim: menü *MarsKod > Motor denetimi* (ya da `-executeMethod MotorDenetimi.Calistir`) aynı 194 örneği Unity'nin ortamında çalıştırır: hepsi birebir.
 - [x] Motoru sahneye bağla: karttaki kod gerçekten çalışıyor. Kod önce motorda + dünya kurallarında anında çalıştırılır (`ProgramRun`), çıkan kayıt satır satır animasyonla oynatılır (bitmeyen döngü oyunu dondurmaz; adım adım modu aynı kaydı kullanacak). Hata olunca satır kırmızı yanar, Türkçe açıklama + Python'un kendi mesajı çıkar (Python hatası / oyun kuralı / eksik görev ayrı gösterilir). Kod renklendirme `CodeColors.cs`.
-- [ ] TypeScript motorunu (`src/`, `tests/python-cases.test.ts`, Expo dosyaları) arşivle.
+- [x] ✅ (2026-09-27, Ragıp — `arsiv/expo/`, etiket `expo-son`) TypeScript motorunu (`src/`, `tests/python-cases.test.ts`, Expo dosyaları) arşivle.
 
 **Bitti sayılır:** 194 örneğin hepsi C# motorunda birebir; Unity'de sahnedeki kod gerçekten çalışıyor.
 

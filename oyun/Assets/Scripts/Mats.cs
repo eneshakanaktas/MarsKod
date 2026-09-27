@@ -73,6 +73,8 @@ public static class Parts
         return t;
     }
 
+    public static bool NoOutline;
+
     public static Transform Add(string name, Transform parent, Mesh mesh, Material mat, Vector3 localPos,
         bool outline = true, bool castShadow = true)
     {
@@ -81,7 +83,7 @@ public static class Parts
         go.transform.localPosition = localPos;
         go.AddComponent<MeshFilter>().sharedMesh = mesh;
         var mr = go.AddComponent<MeshRenderer>();
-        mr.sharedMaterials = outline ? new[] { mat, Mats.Outline } : new[] { mat };
+        mr.sharedMaterials = outline && !NoOutline ? new[] { mat, Mats.Outline } : new[] { mat };
         mr.shadowCastingMode = castShadow ? ShadowCastingMode.On : ShadowCastingMode.Off;
         return go.transform;
     }

@@ -1,6 +1,6 @@
 """Gerçek Python 3.12'nin isim listelerini motora yazar:
   - oyun/Assets/Motor/PythonNames.cs (Unity motoru, C#)
-  - src/engine/python-names.ts (eski TypeScript motoru, referans)
+  - arsiv/expo/src/engine/python-names.ts (eski TypeScript motoru, arşiv)
 
 Motor, "Did you mean: ...?" önerilerini CPython ile birebir aynı üretmek için bu listeleri
 (ve sıralarını) kullanır. Python sürümü değişirse yeniden çalıştırılır:
@@ -15,7 +15,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "src" / "engine" / "python-names.ts"
+OUT = ROOT / "arsiv" / "expo" / "src" / "engine" / "python-names.ts"
 OUT_CS = ROOT / "oyun" / "Assets" / "Motor" / "PythonNames.cs"
 
 

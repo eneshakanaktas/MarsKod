@@ -56,6 +56,13 @@ public class Oyun : MonoBehaviour
         Shader.SetGlobalVector("_Sun", new Vector4(0.02f, -0.068f, 0f, 0f));
         Shader.SetGlobalVector("_Focus", new Vector4(0.5f, 0.56f, 0f, 0f));
         Shader.SetGlobalFloat("_StarsOn", 1f);
+        // Deneme secenekleri (telefonda: adb ... -e unity "-kalite 1 -cizgisiz")
+        var a = System.Environment.GetCommandLineArgs();
+        for (int i = 0; i < a.Length; i++)
+        {
+            if (a[i] == "-kalite" && i + 1 < a.Length) QualitySettings.SetQualityLevel(int.Parse(a[i + 1]), true);
+            if (a[i] == "-cizgisiz") Parts.NoOutline = true;
+        }
         world = new GameObject("World").transform;
 
         SetupCamera();

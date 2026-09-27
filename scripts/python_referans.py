@@ -4,7 +4,7 @@ tests/python-cases/ altındaki her .py dosyasını ayrı bir Python işlemi olar
 (oyuncunun bilgisayarında göreceği şekliyle) ve sonucu yanına .json olarak yazar:
   {"python": "3.12.x", "output": "...", "error": null | {"type", "message", "line"}}
 
-Çalıştırma: npm run python-referans
+Çalıştırma: py -3.12 scripts/python_referans.py
 """
 
 import json

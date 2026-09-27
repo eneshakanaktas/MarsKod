@@ -84,6 +84,14 @@ public static class OyunBuild
             Set(so, "m_RenderScale", 1f);
             so.ApplyModifiedPropertiesWithoutUndo();
         }
+        // Telefon (Mobile) ayari "Forward" cizimdeydi: kodla uretilen Lit malzemeler telefonda simsiyah cikiyordu.
+        // Iki ayar da Forward+ (2) kullanir.
+        foreach (var guid in AssetDatabase.FindAssets("t:UniversalRendererData"))
+        {
+            var so = new SerializedObject(AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(guid)));
+            Set(so, "m_RenderingMode", 2);
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
     }
 
     static void Set(SerializedObject so, string prop, object value)

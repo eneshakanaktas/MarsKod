@@ -1,6 +1,6 @@
 // Motoru gerçek Python ile karşılaştırır.
 // Her tests/python-cases/<grup>/<örnek>.py için yanındaki .json, gerçek Python'un sonucudur
-// (npm run python-referans ile üretilir). Motor aynı sonucu birebir vermelidir.
+// (py -3.12 scripts/python_referans.py ile üretilir). Motor aynı sonucu birebir vermelidir.
 
 using System.Text.Json;
 using MarsKod.Motor;
@@ -63,7 +63,7 @@ public class PythonCases
     [MemberData(nameof(Cases.AllData), MemberType = typeof(Cases))]
     public void Referans_dosyasi_Python_3_12(string id)
     {
-        Assert.True(File.Exists(Path.Combine(Cases.Dir, id + ".json")), $"{id} için referans yok. Çalıştır: npm run python-referans");
+        Assert.True(File.Exists(Path.Combine(Cases.Dir, id + ".json")), $"{id} için referans yok. Çalıştır: py -3.12 scripts/python_referans.py");
         Assert.StartsWith("3.12.", Cases.Reference(id).Python);
     }
 

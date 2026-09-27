@@ -18,7 +18,7 @@ oyun/                  Unity projesi (oyunun asıl evi). Açmak: oyun/calistir.b
   Assets/Scripts/      Sahne, robot, arayüz (Unity'ye bağlı kod).
   Assets/Motor/        Mini-Python motoru (C#). Unity'den habersiz; saf mantık.   ← Aşama 1b
   Assets/Dunya/        Mars dünyası kuralları (ızgara, robot, kaynak, görev). Saf mantık. ← Aşama 2
-  Assets/Bolumler/     Bölüm dosyaları (JSON). Kod bilmeyen ekip üyeleri de düzenleyebilir.
+  Assets/Resources/Bolumler/  Bölüm dosyaları (JSON). Kod bilmeyen ekip üyeleri de düzenleyebilir (kılavuz: docs/tasarim/bolum-dosyasi.md).
 motor-test/            Motor ve dünya için .NET test projesi (Unity açmadan, saniyeler içinde).
 tests/python-cases/    Motoru gerçek Python'la karşılaştıran 194 örnek (dilden bağımsız; aynen kullanılır).
 arsiv/expo/            Eski Expo kodu (TypeScript motoru dahil), arşivde; motorun C# hâli oyun/Assets/Motor.
@@ -71,14 +71,14 @@ Aşama 1'deki TypeScript motoru (`src/engine`) C#'a birebir taşınır. Sıra: k
 **Bitti sayılır:** 194 örneğin hepsi C# motorunda birebir; Unity'de sahnedeki kod gerçekten çalışıyor.
 
 ## Aşama 2 — Mars dünyası + bölüm dosyası
-- [ ] Izgara, robot (konum/yön), kaynak (buz, kaya), depo, bina kuralları. *Başlandı (09-27):* `Assets/Dunya/` (ızgara, robot yeri, buz, `move`/`collect`, yönler `North/East/South/West`); testleri `motor-test/DunyaTests.cs`. Kaya, depo, bina yok.
-- [x] Robot harita dışına çıkarsa: dur, satırı işaretle, "bu oyun kuralı, Python hatası değil" de (09-27). Duvar/kaya engelleri Aşama 2'nin devamında.
-- [ ] Bölüm dosyası biçimi (JSON): harita, görev, açık komutlar, konular, ipuçları, tipik hatalar, doğru çözüm.
-- [ ] Bölüm denetleyici: her bölümün doğru çözümü otomatik çalışır; geçemeyen bölüm test hatası verir.
-- [ ] İlk 3 bölüm (Dünya 1'in başı).
+- [ ] Izgara, robot (konum/yön), kaynak (buz, kaya), depo, bina kuralları. *Başlandı (09-27):* `Assets/Dunya/` (ızgara, robot yeri, buz, `move`/`collect`, yönler `North/East/South/West`); testleri `motor-test/DunyaTests.cs`. ✅ (09-27, Ragıp) kaya engeli, hedef kare, bölümde açılmamış komut. Depo, bina yok (Dünya 2'de).
+- [x] Robot harita dışına çıkarsa ya da kayaya çarparsa: dur, satırı işaretle, "bu oyun kuralı, Python hatası değil" de (09-27, kaya da).
+- [x] Bölüm dosyası biçimi (JSON): harita, görev, açık komutlar, konular, ipuçları, tipik hatalar, doğru çözüm. ✅ (09-27, Ragıp) `Assets/Dunya/Level.cs`, harita "resim gibi" (R B K H .), yanlışta satır numaralı Türkçe mesaj.
+- [x] Bölüm denetleyici: her bölümün doğru çözümü otomatik çalışır; geçemeyen bölüm test hatası verir. ✅ (09-27, Ragıp) `LevelCheck` + `motor-test/BolumTests.cs`; tipik hataların gerçekten hatalı olduğu da denetlenir.
+- [x] İlk 3 bölüm (Dünya 1'in başı). ✅ (09-27, Ragıp) 1: yalnızca `move`, hedef kare; 2: `move` + `collect`, kaya; 3: 5 buz, `for`. Sahne bölümü dosyadan kurar, bitince "Sonraki bölüm".
 
 ## Aşama 3 — İnce dilim: ilk oynanabilir sürüm 🎯
-- [ ] Oyun ekranı: üstte Mars alanı (`oyun/` sahnesi hazır), altta kod alanı (şimdilik normal klavye), ▶ Çalıştır.
+- [x] Oyun ekranı: üstte Mars alanı (`oyun/` sahnesi hazır), altta kod alanı (şimdilik normal klavye; `CodeEditor.cs`), ▶ Çalıştır.
 - [ ] Robot hareketleri animasyonlu; hata olunca satır kırmızı.
 - [ ] ⏯ Adım adım modu: kod satır satır, değişkenler etiketli kutular.
 - [ ] Çift dilli hata kutusu.

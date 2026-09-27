@@ -1,2 +1,8 @@
 @import url("unity-theme://default");
 VisualElement {}
+
+/* Kod yazma alani (CodeEditor): Unity'nin ince imleci gizli, yerine kalin turuncu imlec ciziliyor; secim turuncu */
+.unity-base-text-field__input {
+    --unity-cursor-color: rgba(0, 0, 0, 0);
+    --unity-selection-color: rgba(224, 122, 95, 0.38);
+}

@@ -29,7 +29,8 @@ namespace MarsKod.Dunya
         public GameRuleStop Rule;
         /// <summary>Durmanın olduğu satır (1'den başlar); düzgün bittiyse ya da bilinmiyorsa null</summary>
         public int? StopLine;
-        /// <summary>Görev tamamlandı mı (tüm buzlar toplandı)</summary>
+        /// <summary>Görev tamamlandı mı: kod durmadan bitti ve görev yerine geldi. Kod hatayla ya da oyun kuralıyla durduysa
+        /// görev yerine gelmiş olsa bile tamam sayılmaz (örn. son buzu toplayıp alanın dışına çıkmak isteyen kod yanlıştır).</summary>
         public bool Complete;
 
         public bool Stopped => Error != null || Halt != null || Rule != null;
@@ -70,7 +71,7 @@ namespace MarsKod.Dunya
             }
             Flush(world, current);
             report.Output = interpreter?.Output ?? "";
-            report.Complete = world.Complete;
+            report.Complete = !report.Stopped && world.Complete;
             return report;
         }
 

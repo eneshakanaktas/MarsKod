@@ -1,4 +1,4 @@
-// Mars dünyasının kuralları: ızgara, robotun yeri, buzlar ve oyuncunun kullandığı komutlar (move, collect...).
+// Mars dünyasının kuralları: ızgara, robotun yeri, buzlar, kayalar, hedef kare ve oyuncunun kullandığı komutlar (move, collect...).
 // Saf mantıktır (Unity'den habersiz); sahne yalnızca olanları (WorldEvent) okuyup canlandırır.
 
 using System;
@@ -56,11 +56,12 @@ namespace MarsKod.Dunya
         public Direction Direction;
     }
 
-    /// <summary>Robot ilerleyemedi (alanın dışına çıkacaktı).</summary>
+    /// <summary>Robot ilerleyemedi: alanın dışına çıkacaktı ya da önünde kaya vardı.</summary>
     public sealed class Blocked : WorldEvent
     {
         public Cell At;
         public Direction Direction;
+        public bool ByRock;
     }
 
     /// <summary>Robot toplamayı denedi. Buz yoksa IceIndex -1.</summary>
@@ -92,26 +93,43 @@ namespace MarsKod.Dunya
     {
         public readonly int Cols, Rows;
         public Cell Robot { get; private set; }
+        /// <summary>Robotun kod bitince durması gereken kare; yoksa null</summary>
+        public readonly Cell? Target;
         readonly List<Cell> ices;
         readonly bool[] taken;
+        readonly HashSet<Cell> rocks;
+        /// <summary>Bu bölümde açık olan komutlar; null ise hepsi açık</summary>
+        readonly HashSet<string> allowed;
 
         /// <summary>Son okunduğundan beri olanlar; okuyan temizler.</summary>
         public readonly List<WorldEvent> Events = new List<WorldEvent>();
 
         public int IceCount => ices.Count;
         public int CollectedCount { get; private set; }
-        public bool Complete => CollectedCount == ices.Count;
+        public int IceLeft => ices.Count - CollectedCount;
+        public bool OnTarget => Target == null || Robot.Equals(Target.Value);
+        /// <summary>Görev tamam mı: tüm buzlar toplandı ve (hedef varsa) robot hedef karede</summary>
+        public bool Complete => IceLeft == 0 && OnTarget;
 
-        public World(int cols, int rows, Cell robot, IEnumerable<Cell> iceCells)
+        /// <summary>Oyunda olan tüm komutlar (bölüm dosyasındaki "komutlar" bunlardan seçilir)</summary>
+        public static readonly string[] AllCommands = { "move", "collect" };
+
+        public World(int cols, int rows, Cell robot, IEnumerable<Cell> iceCells,
+            IEnumerable<Cell> rockCells = null, Cell? target = null, IEnumerable<string> commands = null)
         {
             Cols = cols;
             Rows = rows;
             Robot = robot;
             ices = new List<Cell>(iceCells);
             taken = new bool[ices.Count];
+            rocks = new HashSet<Cell>(rockCells ?? Array.Empty<Cell>());
+            Target = target;
+            allowed = commands == null ? null : new HashSet<string>(commands);
         }
 
         public bool Inside(Cell c) => c.Col >= 0 && c.Col < Cols && c.Row >= 0 && c.Row < Rows;
+
+        public bool RockAt(Cell c) => rocks.Contains(c);
 
         /// <summary>Bu karede henüz toplanmamış buzun sırası; yoksa -1</summary>
         public int IceAt(Cell c)
@@ -129,6 +147,12 @@ namespace MarsKod.Dunya
                 Events.Add(new Blocked { At = Robot, Direction = d });
                 throw new GameRuleStop("Alanın sınırı",
                     "Robot bu yönde alanın dışına çıkacaktı, o yüzden durdu. Bu bir oyun kuralı, Python hatası değil: kodun doğru yazılmış ama robotu alanın dışına götürüyor.");
+            }
+            if (RockAt(to))
+            {
+                Events.Add(new Blocked { At = Robot, Direction = d, ByRock = true });
+                throw new GameRuleStop("Önünde kaya var",
+                    "Robot kayanın içinden geçemez, o yüzden durdu. Bu bir oyun kuralı, Python hatası değil: kodun doğru yazılmış ama robotu kayaya sürüyor. Kayanın etrafından dolaşan bir yol bul.");
             }
             Events.Add(new Moved { From = Robot, To = to, Direction = d });
             Robot = to;
@@ -156,6 +180,7 @@ namespace MarsKod.Dunya
             {
                 ["move"] = new PyBuiltin("move", (args, kwargs) =>
                 {
+                    Unlocked("move");
                     NoKeywords("move", kwargs);
                     if (args.Count != 1) throw Values.PyError("TypeError", "move() takes exactly one argument (" + args.Count + " given)");
                     Move(DirectionOf(args[0]));
@@ -163,6 +188,7 @@ namespace MarsKod.Dunya
                 }),
                 ["collect"] = new PyBuiltin("collect", (args, kwargs) =>
                 {
+                    Unlocked("collect");
                     NoKeywords("collect", kwargs);
                     if (args.Count != 0) throw Values.PyError("TypeError", "collect() takes no arguments (" + args.Count + " given)");
                     return Collect();
@@ -171,6 +197,18 @@ namespace MarsKod.Dunya
             // Yönler şimdilik metin olarak tutulur: print(East) -> East
             foreach (Direction d in Enum.GetValues(typeof(Direction))) commands[d.ToString()] = d.ToString();
             return commands;
+        }
+
+        // Bölümde henüz açılmamış bir komut çağrılırsa: Python hatası değil, oyun kuralı
+        void Unlocked(string name)
+        {
+            if (allowed == null || allowed.Contains(name)) return;
+            var open = new List<string>();
+            foreach (var c in AllCommands)
+                if (allowed.Contains(c)) open.Add(c + "()");
+            throw new GameRuleStop("Bu komut henüz açılmadı",
+                name + "() gerçek bir oyun komutu ama bu bölümde henüz kullanılamıyor; ilerideki bölümlerde açılacak. Bu bölümde kullanabileceklerin: "
+                + string.Join(", ", open) + ".");
         }
 
         static void NoKeywords(string name, Dictionary<string, object> kwargs)

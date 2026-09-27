@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-// Kod kartindaki renklendirme: duz Python metnini satir satir renkli (zengin metin) satirlara cevirir.
+// Kod kartindaki renklendirme: duz Python satirini renkli (zengin metin) satira cevirir.
 public static class CodeColors
 {
     const string Comment = "#6E6879", Keyword = "#EE9A7C", Call = "#7CC6D4", Constant = "#B9A3E3", Number = "#E6C07E", Text = "#B5D39A";
@@ -19,14 +19,8 @@ public static class CodeColors
         @"(?<c>#.*$)|(?<s>""(?:[^""\\]|\\.)*""?|'(?:[^'\\]|\\.)*'?)|(?<n>\b\d+(?:\.\d+)?\b)|(?<w>[^\W\d]\w*)(?<call>\s*\()?|(?<o>.)",
         RegexOptions.CultureInvariant);
 
-    public static string[] Lines(string source)
-    {
-        var lines = source.TrimEnd('\n').Split('\n');
-        for (int i = 0; i < lines.Length; i++) lines[i] = Line(lines[i]);
-        return lines;
-    }
-
-    static string Line(string line)
+    // Tek satiri renklendirir (kod yazma alani her satiri ayri cagirir).
+    public static string Line(string line)
     {
         var sb = new StringBuilder();
         foreach (Match m in Part.Matches(line))

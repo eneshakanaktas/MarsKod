@@ -1,0 +1,41 @@
+{
+  "numara": 1,
+  "baslik": "İlk adımlar",
+  "gorev": "Hedef kareye git",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . H . .",
+    "R . . . . .",
+    ". . . . . .",
+    ". . . . . ."
+  ],
+  "komutlar": ["move"],
+  "konular": ["komut sırası", "yönler"],
+  "ipuclari": [
+    "Hedef kare robotun 3 kare doğusunda, 1 kare kuzeyinde.",
+    "<b>move(East)</b> robotu doğuya bir kare götürür, <b>move(North)</b> kuzeye. Robot satırları yukarıdan aşağıya sırayla yapar.",
+    "Üç kez <b>move(East)</b>, sonra bir kez <b>move(North)</b>."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["move(east)", "move(east)", "move(east)", "move(north)"],
+      "aciklama": "Yönler büyük harfle başlar: east değil East. Python büyük-küçük harfi ayırır."
+    },
+    {
+      "kod": ["move(East)", "move(East)", "move(East)"],
+      "aciklama": "Robot doğuya yeterince gitti ama kuzeye çıkmadı; hedefin bir kare altında kaldı."
+    },
+    {
+      "kod": ["move(East)", "move(East)", "move(East)", "move(East)", "move(North)"],
+      "aciklama": "Bir kez fazla doğuya gitti; hedefi geçti."
+    }
+  ],
+  "baslangic_kodu": ["move(East)"],
+  "cozum": [
+    "move(East)",
+    "move(East)",
+    "move(East)",
+    "move(North)"
+  ]
+}

@@ -82,6 +82,9 @@ public static class OyunBuild
             Set(so, "m_SoftShadowsSupported", true);
             Set(so, "m_MainLightShadowsSupported", true);
             Set(so, "m_RenderScale", 1f);
+            // GPU Resident Drawer (cok nesneli sahneler icin hizlandirici) kapali: sahnemiz kucuk, bir yarari yok;
+            // PC ayarinda acikken telefon paketine de giriyor ve sanal telefonda isikli nesneler hic cizilmiyordu.
+            Set(so, "m_GPUResidentDrawerMode", 0);
             so.ApplyModifiedPropertiesWithoutUndo();
         }
         // Telefon (Mobile) ayari "Forward" cizimdeydi: kodla uretilen Lit malzemeler telefonda simsiyah cikiyordu.
@@ -118,16 +121,39 @@ public static class OyunBuild
         Build(BuildTarget.Android, "Build/Android/marskod.apk");
     }
 
+    // Unity paket uretirken bu dosyadan o platformun kullanmadigi cizim parcalarini siliyor ve silinmis hali kaydediyor
+    // (telefon paketi bilgisayarin SSAO parcalarini siliyordu; sonraki bilgisayar paketi onlarsiz simsiyah cikiyordu).
+    // Bu yuzden her uretimden sonra dosya eski haline getirilir.
+    const string GlobalSettingsPath = "Assets/Settings/UniversalRenderPipelineGlobalSettings.asset";
+
     static void Build(BuildTarget target, string output)
     {
+        // Once hedef platforma gec: telefon paketinden hemen sonraki ilk bilgisayar paketi, cizim ayarlari hala telefona gore
+        // hesaplandigi icin simsiyah cikiyordu (ikinci uretim duzgundu).
+        if (EditorUserBuildSettings.activeBuildTarget != target)
+            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildPipeline.GetBuildTargetGroup(target), target);
         Setup();
-        var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+        string globalSettings = File.Exists(GlobalSettingsPath) ? File.ReadAllText(GlobalSettingsPath) : null;
+        BuildReport report;
+        try
         {
-            scenes = new[] { ScenePath },
-            locationPathName = output,
-            target = target,
-            options = BuildOptions.None,
-        });
+            report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+            {
+                scenes = new[] { ScenePath },
+                locationPathName = output,
+                target = target,
+                options = BuildOptions.None,
+            });
+        }
+        finally
+        {
+            if (globalSettings != null && File.ReadAllText(GlobalSettingsPath) != globalSettings)
+            {
+                File.WriteAllText(GlobalSettingsPath, globalSettings);
+                AssetDatabase.ImportAsset(GlobalSettingsPath, ImportAssetOptions.ForceUpdate);
+                Debug.Log("[OyunBuild] Cizim ayar dosyasi uretimden onceki haline getirildi.");
+            }
+        }
         Debug.Log($"[OyunBuild] {target}: {report.summary.result}, {report.summary.totalSize / 1024 / 1024} MB");
         if (Application.isBatchMode && report.summary.result != BuildResult.Succeeded) EditorApplication.Exit(1);
     }

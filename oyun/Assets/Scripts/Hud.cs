@@ -7,7 +7,9 @@ using UnityEngine.UIElements;
 // Olculer 1080 genislikli telefon ekranina gore (piksel).
 public class Hud : MonoBehaviour
 {
-    public event Action RunPressed, ResetPressed, StarsToggled;
+    public event Action RunPressed, ResetPressed, StarsToggled, MenuPressed;
+    // Oyuncu kodu degistirdi (yeni kodun tamami)
+    public event Action<string> CodeChanged;
 
     static readonly Color Accent = Mats.Hex("#E07A5F");
     static readonly Color Ink = Mats.Hex("#E9E4EE");
@@ -21,15 +23,19 @@ public class Hud : MonoBehaviour
     static readonly Color ErrorRed = Mats.Hex("#FF6B6B");
 
     Font fMed, fSemi, fBold, fMono;
-    VisualElement root, header, card, codeBox, hint, message, runBtn;
-    Label chapter, title, runText, msgTag, msgTitle, msgText, msgOriginal;
+    VisualElement root, header, card, hint, message, runBtn;
+    CodeEditor editor;
+    Label chapter, title, runText, msgTag, msgTitle, msgText, msgOriginal, hintText;
+    VisualElement dotsRow;
     Icon starIcon;
-    readonly List<(VisualElement row, VisualElement bar, Label num)> lines = new List<(VisualElement, VisualElement, Label)>();
     readonly List<Icon> dots = new List<Icon>();
     int collected;
     bool starsOn = true;
+    // Bolum bilgisi (SetLevel ile gelir)
+    int levelNumber = 1, iceTotal = 3;
+    string levelName = "", goal = "3 buz topla";
 
-    public void Build(string[] code)
+    public void Build()
     {
         fMed = Resources.Load<Font>("Fonts/Poppins-Medium");
         fSemi = Resources.Load<Font>("Fonts/Poppins-SemiBold");
@@ -52,7 +58,7 @@ public class Hud : MonoBehaviour
         root.style.justifyContent = Justify.SpaceBetween;
 
         header = BuildHeader();
-        card = BuildBottom(code);
+        card = BuildBottom();
         root.Add(header);
         root.Add(card);
     }
@@ -76,7 +82,7 @@ public class Hud : MonoBehaviour
         row.style.alignItems = Align.FlexStart;
 
         var glass = new Color(1f, 1f, 1f, 0.12f);
-        var menu = RoundButton(96, glass, new Icon(42, DrawMenu), null);
+        var menu = RoundButton(96, glass, new Icon(42, DrawMenu), () => MenuPressed?.Invoke());
 
         var center = new VisualElement { pickingMode = PickingMode.Ignore };
         center.style.flexGrow = 1;
@@ -90,18 +96,10 @@ public class Hud : MonoBehaviour
         center.Add(chapter);
         center.Add(title);
 
-        var dotsRow = new VisualElement { pickingMode = PickingMode.Ignore };
+        dotsRow = new VisualElement { pickingMode = PickingMode.Ignore };
         dotsRow.style.flexDirection = FlexDirection.Row;
         dotsRow.style.marginTop = 16;
-        for (int i = 0; i < 3; i++)
-        {
-            int idx = i;
-            var d = new Icon(36, (p, r) => DrawIceDot(p, r, idx < collected));
-            d.style.marginLeft = 10; d.style.marginRight = 10;
-            Transition(d, "scale", 0.28f, EasingMode.EaseOutBack);
-            dots.Add(d);
-            dotsRow.Add(d);
-        }
+        BuildDots();
         center.Add(dotsRow);
 
         starIcon = new Icon(46, DrawSparkle);
@@ -114,7 +112,7 @@ public class Hud : MonoBehaviour
         return h;
     }
 
-    VisualElement BuildBottom(string[] code)
+    VisualElement BuildBottom()
     {
         var card = new VisualElement();
         card.style.marginLeft = 28; card.style.marginRight = 28; card.style.marginBottom = 36;
@@ -132,10 +130,10 @@ public class Hud : MonoBehaviour
         top.Add(Text("Python", fMed, 28, new Color(Ink.r, Ink.g, Ink.b, 0.28f)));
         card.Add(top);
 
-        codeBox = new VisualElement();
-        codeBox.style.marginTop = 14;
-        card.Add(codeBox);
-        SetCode(code);
+        editor = new CodeEditor(fMono, Ink, NumColor, Accent, ErrorRed);
+        editor.style.marginTop = 14;
+        editor.Changed += c => CodeChanged?.Invoke(c);
+        card.Add(editor);
 
         var buttons = new VisualElement();
         buttons.style.flexDirection = FlexDirection.Row;
@@ -177,10 +175,10 @@ public class Hud : MonoBehaviour
         Border(hint, 2, Hairline);
         hint.style.paddingTop = 30; hint.style.paddingBottom = 32;
         hint.style.paddingLeft = 40; hint.style.paddingRight = 40;
-        var ht = Text("<b>move(East)</b> robotu doğuya bir kare ilerletir.\n<b>for</b> altındaki girintili satırları 3 kez tekrarlar.", fMed, 32, Color.white);
-        ht.enableRichText = true;
-        ht.style.whiteSpace = WhiteSpace.Normal;
-        hint.Add(ht);
+        hintText = Text("", fMed, 32, Color.white);
+        hintText.enableRichText = true;
+        hintText.style.whiteSpace = WhiteSpace.Normal;
+        hint.Add(hintText);
         hint.style.display = DisplayStyle.None;
         card.Add(hint);
 
@@ -214,42 +212,47 @@ public class Hud : MonoBehaviour
         return card;
     }
 
-    // Kod kartindaki satirlari (renklendirilmis) yeniden kurar.
-    public void SetCode(string[] code)
+    // Karttaki kodu degistirir (bolum degisti vb.); CodeChanged tetiklenmez.
+    public void SetCode(string source) => editor.SetText(source);
+
+    // Buz sayaci: bolumdeki buz kadar nokta (buz yoksa sayac gizli)
+    void BuildDots()
     {
-        codeBox.Clear();
-        lines.Clear();
-        for (int i = 0; i < code.Length; i++)
+        dotsRow.Clear();
+        dots.Clear();
+        for (int i = 0; i < iceTotal; i++)
         {
-            var row = new VisualElement();
-            row.style.flexDirection = FlexDirection.Row;
-            row.style.alignItems = Align.Center;
-            row.style.height = 66;
-            row.style.paddingLeft = 18;
-            Radius(row, 16);
-            Transition(row, "background-color", 0.18f, EasingMode.EaseOut);
-
-            var bar = new VisualElement();
-            bar.style.position = Position.Absolute;
-            bar.style.left = 0; bar.style.top = 14; bar.style.bottom = 14; bar.style.width = 6;
-            bar.style.backgroundColor = Accent;
-            Radius(bar, 3);
-            bar.style.opacity = 0;
-            Transition(bar, "opacity", 0.18f, EasingMode.EaseOut);
-
-            var num = Text((i + 1).ToString(), fMono, 30, NumColor);
-            num.style.width = 50;
-            var txt = Text(code[i], fMono, 37, Ink);
-            txt.enableRichText = true;
-            txt.style.whiteSpace = WhiteSpace.Pre; // girinti bosluklari korunsun (NoWrap onlari siliyor)
-
-            row.Add(bar); row.Add(num); row.Add(txt);
-            codeBox.Add(row);
-            lines.Add((row, bar, num));
+            int idx = i;
+            var d = new Icon(36, (p, r) => DrawIceDot(p, r, idx < collected));
+            d.style.marginLeft = 10; d.style.marginRight = 10;
+            Transition(d, "scale", 0.28f, EasingMode.EaseOutBack);
+            dots.Add(d);
+            dotsRow.Add(d);
         }
+        dotsRow.style.display = iceTotal > 0 ? DisplayStyle.Flex : DisplayStyle.None;
     }
 
+    // Turkce buyuk harf (i -> İ, ı -> I); telefonun dil ayarina guvenmeden
+    static string Upper(string s) => s.Replace('i', 'İ').Replace('ı', 'I').ToUpperInvariant();
+
+    string ChapterText => "BÖLÜM " + levelNumber + (levelName.Length > 0 ? "  ·  " + Upper(levelName) : "");
+
     // ---- Disaridan cagrilanlar ----
+
+    // Yeni bolum: ust baslik, buz sayaci ve ipucu balonu bu bolume gore kurulur.
+    public void SetLevel(int number, string name, string goalText, int ices, string hintRich)
+    {
+        levelNumber = number;
+        levelName = name;
+        goal = goalText;
+        iceTotal = ices;
+        collected = 0;
+        BuildDots();
+        editor.Blur();
+        hintText.text = hintRich;
+        hint.style.display = DisplayStyle.None;
+        ResetView();
+    }
 
     // Ekranda ust baslik ile alttaki kod karti arasinda kalan bos bant (0 = ekran alti, 1 = ekran ustu).
     // Kamera oyun alanini bu banda sigdirir; kod uzayip kisalinca alan kendiliginden buyur/kuculur.
@@ -262,18 +265,7 @@ public class Hud : MonoBehaviour
     }
 
     // Calisan satiri isaretler (idx 0'dan baslar, -1 = hicbiri). error: satir kirmizi yanar.
-    public void SetActiveLine(int idx, bool error = false)
-    {
-        var color = error ? ErrorRed : Accent;
-        for (int i = 0; i < lines.Count; i++)
-        {
-            bool a = i == idx;
-            lines[i].row.style.backgroundColor = a ? (error ? new Color(ErrorRed.r, ErrorRed.g, ErrorRed.b, 0.14f) : new Color(1f, 1f, 1f, 0.07f)) : new Color(1f, 1f, 1f, 0f);
-            lines[i].bar.style.backgroundColor = color;
-            lines[i].bar.style.opacity = a ? 1f : 0f;
-            lines[i].num.style.color = a ? color : NumColor;
-        }
-    }
+    public void SetActiveLine(int idx, bool error = false) => editor.SetActiveLine(idx, error);
 
     // tag: kutunun ustundeki kucuk etiket ("PYTHON HATASI", "OYUN KURALI"...); original: Python'un kendi (Ingilizce) mesaji, yoksa null.
     public void ShowMessage(string tag, string heading, string text, string original, bool error)
@@ -311,23 +303,25 @@ public class Hud : MonoBehaviour
     {
         runText.text = running ? "Çalışıyor…" : "Çalıştır";
         runBtn.style.opacity = running ? 0.6f : 1f;
+        editor.ReadOnly = running; // calisirken kod degistirilemez
         if (running) hint.style.display = DisplayStyle.None;
     }
 
-    public void SetDone()
+    // hasNext: sonraki bolum varsa dugme "Sonraki bolum" olur
+    public void SetDone(bool hasNext)
     {
-        chapter.text = "BÖLÜM 1  ·  3/3";
+        chapter.text = "BÖLÜM " + levelNumber + (iceTotal > 0 ? "  ·  " + collected + "/" + iceTotal : "");
         title.text = "Tamamlandı!";
         title.style.scale = new Scale(new Vector3(1.12f, 1.12f, 1f));
         title.schedule.Execute(() => title.style.scale = new Scale(Vector3.one)).StartingIn(180);
-        runText.text = "Tekrar";
+        runText.text = hasNext ? "Sonraki bölüm" : "Tekrar";
         runBtn.style.opacity = 1f;
     }
 
     public void ResetView()
     {
-        chapter.text = "BÖLÜM 1";
-        title.text = "3 buz topla";
+        chapter.text = ChapterText;
+        title.text = goal;
         SetCollected(0);
         SetActiveLine(-1);
         SetRunning(false);
@@ -345,6 +339,34 @@ public class Hud : MonoBehaviour
         bool show = hint.style.display == DisplayStyle.None;
         if (show) HideMessage();
         hint.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
+    }
+
+    public bool Editing => editor.Editing;
+
+    // Kod alanina odaklanir, from..to secili (esitse yalnizca imlec); deneme goruntuleri icin.
+    public void FocusCode(int from, int to) => editor.Focus(from, to);
+
+    public void StopEditing() => editor.Blur();
+
+    void Update()
+    {
+        if (card == null) return;
+        // Telefon klavyesi acikken kod karti klavyenin ustune kayar (oyun alani kalan yere kendiliginden sigar)
+        float kb = 0f;
+        if (TouchScreenKeyboard.isSupported && TouchScreenKeyboard.visible && Screen.height > 0)
+            kb = TouchScreenKeyboard.area.height * root.layout.height / Screen.height;
+        if (float.IsNaN(kb) || kb < 0f) kb = 0f;
+        float target = 36f + kb;
+        if (Mathf.Abs(card.resolvedStyle.marginBottom - target) > 0.5f) card.style.marginBottom = target;
+
+        // Kod alaninin disina (oyun alanina) dokununca yazma biter, klavye kapanir
+        var p = UnityEngine.InputSystem.Pointer.current;
+        if (editor.Editing && p != null && p.press.wasPressedThisFrame && root.panel != null)
+        {
+            var sp = p.position.ReadValue();
+            var pos = RuntimePanelUtils.ScreenToPanel(root.panel, new Vector2(sp.x, Screen.height - sp.y));
+            if (root.panel.Pick(pos) == null) editor.Blur();
+        }
     }
 
     // ---- Yardimcilar ----

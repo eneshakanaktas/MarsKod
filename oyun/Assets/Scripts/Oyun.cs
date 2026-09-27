@@ -8,31 +8,40 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 // MarsKod oyun sahnesi (unitytaslak1'den geldi): sahneyi kodla kurar (kamera, isik, arka plan, oyun alani,
-// robot, buzlar, arayuz). Kod karttaki Python kodu gercekten calisir: once motorda (Assets/Motor) ve dunya kurallarinda
-// (Assets/Dunya) aninda calistirilir, sonra olanlar satir satir animasyonla oynatilir.
+// robot, buzlar, arayuz). Bolumler dosyadan gelir (Resources/Bolumler/*.json): harita, gorev, ipucu, dogru cozum.
+// Kod karttaki Python kodu gercekten calisir: once motorda (Assets/Motor) ve dunya kurallarinda (Assets/Dunya)
+// aninda calistirilir, sonra olanlar satir satir animasyonla oynatilir.
 public class Oyun : MonoBehaviour
 {
-    const int Cols = 6, Rows = 6, PathRow = 2;
+    // Sahne simdilik 6x6 alan ciziyor; bolum dosyalari da 6x6 (motor-test bunu denetler).
+    const int Cols = 6, Rows = 6;
     const float TileTop = 0f;
     // Taslaktakinden daha dik bakis (40 -> 60): arka siralar ezilmez, alan ekranda buyuk ve net gorunur.
     const float CameraPitch = 60f, CameraFov = 32f;
     // Alanin ustunde ufuk, tepeler ve koloni icin birakilan bant (ekran yuksekliginin orani).
     const float HorizonGap = 0.075f;
-    static readonly int[] IceCols = { 2, 3, 4 };
     const float StartYaw = 125f;
 
-    // Bolum 1'in cozumu. Kod yazma alani gelene kadar karttaki kod budur.
-    const string Level1Code = "# Buzları topla\nmove(East)\nfor i in range(3):\n    move(East)\n    collect()\n";
 
     Camera cam;
     Material backdrop;
     Transform world;
     Robot robot;
     readonly List<Ice> ices = new List<Ice>();
+    Target target;
+    Transform levelRoot;
+    Material ground;
     Hud hud;
-    string code = Level1Code;
+    // Bolumler (numara sirasiyla) ve oynanan bolum
+    readonly List<Level> levels = new List<Level>();
+    int levelIndex;
+    Level level;
+    // Karttaki kod: oyuncunun yazdigi (bolum ilk acildiginda bolumun baslangic kodu). Bolum bolum telefonda saklanir.
+    string code = "";
+    // Deneme goruntuleri alinirken oyuncunun kayitli kodu kullanilmaz ve ustune yazilmaz
+    bool shotsMode;
     Coroutine program;
-    bool running, done;
+    bool running, done, complete;
     float stars = 1f, starsTarget = 1f;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -45,8 +54,27 @@ public class Oyun : MonoBehaviour
     static Vector3 Pos(int c, int r) => new Vector3(c - (Cols - 1) * 0.5f, TileTop, r - (Rows - 1) * 0.5f);
     static Vector3 Pos(Cell c) => Pos(c.Col, c.Row);
 
-    // Bolumun baslangic hali (dunya kurallari icin)
-    static World NewWorld() => new World(Cols, Rows, new Cell(0, PathRow), IceCols.Select(c => new Cell(c, PathRow)));
+    bool HasNext => levelIndex + 1 < levels.Count;
+
+    // Resources/Bolumler icindeki tum bolum dosyalari; bozuk dosya atlanir (sebebi log'a yazilir).
+    void LoadLevels()
+    {
+        foreach (var file in Resources.LoadAll<TextAsset>("Bolumler"))
+        {
+            try
+            {
+                var l = Level.Parse(file.text);
+                if (l.Cols != Cols || l.Rows != Rows)
+                    throw new LevelFormatError("Harita " + l.Cols + "x" + l.Rows + "; sahne şimdilik yalnızca " + Cols + "x" + Rows + " çiziyor.");
+                levels.Add(l);
+            }
+            catch (LevelFormatError e)
+            {
+                Debug.LogError("Bölüm dosyası okunamadı: " + file.name + ": " + e.Message);
+            }
+        }
+        levels.Sort((a, b) => a.Number.CompareTo(b.Number));
+    }
 
     void Start()
     {
@@ -70,19 +98,24 @@ public class Oyun : MonoBehaviour
         BuildBoard();
 
         robot = Robot.Create(world);
-        robot.ResetTo(Pos(0, PathRow), StartYaw);
-        for (int i = 0; i < IceCols.Length; i++)
-            ices.Add(Ice.Create(world, Pos(IceCols[i], PathRow), i + 1));
 
         hud = gameObject.AddComponent<Hud>();
-        hud.Build(CodeColors.Lines(code));
+        hud.Build();
         hud.RunPressed += OnRun;
+        hud.CodeChanged += OnCodeChanged;
         hud.ResetPressed += ResetLevel;
+        // Bolum secme ekrani gelene kadar: sol ustteki dugme siradaki bolume gecer
+        hud.MenuPressed += () => LoadLevel((levelIndex + 1) % levels.Count);
         hud.StarsToggled += () => { starsTarget = starsTarget > 0.5f ? 0f : 1f; hud.SetStars(starsTarget > 0.5f); };
 
-        var args = System.Environment.GetCommandLineArgs();
-        for (int i = 0; i < args.Length - 1; i++)
-            if (args[i] == "-shots") StartCoroutine(Shots(args[i + 1]));
+        LoadLevels();
+        int start = 1;
+        for (int i = 0; i < a.Length - 1; i++)
+            if (a[i] == "-bolum") int.TryParse(a[i + 1], out start);
+        LoadLevel(Mathf.Clamp(levels.FindIndex(l => l.Number == start), 0, levels.Count - 1));
+
+        for (int i = 0; i < a.Length - 1; i++)
+            if (a[i] == "-shots") { shotsMode = true; LoadLevel(levelIndex); StartCoroutine(Shots(a[i + 1])); }
     }
 
     void SetupCamera()
@@ -195,16 +228,10 @@ public class Oyun : MonoBehaviour
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
 
-        var ground = Mats.Custom("Ground", "MarsKod/Ground");
+        ground = Mats.Custom("Ground", "MarsKod/Ground");
         ground.SetVector("_Area", new Vector4(AreaHalfX, AreaHalfZ, 0, 0));
         ground.SetVector("_FogRange", new Vector4(9f, 19f, 0, 0));
-        for (int i = 0; i < IceCols.Length; i++)
-        {
-            var p = Pos(IceCols[i], PathRow);
-            ground.SetVector("_Frost" + i, new Vector4(p.x, p.z, 0.45f, 1f));
-        }
-        var cr = Pos(4, 4);
-        ground.SetVector("_Crater", new Vector4(cr.x + 0.08f, cr.z - 0.05f, 0.27f, 0f));
+        // alandaki krater kapali: bolumlerde kareler bos ya da dolu net okunmali
         // zemin kendine golge dusurmez (duz zeminde ince golge seritleri olusturuyordu); robot ve kayalarin golgesini alir
         Parts.Add("Terrain", board, mesh, ground, Vector3.zero, outline: false, castShadow: false);
 
@@ -220,7 +247,7 @@ public class Oyun : MonoBehaviour
             Parts.Add("Lamp", board, lampMesh, lamp, basePos + Vector3.up * 0.33f, outline: false, castShadow: false);
         }
 
-        // Kayalar: alanin disina serpistirilmis, uzaklastikca seyrek; alanin icinde birkac cakil ve iri kaya (yol uzerinde degil)
+        // Kayalar: alanin disina serpistirilmis, uzaklastikca seyrek. Alanin icindeki kayalar bolumden gelir (engel).
         var rockMat = Mats.Lit(Mats.Hex("#6B4034"), 0.15f);
         var rockDark = Mats.Lit(Mats.Hex("#553229"), 0.12f);
         for (int i = 0; i < 130; i++)
@@ -234,20 +261,44 @@ public class Oyun : MonoBehaviour
                 new Vector3(x, TerrainHeight(x, z) + size * 0.12f, z), outline: false);
             rk.localRotation = Quaternion.Euler(R(-10, 10), R(0, 360), R(-10, 10));
         }
-        void TopRock(int c, int r, float size, Vector2 off, int seed)
+    }
+
+    // Bolumu kurar: buzlar, engel kayalari, hedef kare, zemindeki buz izleri, karttaki kod ve ust baslik.
+    void LoadLevel(int index)
+    {
+        if (program != null) StopCoroutine(program);
+        program = null;
+        running = false; done = false; complete = false;
+        levelIndex = index;
+        level = levels[index];
+
+        if (levelRoot != null) Destroy(levelRoot.gameObject);
+        levelRoot = Parts.Empty("Level", world);
+        ices.Clear();
+        for (int i = 0; i < level.Ices.Count; i++)
+            ices.Add(Ice.Create(levelRoot, Pos(level.Ices[i]), i + 1));
+        for (int i = 0; i < 6; i++)
         {
-            var p = Pos(c, r);
-            var rk = Parts.Add("Rock", board, MeshFactory.Rock(size, 100 + seed), seed % 2 == 0 ? rockMat : rockDark,
-                new Vector3(p.x + off.x, size * 0.2f, p.z + off.y), outline: false);
-            rk.localRotation = Quaternion.Euler(0, seed * 53f, 0);
+            var p = i < level.Ices.Count ? Pos(level.Ices[i]) : Vector3.zero;
+            ground.SetVector("_Frost" + i, new Vector4(p.x, p.z, 0.45f, i < level.Ices.Count ? 1f : 0f));
         }
-        TopRock(5, 4, 0.2f, new Vector2(-0.05f, 0.05f), 0);
-        TopRock(5, 4, 0.09f, new Vector2(0.22f, -0.2f), 1);
-        TopRock(0, 5, 0.13f, new Vector2(0.1f, 0.12f), 2);
-        TopRock(1, 0, 0.06f, new Vector2(-0.2f, 0.1f), 3);
-        TopRock(2, 4, 0.05f, new Vector2(0.25f, 0.2f), 5);
-        TopRock(4, 0, 0.07f, new Vector2(0.18f, 0.1f), 6);
-        TopRock(3, 5, 0.1f, new Vector2(-0.15f, -0.1f), 7);
+        var rockMat = Mats.Lit(Mats.Hex("#7A4A3B"), 0.15f);
+        var rockDark = Mats.Lit(Mats.Hex("#5E3A2F"), 0.12f);
+        for (int i = 0; i < level.Rocks.Count; i++)
+        {
+            // engel kaya: kareyi dolduran iri bir kaya + yaninda kucuk bir parca (kod bilmeyen de "buradan gecilmez" diye okusun)
+            var p = Pos(level.Rocks[i]);
+            var big = Parts.Add("Obstacle", levelRoot, MeshFactory.Rock(0.34f, 200 + i), rockMat, p + new Vector3(0f, 0.05f, 0f));
+            big.localRotation = Quaternion.Euler(0, i * 71f + 20f, 0);
+            var small = Parts.Add("Obstacle", levelRoot, MeshFactory.Rock(0.13f, 300 + i), rockDark, p + new Vector3(0.28f, 0.02f, -0.22f));
+            small.localRotation = Quaternion.Euler(0, i * 37f, 0);
+        }
+        target = level.Target.HasValue ? Target.Create(levelRoot, Pos(level.Target.Value)) : null;
+
+        robot.ResetTo(Pos(level.Robot), StartYaw);
+        code = SavedCode(level) ?? level.StartCode;
+        hud.SetCode(code);
+        hud.SetLevel(level.Number, level.Title, level.Goal, level.Ices.Count, level.Hints[0]);
     }
 
     void LateUpdate()
@@ -328,6 +379,11 @@ public class Oyun : MonoBehaviour
     void OnRun()
     {
         if (running) return;
+        if (done && complete && HasNext)
+        {
+            LoadLevel(levelIndex + 1);
+            return;
+        }
         if (done) ResetLevel();
         program = StartCoroutine(RunProgram());
     }
@@ -336,9 +392,10 @@ public class Oyun : MonoBehaviour
     {
         if (program != null) StopCoroutine(program);
         program = null;
-        running = false; done = false;
-        robot.ResetTo(Pos(0, PathRow), StartYaw);
+        running = false; done = false; complete = false;
+        robot.ResetTo(Pos(level.Robot), StartYaw);
         foreach (var ice in ices) ice.Restore();
+        if (target != null) target.Restore();
         hud.ResetView();
     }
 
@@ -348,7 +405,8 @@ public class Oyun : MonoBehaviour
         running = true;
         hud.SetRunning(true);
         hud.HideMessage();
-        var report = ProgramRun.Execute(code, NewWorld());
+        var world = level.CreateWorld();
+        var report = ProgramRun.Execute(code, world);
 
         // Bitmeyen dongude kaydin sadece basi oynatilir; uzun kayitta bos satirlarda beklenmez.
         int count = report.Halt != null && report.Halt.Reason == "steps" ? Mathf.Min(report.Trace.Count, 40) : report.Trace.Count;
@@ -378,18 +436,24 @@ public class Oyun : MonoBehaviour
         else if (report.Complete)
         {
             hud.SetActiveLine(-1);
+            if (target != null) target.Reach();
             yield return Tween.Wait(0.15f);
-            hud.SetDone();
+            complete = true;
+            hud.SetDone(HasNext);
             done = true;
             yield return robot.Celebrate();
         }
         else
         {
             hud.SetActiveLine(-1);
-            int left = IceCols.Length - report.Trace.SelectMany(t => t.Events).OfType<Collected>().Count(c => c.IceIndex >= 0);
-            hud.ShowMessage("GÖREV", "Kod bitti, buzlar bitmedi",
-                "Kodun sonuna kadar çalıştı ama " + left + " buz daha toplanmayı bekliyor. Robot yalnızca kodda yazanı yapar: eksik adımı bul.",
-                null, error: false);
+            if (world.IceLeft > 0)
+                hud.ShowMessage("GÖREV", "Kod bitti, buzlar bitmedi",
+                    "Kodun sonuna kadar çalıştı ama " + world.IceLeft + " buz daha toplanmayı bekliyor. Robot yalnızca kodda yazanı yapar: eksik adımı bul.",
+                    null, error: false);
+            else
+                hud.ShowMessage("GÖREV", "Kod bitti, robot hedefte değil",
+                    "Kodun sonuna kadar çalıştı ama robot işaretli kareye varmadı. Kod bittiğinde robot hedef karede durmalı: yolu adım adım say.",
+                    null, error: false);
             hud.SetRunning(false);
             done = true;
         }
@@ -446,12 +510,32 @@ public class Oyun : MonoBehaviour
             hud.ShowMessage(report.Halt.Kind == "limit" ? "DURDURULDU" : "HENÜZ YOK", ex.Title, text, null, error: true);
     }
 
-    // Karttaki kodu degistirir (kod yazma alani gelince oradan cagrilacak).
+    // ---- Oyuncunun kodu ----
+
+    static string SaveKey(Level l) => "kod-" + l.Number;
+
+    string SavedCode(Level l) => !shotsMode && PlayerPrefs.HasKey(SaveKey(l)) ? PlayerPrefs.GetString(SaveKey(l)) : null;
+
+    // Oyuncu kodu degistirdi: onceki calistirmanin sonucu (robotun yeri, kirmizi satir, hata kutusu) silinir, kod saklanir.
+    void OnCodeChanged(string source)
+    {
+        if (running) return;
+        if (done) ResetLevel();
+        else hud.HideMessage();
+        code = source;
+        if (!shotsMode)
+        {
+            PlayerPrefs.SetString(SaveKey(level), code);
+            PlayerPrefs.Save();
+        }
+    }
+
+    // Karttaki kodu disaridan degistirir (deneme goruntuleri icin; saklanmaz).
     void SetCode(string source)
     {
         ResetLevel();
         code = source;
-        hud.SetCode(CodeColors.Lines(code));
+        hud.SetCode(code);
     }
 
     // ---- Kontrol icin ekran goruntusu: MarsKod.exe -shots <klasor> ----
@@ -462,32 +546,61 @@ public class Oyun : MonoBehaviour
     {
         Directory.CreateDirectory(dir);
         yield return new WaitForSeconds(2.5f);
-        Cap(Path.Combine(dir, "1-bekleme.png"));
+        // Her bolum: bekleme, yolun ortasi, bitis (dogru cozumle)
+        for (int i = 0; i < levels.Count; i++)
+        {
+            string b = "b" + levels[i].Number + "-";
+            LoadLevel(i);
+            yield return new WaitForSeconds(0.8f);
+            Cap(Path.Combine(dir, b + "0-baslangic-kodu.png"));
+            yield return new WaitForSeconds(0.3f);
+            SetCode(levels[i].Solution);
+            yield return new WaitForSeconds(0.5f);
+            Cap(Path.Combine(dir, b + "1-bekleme.png"));
+            yield return new WaitForSeconds(0.3f);
+            OnRun();
+            yield return new WaitForSeconds(2.6f);
+            Cap(Path.Combine(dir, b + "2-yolda.png"));
+            while (running) yield return null;
+            yield return new WaitForSeconds(0.4f);
+            Cap(Path.Combine(dir, b + "3-bitti.png"));
+            yield return new WaitForSeconds(0.3f);
+        }
+        // Kod yazarken: imlec kodun sonunda
+        LoadLevel(levels.Count - 1);
         yield return new WaitForSeconds(0.3f);
-        OnRun();
-        yield return new WaitForSeconds(2.62f);
-        Cap(Path.Combine(dir, "2-toplama.png"));
-        yield return new WaitForSeconds(1.6f);
-        Cap(Path.Combine(dir, "3-yuruyus.png"));
-        while (running) yield return null;
-        yield return new WaitForSeconds(0.4f);
-        Cap(Path.Combine(dir, "4-bitti.png"));
+        hud.FocusCode(code.Length, code.Length);
+        yield return new WaitForSeconds(1.1f); // imlec yanip soner: saniyenin ilk yarisinda gorunur
+        Cap(Path.Combine(dir, "yaziyor.png"));
+        yield return new WaitForSeconds(0.3f);
+        int east = code.IndexOf("East", System.StringComparison.Ordinal);
+        hud.FocusCode(east, east + 4); // "East" secili: secim yaziyla hizali mi
+        yield return new WaitForSeconds(0.5f);
+        Cap(Path.Combine(dir, "yaziyor-secim.png"));
+        yield return new WaitForSeconds(0.3f);
+        hud.StopEditing();
         yield return new WaitForSeconds(0.3f);
         starsTarget = 0f; hud.SetStars(false);
         yield return new WaitForSeconds(1f);
-        Cap(Path.Combine(dir, "5-yildizsiz.png"));
+        Cap(Path.Combine(dir, "yildizsiz.png"));
         starsTarget = 1f; hud.SetStars(true);
 
-        // Hatali kodlar: Python hatasi, oyun kurali, eksik gorev, yazim hatasi
+        // Hatali kodlar (bolum numarasi, ad, kod): Python hatasi, oyun kurallari, eksik gorev, yazim hatasi
         var cases = new[]
         {
-            ("6-python-hatasi", "move(East)\nfor i in range(3):\n    move(East)\n    colect()\n"),
-            ("7-oyun-kurali", "for i in range(9):\n    move(East)\n"),
-            ("8-eksik-gorev", "move(East)\nmove(East)\ncollect()\n"),
-            ("9-yazim-hatasi", "move(East)\nfor i in range(3)\n    move(East)\n"),
+            (3, "h1-python-hatasi", "for i in range(5):\n    move(East)\n    colect()\n"),
+            (3, "h2-alan-siniri", "for i in range(9):\n    move(East)\n"),
+            (3, "h3-eksik-buz", "move(East)\ncollect()\nmove(East)\n"),
+            (3, "h4-yazim-hatasi", "for i in range(5)\n    move(East)\n"),
+            (2, "h5-kaya", "move(East)\nmove(East)\ncollect()\nmove(East)\n"),
+            (1, "h6-kilitli-komut", "move(East)\ncollect()\n"),
+            (1, "h7-hedefte-degil", "move(East)\nmove(East)\nmove(East)\n"),
         };
-        foreach (var (name, source) in cases)
+        foreach (var (number, name, source) in cases)
         {
+            int idx = levels.FindIndex(l => l.Number == number);
+            if (idx < 0) continue;
+            LoadLevel(idx);
             SetCode(source);
             yield return new WaitForSeconds(0.6f);
             OnRun();
@@ -496,7 +609,7 @@ public class Oyun : MonoBehaviour
             Cap(Path.Combine(dir, name + ".png"));
             yield return new WaitForSeconds(0.3f);
         }
-        SetCode(Level1Code);
+        LoadLevel(0);
         yield return new WaitForSeconds(0.5f);
         Application.Quit();
     }

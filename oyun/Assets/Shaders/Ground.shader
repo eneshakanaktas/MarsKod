@@ -10,6 +10,9 @@ Shader "MarsKod/Ground"
         _Frost0 ("Buz 0 (x, z, yaricap, acik)", Vector) = (0, 0, 0, 0)
         _Frost1 ("Buz 1", Vector) = (0, 0, 0, 0)
         _Frost2 ("Buz 2", Vector) = (0, 0, 0, 0)
+        _Frost3 ("Buz 3", Vector) = (0, 0, 0, 0)
+        _Frost4 ("Buz 4", Vector) = (0, 0, 0, 0)
+        _Frost5 ("Buz 5", Vector) = (0, 0, 0, 0)
         _Crater ("Alandaki krater (x, z, yaricap)", Vector) = (0, 0, 0, 0)
     }
     SubShader
@@ -21,7 +24,7 @@ Shader "MarsKod/Ground"
         CBUFFER_START(UnityPerMaterial)
             float4 _Area;
             float4 _FogRange;
-            float4 _Frost0, _Frost1, _Frost2;
+            float4 _Frost0, _Frost1, _Frost2, _Frost3, _Frost4, _Frost5;
             float4 _Crater;
         CBUFFER_END
         ENDHLSL
@@ -103,7 +106,8 @@ Shader "MarsKod/Ground"
                 }
 
                 // buzlanma: buzlarin cevresinde lekeler halinde
-                float fr = max(frostAt(q, q, _Frost0), max(frostAt(q, q, _Frost1), frostAt(q, q, _Frost2)));
+                float fr = max(max(frostAt(q, q, _Frost0), frostAt(q, q, _Frost1)), max(frostAt(q, q, _Frost2), frostAt(q, q, _Frost3)));
+                fr = max(fr, max(frostAt(q, q, _Frost4), frostAt(q, q, _Frost5)));
                 a = lerp(a, float3(0.66, 0.72, 0.78), fr * 0.7);
                 return a;
             }

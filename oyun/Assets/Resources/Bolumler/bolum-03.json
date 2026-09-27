@@ -1,0 +1,48 @@
+{
+  "numara": 3,
+  "baslik": "Tekrar tekrar",
+  "gorev": "5 buz topla",
+  "harita": [
+    ". . . . . .",
+    ". K . . . .",
+    ". . . . . .",
+    "R B B B B B",
+    ". . . . . .",
+    ". . . . K ."
+  ],
+  "komutlar": ["move", "collect"],
+  "konular": ["komut sırası", "for döngüsü", "girinti"],
+  "ipuclari": [
+    "Beş kez aynı iki şeyi yapıyorsun: bir kare ilerle, buzu topla. Aynı satırları tekrar tekrar yazmak yerine Python'a tekrarlatabilirsin.",
+    "<b>for i in range(5):</b> altındaki girintili (içeriden başlayan) satırları 5 kez tekrarlar. Satırın sonundaki iki noktayı unutma.",
+    "<b>for i in range(5):</b> satırının altına, 4 boşluk içeriden <b>move(East)</b> ve <b>collect()</b> yaz."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(5)", "    move(East)", "    collect()"],
+      "aciklama": "for satırının sonunda iki nokta (:) eksik."
+    },
+    {
+      "kod": ["for i in range(5):", "move(East)", "collect()"],
+      "aciklama": "Tekrarlanacak satırlar girintili (içeriden) yazılmalı; yoksa Python for'un neyi tekrarlayacağını bilemez."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(East)", "collect()"],
+      "aciklama": "collect() girintisiz olduğu için döngünün dışında kaldı: robot 5 kez ilerler ama yalnızca en sonda bir kez toplar."
+    },
+    {
+      "kod": ["for i in range(4):", "    move(East)", "    collect()"],
+      "aciklama": "range(4) dört kez tekrarlar; son buz kalır."
+    },
+    {
+      "kod": ["for i in range(6):", "    move(East)", "    collect()"],
+      "aciklama": "range(6) bir kez fazla: robot altıncı adımda alanın dışına çıkmak ister."
+    }
+  ],
+  "baslangic_kodu": ["move(East)", "collect()"],
+  "cozum": [
+    "for i in range(5):",
+    "    move(East)",
+    "    collect()"
+  ]
+}

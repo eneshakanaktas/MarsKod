@@ -1,0 +1,43 @@
+{
+  "numara": 2,
+  "baslik": "Kaya engeli",
+  "gorev": "2 buz topla",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . B . .",
+    "R . B K . .",
+    ". . . . K .",
+    ". . . . . ."
+  ],
+  "komutlar": ["move", "collect"],
+  "konular": ["komut sırası", "yönler"],
+  "ipuclari": [
+    "İki buz var ve aralarında bir kaya duruyor. Robot kayanın içinden geçemez.",
+    "<b>collect()</b> robotun durduğu karedeki buzu toplar. Kayaya çarpmamak için etrafından dolaş.",
+    "Birinci buzu topladıktan sonra: <b>move(North)</b>, <b>move(East)</b>, <b>collect()</b>."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["move(East)", "move(East)", "collect()", "move(East)", "move(North)", "collect()"],
+      "aciklama": "Robot doğudaki kayaya çarpar. Önce kuzeye çıkıp sonra doğuya gitmek gerekir."
+    },
+    {
+      "kod": ["move(East)", "move(East)", "move(North)", "move(East)", "collect()"],
+      "aciklama": "Robot birinci buzun üstünden geçti ama toplamadı: collect() unutulmuş."
+    },
+    {
+      "kod": ["move(East)", "move(East)", "collect", "move(North)", "move(East)", "collect"],
+      "aciklama": "Parantezsiz collect komutu çalıştırmaz, yalnızca adını anar. Çalışması için collect() yazılmalı."
+    }
+  ],
+  "baslangic_kodu": ["move(East)", "move(East)"],
+  "cozum": [
+    "move(East)",
+    "move(East)",
+    "collect()",
+    "move(North)",
+    "move(East)",
+    "collect()"
+  ]
+}

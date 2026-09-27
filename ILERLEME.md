@@ -16,6 +16,7 @@
 2. Aşama 2'nin devamı: bölüm dosyası (JSON), kaya/engel, ilk 3 bölüm. Sonra Aşama 3: kod yazma alanı (şimdilik normal klavye), adım adım modu (kayıt hazır).
 
 ## Alınan kararlar
+- **İlk 3 bölümün sırası (Ragıp, 09-27):** Bölüm 1 yalnızca `move`; Bölüm 2 `move` + `collect`; Bölüm 3 aynı işi tekrar tekrar yazmak yorsun, `for` ihtiyaç olarak doğsun. Enes/Hamza'nın görüşü alınabilir. Aşama 2'ye **yeni sohbette** başlanacak (model Opus, efor yüksek).
 - **Oyun motoru: Unity 6** (09-27). Önce Play Store (Android), sonra Steam.
 - 13 yaş ve altı hedef kitle değil; oyun yaş sormaz (Google Play Aileler politikası + KVKK veli izni). Tasarım belgesi §1.
 - Anlatım tek ton (sıcak, sade); "Eğlenceli / Sade" seçeneği ileride ayarlara eklenecek.

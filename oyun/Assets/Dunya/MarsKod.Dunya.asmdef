@@ -1,0 +1,14 @@
+{
+    "name": "MarsKod.Dunya",
+    "rootNamespace": "MarsKod.Dunya",
+    "references": ["MarsKod.Motor"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

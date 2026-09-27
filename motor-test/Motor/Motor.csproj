@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Oyundaki motorun kendisi (oyun/Assets/Motor). Unity ile aynı sınırlarla derlenir:
+       .NET Standard 2.1 + C# 9. Böyle burada derlenen kod Unity'de de derlenir. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <AssemblyName>MarsKod.Motor</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../oyun/Assets/Motor/**/*.cs" />
+  </ItemGroup>
+
+</Project>

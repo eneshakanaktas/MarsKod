@@ -1,33 +1,37 @@
 # İlerleme Notu — MarsKod (geçici isim)
 
 ## Şu an nerede
-- **(09-26 gün sonu, Enes) unitytaslak1 hazır:** `prototipler/unity/` (açmak: `calistir.bat`). Koyu tema, Mars yüzeyine gömülü oyun alanı, şafak öncesi arka plan, ufukta koloni, gerçekçi ışık. Gün raporu: `docs/raporlar/2026-09-26-enes-gun-sonu.md`. Telefonda (APK) henüz denenmedi.
-- **(09-26 gün sonu, Ragıp)** Godot ile 4 görsel taslak yapıldı; en sonuncusu **godottaslak4** (Mars kanyonu, sinema görünümü, efekt kapatma anahtarı), telefon paketi `paketler/marskod-godottaslak4.apk`. Gün raporu: `docs/raporlar/2026-09-26-ragip-gun-sonu.md`. Sıradaki: Unity ile unitytaslak1 (yeni, temiz bir sohbette başlanmalı).
-- **Aşama 0 ve 1 bitti:** Expo iskeleti ve mini-Python motoru hazır. Motor 216 örnekte gerçek Python 3.12 ile birebir aynı sonucu veriyor (919 test). Türkçe hata açıklamaları da hazır.
-- **Görsel yön takıldı:** 4 deneme yapıldı (2 boyut → GPU doku → Kenney çizimleri → 3 boyut). Ragıp hiçbirini The Farmer Was Replaced seviyesinde bulmadı. **Oyun motoru değişikliği (Unity/Godot) gündemde.**
-- Ayrıntılı gün raporu: `docs/raporlar/2026-09-25-ragip-gun-sonu.md`. GitHub: https://github.com/eneshakanaktas/MarsKod (private).
+- **KARAR (09-27, Ragıp + Enes): Oyun motoru Unity.** Hedef: önce Play Store, sonra Steam (web ikincil). Diğer taslaklar (expo 1-2, godot 1-4) git etiketi / `prototipler/` olarak saklanıyor; geri dönülebilir. Hamza'ya haber verilmeli.
+- **Oyunun asıl evi: `oyun/`** (Unity projesi, Ragıp 09-27). unitytaslak1'den kuruldu; oyun alanı 6×6 ve büyük (ekranın tam genişliği, kamera alanı başlık ile kod kartı arasına kendisi sığdırır). Açmak: `oyun/calistir.bat`. Görüntü: `docs/tasarim/oyun-2026-09-27.png`. Proje notları (CLAUDE.md, AGENTS.md, yapım planı) Unity'ye göre güncellendi; eski Expo kuralları `docs/arsiv/expo-kurallari.md`.
+- **unitytaslak1** (Enes): `prototipler/unity/` (açmak: `calistir.bat`). Telefon paketi `paketler/marskod-unitytaslak1.apk` (**29 MB**); Ragıp telefonda denedi. Zayıf yan: oyun alanı küçük (expotaslak1'de alan büyük ve net; ikisinin iyi yanları birleştirilebilir).
+- **Gelişim süreci sayfası (eski karşılaştırma sayfası):** https://claude.ai/artifact/NLbqv8cZmZfn8TXWpWDofs — tüm taslaklar tarih sırasıyla, 6 kısa video, ekran görüntüleri, her birinden ne öğrenildiği. Yerel kopya: `docs/tasarim/gelisim/index.html`. Ragıp'a açık; ekiple Share menüsünden paylaşılmalı.
+- **Python motoru C#'ta (Ragıp, 09-27):** `oyun/Assets/Motor/` (TypeScript motorundan birebir taşındı; `UnityEngine` kullanmaz). Testler `motor-test/` klasöründe `dotnet test`: **988 test geçiyor**, 194 örneğin hepsi gerçek Python 3.12 ile birebir. Unity'nin içinde de denetlendi (*MarsKod > Motor denetimi*: 194/194). Eski TypeScript motoru `src/` (arşivlenecek).
+- **Motor sahneye bağlı (Ragıp, 09-27):** karttaki kod gerçekten çalışıyor (`move`, `collect`, yönler). Dünya kuralları `oyun/Assets/Dunya/` (saf C#, testli). Hata olunca satır kırmızı + Türkçe açıklama + Python'un kendi mesajı. **1003 test geçiyor.** Kod yazma alanı henüz yok: karttaki kod sabit (Bölüm 1 çözümü).
+- GitHub: https://github.com/eneshakanaktas/MarsKod (private).
 
 ## Sıradaki adım
-- **(Enes, 09-26 gün sonu)** unitytaslak1'e ekip olarak bakılsın; sonra APK üretip telefonda denenecek (akıcılık + boyut). Onaylanırsa Python motoru Unity'ye taşınır.
-- **(Enes, 09-26)** Unity araçları hazır. Sıradaki: **unitytaslak1** (`prototipler/unity/`), `docs/referanslar/BENIOKU.md`'deki hedefe göre; yeni, temiz bir sohbette başla.
-- **(Ragıp, 09-26)** Godot taslakları bitti (godottaslak1-4, en sonuncusu godottaslak4). Sıradaki: aynı sahneyi **Unity** ile denemek (unitytaslak1), sonra ekip hangi motorla devam edeceğine karar verir.
-1. **Ekip kararı: oyun motoru.** Seçenekler: Unity, Godot ya da Expo'da devam. Claude'un önerisi Godot (her şey metin dosyası, Claude doğrudan çalışabiliyor). Karşılaştırma raporda.
-2. Karar verilince seçilen motorda **tek bir görsel deneme sahnesi** (ada + yürüyen robot + parlayan buz + efektler), telefonda denenir.
-3. Beğenilirse Python motoru yeni motora taşınır ve aynı 216 örnekle doğrulanır; sonra plandaki Aşama 2 (Mars dünyası kuralları).
+1. **Telefonda dene:** APK üretilip (`OyunBuild.BuildAndroid`) motorun telefonda da çalıştığı görülmeli (Android'de kod IL2CPP ile derlenir; PC'de sorunsuz).
+2. TypeScript motorunu arşivle (`src/`, `tests/python-cases.test.ts`, Expo dosyaları) — Ragıp onaylarsa.
+3. Aşama 2'nin devamı: bölüm dosyası (JSON), kaya/engel, ilk 3 bölüm. Sonra Aşama 3: kod yazma alanı (şimdilik normal klavye), adım adım modu (kayıt hazır).
 
 ## Alınan kararlar
+- **Oyun motoru: Unity 6** (09-27). Önce Play Store (Android), sonra Steam.
 - 13 yaş ve altı hedef kitle değil; oyun yaş sormaz (Google Play Aileler politikası + KVKK veli izni). Tasarım belgesi §1.
 - Anlatım tek ton (sıcak, sade); "Eğlenceli / Sade" seçeneği ileride ayarlara eklenecek.
 - Ekran testleri Maestro ile yapılacak (Playwright web içindir).
 - Önce Android.
 
 ## Açık sorular
+- **Uygulama kimliği** şimdilik `com.marskod.oyun`; Play Store'a ilk yüklemeden önce kesinleşmeli (sonra değiştirilemez). Oyunun ismiyle birlikte karar verilmeli.
+- **Ekran testleri:** Maestro seçilmişti ama Unity'nin içini göremez; Aşama 3'te Unity'nin kendi test aracıyla karşılaştırılıp karar verilecek.
 - **Telefon paketleri (Ragıp, 09-26):** Arkadaşların kurabilmesi için godottaslak4 küçültülüp (106 MB → 57 MB; gereksiz sanal-telefon parçası ve hata ayıklama kısmı çıkarıldı, dokular telefon boyutuna indirildi) GitHub'a eklendi: `paketler/marskod-godottaslak4.apk` (kurulum `paketler/BENIOKU.md`). GitHub'a **yüklenmeyen**: `build/` klasöründeki büyük deneme paketleri (godottaslak3 ve 4'ün sanal telefon sürümleri, ~106 MB; GitHub 100 MB üstünü kabul etmez). Gerekirse Claude'a "telefon paketini üret" demek yeter.
-- **Oyun motoru** (yukarıda, en önemli karar).
 - **PC ve mobil (Ragıp):** PC sürümü de olsun mu? Claude'un görüşü: görseller aynı kalsın, sadece ekran düzeni değişsin. Önce mobil.
-- **Boyut:** Ragıp oyunun az yer kaplamasını istiyor. Unity/Godot'da boyut 60–120 MB olur (Expo ile 30–45 MB).
+- **Boyut:** Ragıp oyunun az yer kaplamasını istiyor. unitytaslak1 telefon paketi 29 MB çıktı (Godot 57 MB).
 - Oyunun kesin ismi (şimdilik "MarsKod").
 - Supabase eklentisi: Aşama 8'de SkillSpector taraması + onayla kurulacak.
+- **Yönler (`East` vb.) şimdilik metin:** `move("East")` de çalışıyor, `print(East)` → `East`. TFWR'de bunlar özel değer; gerekirse motora ayrı bir tür eklenir. Aşama 2'de karar.
+- **`print` çıktısı ekranda görünmüyor** (kayıtta var: `RunReport.Output`). Nerede gösterileceği Aşama 3'te.
+- **Çok uzun ama biten kodlar** (örn. 1000 kez ileri-geri) animasyonda dakikalar sürebilir; hız düğmesi Aşama 3'te düşünülmeli.
 - ⏰ HATIRLAT: Oyuncu çözümlerini toplama fikri ertelendi (tasarım belgesi §4). İzin yöntemi + KVKK kararı verilmedi.
 
 ## Günlük
@@ -37,3 +41,8 @@
 - **2026-09-26 — Enes:** Godot 4.7.2 kuruldu (sanal telefon zaten hazırdı). expotaslak1'e bakıldı: Enes de beğenmedi (üçü de beğenmedi). **Karar: Unity ile devam.** Referans görseller eklendi: `docs/referanslar/` (MyRisale = eğitim/profil; sadece esin, kopya değil; hedef "premium sade, ölçülü animasyon" — ayrıntı `docs/referanslar/BENIOKU.md`). Skill'ler (SkillSpector ile tarandı, bulgular yanlış alarm): **unity** (Unity'nin resmî eklentisi; Claude Unity'yi doğrudan yönetebiliyor) + awesome-gamedev-agent-skills'ten sadece `unity` ve `disciplines`; `expo` listeden çıkarıldı. Enes'in PC'sinde Unity 6 (6000.6.0f1) + Android desteği + Unity komut aracı zaten kuruluydu. Hamza/Ragıp: Claude'u açınca eklentileri kurmayı önerir; Unity Hub'dan Unity 6 + Android Build Support kurulmalı.
 - **2026-09-26 — Hamza:** Kendi bilgisayarında kurulum: proje paketleri (`npm install`) ve Python 3.12 (`py install 3.12`). 919 test geçti, tip denetimi temiz.
 - **2026-09-26 — Enes (öğleden sonra):** unitytaslak1 yapıldı (Unity 6). Sırasıyla: açık tema + satranç tahtası → koyu tema → şafak öncesi arka plan, koloni, kum fırtınası → TFWR incelendi, tahta yerine Mars zemini → zemine gömülü alan, alçak kamera + kıvrık zemin, gerçekçi ışık, robot farı. Pocket Chess referansı kaldırıldı. Kural: gerçekçilik esas, ışık/gölge mantığı tutarlı. Rapor: `docs/raporlar/2026-09-26-enes-gun-sonu.md`.
+- **2026-09-27 — Ragıp:** Unity Hub + Unity 6000.6.3f1 + Android eklentisi kuruldu (winget sessiz kurulum Claude'un korumalı alanında görünmedi; Ragıp Hub'dan elle kurdu; VS Community kurulumu gereksiz, atlandı). `calistir.bat` kurulu 6000.6.x sürümünü kendi buluyor. unitytaslak1 PC'de açıldı; APK üretildi (29 MB; ilk üretim ~35 dk) → `paketler/`. Tüm taslakların karşılaştırma sayfası yapıldı. expotaslak1 sanal telefonda yeniden açıldı (ayrı klasörde; yöntem `docs/tasarim/taslaklar.md`). **Karar: Unity ile devam; hedef önce Play Store, sonra Steam.** Bundan sonra Claude her işte model/efor önerir, yeni sohbet gerekince söyler.
+- **2026-09-27 — Ragıp (akşam):** Kalıcı Unity projesi `oyun/` kuruldu (unitytaslak1'den; taslak `prototipler/unity/` olarak aynen duruyor). Adlar kalıcı: `Oyun.cs`, `OyunBuild.cs`, sahne `Oyun`, uygulama adı "MarsKod". Oyun alanı 5×4'ten 6×6'ya çıktı, bakış 40°'den 60°'ye dikleşti; kamera alanı arayüzün bıraktığı boşluğa kendisi sığdırıyor (alan eskisinin ~2 katı). Windows paketi hatasız üretildi, ekran görüntüleriyle denendi (ilk hazırlık ~7 dk, sonrakiler ~1-2 dk). CLAUDE.md, AGENTS.md ve yapım planı Unity'ye göre yazıldı (Aşama 0b eklendi, Aşama 1b = motoru C#'a taşıma).
+- **2026-09-27 — Ragıp (gece):** Python motoru C#'a taşındı (Aşama 1b'nin ilk yarısı, tek oturumda): `oyun/Assets/Motor/` (~6.700 satır C#; kelime ayırıcı, cümle çözücü, derleyici, çalıştırıcı, yerleşik fonksiyonlar, Türkçe açıklamalar). `motor-test/` (.NET test projesi; motoru Unity'nin sınırlarıyla derler): 988 test geçiyor. İlk denemede 193/194; tek fark büyük tam sayının ondalığa çevrilmesiydi (C# yuvarlamak yerine kesiyordu), düzeltildi. Eski motordaki birkaç küçük Python farkı da düzeltildi (`split(None, 1)`, `replace("", ...)`, `ß`/`İ` harf dönüşümü, sıralamada hata mesajı sırası). Unity içinde denetim aracı eklendi (194/194). `scripts/python_isimler.py` artık `PythonNames.cs`'i de üretiyor. Windows paketi yeniden üretildi.
+- **2026-09-27 — Ragıp (gece, devam):** Karşılaştırma sayfası "gelişim süreci" sayfasına çevrildi ve aynı bağlantıda güncellendi (`docs/tasarim/gelisim/`). Claude 6 video çekti (godottaslak1-4 Godot'nun film moduyla, unitytaslak1 ve oyunun bugünkü hâli ekran kaydıyla; toplam 4,3 MB). Expo taslakları hareketsiz olduğu için videosuz. Taslak kuralına "video çek" adımı eklendi; yöntem `docs/tasarim/taslaklar.md` + `scripts/video-kaydet.ps1`.
+- **2026-09-27 — Ragıp (sahneye bağlama):** Python motoru sahneye bağlandı. Yeni `oyun/Assets/Dunya/` (saf C#): ızgara, robot yeri, buzlar, `move(yön)`, `collect()` (buz varsa True), `North/East/South/West`; alanın dışına çıkmak "oyun kuralı" olarak durdurur (Python hatası değil, oyuncu kodu yakalayamaz). `ProgramRun.Execute` kodu anında çalıştırıp satır satır kayıt çıkarır; sahne bu kaydı oynatır (bitmeyen döngüde ilk 40 satır oynatılıp "durduruldu" denir). Arayüz: hatalı satır kırmızı, açıklama kutusu (etiket + başlık + Türkçe metin + ipucu + Python'un İngilizce mesajı), eksik görevde "Kod bitti, buzlar bitmedi". Kod renklendirici `CodeColors.cs` (düz Python metninden). Unity'nin `NoWrap` ayarı girinti boşluklarını siliyordu → `WhiteSpace.Pre`. Robot alan sınırında çarpıp geri sekiyor. `-shots` artık 4 hatalı kod örneğinin de görüntüsünü alıyor. `motor-test/DunyaTests.cs` (15 test); toplam 1003 test geçiyor. Windows paketi hatasız, görüntülerle denendi.

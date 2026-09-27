@@ -1,14 +1,32 @@
 # MarsKod (geçici isim)
 
 Telefonda oynanan, gerçek Python öğreten bulmaca oyunu (Mars kolonisi teması). Tasarım: `docs/superpowers/specs/2026-09-25-marskod-design.md`.
-Teknik yol: Unity 6 + kendi mini-Python motorumuz (2026-09-26'da Expo'dan geçildi; motor C#'a taşınacak). Önce Android. Görsel hedef ve referanslar: `docs/referanslar/BENIOKU.md`.
-Yapım planı: `docs/superpowers/plans/2026-09-25-marskod-yapim-plani.md`. Expo kuralları: @AGENTS.md
+Teknik yol: **Unity 6** (6000.6.x, URP) + kendi mini-Python motorumuz (C#, `oyun/Assets/Motor/`). Önce Android (Play Store), sonra Steam. Görsel hedef: `docs/referanslar/BENIOKU.md`.
+Yapım planı: `docs/superpowers/plans/2026-09-25-marskod-yapim-plani.md`.
 
-## Çalıştırma
-- `npm install` → `npx expo start` (telefonda Expo Go ile QR okut, ya da `a` ile Android emülatörü).
-- `npm test` (testler), `npm run typecheck` (tip denetimi). İş bitmeden ikisi de yeşil olmalı.
-- Motor testleri: `tests/python-cases/<grup>/*.py` örnekleri. Yeni örnek ekleyince `npm run python-referans` (Python 3.12 şart) ile gerçek Python sonucunu üret. Motor bir grubu destekleyince grubu `tests/python-cases.test.ts` içindeki `ENABLED_GROUPS` listesine ekle.
-- `src/engine` ve `src/world` saf mantıktır; React Native'e bağımlı olamaz.
+## Klasörler
+- `oyun/` — **oyunun asıl evi** (Unity projesi). Sahne tamamen kodla kurulur (`Assets/Scripts/Oyun.cs`); sahne dosyası boştur.
+- `oyun/Assets/Motor/` — mini-Python motoru (C#). Giriş: `PythonEngine.RunPython`, adım adım: `Interpreter.Run`, Türkçe açıklama: `Explain`. Metinler: `ExplanationsTr.cs`.
+- `oyun/Assets/Dunya/` — Mars dünyası kuralları (saf C#): ızgara, robot, buz, oyun komutları (`move`, `collect`...). Oyuncu kodunu çalıştırıp olanları kaydeden: `ProgramRun.Execute`.
+- `motor-test/` — motor ve dünya testleri (.NET). Motoru Unity'nin sınırlarıyla derler (C# 9, .NET Standard 2.1).
+- `prototipler/` — görsel taslaklar (unitytaslak1, godot…). Dokunma; kural: `docs/tasarim/taslaklar.md`.
+- `src/`, `tests/python-cases.test.ts` — eski Expo/TypeScript kodu; motor C#'a taşındı, arşivlenecek. Yeni özellik eklenmez. `tests/python-cases/` örnekleri dilden bağımsız; C# motoru bunlarla sınanır.
+- `docs/arsiv/expo-kurallari.md` — eski Expo kuralları (yalnızca `src/`'ye dokunulursa).
+
+## Çalıştırma (Unity)
+- Bilgisayarda açmak: `oyun/calistir.bat` (paket yoksa önce üretir). Kod değişince `oyun/Build/` silinip yeniden üretilmeli.
+- Komut satırından paket: `Unity.exe -batchmode -quit -projectPath oyun -executeMethod OyunBuild.BuildWindows -logFile build.log` (Unity: `C:/Program Files/Unity/Hub/Editor/<sürüm>/Editor/`). Android: `OyunBuild.BuildAndroid` → `oyun/Build/Android/marskod.apk`. Derleme hatası `build.log` içinde `error CS` diye aranır.
+- Görsel kontrol: `oyun/Build/Win/MarsKod.exe -screen-width 450 -screen-height 975 -screen-fullscreen 0 -shots <klasör>` ekran görüntülerini alıp kapanır.
+- Unity içinde: Unity Hub → Add → `oyun/` → `Assets/Scenes/Oyun` → ▶. Menü: *MarsKod*.
+- Motor testleri: `motor-test` klasöründe `dotnet test` (Unity gerekmez, birkaç saniye). Unity'nin kendi ortamında: menü *MarsKod > Motor denetimi* ya da `-executeMethod MotorDenetimi.Calistir` (log'da `MOTOR DENETIMI:` satırı).
+- Yeni Python örneği eklenirse `npm run python-referans` (Python 3.12) beklenen sonucu üretir. Python sürümü değişirse `py -3.12 scripts/python_isimler.py` isim listelerini (`PythonNames.cs`) yeniler.
+- Eski TypeScript testleri (referans): `npm test`.
+
+## Unity kuralları
+- Motor ve dünya kuralları saf C#'tır (UnityEngine kullanmaz); Unity açmadan `dotnet test` ile test edilir. Unity C# 9 kullanır: motorda daha yeni C# özellikleri ve .NET Standard 2.1'de olmayan kitaplıklar kullanılmaz (`motor-test` bunu derlerken yakalar).
+- `Library/`, `Build/`, `Temp/`, `Logs/`, `UserSettings/` üretilen klasörlerdir; git'e girmez.
+- Her dosyanın yanındaki `.meta` dosyası onunla birlikte taşınır/silinir (Unity bağlantıları onunla kurar).
+- Boyut önemli (Ragıp): telefon paketini küçük tut; büyük doku/model eklemeden önce sor. Hazır model/doku eklerken ticari kullanım lisansını kontrol et.
 
 ## Genel kurallar
 - Ekipte kodlama bilgisi yok; her zaman sade Türkçe açıkla, jargon kullanma.

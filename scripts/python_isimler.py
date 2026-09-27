@@ -1,4 +1,6 @@
-"""Gerçek Python 3.12'nin isim listelerini src/engine/python-names.ts dosyasına yazar.
+"""Gerçek Python 3.12'nin isim listelerini motora yazar:
+  - oyun/Assets/Motor/PythonNames.cs (Unity motoru, C#)
+  - src/engine/python-names.ts (eski TypeScript motoru, referans)
 
 Motor, "Did you mean: ...?" önerilerini CPython ile birebir aynı üretmek için bu listeleri
 (ve sıralarını) kullanır. Python sürümü değişirse yeniden çalıştırılır:
@@ -12,7 +14,9 @@ import sys
 import tempfile
 from pathlib import Path
 
-OUT = Path(__file__).resolve().parent.parent / "src" / "engine" / "python-names.ts"
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / "src" / "engine" / "python-names.ts"
+OUT_CS = ROOT / "oyun" / "Assets" / "Motor" / "PythonNames.cs"
 
 
 def module_globals() -> list[str]:
@@ -53,6 +57,42 @@ def main() -> None:
         lines.append("")
     OUT.write_text("\n".join(lines), encoding="utf-8")
     print(f"Yazıldı: {OUT}")
+    write_cs(data)
+
+
+def cs_array(items: list[str]) -> str:
+    # JSON metin yazımı C#'ta da geçerlidir
+    return "{ " + ", ".join(json.dumps(x, ensure_ascii=False) for x in items) + " }"
+
+
+def write_cs(data: dict) -> None:
+    lines = [
+        "// OTOMATİK ÜRETİLDİ: scripts/python_isimler.py — elle değiştirme.",
+        f"// Kaynak: Python {data['PYTHON_VERSION']}",
+        "",
+        "using System.Collections.Generic;",
+        "",
+        "namespace MarsKod.Motor",
+        "{",
+        "    public static class PythonNames",
+        "    {",
+        f"        public const string PythonVersion = {json.dumps(data['PYTHON_VERSION'])};",
+        "",
+        f"        public static readonly string[] BuiltinNames = {cs_array(data['BUILTIN_NAMES'])};",
+        "",
+        f"        public static readonly string[] ModuleGlobalNames = {cs_array(data['MODULE_GLOBAL_NAMES'])};",
+        "",
+        f"        public static readonly string[] StdlibModuleNames = {cs_array(data['STDLIB_MODULE_NAMES'])};",
+        "",
+        "        public static readonly Dictionary<string, string[]> TypeDir = new Dictionary<string, string[]>",
+        "        {",
+    ]
+    for name, names in data["TYPE_DIR"].items():
+        lines.append(f"            [{json.dumps(name)}] = new[] {cs_array(names)},")
+    lines += ["        };", "    }", "}", ""]
+    OUT_CS.parent.mkdir(parents=True, exist_ok=True)
+    OUT_CS.write_text("\n".join(lines), encoding="utf-8")
+    print(f"Yazıldı: {OUT_CS}")
 
 
 if __name__ == "__main__":

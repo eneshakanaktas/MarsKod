@@ -48,3 +48,10 @@ prototipler/godot/.godot/
 
 # Godot telefon paketleri (APK)
 /build/
+
+# .NET (motor-test)
+motor-test/**/bin/
+motor-test/**/obj/
+
+# Godot önbelleği (açılışta kendiliğinden üretilir)
+prototipler/**/.godot/

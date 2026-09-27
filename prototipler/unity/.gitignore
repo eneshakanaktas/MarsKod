@@ -18,3 +18,5 @@
 .vs/
 .vsconfig
 build.log
+build-android.log
+/.utmp/

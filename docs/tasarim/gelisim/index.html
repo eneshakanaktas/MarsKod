@@ -1,0 +1,350 @@
+<title>MarsKod Gelişim Süreci</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f6f1ec; --surface:#fffaf5; --line:#e4d7cb; --rail:#d6c3b3; --ink:#2a1d17; --muted:#7a655a;
+  --rust:#b8502e; --rust-soft:#f3ddd2; --ice:#2f7fa8; --ice-soft:#dcecf4;
+  --good:#3d7a4a; --good-soft:#dfeede; --warn:#9a6a12; --warn-soft:#f4e8cc; --no:#8f3b3b; --no-soft:#f2dcdc;
+  --frame:#1d1512;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#17110f; --surface:#211916; --line:#3a2c26; --rail:#4a372f; --ink:#f1e6de; --muted:#a8948a;
+  --rust:#e27a54; --rust-soft:#3b2219; --ice:#7cc3e6; --ice-soft:#16303d;
+  --good:#8cc79a; --good-soft:#1d3222; --warn:#e3bb62; --warn-soft:#3a2e14; --no:#e39a9a; --no-soft:#3a1f1f;
+  --frame:#000;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#17110f; --surface:#211916; --line:#3a2c26; --rail:#4a372f; --ink:#f1e6de; --muted:#a8948a;
+  --rust:#e27a54; --rust-soft:#3b2219; --ice:#7cc3e6; --ice-soft:#16303d;
+  --good:#8cc79a; --good-soft:#1d3222; --warn:#e3bb62; --warn-soft:#3a2e14; --no:#e39a9a; --no-soft:#3a1f1f;
+  --frame:#000;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--body);padding-inline:16px;padding-block:0 64px}
+.wrap{max-width:1080px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.15;margin:0}
+p{margin:0}
+code{font-family:var(--mono);font-size:.8rem;overflow-wrap:anywhere}
+
+header{padding-block:40px 28px;display:grid;gap:14px;border-bottom:1px solid var(--line)}
+.eyebrow{font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--rust)}
+h1{font-size:clamp(2rem,6vw,3.2rem);font-weight:700}
+.lede{max-width:64ch;color:var(--muted)}
+nav{display:flex;flex-wrap:wrap;gap:8px;padding-top:6px}
+nav a{font-family:var(--mono);font-size:.8rem;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:5px 12px;background:var(--surface)}
+nav a:hover,nav a:focus-visible{border-color:var(--rust);outline:none}
+
+section{padding-top:40px;display:grid;gap:18px}
+h2{font-size:1.6rem;font-weight:700}
+.intro{max-width:66ch;color:var(--muted)}
+
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:.92rem}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+td a{color:var(--ink)}
+
+.pill{display:inline-block;font-family:var(--mono);font-size:.72rem;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.p-no{background:var(--no-soft);color:var(--no)}
+.p-keep{background:var(--warn-soft);color:var(--warn)}
+.p-eval{background:var(--ice-soft);color:var(--ice)}
+.p-go{background:var(--good-soft);color:var(--good)}
+.eng{font-family:var(--mono);font-size:.72rem;color:var(--rust)}
+
+/* --- zaman çizelgesi --- */
+.day{display:grid;grid-template-columns:132px 1fr;gap:0 28px;padding-top:44px}
+.day-label{position:sticky;top:calc(12px + env(safe-area-inset-top,0px));align-self:start;display:grid;gap:2px;padding-top:2px}
+.day-label .d{font-family:var(--display);font-size:2.4rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.day-label .m{font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--rust)}
+.day-label .who{font-size:.82rem;color:var(--muted);padding-top:6px}
+.events{display:grid;gap:18px;border-left:2px solid var(--rail);padding-left:24px}
+.ev{position:relative}
+.ev::before{content:"";position:absolute;left:-32px;top:10px;width:14px;height:14px;border-radius:50%;background:var(--bg);border:2px solid var(--rail)}
+.ev.draft::before{border-color:var(--rust);background:var(--rust-soft)}
+.ev.milestone::before{border-color:var(--ice);background:var(--ice-soft)}
+.ev.now::before{border-color:var(--good);background:var(--good-soft)}
+
+.milestone{display:grid;gap:4px;padding-block:4px}
+.milestone .tag{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ice)}
+.milestone h3{font-size:1.1rem}
+.milestone p{color:var(--muted);max-width:66ch;font-size:.95rem}
+
+.draft{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;grid-template-columns:auto 1fr;gap:20px 24px;align-items:start}
+.phone{width:210px;max-width:100%;margin:0;display:grid;gap:6px}
+.phone .screen{border-radius:22px;overflow:hidden;background:var(--frame);border:4px solid var(--frame);aspect-ratio:450/976}
+.phone video,.phone img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.phone figcaption{font-family:var(--mono);font-size:.7rem;color:var(--muted);text-align:center}
+.body{display:grid;gap:12px;min-width:0}
+.draft-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 12px}
+.draft-head h3{font-size:1.35rem}
+.draft-head .size{margin-left:auto;font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+.desc{max-width:66ch}
+.learn{border-top:1px solid var(--line);padding-top:10px;display:grid;gap:4px;max-width:66ch}
+.learn b,.meta b{display:block;font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+.learn p{color:var(--muted);font-size:.93rem}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 24px;font-size:.86rem;color:var(--muted)}
+
+.strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity}
+.shot{flex:0 0 auto;width:92px;margin:0;display:grid;gap:4px;scroll-snap-align:start}
+.shot button{all:unset;cursor:zoom-in;display:block;border-radius:10px;overflow:hidden;background:var(--frame);border:2px solid var(--frame);aspect-ratio:9/19}
+.shot button:focus-visible{outline:2px solid var(--rust);outline-offset:2px}
+.shot img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.shot figcaption{font-family:var(--mono);font-size:.66rem;color:var(--muted);text-align:center;line-height:1.3}
+
+.open{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.open div{border-top:2px solid var(--rust);padding-top:10px;display:grid;gap:4px}
+.open h3{font-size:1.05rem}
+.open p{font-size:.92rem;color:var(--muted)}
+
+dialog{border:0;padding:0;background:transparent;max-width:min(94vw,480px);max-height:94vh}
+dialog::backdrop{background:rgba(10,6,4,.85)}
+dialog img{display:block;max-height:88vh;width:auto;max-width:100%;border-radius:14px;margin:0 auto}
+dialog p{color:#f1e6de;font-family:var(--mono);font-size:.8rem;text-align:center;padding-top:8px}
+.close{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:12px;background:#000a;color:#fff;border:1px solid #fff5;border-radius:999px;padding:6px 14px;font:500 .85rem var(--body);cursor:pointer}
+
+@media (max-width:720px){
+  .day{grid-template-columns:1fr;gap:14px}
+  .day-label{position:static;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .day-label .who{padding-top:0}
+  .events{padding-left:18px}
+  .ev::before{left:-26px}
+  .draft{grid-template-columns:1fr;padding:16px}
+  .phone{width:200px;justify-self:center}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">MarsKod · 25–27 Eylül 2026</p>
+  <h1>Üç günde üç oyun motoru, sekiz görünüm</h1>
+  <p class="lede">Oyunun ilk üç günü. Aynı sahneyi (robot, Mars zemini, üç buz, altta Python kodu) önce Expo, sonra Godot, sonra Unity ile denedik. Her taslak silinmeden saklandı. Burada hepsi yaşandığı sırayla duruyor: hareketli olanların kısa videosu, ekran görüntüleri ve her birinden ne öğrendiğimiz. Görsellere dokununca büyür.</p>
+  <nav aria-label="Bölümler">
+    <a href="#ozet">Bir bakışta</a><a href="#g25">25 Eylül</a><a href="#g26">26 Eylül</a><a href="#g27">27 Eylül</a><a href="#acmak">Eski taslağı açmak</a>
+  </nav>
+</header>
+
+<section id="ozet">
+  <h2>Bir bakışta</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Görünüm</th><th>Tarih</th><th>Motor</th><th>Yön</th><th>Telefon paketi</th><th>Sonuç</th></tr></thead>
+    <tbody>
+      <tr><td><a href="#expotaslak1">expotaslak1</a></td><td class="num">25 Eyl</td><td class="eng">Expo 2D</td><td>Yüzen ada, çizim karakterler</td><td class="num">yok</td><td><span class="pill p-no">Beğenilmedi</span></td></tr>
+      <tr><td><a href="#expotaslak2">expotaslak2</a></td><td class="num">25 Eyl</td><td class="eng">Expo 3D</td><td>3B modelli ada, ışık ve gölge</td><td class="num">yok</td><td><span class="pill p-no">Beğenilmedi</span></td></tr>
+      <tr><td><a href="#godottaslak1">godottaslak1</a></td><td class="num">26 Eyl</td><td class="eng">Godot</td><td>Yüzen ada, nebula gökyüzü</td><td class="num">yok</td><td><span class="pill p-keep">2 ile geliştirildi</span></td></tr>
+      <tr><td><a href="#godottaslak2">godottaslak2</a></td><td class="num">26 Eyl</td><td class="eng">Godot</td><td>Mars yüzeyi, altın saat, koloni</td><td class="num">yok</td><td><span class="pill p-keep">Beğenildi, 1'e benzer</span></td></tr>
+      <tr><td><a href="#godottaslak3">godottaslak3</a></td><td class="num">26 Eyl</td><td class="eng">Godot</td><td>Gerçekçi, meteorlar, NASA gezgini</td><td class="num">106 MB</td><td><span class="pill p-keep">Saklandı</span></td></tr>
+      <tr><td><a href="#godottaslak4">godottaslak4</a></td><td class="num">26 Eyl</td><td class="eng">Godot</td><td>Mars kanyonu, sinema görünümü</td><td class="num">57 MB</td><td><span class="pill p-keep">Godot'da son</span></td></tr>
+      <tr><td><a href="#unitytaslak1">unitytaslak1</a></td><td class="num">26 Eyl</td><td class="eng">Unity</td><td>Premium sade, koyu şafak</td><td class="num">29 MB</td><td><span class="pill p-go">Seçildi</span></td></tr>
+      <tr><td><a href="#oyun">oyun/</a></td><td class="num">27 Eyl</td><td class="eng">Unity</td><td>unitytaslak1 + büyük oyun alanı</td><td class="num">—</td><td><span class="pill p-eval">Oyunun kendisi</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 25 EYLÜL -->
+<div class="day" id="g25">
+  <div class="day-label"><span class="d">25</span><span class="m">Eylül · Cuma</span><span class="who">Enes, Ragıp</span></div>
+  <div class="events">
+    <div class="ev milestone">
+      <span class="tag">Fikir</span>
+      <h3>Telefonda gerçek Python öğreten Mars oyunu</h3>
+      <p>Enes fikri netleştirdi: The Farmer Was Replaced mantığında, Mars temalı bir mobil bulmaca. Tasarım belgesi yazılıp onaylandı, GitHub deposu açıldı.</p>
+    </div>
+    <div class="ev milestone">
+      <span class="tag">Motor</span>
+      <h3>Kendi mini-Python motorumuz yazıldı</h3>
+      <p>Ragıp, oyunun içinde çalışan Python motorunu TypeScript ile yazdı. Gerçek Python 3.12 ile karşılaştırılan örnekler, 919 test ve Türkçe hata açıklamaları eklendi.</p>
+    </div>
+
+    <article class="ev draft" id="expotaslak1">
+      <figure class="phone"><div class="screen"><img src="img/expotaslak1-a.jpg" alt="expotaslak1 genel görünüm" loading="lazy"></div><figcaption>hareketsiz ekran, video yok</figcaption></figure>
+      <div class="body">
+        <div class="draft-head"><h3>expotaslak1</h3><span class="eng">Expo · 2D (Skia)</span><span class="pill p-no">Beğenilmedi</span></div>
+        <p class="desc">Ekran kartında hesaplanan Mars dokusu, havada yüzen ada, hazır çizim karakterler (Kenney), küçük canlılık animasyonları.</p>
+        <div class="strip" data-shots="expotaslak1-a:ilk|expotaslak1-b:ikinci|expotaslak1-c:üçüncü"></div>
+        <div class="learn"><b>Ne öğrendik</b><p>Ekipçe beğenilmedi. Aynı gün aynı sahne 3B olarak denendi (expotaslak2).</p></div>
+      </div>
+    </article>
+
+    <article class="ev draft" id="expotaslak2">
+      <figure class="phone"><div class="screen"><img src="img/expotaslak2.jpg" alt="expotaslak2 genel görünüm" loading="lazy"></div><figcaption>hareketsiz ekran, video yok</figcaption></figure>
+      <div class="body">
+        <div class="draft-head"><h3>expotaslak2</h3><span class="eng">Expo · 3D (Three.js)</span><span class="pill p-no">Beğenilmedi</span></div>
+        <p class="desc">Hazır 3B modeller (Kenney Space Kit), gerçek ışık ve gölge, kaya katmanlı ada.</p>
+        <div class="strip" data-shots="expotaslak2:genel"></div>
+        <div class="learn"><b>Ne öğrendik</b><p>Günün sonunda dört görsel denemenin hiçbiri ekipte beğenilmedi. Oyun motorunu değiştirmeyi konuşmaya karar verdik.</p></div>
+      </div>
+    </article>
+  </div>
+</div>
+
+<!-- 26 EYLÜL -->
+<div class="day" id="g26">
+  <div class="day-label"><span class="d">26</span><span class="m">Eylül · Cumartesi</span><span class="who">Ragıp, Enes, Hamza</span></div>
+  <div class="events">
+    <div class="ev milestone">
+      <span class="tag">Kural</span>
+      <h3>Hiçbir taslak silinmez</h3>
+      <p>Her deneme adıyla (git etiketi), ekran görüntüsüyle ve kendi klasörüyle saklanıyor; istenince geri dönülebiliyor. Adlar motora göre veriliyor: expotaslak, godottaslak, unitytaslak.</p>
+    </div>
+
+    <article class="ev draft" id="godottaslak1">
+      <figure class="phone"><div class="screen"><video data-src="video/godottaslak1.mp4" poster="img/godottaslak1-yurume.jpg" muted loop playsinline preload="none" aria-label="godottaslak1 videosu"></video></div><figcaption>15 sn · kod satır satır çalışıyor</figcaption></figure>
+      <div class="body">
+        <div class="draft-head"><h3>godottaslak1</h3><span class="eng">Godot 4.7 · Ragıp</span><span class="pill p-keep">2 ile geliştirildi</span></div>
+        <p class="desc">Yüzen ada, nebula ve yıldızlı gökyüzü, üç ışık, parlama efekti. Robot kodu satır satır çalıştırıyor; toz ve kıvılcım parçacıkları, "+1 buz" yazısı, canlı sayaç.</p>
+        <div class="strip" data-shots="godottaslak1-yurume:yürüme|godottaslak1-toplama:toplama|godottaslak1-bitis:bitiş"></div>
+        <div class="learn"><b>Ne öğrendik</b><p>Kodun satır satır çalışıp robotu yürüttüğü ilk hareketli sahne oldu. godottaslak2 bunun üzerine kuruldu: ada yerine ufka uzanan Mars yüzeyi.</p></div>
+      </div>
+    </article>
+
+    <article class="ev draft" id="godottaslak2">
+      <figure class="phone"><div class="screen"><video data-src="video/godottaslak2.mp4" poster="img/godottaslak2-yurume.jpg" muted loop playsinline preload="none" aria-label="godottaslak2 videosu"></video></div><figcaption>15 sn · buzlar sayaca uçuyor</figcaption></figure>
+      <div class="body">
+        <div class="draft-head"><h3>godottaslak2</h3><span class="eng">Godot 4.7 · Ragıp</span><span class="pill p-keep">Beğenildi, 1'e benzer</span></div>
+        <p class="desc">Ufka uzanan Mars yüzeyi (kumullar, tepeler, toz sisi, altın saat), ışıklı kod platformu, arkada yaşayan koloni ve roket. Buzlu cam görünümlü arayüz, sayaca uçan buz simgesi.</p>
+        <div class="strip" data-shots="godottaslak2-yurume:yürüme|godottaslak2-toplama:toplama|godottaslak2-bitis:bitiş"></div>
+        <div class="learn"><b>Ne öğrendik</b><p>Beğenildi ama godottaslak1'e çok benziyordu. Daha cesur bir fark görmek için gerçekçi bir yön denendi.</p></div>
+      </div>
+    </article>
+
+    <article class="ev draft" id="godottaslak3">
+      <figure class="phone"><div class="screen"><video data-src="video/godottaslak3.mp4" poster="img/godottaslak3-genel.jpg" muted loop playsinline preload="none" aria-label="godottaslak3 videosu"></video></div><figcaption>15 sn · meteorlar ve buz toplama</figcaption></figure>
+      <div class="body">
+        <div class="draft-head"><h3>godottaslak3</h3><span class="eng">Godot 4.7 · Ragıp</span><span class="pill p-keep">Saklandı</span><span class="size">106 MB deneme paketi</span></div>
+        <p class="desc">Gerçekçi yön: fotoğraftan yapılmış kaya dokuları, NASA'nın Perseverance gezgini, Mars'taki gibi mavi gün batımı, Phobos ve Deimos. Arkada düşen alevli meteorlar, hologram kod ızgarası, kubbeli koloni.</p>
+        <div class="strip" data-shots="godottaslak3-genel:genel|godottaslak3-meteor:meteor|godottaslak3-toplama:toplama|godottaslak3-telefon:sanal telefonda"></div>
+        <div class="learn"><b>Ne öğrendik</b><p>Buzlar fazla parlak kaldı ve görüntü yine öncekine benzedi. İlk telefon paketi burada yapıldı: 106 MB, sanal telefonda ilk açılış yaklaşık 75 saniye, meteor dumanı telefonda beyaz noktalar gibi göründü. NASA modelinin ticari kullanım izni de belirsiz.</p></div>
+      </div>
+    </article>
+
+    <article class="ev draft" id="godottaslak4">
+      <figure class="phone"><div class="screen"><video data-src="video/godottaslak4.mp4" poster="img/godottaslak4-giris-sahnesi.jpg" muted loop playsinline preload="none" aria-label="godottaslak4 videosu"></video></div><figcaption>18 sn · girişte kamera kanyona süzülüyor</figcaption></figure>
+      <div class="body">
+        <div class="draft-head"><h3>godottaslak4</h3><span class="eng">Godot 4.7 · Ragıp</span><span class="pill p-keep">Godot'da son</span><span class="size">57 MB</span></div>
+        <p class="desc">Katman katman kayalıklarla çevrili Mars kanyonu, batan güneş, uzun gölgeler, toz hortumu. Sinema görünümü: girişte kamera süzülmesi, film şeritleri, buz toplanırken yakınlaşma. "Animasyon ve efektler" tek tuşla kapatılabiliyor.</p>
+        <div class="strip" data-shots="godottaslak4-giris-ekrani:giriş ekranı|godottaslak4-giris-sahnesi:giriş sahnesi|godottaslak4-meteor:meteor|godottaslak4-efektler-kapali:efektler kapalı|godottaslak4-telefon-toplama:telefonda"></div>
+        <div class="learn"><b>Ne öğrendik</b><p>Benzerlik sorununu aşmak için baştan farklı bir sahne kuruldu. Telefon paketi 106 MB'tan 57 MB'a küçültüldü (gereksiz parçalar çıkarıldı, dokular telefon boyutuna indirildi). Efektleri tek tuşla kapatma fikri bu taslakta doğdu. Sıradaki deneme Unity ile yapıldı.</p></div>
+      </div>
+    </article>
+
+    <div class="ev milestone">
+      <span class="tag">Karar önerisi</span>
+      <h3>Enes: Unity ile devam</h3>
+      <p>Expo taslakları Enes'in de gözünde tutmadı. Referans görseller eklendi (hedef: "premium sade, ölçülü animasyon"). Claude'un Unity'yi doğrudan yönetmesini sağlayan eklenti kuruldu.</p>
+    </div>
+
+    <article class="ev draft" id="unitytaslak1">
+      <figure class="phone"><div class="screen"><video data-src="video/unitytaslak1.mp4" poster="img/unitytaslak1-bekleme.jpg" muted loop playsinline preload="none" aria-label="unitytaslak1 videosu"></video></div><figcaption>12 sn · Çalıştır'dan kutlamaya</figcaption></figure>
+      <div class="body">
+        <div class="draft-head"><h3>unitytaslak1</h3><span class="eng">Unity 6 · Enes</span><span class="pill p-go">Seçildi</span><span class="size">29 MB</span></div>
+        <p class="desc">"Premium sade" yön. Mars'ta şafaktan hemen önce: tepelerin ardından taşan ışık, ufukta ışıklı koloni, hafif kum sisi. Oyun alanı Mars zeminine gömülü, robot oyuncak gibi tombul. Ölçülü animasyon: robot kayarak ilerliyor, buz "pop" diye toplanıyor, sonda kısa kutlama.</p>
+        <div class="strip" data-shots="unitytaslak1-bekleme:bekleme|unitytaslak1-toplama:toplama|unitytaslak1-bitti:bitiş|unitytaslak1-yildizsiz:yıldızlar kapalı"></div>
+        <div class="learn"><b>Ne öğrendik</b><p>Gerçekçilik esas, ışık ve gölge tutarlı olmalı (Enes'in kuralı). Telefon paketi şimdiye kadarki en küçüğü: 29 MB. Zayıf yanı oyun alanının küçük kalmasıydı; Expo taslağındaki büyük ve net alanla birleştirilmesi önerildi.</p></div>
+      </div>
+    </article>
+  </div>
+</div>
+
+<!-- 27 EYLÜL -->
+<div class="day" id="g27">
+  <div class="day-label"><span class="d">27</span><span class="m">Eylül · Pazar</span><span class="who">Ragıp, Enes</span></div>
+  <div class="events">
+    <div class="ev milestone">
+      <span class="tag">Karar</span>
+      <h3>Oyun motoru: Unity 6</h3>
+      <p>Ragıp ve Enes birlikte karar verdi. Hedef önce Play Store (Android), sonra Steam. Karşılaştırmada Unity'nin lehine olanlar: en küçük telefon paketi (29 MB), Claude'un Unity'yi kendi eklentisiyle doğrudan yönetebilmesi ve unitytaslak1'in "premium sade" görünümü.</p>
+    </div>
+
+    <article class="ev draft now" id="oyun">
+      <figure class="phone"><div class="screen"><video data-src="video/oyun-2026-09-27.mp4" poster="img/oyun-2026-09-27.jpg" muted loop playsinline preload="none" aria-label="oyunun 27 Eylül hâlinin videosu"></video></div><figcaption>13 sn · 6×6 oyun alanı</figcaption></figure>
+      <div class="body">
+        <div class="draft-head"><h3>oyun/ · oyunun kendisi</h3><span class="eng">Unity 6 · Ragıp</span><span class="pill p-eval">Geliştiriliyor</span></div>
+        <p class="desc">unitytaslak1'den kalıcı Unity projesi kuruldu. Oyun alanı 5×4'ten 6×6'ya çıktı, bakış açısı 40°'den 60°'ye dikleşti. Kamera, alanı başlık ile kod kartı arasındaki boşluğa kendisi sığdırıyor; alan eskisinin yaklaşık iki katı.</p>
+        <div class="strip" data-shots="unitytaslak1-bekleme:önce (taslak)|oyun-2026-09-27:sonra (oyun)"></div>
+        <div class="learn"><b>Ne öğrendik</b><p>Taslağın güzel görüntüsü korunup oyun alanı büyütülebiliyor. Taslaktaki eksik, taslak atılmadan çözüldü.</p></div>
+      </div>
+    </article>
+
+    <div class="ev milestone">
+      <span class="tag">Motor</span>
+      <h3>Python motoru C#'a taşındı</h3>
+      <p>Unity C# kullandığı için TypeScript motoru birebir C#'a çevrildi. 988 test geçiyor; 194 örneğin hepsi gerçek Python 3.12 ile aynı sonucu veriyor, Unity'nin kendi içinde de. Sırada motoru sahneye bağlamak var: ekrandaki kod gerçekten robotu yürütecek.</p>
+    </div>
+  </div>
+</div>
+
+<section id="acmak">
+  <h2>Eski bir taslağı açmak</h2>
+  <p class="intro">Hiçbiri silinmedi. Videolar ve ekran görüntüleri kalıcı kayıt; canlı açmak için o günün araçları gerekiyor.</p>
+  <div class="open">
+    <div><h3>Expo taslakları</h3><p>Sadece git etiketinde duruyorlar. Claude'a "expotaslak1'i aç" demek yeterli; ayrı bir klasöre açılıp sanal telefonda başlar (yaklaşık 500 MB yer ister, iş bitince silinir).</p></div>
+    <div><h3>Godot taslakları</h3><p><code>prototipler/arsiv/godottaslak1/</code> … <code>godottaslak3/</code> ve <code>prototipler/godot/</code> (godottaslak4). Her klasörde <code>calistir.bat</code> var; Godot 4.7 kurulu olmalı.</p></div>
+    <div><h3>Unity taslağı</h3><p><code>prototipler/unity/calistir.bat</code> (Unity 6 kurulu olmalı). Telefona kurmak için <code>paketler/marskod-unitytaslak1.apk</code>.</p></div>
+    <div><h3>Oyunun kendisi</h3><p><code>oyun/calistir.bat</code>. Oyunun her hâli git geçmişinde; önemli anlar etiketle işaretleniyor.</p></div>
+  </div>
+</section>
+</div>
+
+<dialog id="lb" aria-label="Büyük görsel">
+  <button class="close" type="button" id="lb-close">Kapat</button>
+  <img id="lb-img" alt="">
+  <p id="lb-cap"></p>
+</dialog>
+
+<script>
+(function(){
+  // Ekran görüntüsü şeritleri ve büyütme
+  var lb=document.getElementById('lb'),img=document.getElementById('lb-img'),cap=document.getElementById('lb-cap');
+  function open(src,alt,label){img.src=src;img.alt=alt;cap.textContent=label;
+    if(lb.showModal)lb.showModal();else lb.setAttribute('open','');}
+  document.querySelectorAll('.strip').forEach(function(strip){
+    var draft=strip.closest('.draft').id;
+    strip.getAttribute('data-shots').split('|').forEach(function(s){
+      var parts=s.split(':'),file=parts[0],label=parts[1];
+      var fig=document.createElement('figure');fig.className='shot';
+      var btn=document.createElement('button');btn.type='button';btn.setAttribute('aria-label',draft+', '+label+' — büyüt');
+      var im=document.createElement('img');im.src='img/'+file+'.jpg';im.alt=draft+', '+label;im.loading='lazy';
+      btn.appendChild(im);
+      var fc=document.createElement('figcaption');fc.textContent=label;
+      fig.appendChild(btn);fig.appendChild(fc);strip.appendChild(fig);
+      btn.addEventListener('click',function(){open(im.src,im.alt,draft+' · '+label);});
+    });
+  });
+  document.querySelectorAll('.phone img').forEach(function(im){
+    im.style.cursor='zoom-in';
+    im.addEventListener('click',function(){open(im.src,im.alt,im.alt);});
+  });
+  function close(){if(lb.close)lb.close();else lb.removeAttribute('open');}
+  document.getElementById('lb-close').addEventListener('click',close);
+  lb.addEventListener('click',function(e){if(e.target===lb||e.target===img)close();});
+
+  // Videolar: ekrana girince yüklenip oynar, çıkınca durur. Hareket azaltma açıksa kendiliğinden oynamaz.
+  var still=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var videos=[].slice.call(document.querySelectorAll('video[data-src]'));
+  function load(v){if(!v.src){v.src=v.getAttribute('data-src');}}
+  if(still||!('IntersectionObserver' in window)){
+    videos.forEach(function(v){v.controls=true;v.preload='metadata';load(v);});
+    return;
+  }
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      var v=e.target;
+      if(e.isIntersecting){load(v);var p=v.play();if(p&&p.catch)p.catch(function(){v.controls=true;});}
+      else{v.pause();}
+    });
+  },{threshold:0.35});
+  videos.forEach(function(v){io.observe(v);});
+})();
+</script>

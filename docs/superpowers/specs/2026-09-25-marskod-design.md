@@ -23,7 +23,7 @@ Hedef kitle:
 |---|---|
 | Programlama dili | Python (ilk sürümde tek dil) |
 | Tema | Mars kolonisi: robot kaynak toplar → depolar → koloni binalarına dağıtır. Dünya yok; her şey koloni içinde. |
-| Kod yazma | Kademeli geçiş: parça klavyesiyle başlanır, komutta ustalaştıkça o komut elle yazılır; sonunda tam klavye. |
+| Kod yazma | Kademeli geçiş: parça klavyesiyle başlanır, komutta ustalaştıkça o komut elle yazılır; sonunda tam klavye. **Ayrıntı (2026-09-28, Enes):** Acemi (sürükle-bırak düğmeler) / Orta (oyunun kendi klavyesi + öneri) / Usta (öneri yok); kademeye göre XP; oyuncu klavye tuşuyla seçebilir → `2026-09-28-kod-klavyesi-design.md`. |
 | İpucu | 3 kademe; 1. ipucu bedava, 2.–3. oyunla kazanılan jetonla. |
 | Para | İlk sürümde reklam ve gerçek para yok; sistem sonradan eklenebilecek şekilde kurulur. |
 | İlk açılış | Tek soru ("Daha önce kod yazdın mı?"); ilk bölümler zorunlu antrenmandır ve seviye sessizce ölçülür. Deneyimliler kısa bir kod sınavıyla ileriden ve klavyeyle başlayabilir. |
@@ -44,7 +44,7 @@ Uzun vadeli dünya planı:
 
 | Dünya | Oyunda | Kodda | İlk sürümde? |
 |---|---|---|---|
-| 1. İniş bölgesi | Yürü, buz/kaya topla | Komut sırası, `for` | ✅ |
+| 1. İniş bölgesi | Yürü, buz topla, kayaların etrafından dolaş (kaya engeldir) | Komut sırası, `for` | ✅ |
 | 2. Depo | Cinsine göre rafa koy, depo dolunca karar ver | `if`, değişkenler, listeler | ✅ |
 | 3. Dağıtım/lojistik | Binaların ihtiyacına göre paket hazırla, en kısa rotayı bul | Fonksiyonlar, sıralama, rota bulma | ❌ sonra |
 | Sonrası | İkinci robot, konveyörler, fırtınalar | İleri konular | ❌ sonra |

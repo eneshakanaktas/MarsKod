@@ -1,0 +1,641 @@
+<title>MarsKod Kod Klavyesi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Poppins:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --night: #141219;
+    --card: #1D1A24;
+    --raised: #2A2733;
+    --line: #37323F;
+    --ink: #E9E4EE;
+    --head: #F5F1F7;
+    --muted: #9C95A8;
+    --dim: #6E6879;
+    --accent: #E07A5F;
+    --accent-soft: rgba(224, 122, 95, .14);
+    --ice: #A9E6F5;
+    --kw: #EE9A7C; --call: #7CC6D4; --const: #B9A3E3; --num: #E6C07E;
+    --good: #7FCB8F; --mid: #E6C07E; --weak: #FF6B6B;
+    --ui: "Poppins", "Segoe UI", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--night); color: var(--ink); font-family: var(--ui);
+    font-size: 16px; line-height: 1.65; padding-inline: 20px; padding-block: 0 72px;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  h1, h2, h3 { color: var(--head); text-wrap: balance; margin: 0; line-height: 1.2; }
+  p { margin: 0; }
+  code, .mono { font-family: var(--mono); font-size: .92em; }
+  code { background: var(--raised); padding: 1px 6px; border-radius: 5px; color: var(--ink); }
+  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+  .muted { color: var(--muted); }
+  section { padding-block: 56px 0; }
+  .sec-head { display: grid; gap: 10px; max-width: 700px; margin-bottom: 28px; }
+  .sec-head h2 { font-size: clamp(24px, 3.2vw, 30px); font-weight: 600; }
+
+  header.hero { padding-block: 64px 8px; display: grid; gap: 18px; max-width: 780px; }
+  header.hero h1 { font-size: clamp(34px, 5.6vw, 54px); font-weight: 700; letter-spacing: -.01em; }
+  header.hero h1 span { color: var(--accent); }
+  header.hero .lead { font-size: 18px; max-width: 660px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--muted); }
+  .meta b { color: var(--ink); font-weight: 500; }
+
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 99px; background: var(--raised); color: var(--muted); letter-spacing: .03em; }
+  .tag.live { background: rgba(127, 203, 143, .14); color: var(--good); }
+  .tag.plan { background: var(--accent-soft); color: var(--accent); }
+  .tag.idea { background: rgba(185, 163, 227, .14); color: var(--const); }
+
+  /* Özet tablo */
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .sum { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 8px; align-content: start; }
+  .sum .top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .sum h3 { font-size: 20px; font-weight: 600; }
+  .sum .xp { font-family: var(--mono); font-size: 15px; color: var(--num); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .sum p { font-size: 15px; color: var(--muted); }
+
+  .why { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .why .item { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 8px; align-content: start; }
+  .why .item h3 { font-size: 16px; font-weight: 600; }
+  .why .item p { font-size: 15px; color: var(--muted); }
+  .why .sym { font-family: var(--mono); font-size: 22px; color: var(--accent); letter-spacing: .08em; }
+
+  /* Kademe sekmeleri */
+  .track { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 26px; }
+  .track button {
+    font: inherit; color: var(--muted); background: var(--card); border: 1px solid var(--line);
+    border-radius: 14px; padding: 14px 16px; text-align: left; cursor: pointer; display: grid; gap: 2px;
+    transition: border-color .2s, background .2s, color .2s;
+  }
+  .track button:hover { border-color: #4A4455; }
+  .track button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .track button .n { font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+  .track button .t { font-size: 18px; font-weight: 600; color: var(--ink); }
+  .track button .s { font-size: 13px; }
+  .track button[aria-selected="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
+  .track button[aria-selected="true"] .n { color: var(--accent); }
+
+  .stage { display: grid; grid-template-columns: 340px 1fr; gap: 40px; align-items: start; }
+  .stage .text { display: grid; gap: 22px; }
+  .stage .text h3 { font-size: 24px; font-weight: 600; }
+  .facts { display: grid; gap: 14px; }
+  .fact { display: grid; grid-template-columns: 118px 1fr; gap: 12px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .fact .k { font-size: 13px; font-weight: 600; color: var(--muted); padding-top: 2px; }
+  .fact .v { font-size: 15px; }
+
+  /* Telefon */
+  .phone {
+    width: 100%; max-width: 340px; background: #0E0C12; border-radius: 36px; padding: 12px;
+    border: 1px solid #2B2733; box-shadow: 0 30px 60px -30px rgba(0,0,0,.8);
+    display: grid; gap: 8px; margin-inline: auto; touch-action: none;
+  }
+  .screen { background: #19161F; border-radius: 26px; overflow: hidden; display: grid; }
+  .field { height: 96px; position: relative; background: radial-gradient(120% 90% at 50% 0%, #6B3A2C 0%, #3E2320 45%, #2A1916 100%); }
+  .field .grid {
+    position: absolute; left: 50%; top: 16px; width: 150px; height: 72px; transform: translateX(-50%) perspective(160px) rotateX(28deg);
+    background-image: linear-gradient(rgba(0,0,0,.22) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.22) 1px, transparent 1px);
+    background-size: 25px 12px; border: 1px solid rgba(0,0,0,.25); background-color: rgba(120,60,45,.35);
+  }
+  .field .bot { position: absolute; width: 14px; height: 12px; border-radius: 4px; background: #D9D3E0; left: 34%; top: 52px; box-shadow: 0 0 10px rgba(169,230,245,.4); }
+  .field .ice { position: absolute; width: 9px; height: 9px; transform: rotate(45deg); background: var(--ice); opacity: .9; top: 53px; }
+  .code {
+    background: var(--card); margin: 8px 8px 0; border-radius: 16px; border: 1px solid var(--line);
+    padding: 10px 12px 12px; min-height: 150px; display: grid; align-content: start; gap: 2px; position: relative;
+    transition: border-color .15s;
+  }
+  .code.over { border-color: var(--accent); }
+  .code .fname { display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); margin-bottom: 6px; }
+  .ln { display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; font-family: var(--mono); font-size: 13px; line-height: 1.7; white-space: pre; min-height: 22px; align-items: center; }
+  .ln .no { color: #4F4A5A; text-align: right; }
+  .ln .kind { width: 7px; height: 7px; border-radius: 50%; background: var(--c, transparent); }
+  .ln.cur { background: rgba(255,255,255,.04); border-radius: 5px; }
+  .drop { height: 2px; background: var(--accent); border-radius: 2px; margin-left: 26px; }
+  .caret { display: inline-block; width: 2px; height: 1.05em; background: var(--accent); vertical-align: -2px; margin-left: 1px; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .kw { color: var(--kw); } .call { color: var(--call); } .const { color: var(--const); } .num { color: var(--num); }
+
+  .actions { display: grid; grid-template-columns: 38px 38px 1fr 38px; gap: 6px; margin: 8px; }
+  .actions span { height: 36px; border-radius: 99px; display: grid; place-items: center; font-size: 13px; background: var(--raised); color: var(--muted); border: 1px solid #3A3544; }
+  .actions .run { background: var(--accent); color: #231512; font-weight: 600; border: 0; }
+  .actions .kbd { color: var(--ink); border-color: var(--accent); }
+
+  .kb { background: #221F2A; border-radius: 22px; padding: 10px; display: grid; gap: 7px; }
+  .kb .label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); padding-inline: 2px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    font-family: var(--mono); font-size: 12.5px; color: var(--ink); background: var(--raised); border: 1px solid #3A3544;
+    border-radius: 10px; padding: 8px 10px; cursor: grab; line-height: 1; user-select: none; touch-action: none;
+    transition: border-color .15s, background .15s;
+  }
+  .chip:hover { border-color: #5A5266; }
+  .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .chip.new { border-color: rgba(224,122,95,.55); }
+  .chip.ctl { font-family: var(--ui); font-size: 12px; color: var(--muted); background: transparent; cursor: pointer; }
+  .chip.pulse { border-color: var(--accent); background: var(--accent-soft); }
+  .ghost { position: fixed; z-index: 50; pointer-events: none; transform: translate(-50%, -60%) scale(1.06); box-shadow: 0 10px 24px rgba(0,0,0,.5); border-color: var(--accent); }
+
+  .sugg { display: flex; gap: 6px; min-height: 28px; align-items: center; }
+  .sugg span { font-family: var(--mono); font-size: 12.5px; padding: 4px 10px; border-radius: 8px; background: #2F2B39; color: var(--call); border: 1px solid transparent; transition: border-color .15s, background .15s; }
+  .sugg span.pulse { border-color: var(--accent); background: var(--accent-soft); }
+  .sugg .hint { font-size: 11px; color: var(--dim); font-family: var(--ui); background: none; padding: 0 2px; }
+  .krow { display: flex; gap: 3px; justify-content: center; }
+  .krow i {
+    font-style: normal; font-size: 11px; color: #CFC9D6; background: #34303D; border-radius: 6px;
+    height: 27px; flex: 1; min-width: 0; display: grid; place-items: center; transition: background .15s; font-family: var(--ui);
+  }
+  .krow.sym i { background: #3B3547; color: var(--ink); font-family: var(--mono); }
+  .krow.num i { background: #2E2A37; }
+  .krow i.w { flex: 1.5; } .krow i.sp { flex: 5; }
+  .krow i.pulse { background: var(--accent); color: #1B1016; }
+
+  .demo-bar { display: flex; align-items: center; gap: 12px; margin-top: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn { font: inherit; font-size: 14px; font-weight: 500; color: var(--ink); background: var(--raised); border: 1px solid #3A3544; border-radius: 99px; padding: 8px 16px; cursor: pointer; }
+  .btn:hover { border-color: #5A5266; }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .caption { font-size: 14px; color: var(--muted); text-align: center; min-height: 44px; max-width: 340px; margin: 12px auto 0; }
+  .caption b { color: var(--ink); font-weight: 500; }
+
+  /* Klavye tuşu menüsü */
+  .menu { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 8px; display: grid; gap: 4px; max-width: 360px; }
+  .menu .opt { display: grid; grid-template-columns: 20px 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 10px; font-size: 14px; }
+  .menu .opt.on { background: var(--accent-soft); }
+  .menu .opt .r { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--dim); }
+  .menu .opt.on .r { border-color: var(--accent); background: radial-gradient(circle, var(--accent) 45%, transparent 50%); }
+  .menu .opt .x { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .menu .opt .x.got { color: var(--good); }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+  .list { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 15px; }
+
+  /* XP örnekleri */
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 12px 16px; border-top: 1px solid var(--line); vertical-align: top; }
+  th { border-top: 0; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--num); white-space: nowrap; }
+  td .k { display: inline-flex; align-items: center; gap: 6px; }
+  td .k::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--muted); margin-top: 12px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend span::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+
+  /* Yolculuk */
+  .journey { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .journey .step { padding: 20px 18px; display: grid; gap: 10px; align-content: start; border-left: 1px solid var(--line); }
+  .journey .step:first-child { border-left: 0; }
+  .journey .when { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .journey .look { font-family: var(--mono); font-size: 13px; min-height: 32px; }
+  .journey .look .chip { cursor: default; display: inline-block; }
+  .journey p { font-size: 14px; color: var(--muted); }
+
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px 24px; display: grid; gap: 14px; align-content: start; }
+  .panel h3 { font-size: 18px; font-weight: 600; }
+  .panel ol, .panel ul { margin: 0; padding-left: 20px; display: grid; gap: 10px; font-size: 15px; }
+  .panel li span.muted { display: block; font-size: 14px; }
+
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--dim); }
+
+  @media (max-width: 860px) {
+    .stage, .split { grid-template-columns: 1fr; gap: 28px; }
+    .summary { grid-template-columns: 1fr; }
+    .journey { grid-template-columns: 1fr 1fr; }
+    .journey .step:nth-child(3) { border-left: 0; }
+    .journey .step:nth-child(n+3) { border-top: 1px solid var(--line); }
+    .cols { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) {
+    body { padding-inline: 16px; }
+    .track { grid-template-columns: 1fr; }
+    .journey { grid-template-columns: 1fr; }
+    .journey .step { border-left: 0; border-top: 1px solid var(--line); }
+    .journey .step:first-child { border-top: 0; }
+    .fact { grid-template-columns: 1fr; gap: 4px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .caret { animation: none; }
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">MarsKod · Kod ekranı</div>
+    <h1>Kod klavyesi: <span>acemiden ustaya</span></h1>
+    <p class="lead">Oyuncu ilk gün tek harf yazmadan kod kurar. Kendini hazır hissedince klavyeye geçer, öğrendikçe düğmeler birer birer çekilir. Her yol XP kazandırır; zor yol daha çok.</p>
+    <div class="meta">
+      <span>Kararlar: <b>Enes, 28 Eylül 2026</b></span>
+      <span>Yapacak: <b>Ragıp</b></span>
+      <span>Ayrıntılı belge: <b class="mono">docs/superpowers/specs/2026-09-28-kod-klavyesi-design.md</b></span>
+    </div>
+  </header>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Kısaca</div>
+      <h2>Üç yol, üç ödül</h2>
+      <p class="muted">Oyuncu Çalıştır'ın yanındaki klavye tuşuyla istediği yolu seçer. Seçimi sonraki bölümlerde de kalır; istediği an değiştirebilir, Acemi'ye dönmek dahil.</p>
+    </div>
+    <div class="summary">
+      <div class="sum"><div class="top"><h3>Acemi</h3><span class="xp">+30 XP</span></div><p>Hazır komut düğmelerini sürükleyip koda bırakır. Harf yazmaz.</p></div>
+      <div class="sum"><div class="top"><h3>Orta</h3><span class="xp">+50 XP</span></div><p>Oyunun kendi klavyesiyle yazar. Yazarken öneri satırı yardım eder.</p></div>
+      <div class="sum"><div class="top"><h3>Usta</h3><span class="xp">+100 XP</span></div><p>Aynı klavye, öneri yok. Her şeyi kendisi yazar.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Neden gerekli</div>
+      <h2>Telefonda kod yazmak, oyunun en büyük riski</h2>
+      <p class="muted">Bu yüzden telefonun kendi klavyesi hiç açılmayacak. Klavyeyi oyun çizecek: Türkçe Q düzeni, rakamlar ve Python işaretleri aynı ekranda.</p>
+    </div>
+    <div class="why">
+      <div class="item"><div class="sym">( ) :</div><h3>İşaretler ana ekranda</h3><p>Telefon klavyesinde ikinci, üçüncü sayfada duran parantez ve iki nokta bizim klavyede hep görünür.</p></div>
+      <div class="item"><div class="sym">⇥ ⇤</div><h3>Girinti tek dokunuş</h3><p><code>:</code> ile biten satırdan sonra yeni satır kendiliğinden içeriden başlar. ⇥ ve ⇤ tuşları girintiyi bir kademe değiştirir.</p></div>
+      <div class="item"><div class="sym">Move “</div><h3>Sürpriz yok</h3><p>Satır başını büyük harfe çevirme, kıvrık tırnak, otomatik düzeltme yok. Her telefonda aynı klavye.</p></div>
+    </div>
+  </section>
+
+  <section id="kademeler">
+    <div class="sec-head">
+      <div class="eyebrow">Üç kademe</div>
+      <h2>Oyuncu ne görür?</h2>
+      <p class="muted">Bir kademeye tıkla. Acemi'de düğmeleri tutup kod kartına sürükleyebilirsin; Orta'da kısa bir yazma gösterisi oynar. Satırların sağındaki renkli nokta, o satırın nasıl yazıldığını gösterir.</p>
+    </div>
+
+    <div class="track" role="tablist" aria-label="Klavye kademeleri">
+      <button role="tab" id="tab-acemi" aria-controls="st-acemi" aria-selected="true"><span class="n">1. kademe · 30 XP</span><span class="t">Acemi</span><span class="s">Sürükle-bırak düğmeler</span></button>
+      <button role="tab" id="tab-orta" aria-controls="st-orta" aria-selected="false"><span class="n">2. kademe · 50 XP</span><span class="t">Orta</span><span class="s">Klavye + öneri satırı</span></button>
+      <button role="tab" id="tab-usta" aria-controls="st-usta" aria-selected="false"><span class="n">3. kademe · 100 XP</span><span class="t">Usta</span><span class="s">Klavye, öneri yok</span></button>
+    </div>
+
+    <!-- ACEMİ -->
+    <div class="stage" id="st-acemi" role="tabpanel" aria-labelledby="tab-acemi">
+      <div>
+        <div class="phone" aria-label="Acemi kademesinde telefon ekranı">
+          <div class="screen">
+            <div class="field"><div class="grid"></div><div class="bot"></div><div class="ice" style="left:48%"></div><div class="ice" style="left:56%"></div><div class="ice" style="left:64%"></div></div>
+            <div class="code" id="a-code"></div>
+            <div class="actions"><span>💡</span><span class="kbd">⌨</span><span class="run">▶ Çalıştır</span><span>↻</span></div>
+          </div>
+          <div class="kb">
+            <div class="label">Tut ve koda sürükle</div>
+            <div class="chips" id="a-chips">
+              <span class="chip" data-add="move(North)">move(North)</span>
+              <span class="chip" data-add="move(East)">move(East)</span>
+              <span class="chip" data-add="move(South)">move(South)</span>
+              <span class="chip" data-add="move(West)">move(West)</span>
+              <span class="chip" data-add="collect()">collect()</span>
+              <span class="chip new" data-add="for i in range(3):">for i in range(3):</span>
+            </div>
+            <div class="chips"><button class="chip ctl" id="a-reset">Baştan</button></div>
+          </div>
+        </div>
+        <p class="caption">Düğmeyi tut, kod kartında istediğin satırın arasına bırak. <code>:</code> ile biten satırın altına bırakınca içeriden başlar. Koddaki bir satırı kartın dışına sürüklersen silinir.</p>
+      </div>
+      <div class="text">
+        <h3>Acemi: sürükle, bırak, kodu kur</h3>
+        <p>Oyuncu harf yazmaz. Bölümde açılmış her komut tam bir satır olarak düğmededir. Oyuncu bütün dikkatini <b>sıraya ve mantığa</b> verir: robot önce nereye gitmeli, buzu ne zaman toplamalı? Kartta her zaman gerçek Python görünür.</p>
+        <div class="facts">
+          <div class="fact"><div class="k">Düğmeler</div><div class="v">Tam satır: <code>move(East)</code>, <code>collect()</code>, <code>for i in range(3):</code>. Hangi düğmelerin olacağını bölüm dosyası söyler. Yeni açılan komut turuncu kenarlı.</div></div>
+          <div class="fact"><div class="k">Girinti</div><div class="v">Bırakma çizgisi girintiyi de gösterir; parmağı sağa-sola kaydırınca kademe kademe değişir.</div></div>
+          <div class="fact"><div class="k">Sayılar</div><div class="v">Koddaki sayıya dokununca − / + çıkar: <code>range(3)</code> → <code>range(5)</code>.</div></div>
+          <div class="fact"><div class="k">Düzenleme</div><div class="v">Satır tutulup başka yere taşınır; kartın dışına bırakılırsa silinir.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORTA -->
+    <div class="stage" id="st-orta" role="tabpanel" aria-labelledby="tab-orta" hidden>
+      <div>
+        <div class="phone" aria-label="Orta kademede telefon ekranı">
+          <div class="screen">
+            <div class="field"><div class="grid"></div><div class="bot" style="left:30%"></div><div class="ice" style="left:44%"></div><div class="ice" style="left:52%"></div><div class="ice" style="left:60%"></div></div>
+            <div class="code" id="o-code"></div>
+            <div class="actions"><span>💡</span><span class="kbd">⌨</span><span class="run">▶ Çalıştır</span><span>↻</span></div>
+          </div>
+          <div class="kb" id="o-kb"></div>
+        </div>
+        <div class="demo-bar"><button class="btn" id="o-play">▶ Yeniden oynat</button></div>
+        <p class="caption" id="o-cap"></p>
+      </div>
+      <div class="text">
+        <h3>Orta: kendin yaz, öneri yardım etsin</h3>
+        <p>Oyuncu kodu oyunun klavyesiyle yazar. Birkaç harf yazınca öneri satırında tamamı çıkar; dokununca tamamlanır. Böylece komut adlarını yavaş yavaş kendisi hatırlamaya başlar, yazım hatası da azalır.</p>
+        <div class="facts">
+          <div class="fact"><div class="k">Öneri satırı</div><div class="v">Yalnızca açılmış olanlar: oyun komutları (<code>move</code>, <code>collect</code>), yönler, öğrenilmiş Python kelimeleri (<code>for</code>, <code>range</code>) ve oyuncunun kendi yazdığı isimler.</div></div>
+          <div class="fact"><div class="k">İşaretler</div><div class="v">Hep görünen: <code>(</code> <code>)</code> <code>:</code> <code>"</code> <code>=</code> <code>,</code> ⇥ ⇤. <code>…</code> tuşu ikinci sırayı açar: <code>[ ] ' . == != &lt; &gt; &lt;= &gt;= + - * / // % #</code></div></div>
+          <div class="fact"><div class="k">Harfler</div><div class="v">Türkçe Q. ⇧ bir sonraki harfi büyütür, iki kez basınca kilitler.</div></div>
+          <div class="fact"><div class="k">XP</div><div class="v">Bir satırda bile öneriye dokunulduysa çözüm Orta sayılır: +50 XP.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USTA -->
+    <div class="stage" id="st-usta" role="tabpanel" aria-labelledby="tab-usta" hidden>
+      <div>
+        <div class="phone" aria-label="Usta kademesinde telefon ekranı">
+          <div class="screen">
+            <div class="field"><div class="grid"></div><div class="bot" style="left:58%;top:44px"></div><div class="ice" style="left:40%;top:62px"></div><div class="ice" style="left:66%;top:36px"></div></div>
+            <div class="code" id="u-code"></div>
+            <div class="actions"><span>💡</span><span class="kbd">⌨</span><span class="run">▶ Çalıştır</span><span>↻</span></div>
+          </div>
+          <div class="kb" id="u-kb"></div>
+        </div>
+        <p class="caption">Aynı klavye, öneri satırı yok. İşaretler ve otomatik girinti yerinde.</p>
+      </div>
+      <div class="text">
+        <h3>Usta: her şeyi kendin yaz</h3>
+        <p>Orta ile tek fark öneri satırının olmaması. Oyuncu <code>if</code>, <code>def</code>, değişkenler dahil her şeyi harf harf yazar. Tasarım belgesindeki başarı ölçütü tam da budur: oyunun sonunda kısa bir <code>for</code> + <code>if</code> programını kendi başına yazabilmek.</p>
+        <div class="facts">
+          <div class="fact"><div class="k">XP</div><div class="v">Bütün satırlar harf harf yazıldıysa: +100 XP.</div></div>
+          <div class="fact"><div class="k">Sonrası</div><div class="v">Bilgisayarda gerçek Python yazabilecek alışkanlık. Hata mesajlarında İngilizce metin öne geçer, Türkçesi dokununca açılır.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="split">
+      <div class="sec-head" style="margin:0">
+        <div class="eyebrow">Klavye tuşu</div>
+        <h2>Seçim oyuncuda</h2>
+        <p class="muted">Çalıştır'ın yanındaki ⌨ tuşuna dokununca bu kutu açılır. Hangi kademenin XP'sinin o bölümde alındığı da görünür. Seçim sonraki bölümlerde de kalır.</p>
+      </div>
+      <div class="menu" aria-label="Klavye tuşu seçim kutusu örneği">
+        <div class="opt"><span class="r"></span><span>Hazır düğmeler <span class="muted">· Acemi</span></span><span class="x got">✓ 30 XP alındı</span></div>
+        <div class="opt on"><span class="r"></span><span>Klavye + öneri <span class="muted">· Orta</span></span><span class="x">+50 XP</span></div>
+        <div class="opt"><span class="r"></span><span>Klavye <span class="muted">· Usta</span></span><span class="x">+100 XP</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">XP kuralları</div>
+      <h2>Her bölümde her yol bir kez ödül verir</h2>
+      <p class="muted">Oyun her satırın nasıl yazıldığını aklında tutar. Çözüm, en çok yardım alınan satıra göre sayılır: tek bir satır bile düğmeyle eklendiyse çözüm Acemi'dir. Aynı bölümü üç yolla da çözen toplam 180 XP alır; sonrasında o bölüm XP vermez.</p>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Örnek</th><th>Satırlar</th><th>Sayılan yol</th><th>XP</th></tr></thead>
+        <tbody>
+          <tr><td>Bölüm 3'ü ilk kez düğmelerle çözdü</td><td>3 satır düğme</td><td><span class="k" style="--c:var(--weak)">Acemi</span></td><td class="n">+30</td></tr>
+          <tr><td>Aynı bölümü klavyeyle, öneri kullanarak çözdü</td><td>1 satır öneri, 2 satır elle</td><td><span class="k" style="--c:var(--mid)">Orta</span></td><td class="n">+50</td></tr>
+          <tr><td>Aynı bölümü yine Orta ile çözdü</td><td>—</td><td><span class="k" style="--c:var(--mid)">Orta</span></td><td class="n">0 <span class="muted">(zaten alındı)</span></td></tr>
+          <tr><td>Kodu düğmelerle kurdu, sonra Usta'ya geçip bir satır yazdı</td><td>2 satır düğme, 1 satır elle</td><td><span class="k" style="--c:var(--weak)">Acemi</span></td><td class="n">0 <span class="muted">(Acemi zaten alındı)</span></td></tr>
+          <tr><td>Hepsini silip harf harf yazdı</td><td>3 satır elle</td><td><span class="k" style="--c:var(--good)">Usta</span></td><td class="n">+100</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="legend"><span style="--c:var(--weak)">Düğmeyle eklendi</span><span style="--c:var(--mid)">Öneriyle yazıldı</span><span style="--c:var(--good)">Harf harf yazıldı</span></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Sonraki parça · seviye sistemi</div>
+      <h2>Klavye oyuncuyla birlikte büyür</h2>
+      <p class="muted">Oyun, oyuncuyu sınava sokmadan her komut için gizli bir beceri puanı tutar (hata, süre, ipucu, deneme sayısı). Klavyeyi bu puan dönüştürür, <b>komut komut</b>. Değişim anı görünür bir seviye atlamasıyla kutlanır. Örnek: <code>move</code>.</p>
+    </div>
+    <div class="journey">
+      <div class="step"><div class="when">Bölüm 1</div><div class="look"><span class="chip">move(East)</span></div><p>Komut yeni açıldı, düğmeyle ekleniyor.</p></div>
+      <div class="step"><div class="when">Ustalaşınca</div><div class="look"><span class="call">move</span>(<span class="const">East</span>)</div><p>“Seviye 6! Artık <code>move</code>'u kendin yazıyorsun.” Düğme kalkar; <code>for</code> henüz zayıfsa onun düğmesi kalır.</p></div>
+      <div class="step"><div class="when">Düğmeyi isterse</div><div class="look"><span class="chip">move(East)</span> <span class="muted">· az XP</span></div><p>Oyuncu kalkan düğmeyi kendisi geri açabilir, ama o çözüm daha az XP verir.</p></div>
+      <div class="step"><div class="when">Zorlanırsa</div><div class="look"><span class="chip">move(East)</span> <span class="muted">· tam XP</span></div><p>Puanı düşerse düğme kendiliğinden geri gelir, XP yine tam. Hiçbir yol XP'siz kalmaz.</p></div>
+    </div>
+    <p class="muted" style="margin-top:14px;font-size:14px">XP miktarları oyuncunun seviyesine göre değişecek; 30 / 50 / 100 başlangıç değerleri. Jeton ayrı kalır: jeton harcanır (ipucu), XP birikir.</p>
+  </section>
+
+  <section>
+    <div class="cols">
+      <div class="panel">
+        <span><span class="tag plan">Yapım sırası</span></span>
+        <h3>Ne zaman?</h3>
+        <ol>
+          <li><b>Parça 1 — Klavye (şimdi, Ragıp):</b> düğme paleti, Orta/Usta klavye, işaretler, öneri satırı, klavye tuşu, satır takibi, bölüm başına XP.
+            <span class="muted">Yapım planındaki Aşama 5 öne alındı (Enes, 28 Eylül).</span></li>
+          <li><b>Aşama 3'ün kalanı:</b> adım adım modu, bölüm seçme ekranı, ilk insan testi.</li>
+          <li><b>Parça 2 — Seviye sistemi:</b> seviye çubuğu, gizli puan, klavyenin kendiliğinden dönüşmesi, kutlama.</li>
+        </ol>
+      </div>
+      <div class="panel">
+        <span><span class="tag idea">Açık sorular</span></span>
+        <h3>Karar bekleyenler</h3>
+        <ul>
+          <li>Bölümün hazır başlangıç kodu ne sayılsın? Şimdilik "düğme": Usta XP'si için oyuncu o satırları silip kendisi yazmalı.</li>
+          <li>Sürükle-bırakta girinti telefonda zor gelirse satırın yanına ⇥/⇤ düğmeleri.</li>
+          <li>Türkçe Q'da 12 tuşluk satır dar telefonda küçük kalırsa ne yapılacak.</li>
+          <li>Parça 2: seviyeye göre XP formülü, geri açılan düğmenin XP'si, seviye eşikleri.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>MarsKod (geçici isim) · Kod klavyesi · Güncelleme: 28 Eylül 2026 (Enes'in kararları) · Belge: <span class="mono">docs/superpowers/specs/2026-09-28-kod-klavyesi-design.md</span></footer>
+</div>
+
+<script>
+(function () {
+  var KW = /^(for|in|if|elif|else|while|def|return|and|or|not)$/;
+  var CONST = /^(True|False|None|North|East|South|West)$/;
+  var KIND = { d: "var(--weak)", o: "var(--mid)", e: "var(--good)" };
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+  function paint(line) {
+    return line.replace(/([A-Za-z_]\w*)(\s*\()?|(\d+)|([^A-Za-z_\d]+)/g, function (m, w, call, n, other) {
+      if (w) {
+        if (KW.test(w)) return '<span class="kw">' + w + '</span>' + (call ? esc(call) : "");
+        if (CONST.test(w)) return '<span class="const">' + w + '</span>' + (call ? esc(call) : "");
+        if (call) return '<span class="call">' + w + '</span>' + esc(call);
+        return esc(w);
+      }
+      if (n) return '<span class="num">' + n + '</span>';
+      return esc(other);
+    });
+  }
+  // lines: [{t, k}] ; opts: cur, drop (index), min
+  function render(el, lines, opts) {
+    opts = opts || {};
+    var html = '<div class="fname"><span>kod.py</span><span>Python</span></div>';
+    var shown = Math.max(lines.length, opts.min || 5);
+    for (var i = 0; i <= shown; i++) {
+      if (opts.drop === i) html += '<div class="drop"></div>';
+      if (i === shown) break;
+      var l = lines[i];
+      var cur = opts.cur === i;
+      html += '<div class="ln' + (cur ? ' cur' : '') + '" data-i="' + i + '"><span class="no">' + (i + 1) + '</span><span>' +
+        (l ? paint(l.t) : "") + (cur ? '<span class="caret"></span>' : "") + '</span><span class="kind" style="--c:' + (l ? KIND[l.k] : "transparent") + '"></span></div>';
+    }
+    el.innerHTML = html;
+  }
+
+  function keyboard(el, withSugg) {
+    var rows = [
+      { c: "sym", k: ["(", ")", ":", "\"", "=", ",", "⇥", "⇤", "…"] },
+      { c: "num", k: "1234567890".split("") },
+      { c: "", k: "qwertyuıopğü".split("") },
+      { c: "", k: "asdfghjklşi".split("") },
+      { c: "", k: ["⇧"].concat("zxcvbnmöç".split("")).concat(["⌫"]) },
+      { c: "", k: ["boşluk", "↵"] }
+    ];
+    var html = withSugg ? '<div class="sugg" id="o-sugg"><span class="hint">Öneriler burada çıkar</span></div>' : "";
+    rows.forEach(function (r) {
+      html += '<div class="krow ' + r.c + '">' + r.k.map(function (k) {
+        var cls = (k === "⇧" || k === "⌫" || k === "↵") ? ' class="w"' : (k === "boşluk" ? ' class="sp"' : "");
+        return '<i' + cls + ' data-k="' + esc(k) + '">' + esc(k) + '</i>';
+      }).join("") + '</div>';
+    });
+    el.innerHTML = html;
+  }
+
+  /* Sekmeler */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.track [role="tab"]'));
+  function show(id, focus) {
+    tabs.forEach(function (t) {
+      var on = t.id === id;
+      t.setAttribute("aria-selected", on ? "true" : "false");
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+      if (on && focus) t.focus();
+    });
+    if (id === "tab-orta") playOrta();
+    try { localStorage.setItem("klavye-sekme", id); } catch (e) {}
+  }
+  tabs.forEach(function (t, i) {
+    t.addEventListener("click", function () { show(t.id); });
+    t.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        var j = (i + (e.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length;
+        show(tabs[j].id, true);
+      }
+    });
+  });
+
+  /* Acemi: sürükle-bırak */
+  var aCode = document.getElementById("a-code");
+  var start = [{ t: "move(East)", k: "d" }, { t: "collect()", k: "d" }];
+  var lines = start.slice();
+  function indentFor(idx) {
+    if (idx === 0) return 0;
+    var prev = lines[idx - 1].t;
+    var ind = (prev.match(/^ */)[0].length) / 4;
+    return /:\s*$/.test(prev) ? Math.min(ind + 1, 2) : ind;
+  }
+  function aDraw(drop) { render(aCode, lines, { drop: drop }); }
+  function dropIndex(y) {
+    var rows = aCode.querySelectorAll(".ln");
+    var n = lines.length;
+    for (var i = 0; i < n; i++) {
+      var r = rows[i].getBoundingClientRect();
+      if (y < r.top + r.height / 2) return i;
+    }
+    return n;
+  }
+  function inside(el, x, y) { var r = el.getBoundingClientRect(); return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom; }
+
+  var drag = null;
+  function beginDrag(e, text, fromIndex) {
+    e.preventDefault();
+    var g = document.createElement("span");
+    g.className = "chip ghost";
+    g.textContent = text.trim();
+    document.body.appendChild(g);
+    drag = { text: text.trim(), from: fromIndex, ghost: g, drop: null };
+    if (fromIndex != null) { drag.kind = lines[fromIndex].k; lines.splice(fromIndex, 1); aDraw(); }
+    moveDrag(e);
+  }
+  function moveDrag(e) {
+    if (!drag) return;
+    drag.ghost.style.left = e.clientX + "px";
+    drag.ghost.style.top = e.clientY + "px";
+    if (inside(aCode, e.clientX, e.clientY)) {
+      aCode.classList.add("over");
+      var d = dropIndex(e.clientY);
+      if (d !== drag.drop) { drag.drop = d; aDraw(d); aCode.classList.add("over"); }
+    } else if (drag.drop !== null) {
+      drag.drop = null; aDraw(); aCode.classList.remove("over");
+    }
+  }
+  function endDrag(e) {
+    if (!drag) return;
+    aCode.classList.remove("over");
+    if (drag.drop !== null && lines.length < 8) {
+      var ind = indentFor(drag.drop);
+      lines.splice(drag.drop, 0, { t: "    ".repeat(ind) + drag.text, k: drag.kind || "d" });
+    }
+    drag.ghost.remove();
+    drag = null;
+    aDraw();
+  }
+  document.querySelectorAll("#a-chips .chip").forEach(function (b) {
+    b.addEventListener("pointerdown", function (e) { beginDrag(e, b.getAttribute("data-add"), null); });
+  });
+  aCode.addEventListener("pointerdown", function (e) {
+    var row = e.target.closest(".ln");
+    if (!row) return;
+    var i = +row.getAttribute("data-i");
+    if (i < lines.length) beginDrag(e, lines[i].t, i);
+  });
+  window.addEventListener("pointermove", moveDrag);
+  window.addEventListener("pointerup", endDrag);
+  window.addEventListener("pointercancel", endDrag);
+  document.getElementById("a-reset").addEventListener("click", function () { lines = start.slice(); aDraw(); });
+  aDraw();
+
+  /* Orta: yazma gösterisi */
+  keyboard(document.getElementById("o-kb"), true);
+  keyboard(document.getElementById("u-kb"), false);
+  var oCode = document.getElementById("o-code"), oCap = document.getElementById("o-cap");
+  var F = { t: "for i in range(3):", k: "e" };
+  function L(t, k) { return { t: t, k: k }; }
+  var steps = [
+    { l: [F, L("    ", "e")], cur: 1, cap: "<b>for</b> satırından sonra yeni satır kendiliğinden içeriden başlıyor." },
+    { l: [F, L("    m", "e")], cur: 1, key: "m", cap: "Oyuncu <b>move</b>'u kendisi yazmaya başlıyor…" },
+    { l: [F, L("    mo", "e")], cur: 1, key: "o", sug: ["move("], cap: "İki harf yetti: öneri satırında <b>move(</b> çıktı." },
+    { l: [F, L("    move(", "o")], cur: 1, sugOn: "move(", sug: ["move("], cap: "Öneriye dokundu. Satırın noktası sarıya döndü: bu satır <b>Orta</b> sayılır." },
+    { l: [F, L("    move(E", "o")], cur: 1, key: "e", shift: true, sug: ["East"], cap: "⇧ ile büyük <b>E</b>; öneride <b>East</b>." },
+    { l: [F, L("    move(East", "o")], cur: 1, sugOn: "East", sug: ["East"], cap: "Öneriyle tamamladı." },
+    { l: [F, L("    move(East)", "o")], cur: 1, key: ")", cap: "Kapanış parantezi işaret sırasından, tek dokunuş." },
+    { l: [F, L("    move(East)", "o"), L("    ", "e")], cur: 2, key: "↵", cap: "↵: yeni satır yine içeriden." },
+    { l: [F, L("    move(East)", "o"), L("    collect()", "e")], cur: 2, key: "c", cap: "<b>collect()</b> satırını harf harf yazdı: yeşil." },
+    { l: [F, L("    move(East)", "o"), L("    collect()", "e")], cap: "Bir satır öneriyle yazıldığı için çözüm <b>Orta</b>: +50 XP. Usta için hepsini öneri olmadan yazmalı." }
+  ];
+  var timer = null;
+  function clearPulse() { document.querySelectorAll("#st-orta .pulse").forEach(function (e) { e.classList.remove("pulse"); }); }
+  function oShow(s) {
+    clearPulse();
+    render(oCode, s.l, { cur: s.cur });
+    var sugg = document.getElementById("o-sugg");
+    sugg.innerHTML = s.sug ? s.sug.map(function (x) { return '<span' + (s.sugOn === x ? ' class="pulse"' : '') + '>' + esc(x) + '</span>'; }).join("")
+                           : '<span class="hint">Öneriler burada çıkar</span>';
+    if (s.key) { var k = document.querySelector('#o-kb [data-k="' + s.key + '"]'); if (k) k.classList.add("pulse"); }
+    if (s.shift) { var sh = document.querySelector('#o-kb [data-k="⇧"]'); if (sh) sh.classList.add("pulse"); }
+    oCap.innerHTML = s.cap;
+  }
+  function playOrta() {
+    if (timer) clearTimeout(timer);
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) { oShow(steps[steps.length - 1]); return; }
+    var i = 0;
+    (function next() { oShow(steps[i]); i++; if (i < steps.length) timer = setTimeout(next, i === 1 ? 1500 : 1400); })();
+  }
+  document.getElementById("o-play").addEventListener("click", playOrta);
+  oShow(steps[steps.length - 1]);
+
+  /* Usta */
+  render(document.getElementById("u-code"), [
+    L("def topla_satir():", "e"),
+    L("    for i in range(5):", "e"),
+    L("        if can_collect():", "e"),
+    L("            collect()", "e"),
+    L("        move(East)", "e")
+  ], { cur: 4 });
+
+  try {
+    var saved = localStorage.getItem("klavye-sekme");
+    if (saved && document.getElementById(saved)) show(saved);
+  } catch (e) {}
+})();
+</script>

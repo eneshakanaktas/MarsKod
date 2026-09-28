@@ -126,8 +126,9 @@ Shader "MarsKod/Ground"
                 float3 a = regolith(p, far, inArea);
 
                 // oyun alani: ayni zemin, biraz daha duzgun; kare sinirlari ince ve soluk
-                float gx = abs(frac(p.x) - 0.5);
-                float gz = abs(frac(p.z + 0.5) - 0.5);
+                // sinirlar alanin kenarindan (-_Area) birer birim arayla; tek/cift kare sayisinda da dogru
+                float gx = abs(frac(p.x + _Area.x + 0.5) - 0.5);
+                float gz = abs(frac(p.z + _Area.y + 0.5) - 0.5);
                 float w = 0.010 + fwidth(p.x) * 0.8;
                 float gridLine = 1.0 - smoothstep(w * 0.5, w * 1.6, min(gx, gz));
                 float inGrid = 1.0 - smoothstep(0.0, w * 2.0, outside);

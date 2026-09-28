@@ -92,6 +92,7 @@ Aşama 1'deki TypeScript motoru (`src/engine`) C#'a birebir taşınır. Sıra: k
 - [ ] İnce dilimin ekranları yeni görünüme geçirilir.
 
 ## Aşama 5 — Kademeli kod klavyesi
+> **Öne alındı (2026-09-28, Enes):** Aşama 3'ün kalanından önce yapılıyor. Tasarım: `docs/superpowers/specs/2026-09-28-kod-klavyesi-design.md` (Parça 1: klavye + satır takibi + XP; Parça 2: seviye sistemi sonra). Yapan: Ragıp.
 - [ ] Parça klavyesi (komutlar dokunarak eklenir), özel işaret şeridi (`:`, `()`, girinti), otomatik tamamlama.
 - [ ] Oyuncu profiline göre komutun "parça" mı "elle yazılır" mı olacağına karar veren kural.
 

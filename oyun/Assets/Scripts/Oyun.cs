@@ -116,6 +116,7 @@ public class Oyun : MonoBehaviour
 
         for (int i = 0; i < a.Length - 1; i++)
             if (a[i] == "-shots") { shotsMode = true; LoadLevel(levelIndex); StartCoroutine(Shots(a[i + 1])); }
+        if (System.Array.IndexOf(a, "-klavyedeneme") >= 0) KlavyeDeneme.Open(); // gecici (kod klavyesi Gorev 0)
     }
 
     void SetupCamera()

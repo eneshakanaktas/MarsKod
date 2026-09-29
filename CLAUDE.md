@@ -36,6 +36,15 @@ Yapım planı: `docs/superpowers/plans/2026-09-25-marskod-yapim-plani.md`.
 - Yeni skill kurmadan önce SkillSpector ile tara; aynı işi yapan iki skill kurma.
 - Fikir/karar değerlendirmede yeri geldiğinde: önce karşı çık, varsayımları sorgula, büyük resmi gör, görülmeyen fırsatları bul, tarafsız dış göz gibi bak. Gerçekçi ol.
 
+## Kod kalitesi (kritik — Ragıp, herkes için)
+Yazılan her kod SOLID ve temiz olmalı; yeni kod yazarken ve var olanı değiştirirken buna uy:
+- Her sınıf/fonksiyon tek bir iş yapar; iş büyüyünce parçalara bölünür.
+- Tekrar yok: aynı mantık iki yerde yazılmaz, ortak yere alınır.
+- Yeni özellik eklemek var olan kodu bozmadan yapılabilmeli (genişletilebilir yapı).
+- Parçalar birbirine gevşek bağlı: dünya kuralları arayüze, arayüz dünya kurallarının içine bağımlı olmaz.
+- Okunurluk kısalıktan önce gelir: anlamlı adlar, sıkıştırılmış "zekice" kod yok.
+- Ölçülü ol: SOLID uğruna gereksiz katman/soyutlama ekleme; küçük iş için sade çözüm yeterli.
+
 ## Model ve efor (kritik — Enes, herkes için)
 Her işin başında önerilen "model · efor" ikilisini tek satırla ve gerekçesiyle söyle; iş türü değişince yeniden öner (gerekirse yeni sohbet).
 - **Sonnet 5.5 · medium** (zorlaşırsa high): planı yazılmış, net tarifli kod işleri (plan görevleri, saf C# + testler). Opus'un yarı fiyatı → kota iki kat dayanır.

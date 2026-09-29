@@ -1,6 +1,6 @@
 # MarsKod — Kod Klavyesi ve XP (Tasarım Belgesi)
 
-> Tarih: 2026-09-28 · Kararları veren: Enes (Claude ile beyin fırtınası) · Yapacak: Ragıp
+> Tarih: 2026-09-28 · Kararları veren: Enes + Ragıp (Claude ile beyin fırtınası) · Yapacak: Ragıp
 > Durum: **Enes onayladı (2026-09-28).** Sıradaki: bu belgeden Parça 1 için yapım planı (writing-plans), sonra yapım.
 > Ana tasarım belgesi: `2026-09-25-marskod-design.md` (§2 "Kod yazma" bu belgeye yönlendiriyor; §5.3 "Kod ekranı" ve §6 "Oyuncu analizi" yerine bu belge geçerli).
 > Anlatım sayfası (bu belgeyle aynı kararlar): https://claude.ai/artifact/5ohWDmnNGsjqudA5tuYJ4F · yerel kopya `docs/tasarim/klavye/index.html`
@@ -24,7 +24,7 @@ Oyuncu kodunu üç yoldan biriyle yazar:
 - **Parça 1 — Klavye (şimdi, Ragıp):** bu belgenin §2–§6'sı.
 - **Parça 2 — Seviye sistemi (sonra):** §7. Parça 1 yapılırken §7'ye ters düşen bir şey yapılmamalı.
 
-## 2. Kararlar (2026-09-28, Enes)
+## 2. Kararlar (2026-09-28, Enes + Ragıp)
 
 | # | Konu | Karar |
 |---|---|---|

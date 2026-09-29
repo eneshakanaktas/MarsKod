@@ -81,7 +81,7 @@ Oyuncu kodunu üç yoldan biriyle yazar:
 
 **Düzen (yukarıdan aşağıya):**
 1. **Öneri satırı** (yalnızca Orta): en çok 3 öneri.
-2. **İşaret sırası:** `(` `)` `:` `"` `=` `,` ⇥ ⇤ `…` — `…` ikinci işaret sırasını açar/kapatır: `[` `]` `'` `.` `==` `!=` `<` `>` `<=` `>=` `+` `-` `*` `/` `//` `%` `#`. İkinci sıra açıkken rakam sırasının yerine geçer (klavye yüksekliği değişmez).
+2. **İşaret sırası:** `(` `)` `:` `"` `=` `,` ⇥ ⇤ `…` — `…` ikinci işaret sayfasını açar/kapatır: `[` `]` `'` `.` `==` `!=` `<` `>` `<=` `>=` `+` `-` `*` `/` `//` `%` `#` `_`. **(09-29, yapımda değişti)** 17 işaret tek sıraya sığmadığı için sayfa rakam sırasının değil, **üç harf sırasının** yerine geçer (telefonlardaki "?123" gibi); rakamlar görünür kalır, klavye yüksekliği değişmez. `_` değişken adları için eklendi.
 3. **Rakamlar:** `1 2 3 4 5 6 7 8 9 0`
 4. **Türkçe Q:** `q w e r t y u ı o p ğ ü` / `a s d f g h j k l ş i` / `⇧ z x c v b n m ö ç ⌫` / `boşluk ↵`
 
@@ -96,7 +96,7 @@ Oyuncu kodunu üç yoldan biriyle yazar:
 **Öneri satırı (Orta):**
 - İmlecin solundaki yarım kelimeyle (en az 1 harf) başlayan açık kelimeler gösterilir: oyun komutları (`move`, `collect`...), yönler (`North`...), öğrenilmiş Python kelimeleri (`for`, `in`, `range`...), koddaki isimler (değişkenler).
 - "Öğrenilmiş Python kelimeleri" bölüm dosyasındaki yeni alandan gelir: `"python_kelimeleri": ["for", "in", "range"]`. Bir bölümde açılan kelime sonraki bölümlerde de açık kalır (önceki bölümlerin listeleri birleşir).
-- Öneriye dokununca kelime tamamlanır; fonksiyonsa `(` de eklenir (`move(`).
+- Öneriye dokununca kelime tamamlanır; fonksiyonsa `()` eklenir, imleç parantezin içine gelir (`move(|)`). **(09-29, Enes)** Elle yazılan `(` kendiliğinden kapanmaz (Usta parantezi kapatmayı öğrensin). İmlecin sağında `)` varken `)` yazmak ikinci parantez eklemez, üstünden geçer; boş `()` içinde ⌫ ikisini birden siler.
 
 ## 6. Satır takibi ve XP (Parça 1'de yapılacak kısım)
 

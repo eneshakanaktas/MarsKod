@@ -145,12 +145,14 @@ namespace MarsKod.Dunya
 
         // ---- klavye ----
 
-        /// <summary>Klavyeden yazı (tek harf ya da işaret; satır sonu içermez). Seçim varsa onun yerine yazılır.</summary>
+        /// <summary>Klavyeden yazı (tek harf ya da işaret; satır sonu içermez). Seçim varsa onun yerine yazılır.
+        /// İmlecin hemen sağında ")" varken ")" yazmak yeni parantez eklemez, üstünden geçer (öneri "()" koyduğu için).</summary>
         public void Type(string s)
         {
             if (string.IsNullOrEmpty(s)) return;
             if (s.IndexOf('\n') >= 0) throw new ArgumentException("Satır sonu için Enter() kullanılır.");
             s = s.Replace("\t", Indent);
+            if (s == ")" && !HasSelection && CharAfterCaret() == ')') { SetCaret(Caret + 1); return; }
             DeleteSelection();
             Replace(Caret, Caret, s);
         }
@@ -169,12 +171,13 @@ namespace MarsKod.Dunya
         }
 
         /// <summary>Geri silme. Satır başından girintinin içindeyken bir kademe (4'ün katına) geri gider;
-        /// satırın en başında üstteki satırla birleştirir.</summary>
+        /// satırın en başında üstteki satırla birleştirir; boş "()" içindeyse iki parantezi birden siler.</summary>
         public void Backspace()
         {
             if (HasSelection) { DeleteSelection(); return; }
             if (Caret == 0) return;
             var (l, c) = Position(Caret);
+            if (c > 0 && lines[l][c - 1] == '(' && CharAfterCaret() == ')') { Replace(Caret - 1, Caret + 1, ""); return; }
             if (c > 0 && LeadingSpaces(lines[l]) >= c)
             {
                 int target = (c - 1) / Indent.Length * Indent.Length;
@@ -189,8 +192,8 @@ namespace MarsKod.Dunya
         /// <summary>⇤: girintiyi bir kademe azaltır (4'ün bir alt katına).</summary>
         public void DedentLines() => ShiftLines(false);
 
-        /// <summary>Öneriye dokunuldu: imlecin solundaki yarım kelime öneriyle tamamlanır; fonksiyonsa "(" de eklenir.
-        /// Satırın türü en çok Oneri olur.</summary>
+        /// <summary>Öneriye dokunuldu: imlecin solundaki yarım kelime öneriyle tamamlanır; fonksiyonsa "()" eklenir ve
+        /// imleç parantezin içine konur (parantez zaten varsa eklenmez). Satırın türü en çok Oneri olur.</summary>
         public void ApplySuggestion(string word, bool isFunction)
         {
             if (HasSelection) SetCaret(Caret);
@@ -201,8 +204,8 @@ namespace MarsKod.Dunya
             int e = c;
             while (e < line.Length && IsWordChar(line[e])) e++; // kelimenin sağında kalan parça da değişir
             bool parenThere = e < line.Length && line[e] == '(';
-            Replace(Index(l, s), Index(l, e), word + (isFunction && !parenThere ? "(" : ""));
-            if (isFunction && parenThere) SetCaret(Caret + 1);
+            Replace(Index(l, s), Index(l, e), word + (isFunction && !parenThere ? "()" : ""));
+            if (isFunction) SetCaret(parenThere ? Caret + 1 : Caret - 1); // parantezin içine
             kinds[l] = Min(kinds[l], LineKind.Oneri);
         }
 
@@ -308,6 +311,12 @@ namespace MarsKod.Dunya
         }
 
         // ---- iç işler ----
+
+        char CharAfterCaret()
+        {
+            var (l, c) = Position(Caret);
+            return c < lines[l].Length ? lines[l][c] : '\0';
+        }
 
         void DeleteSelection()
         {

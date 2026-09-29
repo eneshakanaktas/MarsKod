@@ -19,6 +19,7 @@ Yapım planı: `docs/superpowers/plans/2026-09-25-marskod-yapim-plani.md`.
 - Komut satırından paket: `Unity.exe -batchmode -quit -projectPath oyun -executeMethod OyunBuild.BuildWindows -logFile build.log` (Unity: `C:/Program Files/Unity/Hub/Editor/<sürüm>/Editor/`). Android: `OyunBuild.BuildAndroid` → `oyun/Build/Android/marskod.apk`. Derleme hatası `build.log` içinde `error CS` diye aranır.
 - Görsel kontrol: `oyun/Build/Win/MarsKod.exe -screen-width 450 -screen-height 975 -screen-fullscreen 0 -shots <klasör>` ekran görüntülerini alıp kapanır.
 - Unity içinde: Unity Hub → Add → `oyun/` → `Assets/Scenes/Oyun` → ▶. Menü: *MarsKod*.
+- Bilgisayar klavyesi denetimi (Windows paketi üretildikten sonra): `powershell -ExecutionPolicy Bypass -File scripts/klavye-denetimi.ps1` → `KLAVYE DENETIMI: TAMAM`. Unity klavye harflerini Windows tuş mesajlarından okur; oyunun girdi sistemine sahte tuş vermek (`InputSystem.QueueTextEvent`) arayüze ulaşmaz, bu yüzden betik mesaj gönderir.
 - Motor testleri: `motor-test` klasöründe `dotnet test` (Unity gerekmez, birkaç saniye). Unity'nin kendi ortamında: menü *MarsKod > Motor denetimi* ya da `-executeMethod MotorDenetimi.Calistir` (log'da `MOTOR DENETIMI:` satırı).
 - Yeni Python örneği eklenirse `py -3.12 scripts/python_referans.py` beklenen sonucu üretir. Python sürümü değişirse `py -3.12 scripts/python_isimler.py` isim listelerini (`PythonNames.cs`) yeniler.
 - Eski TypeScript testleri (referans): `arsiv/expo` klasöründe `npm install` + `npm test`.

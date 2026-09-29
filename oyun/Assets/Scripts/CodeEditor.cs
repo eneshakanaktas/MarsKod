@@ -5,75 +5,85 @@ using MarsKod.Dunya;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-// Kod yazma alani: renkli kod (Label) + ustunde ayni yazi tipinde gorunmez bir yazi kutusu (TextField).
-// Oyuncu yazi kutusuna yazar (telefonda normal klavye); imlec ve secim yazi kutusundan, renkler alttaki Label'dan gorunur.
-// Kolaylik: ":" ile biten satirdan sonra Enter 4 bosluk iceriden baslar; girintideki bosluk silinince girinti bir kademe geri gider;
-// Tab 4 bosluk ekler.
+// Kod yazma alani: kendi metin alanimiz. Yazi kutusu (TextField) yok, bu yuzden telefon klavyesi hic acilmaz.
+// Kod, imlec, secim ve satir turleri CodeBuffer'da; burasi yalnizca gosterir, dokunma ve klavyeyi CodeBuffer islemlerine cevirir.
+// Yazi tipi es genislikli: dokunulan yer = (satir, sutun).
+// Telefonda: dokun -> imlec; basili tut + surukle -> secim; hemen surukle -> kaydir.
+// Bilgisayarda: fareyle surukle -> secim, tekerlek -> kaydir; fiziksel klavye yazar (harf, geri silme, Enter, Tab, oklar).
+// Uzun satir saga-sola, cok satirli kod yukari-asagi kaydirilir; alan en cok MaxHeight kadar buyur.
 public class CodeEditor : VisualElement
 {
+    // Oyuncu kodu degistirdi (yeni kodun tamami)
     public event Action<string> Changed;
 
     const float FontSize = 37f, NumSize = 30f, Gutter = 68f;
-    // Satirlar arasi ek bosluk: satirlar parmakla secilebilecek kadar ferah olsun (onceki sabit satir yuksekligi 66'ydi)
+    // Satirlar arasi ek bosluk: satirlar parmakla secilebilecek kadar ferah olsun
     const float Spacing = 34f;
-    
+    const long LongPressMs = 350;
+    const float DragSlop = 18f;
+
+    enum Drag { None, Pending, Scroll, Select }
+
     readonly Color ink, numColor, accent, errorRed;
     readonly Font mono;
-    readonly VisualElement rowsLayer, textLayer;
+    readonly CodeBuffer buffer = new CodeBuffer();
+    readonly VisualElement rowsLayer, textClip, textLayer, selLayer, caret;
     readonly Label colored, probe;
-    readonly TextField field;
-    readonly VisualElement caret;
-    TextElement fieldText;
-    int caretSeen = -1;
-    float blinkStart;
     readonly List<(VisualElement row, VisualElement bar, Label num)> rows = new List<(VisualElement, VisualElement, Label)>();
-    string text = "";
     int activeLine = -1;
     bool activeError;
-    float pitch = FontSize * 1.32f + Spacing, lineHeight = FontSize * 1.32f;
+    float pitch = FontSize * 1.32f + Spacing, lineHeight = FontSize * 1.32f, charW = FontSize * 0.6f;
+    float scrollX, scrollY, maxHeight = float.MaxValue;
+    bool editing, readOnly, pitchMeasured;
+    int caretSeen = -1;
+    float blinkStart;
+    // dokunma / fare
+    Drag drag;
+    int dragPointer = -1;
+    Vector2 downPos, lastPos;
+    IVisualElementScheduledItem longPress;
 
     public CodeEditor(Font mono, Color ink, Color numColor, Color accent, Color errorRed)
     {
         this.mono = mono; this.ink = ink; this.numColor = numColor; this.accent = accent; this.errorRed = errorRed;
-        style.paddingTop = Spacing * 0.5f; style.paddingBottom = Spacing * 0.5f;
+        focusable = true; // bilgisayar klavyesi icin (yazi kutusu degil)
         style.overflow = Overflow.Hidden;
 
-        // En altta: satir vurgulari ve satir numaralari (konumlari olculen satir araligina gore)
+        // En altta: satir vurgulari ve satir numaralari (yalnizca yukari-asagi kayar)
         rowsLayer = new VisualElement { pickingMode = PickingMode.Ignore };
         rowsLayer.style.position = Position.Absolute;
         rowsLayer.style.left = 0; rowsLayer.style.right = 0; rowsLayer.style.top = 0; rowsLayer.style.bottom = 0;
         Add(rowsLayer);
 
-        textLayer = new VisualElement();
-        textLayer.style.marginLeft = Gutter;
-        Add(textLayer);
+        // Yazi: numaralarin sagindaki pencere; icindeki katman iki yone kayar
+        textClip = new VisualElement { pickingMode = PickingMode.Ignore };
+        textClip.style.position = Position.Absolute;
+        textClip.style.left = Gutter; textClip.style.right = 0; textClip.style.top = 0; textClip.style.bottom = 0;
+        textClip.style.overflow = Overflow.Hidden;
+        Add(textClip);
+
+        textLayer = new VisualElement { pickingMode = PickingMode.Ignore };
+        textLayer.style.position = Position.Absolute;
+        textLayer.style.left = 0; textLayer.style.top = Spacing * 0.5f;
+        textClip.Add(textLayer);
+
+        selLayer = new VisualElement { pickingMode = PickingMode.Ignore };
+        selLayer.style.position = Position.Absolute;
+        selLayer.style.left = 0; selLayer.style.top = 0;
+        textLayer.Add(selLayer);
 
         colored = new Label { pickingMode = PickingMode.Ignore, enableRichText = true };
         TextStyle(colored, ink);
         textLayer.Add(colored);
 
-        // Tek satirin yuksekligini olcmek icin gorunmez ornek
-        probe = new Label("0") { pickingMode = PickingMode.Ignore };
+        // Tek satirin yuksekligini ve harf genisligini olcmek icin gorunmez ornek (10 harf)
+        probe = new Label("0000000000") { pickingMode = PickingMode.Ignore };
         TextStyle(probe, Color.clear);
         probe.style.position = Position.Absolute;
         probe.style.visibility = Visibility.Hidden;
         textLayer.Add(probe);
 
-        field = new TextField { multiline = true };
-        field.style.position = Position.Absolute;
-        field.style.left = 0; field.style.right = 0; field.style.top = 0; field.style.bottom = 0;
-        field.textEdition.hideMobileInput = true;   // telefonda klavyenin ustunde ayri kutu acilmasin, burada yazilsin
-        field.textEdition.autoCorrection = false;
-        // Varsayilan klavye: Unity Android'de ASCIICapable'i "cumle basi buyuk harf" ile aciyor (move -> Move); Default acmiyor
-        field.textEdition.keyboardType = TouchScreenKeyboardType.Default;
-        // Dokununca kodun tamami secilmesin (telefonda ilk harf butun kodu silerdi)
-        field.textSelection.selectAllOnFocus = false;
-        field.textSelection.selectAllOnMouseUp = false;
-        // imlec ve secim renkleri tema dosyasinda (Resources/UI/MarsTheme.tss)
-        field.textSelection.doubleClickSelectsWord = true;
-        textLayer.Add(field);
-
-        // Kendi imlecimiz: Unity'ninki telefonda cok ince; kalin, turuncu, yanip sonen bir cizgi
+        // Imlec: kalin, turuncu, yanip sonen bir cizgi
         caret = new VisualElement { pickingMode = PickingMode.Ignore };
         caret.style.position = Position.Absolute;
         caret.style.width = 4;
@@ -82,66 +92,107 @@ public class CodeEditor : VisualElement
         caret.style.display = DisplayStyle.None;
         textLayer.Add(caret);
         schedule.Execute(UpdateCaret).Every(33);
-        // Yazi kutusunun kendi cercevesi/boslugu olmasin; yazisi gorunmez ama alttaki renkli yaziyla birebir ust uste gelsin
-        field.Query<VisualElement>().ForEach(e =>
+
+        RegisterCallback<PointerDownEvent>(OnPointerDown);
+        RegisterCallback<PointerMoveEvent>(OnPointerMove);
+        RegisterCallback<PointerUpEvent>(OnPointerUp);
+        RegisterCallback<PointerCancelEvent>(e => EndDrag(e.pointerId));
+        RegisterCallback<PointerCaptureOutEvent>(_ => EndDrag(dragPointer));
+        RegisterCallback<WheelEvent>(e =>
         {
-            Zero(e);
-            e.style.backgroundColor = Color.clear;
-            e.style.borderTopWidth = 0; e.style.borderBottomWidth = 0; e.style.borderLeftWidth = 0; e.style.borderRightWidth = 0;
-            if (e is TextElement t && !(e is Label)) TextStyle(t, Color.clear);
-            else if (e is Label l) l.style.display = DisplayStyle.None;
+            float step = pitch * 0.5f;
+            ScrollBy(Mathf.Clamp(e.delta.x * step, -pitch * 3, pitch * 3), Mathf.Clamp(e.delta.y * step, -pitch * 3, pitch * 3));
+            e.StopPropagation();
         });
-        field.style.minWidth = 0; field.style.minHeight = 0;
+        RegisterCallback<KeyDownEvent>(OnKeyDown, TrickleDown.TrickleDown);
+        // Tab ve oklar odagi baska yere tasimasin
+        RegisterCallback<NavigationMoveEvent>(e => e.StopImmediatePropagation(), TrickleDown.TrickleDown);
 
-        field.RegisterValueChangedCallback(OnValueChanged);
-        // Tab: odak baska yere gecmesin, 4 bosluk eklensin
-        field.RegisterCallback<KeyDownEvent>(e =>
-        {
-            if (e.keyCode != KeyCode.Tab && e.character != '\t') return;
-            if (e.keyCode == KeyCode.Tab && !field.isReadOnly) Insert(CodeTyping.Indent);
-            e.StopImmediatePropagation();
-        }, TrickleDown.TrickleDown);
-        field.RegisterCallback<NavigationMoveEvent>(e =>
-        {
-            if (e.direction == NavigationMoveEvent.Direction.Next || e.direction == NavigationMoveEvent.Direction.Previous)
-                e.StopImmediatePropagation();
-        }, TrickleDown.TrickleDown);
-
-        colored.RegisterCallback<GeometryChangedEvent>(_ => Layout());
+        colored.RegisterCallback<GeometryChangedEvent>(_ => { MeasurePitch(); Layout(); });
         probe.RegisterCallback<GeometryChangedEvent>(_ => Layout());
-        SetText("");
-    }
-
-    public string Text => text;
-
-    // Oyuncu su an yaziyor mu (yazi kutusu odakta)
-    public bool Editing => field.focusController != null && field.focusController.focusedElement is VisualElement f && (f == field || field.Contains(f));
-
-    public bool ReadOnly
-    {
-        get => field.isReadOnly;
-        set { field.isReadOnly = value; if (value) Blur(); }
-    }
-
-    public void Blur() => field.Blur();
-
-    // Yaziya odaklanir; from..to arasi secili olur (ikisi esitse yalnizca imlec).
-    public void Focus(int from, int to)
-    {
-        field.Focus();
-        from = Mathf.Clamp(from, 0, text.Length); to = Mathf.Clamp(to, 0, text.Length);
-        field.textSelection.SelectRange(to, from);
-    }
-
-    // Kodu disaridan degistirir (bolum degisti vb.); Changed olayi tetiklenmez.
-    public void SetText(string source)
-    {
-        text = (source ?? "").Replace("\r", "").Replace("\t", CodeTyping.Indent).TrimEnd('\n');
-        field.SetValueWithoutNotify(text);
+        RegisterCallback<GeometryChangedEvent>(_ => Layout());
         Repaint();
     }
 
-    // Calisan satiri isaretler (0'dan baslar, -1 = hicbiri). error: satir kirmizi yanar.
+    public string Text => buffer.Text;
+
+    // Satir turlerinin kayit metni (satir basina bir harf; CodeBuffer.SaveKinds)
+    public string Kinds => buffer.SaveKinds();
+
+    // Kod tamponu (XP, oneriler vb. okumak icin). Degistirmek icin Edit kullanilir.
+    public CodeBuffer Buffer => buffer;
+
+    // Oyuncu su an yaziyor mu (koda dokundu, henuz disari dokunmadi)
+    public bool Editing => editing && !readOnly;
+
+    public bool ReadOnly
+    {
+        get => readOnly;
+        set { readOnly = value; if (value) StopEditing(); }
+    }
+
+    // Kod alaninin en cok buyuyebilecegi yukseklik (fazlasi kaydirilir)
+    public float MaxHeight
+    {
+        get => maxHeight;
+        set
+        {
+            if (Mathf.Abs(value - maxHeight) <= 0.5f) return;
+            maxHeight = value;
+            Layout();
+            if (Editing) EnsureCaretVisible(); // klavye acilip alan kuculunce imlec gorunur kalsin
+        }
+    }
+
+    // Yazmaya baslar; from..to arasi secili olur (ikisi esitse yalnizca imlec).
+    public void StartEditing(int from, int to)
+    {
+        if (readOnly) return;
+        editing = true;
+        Focus();
+        buffer.Select(from, to);
+        Repaint();
+        EnsureCaretVisible();
+    }
+
+    // Yazma biter: imlec ve secim gizlenir.
+    public void StopEditing()
+    {
+        editing = false;
+        buffer.SetCaret(buffer.Caret);
+        Blur();
+        Repaint();
+    }
+
+    // Bolumun baslangic kodunu yukler (butun satirlar Baslangic). Changed tetiklenmez.
+    public void LoadStart(string code)
+    {
+        buffer.LoadStart(code);
+        scrollX = scrollY = 0;
+        Repaint();
+    }
+
+    // Kaydedilmis kodu turleriyle yukler (tur yoksa Dugme sayilir). Changed tetiklenmez.
+    public void Load(string code, string kinds)
+    {
+        buffer.Load(code, kinds);
+        scrollX = scrollY = 0;
+        Repaint();
+    }
+
+    // Kodu bir CodeBuffer islemiyle degistirir (klavye, palet, bilgisayar klavyesi hepsi bunu cagirir).
+    public void Edit(Action<CodeBuffer> op)
+    {
+        if (readOnly) return;
+        if (editing) Focus(); // ekrandaki tusa basmak odagi almasin (bilgisayar klavyesi de yazmaya devam etsin)
+        string before = buffer.Text;
+        op(buffer);
+        Repaint();
+        EnsureCaretVisible();
+        if (buffer.Text != before) Changed?.Invoke(buffer.Text);
+    }
+
+    // Calisan satiri isaretler (0'dan baslar, -1 = hicbiri). error: satir kirmizi yanar. Satir gorunmuyorsa oraya kayar.
     public void SetActiveLine(int idx, bool error = false)
     {
         activeLine = idx;
@@ -155,63 +206,210 @@ public class CodeEditor : VisualElement
             rows[i].bar.style.opacity = a ? 1f : 0f;
             rows[i].num.style.color = a ? color : numColor;
         }
+        if (idx >= 0 && idx < rows.Count) EnsureLineVisible(idx);
     }
 
-    // ---- Yazma ----
+    // ---- Dokunma / fare ----
 
-    void OnValueChanged(ChangeEvent<string> e)
+    void OnPointerDown(PointerDownEvent e)
     {
-        // Telefonda yazi kutusu once yaziyi, sonra imleci gunceller: imlecin yeni yerini klavyenin kendisinden oku
-        var keyboard = field.textEdition.touchScreenKeyboard;
-        int caret = keyboard != null && keyboard.active && keyboard.canGetSelection ? keyboard.selection.start : field.textSelection.cursorIndex;
-        string raw = e.newValue ?? "";
-        string fixedText = CodeTyping.Apply(text, raw, ref caret);
-        text = fixedText;
-        if (fixedText != raw) Show(caret);
+        bool mouse = e.pointerType == UnityEngine.UIElements.PointerType.mouse;
+        if (mouse && e.button != 0) return;
+        if (!readOnly) { editing = true; Focus(); }
+        dragPointer = e.pointerId;
+        downPos = lastPos = e.position;
+        this.CapturePointer(e.pointerId);
+        if (mouse)
+        {
+            // fare: tiklanan yere imlec, surukleyince secim (Shift ile secimi uzatir)
+            drag = Drag.Select;
+            if (!readOnly)
+            {
+                int i = Hit(e.position);
+                if (e.shiftKey) buffer.Select(buffer.Anchor, i); else buffer.SetCaret(i);
+                Repaint();
+            }
+        }
+        else
+        {
+            // parmak: kisa dokunus imlec, basili tutmak secim, hemen kaydirmak kaydirma
+            drag = Drag.Pending;
+            longPress?.Pause();
+            longPress = schedule.Execute(StartTouchSelect).StartingIn(LongPressMs);
+        }
+        e.StopPropagation();
+    }
+
+    void StartTouchSelect()
+    {
+        if (drag != Drag.Pending || readOnly) return;
+        drag = Drag.Select;
+        buffer.SetCaret(Hit(downPos));
+        blinkStart = Time.unscaledTime;
         Repaint();
-        Changed?.Invoke(text);
     }
 
-
-    // Duzeltilmis kodu yazi kutusuna koyar, imleci yerlestirir. Telefon klavyesi kendi kopyasini tutar: once ona yeni yazi
-    // verilmeli; yoksa imlec eski (kisa) yazinin disinda kalir, hata verir ve klavye duzeltmeyi hemen geri ezer.
-    void Show(int caret)
+    void OnPointerMove(PointerMoveEvent e)
     {
-        var kb = field.textEdition.touchScreenKeyboard;
-        if (kb != null && kb.active) kb.text = text;
-        field.SetValueWithoutNotify(text);
-        caret = Mathf.Clamp(caret, 0, text.Length);
-        field.textSelection.SelectRange(caret, caret);
+        if (e.pointerId != dragPointer || drag == Drag.None) return;
+        Vector2 p = e.position;
+        if (drag == Drag.Pending && (p - downPos).magnitude > DragSlop)
+        {
+            drag = Drag.Scroll;
+            longPress?.Pause();
+        }
+        if (drag == Drag.Scroll) ScrollBy(lastPos.x - p.x, lastPos.y - p.y);
+        else if (drag == Drag.Select && !readOnly)
+        {
+            buffer.Select(buffer.Anchor, Hit(p));
+            Repaint();
+            EnsureCaretVisible();
+        }
+        lastPos = p;
     }
 
-    void Insert(string s)
+    void OnPointerUp(PointerUpEvent e)
     {
-        int a = Mathf.Min(field.textSelection.cursorIndex, field.textSelection.selectIndex), b = Mathf.Max(field.textSelection.cursorIndex, field.textSelection.selectIndex);
-        a = Mathf.Clamp(a, 0, text.Length); b = Mathf.Clamp(b, a, text.Length);
-        text = text.Substring(0, a) + s + text.Substring(b);
-        Show(a + s.Length);
+        if (e.pointerId != dragPointer) return;
+        if (drag == Drag.Pending && !readOnly)
+        {
+            buffer.SetCaret(Hit(e.position));
+            Repaint();
+        }
+        EndDrag(e.pointerId);
+    }
+
+    void EndDrag(int pointerId)
+    {
+        longPress?.Pause();
+        drag = Drag.None;
+        if (pointerId >= 0 && this.HasPointerCapture(pointerId)) this.ReleasePointer(pointerId);
+        dragPointer = -1;
+    }
+
+    // Ekrandaki nokta -> koddaki yer
+    int Hit(Vector2 world)
+    {
+        var p = textLayer.WorldToLocal(world);
+        int line = Mathf.Clamp(Mathf.FloorToInt((p.y + (pitch - lineHeight) * 0.5f) / pitch), 0, buffer.LineCount - 1);
+        int col = Mathf.Max(0, Mathf.RoundToInt(p.x / charW));
+        return buffer.Index(line, col);
+    }
+
+    // ---- Bilgisayar klavyesi ----
+
+    void OnKeyDown(KeyDownEvent e)
+    {
+        if (!Editing) return;
+        bool shift = e.shiftKey;
+        bool ctrl = (e.ctrlKey || e.commandKey) && !e.altKey; // AltGr (Ctrl+Alt) ile yazilan { [ @ gibi isaretler yazi sayilir
+        bool handled = true;
+        switch (e.keyCode)
+        {
+            case KeyCode.Backspace: Edit(b => b.Backspace()); break;
+            case KeyCode.Delete: Edit(DeleteForward); break;
+            case KeyCode.Return:
+            case KeyCode.KeypadEnter: Edit(b => b.Enter()); break;
+            case KeyCode.Tab:
+                Edit(b =>
+                {
+                    if (shift) b.DedentLines();
+                    else if (b.HasSelection) b.IndentLines();
+                    else b.Type(CodeBuffer.Indent);
+                });
+                break;
+            case KeyCode.LeftArrow: Move(b => b.MoveHorizontal(-1, shift)); break;
+            case KeyCode.RightArrow: Move(b => b.MoveHorizontal(1, shift)); break;
+            case KeyCode.UpArrow: Move(b => b.MoveVertical(-1, shift)); break;
+            case KeyCode.DownArrow: Move(b => b.MoveVertical(1, shift)); break;
+            case KeyCode.Home: Move(b => b.MoveToLineEdge(false, shift)); break;
+            case KeyCode.End: Move(b => b.MoveToLineEdge(true, shift)); break;
+            case KeyCode.A when ctrl: Move(b => b.Select(0, b.Text.Length)); break;
+            default: handled = false; break;
+        }
+        // Harfler ve isaretler (satir sonu, Tab gibi kontrol karakterleri yukarida tus olarak islenir)
+        if (!handled && !ctrl && e.character >= ' ' && e.character != (char)127)
+        {
+            char ch = e.character;
+            Edit(b => b.Type(ch.ToString()));
+            handled = true;
+        }
+        if (handled) e.StopImmediatePropagation();
+    }
+
+    static void DeleteForward(CodeBuffer b)
+    {
+        if (!b.HasSelection)
+        {
+            if (b.Caret >= b.Text.Length) return;
+            b.Select(b.Caret + 1, b.Caret);
+        }
+        b.Backspace(); // secim varken yalnizca secimi siler
+    }
+
+    void Move(Action<CodeBuffer> op)
+    {
+        op(buffer);
         Repaint();
-        Changed?.Invoke(text);
+        EnsureCaretVisible();
+    }
+
+    // ---- Kaydirma ----
+
+    float ViewWidth => float.IsNaN(layout.width) ? 0f : Mathf.Max(0f, layout.width - Gutter);
+    float ContentHeight => (buffer.LineCount - 1) * pitch + lineHeight + Spacing;
+    float ViewHeight => Mathf.Min(ContentHeight, maxHeight);
+
+    void ScrollBy(float dx, float dy)
+    {
+        scrollX += dx;
+        scrollY += dy;
+        ApplyScroll();
+    }
+
+    void ApplyScroll()
+    {
+        int longest = 0;
+        for (int i = 0; i < buffer.LineCount; i++) longest = Mathf.Max(longest, buffer.Line(i).Length);
+        float maxX = ViewWidth > 0f ? Mathf.Max(0f, (longest + 2) * charW - ViewWidth) : 0f;
+        float maxY = Mathf.Max(0f, ContentHeight - ViewHeight);
+        scrollX = Mathf.Clamp(scrollX, 0f, maxX);
+        scrollY = Mathf.Clamp(scrollY, 0f, maxY);
+        rowsLayer.style.translate = new Translate(0, -scrollY);
+        textLayer.style.translate = new Translate(-scrollX, -scrollY);
+    }
+
+    // Imlec pencerenin icinde kalsin (kenardan 2 harf pay)
+    void EnsureCaretVisible()
+    {
+        var (l, c) = buffer.Position(buffer.Caret);
+        float w = ViewWidth;
+        if (w > 0f)
+        {
+            float x = c * charW, m = Mathf.Min(charW * 2f, w * 0.3f);
+            if (x < scrollX + m) scrollX = x - m;
+            else if (x > scrollX + w - m) scrollX = x - w + m;
+        }
+        EnsureLineVisible(l);
+    }
+
+    void EnsureLineVisible(int line)
+    {
+        float top = line * pitch, bottom = top + pitch, h = ViewHeight;
+        if (top < scrollY) scrollY = top;
+        else if (bottom > scrollY + h) scrollY = bottom - h;
+        ApplyScroll();
     }
 
     // ---- Gorunum ----
 
-    // Imleci yazi kutusunun imlec yerine tasir; yazarken 0.5 sn'de bir yanip soner, secim varken gizlenir.
+    // Imlec yazarken 0.5 sn'de bir yanip soner; secim varken ya da yazmiyorken gizli.
     void UpdateCaret()
     {
-        var sel = field.textSelection;
-        bool show = Editing && !field.isReadOnly && sel.cursorIndex == sel.selectIndex;
+        bool show = Editing && !buffer.HasSelection;
         if (show)
         {
-            if (fieldText == null) fieldText = field.Query<TextElement>().Where(t => !(t is Label)).First();
-            int idx = Mathf.Clamp(sel.cursorIndex, 0, text.Length);
-            if (idx != caretSeen) { caretSeen = idx; blinkStart = Time.unscaledTime; }
-            int line = 0;
-            for (int i = 0; i < idx; i++) if (text[i] == '\n') line++;
-            float x = fieldText != null ? textLayer.WorldToLocal(fieldText.LocalToWorld(sel.cursorPosition)).x : 0f;
-            caret.style.left = Mathf.Max(0f, x - 2f);
-            caret.style.top = line * pitch - 2f;
-            caret.style.height = lineHeight + 4f;
+            if (buffer.Caret != caretSeen) { caretSeen = buffer.Caret; blinkStart = Time.unscaledTime; }
             show = (Time.unscaledTime - blinkStart) % 1f < 0.55f;
         }
         else caretSeen = -1;
@@ -220,18 +418,19 @@ public class CodeEditor : VisualElement
 
     void Repaint()
     {
-        var lines = text.Split('\n');
+        int n = buffer.LineCount;
         var sb = new StringBuilder();
-        for (int i = 0; i < lines.Length; i++)
+        for (int i = 0; i < n; i++)
         {
             if (i > 0) sb.Append('\n');
-            // bos satir da yer kaplasin (yazi kutusundaki satirla ayni yukseklikte)
-            sb.Append(lines[i].Length == 0 ? " " : CodeColors.Line(lines[i]));
+            // bos satir da yer kaplasin
+            string line = buffer.Line(i);
+            sb.Append(line.Length == 0 ? " " : CodeColors.Line(line));
         }
         colored.text = sb.ToString();
 
-        while (rows.Count < lines.Length) AddRow();
-        while (rows.Count > lines.Length)
+        while (rows.Count < n) AddRow();
+        while (rows.Count > n)
         {
             rows[rows.Count - 1].row.RemoveFromHierarchy();
             rows[rows.Count - 1].num.RemoveFromHierarchy();
@@ -274,16 +473,31 @@ public class CodeEditor : VisualElement
         rows.Add((row, bar, num));
     }
 
-    // Satir vurgularini ve numaralari, yazinin gercek satir araligina gore yerlestirir.
-    void Layout()
+    // Satir araligi (satir yuksekligi + paragraf boslugu) yazinin gercek yuksekliginden olculur. Yalnizca yazi yerlestikten
+    // sonra (colored'un GeometryChanged'i) cagrilir; o an gosterilen satir sayisi colored.text'ten sayilir.
+    void MeasurePitch()
     {
         float lh = probe.layout.height, h = colored.layout.height;
+        int n = 1;
+        foreach (char ch in colored.text) if (ch == '\n') n++;
+        if (n > 1 && !float.IsNaN(lh) && lh > 1f && !float.IsNaN(h) && h > lh)
+        {
+            pitch = (h - lh) / (n - 1);
+            pitchMeasured = true;
+        }
+    }
+
+    // Olculeri yazinin gercek satir araligindan alir; satirlari, imleci, secimi yerlestirir; yuksekligi ve kaydirmayi ayarlar.
+    void Layout()
+    {
+        float lh = probe.layout.height, pw = probe.layout.width;
         if (!float.IsNaN(lh) && lh > 1f)
         {
             lineHeight = lh;
-            int n = rows.Count;
-            pitch = n > 1 && !float.IsNaN(h) && h > lh ? (h - lh) / (n - 1) : lh + Spacing;
+            if (!pitchMeasured) pitch = lh + Spacing;
         }
+        if (!float.IsNaN(pw) && pw > 1f) charW = pw / 10f;
+
         float top0 = Spacing * 0.5f;
         for (int i = 0; i < rows.Count; i++)
         {
@@ -293,7 +507,34 @@ public class CodeEditor : VisualElement
             rows[i].num.style.top = y;
             rows[i].num.style.height = lineHeight;
         }
-        style.minHeight = pitch + Spacing;
+        style.height = ViewHeight;
+
+        // imlec
+        var (cl, cc) = buffer.Position(buffer.Caret);
+        caret.style.left = Mathf.Max(0f, cc * charW - 2f);
+        caret.style.top = cl * pitch - 2f;
+        caret.style.height = lineHeight + 4f;
+
+        // secim: satir satir turuncu seritler
+        selLayer.Clear();
+        if (Editing && buffer.HasSelection)
+        {
+            var (la, ca) = buffer.Position(buffer.SelectionStart);
+            var (lb, cb) = buffer.Position(buffer.SelectionEnd);
+            for (int li = la; li <= lb; li++)
+            {
+                int from = li == la ? ca : 0, to = li == lb ? cb : buffer.Line(li).Length + 1;
+                var r = new VisualElement { pickingMode = PickingMode.Ignore };
+                r.style.position = Position.Absolute;
+                r.style.left = from * charW; r.style.width = Mathf.Max(0, to - from) * charW;
+                r.style.top = li * pitch - (pitch - lineHeight) * 0.25f;
+                r.style.height = lineHeight + (pitch - lineHeight) * 0.5f;
+                r.style.backgroundColor = new Color(accent.r, accent.g, accent.b, 0.35f);
+                Radius(r, 6);
+                selLayer.Add(r);
+            }
+        }
+        ApplyScroll();
     }
 
     void TextStyle(TextElement t, Color c)

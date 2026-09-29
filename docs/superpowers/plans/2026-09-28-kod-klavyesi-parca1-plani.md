@@ -61,22 +61,29 @@ Yeni `CodeBuffer` (Dunya): kod metni + imleç + seçim + satır türleri tek yer
 
 ---
 
-## Görev 5 — Kod alanı: kendi metin alanımız (Scripts)
+## Görev 5 — Kod alanı: kendi metin alanımız (Scripts) ✅ (2026-09-29, Enes — telefonda dokunma denemesi Görev 6'yla birlikte)
 
 `CodeEditor.cs` yeniden: Görev 0'da seçilen yol; metin `CodeBuffer`'da.
-- [ ] Dokunma → imleç; basılı tut + sürükle → seçim (turuncu); kalın turuncu yanıp sönen imleç (bugünkü gibi).
-- [ ] Satır türleri kodla birlikte kaydedilir (`kod-<numara>` yanında `tur-<numara>`); eski kayıtlarda tür yoksa Dugme.
-- [ ] Bilgisayarda fiziksel klavye çalışır (harf, ⌫, ↵, Tab, oklar).
-- [ ] Belgedeki kod alanı eksikleri burada ele alınır: uzun satır kartın dışına taşmasın (yatay kaydırma), çok satırlı kod alanı aşırı küçültmesin (kod kartı içinde dikey kaydırma, en çok ~yarım ekran).
-- [ ] `Hud.Update`'teki `TouchScreenKeyboard.area` hesabı kalkar; yerine palet/klavye yüksekliği.
+- [x] Dokunma → imleç; basılı tut (350 ms) + sürükle → seçim (turuncu); hemen sürükle → kaydır; kalın turuncu yanıp sönen imleç. Farede tıkla/sürükle = seçim, Shift+tıkla seçimi uzatır, tekerlek kaydırır. Dışarıdan değiştirme tek yol: `CodeEditor.Edit(op)` (Görev 6-7 klavye/palet bunu çağıracak).
+- [x] Satır türleri kodla birlikte kaydedilir (`kod-<numara>` yanında `tur-<numara>`); eski kayıtlarda tür yoksa Dugme. Başlangıç kodu `LoadStart` ile (Baslangic).
+- [x] Bilgisayarda fiziksel klavye çalışır (harf, Türkçe harfler, AltGr işaretleri, ⌫, Delete, ↵, Tab / Shift+Tab, oklar, Home/End, Ctrl+A). Denetim: `scripts/klavye-denetimi.ps1` → `KLAVYE DENETIMI: TAMAM`. Kopyala/yapıştır yok (gerekirse sonra).
+- [x] Uzun satır yatay kayar, çok satırlı kod kart içinde dikey kayar; kod kartı en çok yarım ekran (`Hud.Update` → `editor.MaxHeight`). Çalışan satır görünmüyorsa kod oraya kayar. `-shots` görüntüsü `uzun-kod.png`.
+- [x] `Hud.Update`'teki `TouchScreenKeyboard.area` hesabı kalktı (palet/klavye yüksekliği Görev 6-7'de eklenecek).
+- Ek: kart uzayınca kamera geri çekiliyor, ekranın altı zeminin bittiği yerin ötesini gösterip siyah kalıyordu → zemin kameraya doğru uzatıldı (`z0 = -30`).
+- Silindi: `CodeTyping.cs`, `KodYazmaTests.cs` (durumları `CodeBufferTests`'te), `KlavyeDeneme.cs` + `-klavyedeneme`.
+- Not: Görev 6'ya kadar telefonda yazılamaz (telefon klavyesi artık açılmıyor, oyunun klavyesi henüz yok). Uzun satırda yatay kayınca kısa satırlar görünmez olur (normal editör davranışı); insan testinde kafa karıştırırsa düşünülür.
 
-## Görev 6 — Kod klavyesi (Orta/Usta) — belge §5
+## Görev 6 — Kod klavyesi (Orta/Usta) — belge §5 ✅ (2026-09-29, Enes — telefonda parmakla deneme Görev 9'da)
 
 `CodeKeyboard.cs` (UI Toolkit öğeleri, doku yok):
-- [ ] Sıralar: (Orta) öneri satırı · işaret sırası `( ) : " = ,` ⇥ ⇤ `…` · rakamlar (ya da `…` açıkken ikinci işaret sırası) · Türkçe Q üç sıra · boşluk ↵.
-- [ ] ⇧ tek basış bir harf, çift basış kilit; `i`→`İ`, `ı`→`I`. Basınca tuş üstünde büyük harf balonu; ⌫ basılı tutunca art arda siler.
-- [ ] Kod çalışırken kilitli. Oyun alanına dokununca kapanır, kod kartına dokununca açılır.
-- [ ] Görüntü: `-shots` klavye açık ekranı (450×975 ve dar telefon boyutu); 12 tuşluk satır parmakla basılabilir mi (açık soru 3).
+- [x] Sıralar: (Orta) öneri satırı · işaret sırası `( ) : " = ,` ⇥ ⇤ `…` · rakamlar · Türkçe Q üç sıra · boşluk ↵. **Değişiklik:** 17 işaret tek sıraya sığmadığı için `…` rakam sırası yerine **üç harf sırasını** ikinci işaret sayfasına çevirir (telefonlardaki "?123" gibi; rakamlar görünür kalır, yükseklik değişmez). Sayfaya `_` eklendi (değişken adları için).
+- [x] ⇧ tek basış bir harf, çift basış kilit (altında çizgi); `i`→`İ`, `ı`→`I`. Basınca tuş üstünde büyük harf balonu; ⌫ basılı tutunca art arda siler. Tuş basınca hemen yazar (hızlı yazmada dokunuş kaybolmaz).
+- [x] Kod çalışırken klavye kapanır (kod salt okunur olur). Oyun alanına dokununca kapanır, kod kartına dokununca açılır. Kod kartı en çok yarım ekran ve oyun alanına en az ekranın çeyreği kalır.
+- [x] Görüntü: `-shots` → `klavye-orta.png`, `klavye-isaretler.png`, `klavye-usta.png`, `klavye-basili.png` (balon), `klavye-yazildi.png`; 450×975 ve 450×800 (kısa ekran) denendi. Otomatik denetim: `-shots` içinde tuşlara fareyle tıklanır → log'da `KOD KLAVYESI DENETIMI: TAMAM`.
+- Ek: kod yazı tipi JetBrains Mono, `==` `!=` `<=` `>=` işaretlerini tek şekle birleştiriyordu (`≠`, `≤`…; öğrenen için yanıltıcı) → birleştirmesiz resmî sürüm **JetBrains Mono NL** (`Fonts/JetBrainsMonoNL-Regular.ttf`, OFL lisansı `OFL-JetBrainsMono.txt`; +94 KB).
+- Parantez (Enes'in isteği): öneriye dokununca `move()` gelir, imleç içeride; `)` sağda varsa `)` yazmak üstünden geçer; boş `()` içinde ⌫ ikisini siler; elle `(` kendiliğinden kapanmaz (`CodeBuffer`, 4 yeni test; toplam 1142).
+- Orta/Usta seçimi Görev 8'de; şimdilik klavye Orta (öneri satırı açık). `Hud.ShowSuggestions` ile değişir.
+- Açık soru 3 (12 tuşluk sıra): tuşlar ~80×104 (1080 genişliğe göre), Gboard'un Türkçe Q'suyla aynı sayı; gerçek telefonda parmakla denenmeli.
 
 ## Görev 7 — Acemi paleti: sürükle-bırak — belge §4
 

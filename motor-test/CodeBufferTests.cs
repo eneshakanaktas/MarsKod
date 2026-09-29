@@ -36,7 +36,7 @@ public class CodeBufferTests
         return Show(b);
     }
 
-    // ---- KodYazmaTests'teki kolayliklar (oyunun kendi klavyesiyle) ----
+    // ---- Yazma kolayliklari (eski CodeTyping/KodYazmaTests durumlari; ikisi Gorev 5'te silindi) ----
 
     [Fact]
     public void Iki_noktadan_sonra_Enter_bir_kademe_iceriden_baslar()
@@ -217,12 +217,50 @@ public class CodeBufferTests
     // ---- oneri ----
 
     [Fact]
-    public void Oneri_yarim_kelimeyi_tamamlar_ve_parantez_acar()
+    public void Oneri_yarim_kelimeyi_tamamlar_parantezi_acip_kapatir()
     {
         var b = Buf("mo|");
         Assert.Equal("mo", b.WordBeforeCaret());
         b.ApplySuggestion("move", true);
+        Assert.Equal("move(|)", Show(b));
+    }
+
+    [Fact]
+    public void Kapanan_parantezin_onunde_kapa_parantez_yazmak_ustunden_gecer()
+    {
+        var b = Buf("mo|");
+        b.ApplySuggestion("move", true);
+        b.Type("East");
+        b.Type(")"); // aliskanlikla basildi: ikinci ")" eklenmez
+        Assert.Equal("move(East)|", Show(b));
+    }
+
+    [Fact]
+    public void Elle_acilan_parantez_kendiliginden_kapanmaz()
+    {
+        var b = Buf("move|");
+        b.Type("(");
         Assert.Equal("move(|", Show(b));
+        b.Type("East");
+        b.Type(")");
+        Assert.Equal("move(East)|", Show(b));
+    }
+
+    [Fact]
+    public void Bos_parantez_icinde_geri_silme_ikisini_birden_siler()
+    {
+        var b = Buf("mo|");
+        b.ApplySuggestion("move", true);
+        b.Backspace();
+        Assert.Equal("move|", Show(b));
+    }
+
+    [Fact]
+    public void Dolu_parantezde_geri_silme_yalnizca_bir_harf_siler()
+    {
+        var b = Buf("move(E|)");
+        b.Backspace();
+        Assert.Equal("move(|)", Show(b));
     }
 
     [Fact]

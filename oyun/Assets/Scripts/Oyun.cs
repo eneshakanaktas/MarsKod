@@ -116,7 +116,6 @@ public class Oyun : MonoBehaviour
 
         for (int i = 0; i < a.Length - 1; i++)
             if (a[i] == "-shots") { shotsMode = true; LoadLevel(levelIndex); StartCoroutine(Shots(a[i + 1])); }
-        if (System.Array.IndexOf(a, "-klavyedeneme") >= 0) KlavyeDeneme.Open(); // gecici (kod klavyesi Gorev 0)
     }
 
     void SetupCamera()
@@ -207,7 +206,8 @@ public class Oyun : MonoBehaviour
         float R(float a, float b) => a + (float)rng.NextDouble() * (b - a);
 
         // Arazi agi
-        const float x0 = -16f, x1 = 16f, z0 = -10f, z1 = 24f, step = 0.4f;
+        // z0: kod karti uzayip kamera geri cekilince ekranin alti da zemin gorsun (kartin kenarlarinda siyah kalmasin)
+        const float x0 = -16f, x1 = 16f, z0 = -30f, z1 = 24f, step = 0.4f;
         int nx = Mathf.RoundToInt((x1 - x0) / step) + 1, nz = Mathf.RoundToInt((z1 - z0) / step) + 1;
         var verts = new Vector3[nx * nz];
         for (int j = 0; j < nz; j++)
@@ -297,8 +297,11 @@ public class Oyun : MonoBehaviour
         target = level.Target.HasValue ? Target.Create(levelRoot, Pos(level.Target.Value)) : null;
 
         robot.ResetTo(Pos(level.Robot), StartYaw);
-        code = SavedCode(level) ?? level.StartCode;
-        hud.SetCode(code);
+        string saved = SavedCode(level);
+        if (saved != null) hud.LoadCode(saved, SavedKinds(level));
+        else hud.LoadStartCode(level.StartCode);
+        code = hud.Code;
+        hud.SetOpenWords(MarsKod.Dunya.Suggestions.OpenWords(levels, level.Number));
         hud.SetLevel(level.Number, level.Title, level.Goal, level.Ices.Count, level.Hints[0]);
     }
 
@@ -513,9 +516,12 @@ public class Oyun : MonoBehaviour
 
     // ---- Oyuncunun kodu ----
 
+    // Kod "kod-<numara>", her satirin nasil yazildigi (satir turleri) "tur-<numara>" altinda saklanir.
     static string SaveKey(Level l) => "kod-" + l.Number;
+    static string KindsKey(Level l) => "tur-" + l.Number;
 
     string SavedCode(Level l) => !shotsMode && PlayerPrefs.HasKey(SaveKey(l)) ? PlayerPrefs.GetString(SaveKey(l)) : null;
+    string SavedKinds(Level l) => PlayerPrefs.HasKey(KindsKey(l)) ? PlayerPrefs.GetString(KindsKey(l)) : null;
 
     // Oyuncu kodu degistirdi: onceki calistirmanin sonucu (robotun yeri, kirmizi satir, hata kutusu) silinir, kod saklanir.
     void OnCodeChanged(string source)
@@ -527,6 +533,7 @@ public class Oyun : MonoBehaviour
         if (!shotsMode)
         {
             PlayerPrefs.SetString(SaveKey(level), code);
+            PlayerPrefs.SetString(KindsKey(level), hud.CodeKinds);
             PlayerPrefs.Save();
         }
     }
@@ -535,8 +542,104 @@ public class Oyun : MonoBehaviour
     void SetCode(string source)
     {
         ResetLevel();
-        code = source;
-        hud.SetCode(code);
+        hud.LoadCode(source, null);
+        code = hud.Code;
+    }
+
+    // ---- Bilgisayar klavyesi denetimi: MarsKod.exe -shots <klasor> -klavyedenetimi ----
+    // Unity klavye harflerini Windows'un pencereye gonderdigi tus mesajlarindan okur; bu yuzden tuslari disaridan
+    // scripts/klavye-denetimi.ps1 gonderir. Oyun koda tiklar, <klasor>/klavye-hazir.txt yazar, betik tuslari gonderip
+    // klavye-bitti.txt yazar; oyun sonucu log'a ("KLAVYE DENETIMI:") yazar, klavye.png goruntusunu alir.
+    IEnumerator KeyboardCheck(string dir)
+    {
+        LoadLevel(0);
+        SetCode("move(East)");
+        yield return new WaitForSeconds(0.3f);
+        // Oyuncu gibi once koda fareyle tikla (arayuz klavyeyi en son tiklanan katmana gonderir), sonra imleci sona koy
+        var mouse = UnityEngine.InputSystem.Mouse.current;
+        if (mouse != null)
+        {
+            var at = hud.CodeScreenPoint();
+            UnityEngine.InputSystem.InputSystem.QueueStateEvent(mouse, new UnityEngine.InputSystem.LowLevel.MouseState { position = at, buttons = 1 });
+            yield return null;
+            UnityEngine.InputSystem.InputSystem.QueueStateEvent(mouse, new UnityEngine.InputSystem.LowLevel.MouseState { position = at, buttons = 0 });
+            yield return null;
+        }
+        hud.FocusCode(code.Length, code.Length);
+        yield return null;
+
+        string ready = Path.Combine(dir, "klavye-hazir.txt"), finished = Path.Combine(dir, "klavye-bitti.txt");
+        File.Delete(finished);
+        File.WriteAllText(ready, "hazir");
+        float until = Time.realtimeSinceStartup + 30f;
+        while (!File.Exists(finished) && Time.realtimeSinceStartup < until) yield return null;
+        yield return new WaitForSeconds(0.6f);
+
+        // Betigin gonderdigi: Enter, "for i in range(2):", Enter (":" sonrasi 4 bosluk iceriden), "move(East))",
+        // geri silme (fazla ")"), Home + geri silme (girinti bir kademe geri), Tab (geri iceri), End, Enter,
+        // "# çğış {x}", sol ok, "y"
+        const string expected = "move(East)\nfor i in range(2):\n    move(East)\n    # çğış {xy}";
+        string got = hud.Code;
+        Debug.Log("KLAVYE DENETIMI: " + (!File.Exists(finished) ? "betik tuslari gondermedi (30 sn)" : got == expected ? "TAMAM" : "FARKLI -> " + got.Replace("\n", "\n")));
+        Cap(Path.Combine(dir, "klavye.png"));
+        yield return new WaitForSeconds(0.3f);
+        hud.StopEditing();
+    }
+
+    // ---- Kod klavyesi denetimi (-shots icinde): ekrandaki tuslara fareyle tiklanir ----
+    // Oneri satiri, ⇧ (tek basis, cift basis kilit), Turkce İ, Enter girintisi ve "…" isaret sayfasi denenir.
+    // Log'da "KOD KLAVYESI DENETIMI:" satiri; goruntuler klavye-basili.png (tus balonu), klavye-yazildi.png.
+    IEnumerator KeyboardTapCheck(string dir)
+    {
+        var mouse = UnityEngine.InputSystem.Mouse.current;
+        if (mouse == null) { Debug.Log("KOD KLAVYESI DENETIMI: fare yok, atlandi"); yield break; }
+        LoadLevel(levels.Count - 1);
+        SetCode("");
+        yield return new WaitForSeconds(0.3f);
+        hud.FocusCode(0, 0);
+        yield return new WaitForSeconds(0.4f); // klavye acilip yerlessin
+
+        string missing = null;
+        IEnumerator Tap(string key, bool hold = false)
+        {
+            var at = hud.KeyScreenPoint(key);
+            if (!at.HasValue) { missing = missing ?? key; yield break; }
+            UnityEngine.InputSystem.InputSystem.QueueStateEvent(mouse, new UnityEngine.InputSystem.LowLevel.MouseState { position = at.Value, buttons = 1 });
+            yield return null;
+            yield return null;
+            if (hold) { Cap(Path.Combine(dir, "klavye-basili.png")); yield return new WaitForSeconds(0.2f); }
+            UnityEngine.InputSystem.InputSystem.QueueStateEvent(mouse, new UnityEngine.InputSystem.LowLevel.MouseState { position = at.Value, buttons = 0 });
+            yield return null;
+            yield return null;
+        }
+        IEnumerator Taps(params string[] keys) { foreach (var k in keys) yield return Tap(k); }
+        IEnumerator Word(string w) { foreach (char c in w) yield return Tap(c == ' ' ? "boşluk" : c.ToString()); }
+
+        yield return Word("mo");
+        yield return new WaitForSeconds(0.15f);           // oneri satiri guncellensin
+        yield return Tap("öneri1");                        // move(
+        yield return Taps("⇧", "e");                       // E
+        yield return Word("ast");
+        yield return Taps(")", "↵");
+        yield return Word("co");
+        yield return new WaitForSeconds(0.15f);
+        yield return Taps("öneri1", ")", "↵");             // collect()
+        yield return Word("for i in range");
+        yield return Tap("(");
+        yield return Tap("3", hold: true);                 // basili tus balonu goruntusu
+        yield return Taps(")", ":", "↵");                  // ":" sonrasi 4 bosluk iceriden
+        yield return Taps("…", "#", "…");                  // isaret sayfasi ve geri
+        yield return Taps("⇧", "⇧", "a", "b", "⇧", "c");   // cift basis kilit: AB, sonra c
+        yield return Taps("⇧", "i");                        // İ
+        yield return Taps("x", "⌫");
+        yield return new WaitForSeconds(0.4f);
+
+        const string expected = "move(East)\ncollect()\nfor i in range(3):\n    #ABcİ";
+        string got = hud.Code;
+        Debug.Log("KOD KLAVYESI DENETIMI: " + (missing != null ? "tus bulunamadi: " + missing : got == expected ? "TAMAM" : "FARKLI -> " + got.Replace("\n", "\\n")));
+        Cap(Path.Combine(dir, "klavye-yazildi.png"));
+        yield return new WaitForSeconds(0.3f);
+        hud.StopEditing();
     }
 
     // ---- Kontrol icin ekran goruntusu: MarsKod.exe -shots <klasor> ----
@@ -579,7 +682,41 @@ public class Oyun : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         Cap(Path.Combine(dir, "yaziyor-secim.png"));
         yield return new WaitForSeconds(0.3f);
+        // Uzun kod: kod karti yarim ekrani gecmesin, imlec (son satir, uzun satirin sonu) gorunsun diye kendiliginden kaysin
+        var longCode = new System.Text.StringBuilder("# Uzun bir kod: kart kaydirilabilir olmali, alan cok kuculmemeli\n");
+        for (int k = 0; k < 12; k++) longCode.Append(k % 3 == 2 ? "collect()\n" : "move(East)\n");
+        longCode.Append("move(East)  # bu satir cok uzun, kartin disina tasmamali; yatay kaydirilir");
+        SetCode(longCode.ToString());
+        yield return new WaitForSeconds(0.4f);
+        hud.FocusCode(code.Length, code.Length);
+        yield return new WaitForSeconds(1.1f);
+        Cap(Path.Combine(dir, "uzun-kod.png"));
+        yield return new WaitForSeconds(0.3f);
         hud.StopEditing();
+
+        // Kod klavyesi: Orta (oneri satiri "mo" icin move), ikinci isaret sayfasi, Usta (oneri satiri yok)
+        LoadLevel(levels.Count - 1);
+        SetCode("for i in range(5):\n    mo");
+        yield return new WaitForSeconds(0.3f);
+        hud.FocusCode(code.Length, code.Length);
+        yield return new WaitForSeconds(0.6f);
+        Cap(Path.Combine(dir, "klavye-orta.png"));
+        yield return new WaitForSeconds(0.3f);
+        hud.KeyboardMore(true);
+        yield return new WaitForSeconds(0.3f);
+        Cap(Path.Combine(dir, "klavye-isaretler.png"));
+        yield return new WaitForSeconds(0.3f);
+        hud.KeyboardMore(false);
+        hud.ShowSuggestions = false;
+        yield return new WaitForSeconds(0.3f);
+        Cap(Path.Combine(dir, "klavye-usta.png"));
+        yield return new WaitForSeconds(0.3f);
+        hud.ShowSuggestions = true;
+        hud.StopEditing();
+        yield return KeyboardTapCheck(dir);
+
+        if (System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-klavyedenetimi") >= 0) yield return KeyboardCheck(dir);
+        LoadLevel(levels.Count - 1);
         yield return new WaitForSeconds(0.3f);
         starsTarget = 0f; hud.SetStars(false);
         yield return new WaitForSeconds(1f);

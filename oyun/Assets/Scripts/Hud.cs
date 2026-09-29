@@ -21,10 +21,12 @@ public class Hud : MonoBehaviour
     static readonly Color NumColor = Mats.Hex("#4F4A5A");
     static readonly Color HeaderText = Mats.Hex("#F5F1F7");
     static readonly Color ErrorRed = Mats.Hex("#FF6B6B");
+    static readonly Color KeyboardBg = new Color(0.075f, 0.07f, 0.095f, 0.98f);
 
     Font fMed, fSemi, fBold, fMono;
     VisualElement root, header, card, hint, message, runBtn;
     CodeEditor editor;
+    CodeKeyboard keyboard;
     Label chapter, title, runText, msgTag, msgTitle, msgText, msgOriginal, hintText;
     VisualElement dotsRow;
     Icon starIcon;
@@ -40,7 +42,7 @@ public class Hud : MonoBehaviour
         fMed = Resources.Load<Font>("Fonts/Poppins-Medium");
         fSemi = Resources.Load<Font>("Fonts/Poppins-SemiBold");
         fBold = Resources.Load<Font>("Fonts/Poppins-Bold");
-        fMono = Resources.Load<Font>("Fonts/JetBrainsMono-Regular");
+        fMono = Resources.Load<Font>("Fonts/JetBrainsMonoNL-Regular");
 
         var ps = ScriptableObject.CreateInstance<PanelSettings>();
         ps.themeStyleSheet = Resources.Load<ThemeStyleSheet>("UI/MarsTheme");
@@ -55,12 +57,18 @@ public class Hud : MonoBehaviour
         root.pickingMode = PickingMode.Ignore;
         root.style.position = Position.Absolute;
         root.style.left = 0; root.style.right = 0; root.style.top = 0; root.style.bottom = 0;
-        root.style.justifyContent = Justify.SpaceBetween;
 
+        // Ustten asagi: baslik · bos alan (oyun alani gorunur) · kod karti · kod klavyesi (yazarken)
         header = BuildHeader();
         card = BuildBottom();
+        var free = new VisualElement { pickingMode = PickingMode.Ignore };
+        free.style.flexGrow = 1;
+        keyboard = new CodeKeyboard(editor, fMono, Ink, Accent, KeyboardBg);
+        keyboard.style.display = DisplayStyle.None;
         root.Add(header);
+        root.Add(free);
         root.Add(card);
+        root.Add(keyboard);
     }
 
     float SafeTop()
@@ -213,7 +221,22 @@ public class Hud : MonoBehaviour
     }
 
     // Karttaki kodu degistirir (bolum degisti vb.); CodeChanged tetiklenmez.
-    public void SetCode(string source) => editor.SetText(source);
+    // Baslangic kodu: butun satirlar "baslangic" turunde. Kayitli kod: turleriyle (tur yoksa null -> Dugme sayilir).
+    public void LoadStartCode(string source) => editor.LoadStart(source);
+    public void LoadCode(string source, string kinds) => editor.Load(source, kinds);
+
+    public string Code => editor.Text;
+
+    // Bu bolume kadar acilmis kelimeler (oneri satiri icin)
+    public void SetOpenWords(List<string> words) => keyboard.SetOpenWords(words);
+
+    // Orta (oneri satiri var) / Usta (yok). Kademe secimi Gorev 8'de gelecek; simdilik Orta.
+    public bool ShowSuggestions { get => keyboard.ShowSuggestions; set => keyboard.ShowSuggestions = value; }
+
+    // Deneme goruntuleri icin: klavyenin ikinci isaret sayfasi
+    public void KeyboardMore(bool on) => keyboard.SetMore(on);
+    // Satir turlerinin kayit metni (satir basina bir harf)
+    public string CodeKinds => editor.Kinds;
 
     // Buz sayaci: bolumdeki buz kadar nokta (buz yoksa sayac gizli)
     void BuildDots()
@@ -248,7 +271,7 @@ public class Hud : MonoBehaviour
         iceTotal = ices;
         collected = 0;
         BuildDots();
-        editor.Blur();
+        editor.StopEditing();
         hintText.text = hintRich;
         hint.style.display = DisplayStyle.None;
         ResetView();
@@ -344,28 +367,55 @@ public class Hud : MonoBehaviour
     public bool Editing => editor.Editing;
 
     // Kod alanina odaklanir, from..to secili (esitse yalnizca imlec); deneme goruntuleri icin.
-    public void FocusCode(int from, int to) => editor.Focus(from, to);
+    public void FocusCode(int from, int to) => editor.StartEditing(from, to);
 
-    public void StopEditing() => editor.Blur();
+    public void StopEditing() => editor.StopEditing();
+
+    // Kod alaninin ortasinin ekrandaki yeri (sol alt koseden, piksel); deneme icin tiklatmak amaciyla.
+    public Vector2 CodeScreenPoint() => PanelToScreen(editor.worldBound.center);
+
+    // Kod klavyesindeki tusun ekrandaki yeri (CodeKeyboard.KeyCenter adlari); tus gorunmuyorsa null. Deneme icin.
+    public Vector2? KeyScreenPoint(string name)
+    {
+        var c = keyboard.KeyCenter(name);
+        return c.HasValue ? PanelToScreen(c.Value) : (Vector2?)null;
+    }
+
+    Vector2 PanelToScreen(Vector2 c)
+    {
+        float s = Screen.width / Mathf.Max(1f, root.layout.width);
+        return new Vector2(c.x * s, Screen.height - c.y * s);
+    }
 
     void Update()
     {
         if (card == null) return;
-        // Telefon klavyesi acikken kod karti klavyenin ustune kayar (oyun alani kalan yere kendiliginden sigar)
-        float kb = 0f;
-        if (TouchScreenKeyboard.isSupported && TouchScreenKeyboard.visible && Screen.height > 0)
-            kb = TouchScreenKeyboard.area.height * root.layout.height / Screen.height;
-        if (float.IsNaN(kb) || kb < 0f) kb = 0f;
-        float target = 36f + kb;
-        if (Mathf.Abs(card.resolvedStyle.marginBottom - target) > 0.5f) card.style.marginBottom = target;
+        // Yazarken kod klavyesi acik; kart klavyenin ustune oturur, oyun alani kalan yere kendiliginden sigar
+        bool typing = editor.Editing;
+        if (typing != (keyboard.style.display == DisplayStyle.Flex))
+        {
+            keyboard.style.display = typing ? DisplayStyle.Flex : DisplayStyle.None;
+            card.style.marginBottom = typing ? 18 : 36;
+            if (!typing) keyboard.ResetState();
+        }
 
-        // Kod alaninin disina (oyun alanina) dokununca yazma biter, klavye kapanir
+        // Kod karti en cok ekranin yarisi kadar olsun ve oyun alanina en az ekranin ceyregi kalsin;
+        // uzun kod kart icinde kaydirilir
+        float rh = root.layout.height, other = card.layout.height - editor.layout.height, top = header.layout.yMax;
+        float kb = typing && !float.IsNaN(keyboard.layout.height) ? keyboard.layout.height : 0f;
+        if (!float.IsNaN(rh) && rh > 0f && !float.IsNaN(other) && !float.IsNaN(top))
+        {
+            float cardMax = Mathf.Min(rh * 0.5f, rh - kb - card.resolvedStyle.marginBottom - top - rh * 0.25f);
+            editor.MaxHeight = Mathf.Max(160f, cardMax - other);
+        }
+
+        // Kod alaninin disina (oyun alanina) dokununca yazma biter
         var p = UnityEngine.InputSystem.Pointer.current;
         if (editor.Editing && p != null && p.press.wasPressedThisFrame && root.panel != null)
         {
             var sp = p.position.ReadValue();
             var pos = RuntimePanelUtils.ScreenToPanel(root.panel, new Vector2(sp.x, Screen.height - sp.y));
-            if (root.panel.Pick(pos) == null) editor.Blur();
+            if (root.panel.Pick(pos) == null) editor.StopEditing();
         }
     }
 

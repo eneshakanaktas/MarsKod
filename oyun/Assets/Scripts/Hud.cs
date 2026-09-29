@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MarsKod.Dunya;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -27,6 +28,12 @@ public class Hud : MonoBehaviour
     VisualElement root, header, card, hint, message, runBtn;
     CodeEditor editor;
     CodeKeyboard keyboard;
+    BlockPalette palette;
+    BlockDrag drag;
+    NumberStepper stepper;
+    // Su an acik olan yazma paneli (klavye ya da palet), kapaliyken null
+    VisualElement shownPanel;
+    KeyboardTier tier = KeyboardTier.Orta;
     Label chapter, title, runText, msgTag, msgTitle, msgText, msgOriginal, hintText;
     VisualElement dotsRow;
     Icon starIcon;
@@ -58,17 +65,34 @@ public class Hud : MonoBehaviour
         root.style.position = Position.Absolute;
         root.style.left = 0; root.style.right = 0; root.style.top = 0; root.style.bottom = 0;
 
-        // Ustten asagi: baslik · bos alan (oyun alani gorunur) · kod karti · kod klavyesi (yazarken)
+        // Ustten asagi: baslik · bos alan (oyun alani gorunur) · kod karti · yazarken kod klavyesi (Orta/Usta) ya da palet (Acemi).
+        // En ustte butun ekrani kaplayan katman: suruklenen satir ve sayinin -/+ kutusu.
         header = BuildHeader();
         card = BuildBottom();
         var free = new VisualElement { pickingMode = PickingMode.Ignore };
         free.style.flexGrow = 1;
+        var overlay = new VisualElement { pickingMode = PickingMode.Ignore };
+        overlay.style.position = Position.Absolute;
+        overlay.style.left = 0; overlay.style.right = 0; overlay.style.top = 0; overlay.style.bottom = 0;
+
         keyboard = new CodeKeyboard(editor, fMono, Ink, Accent, KeyboardBg);
         keyboard.style.display = DisplayStyle.None;
+        drag = new BlockDrag(overlay, card, editor, fMono, Ink, Accent, ErrorRed);
+        palette = new BlockPalette(editor, drag, fMono, fMed, Ink, Accent, KeyboardBg);
+        palette.style.display = DisplayStyle.None;
+        stepper = new NumberStepper(editor, fSemi, Ink, Accent, ButtonBg);
+        overlay.Add(stepper);
+
+        editor.LinePicked += (line, at, pointer) => drag.BeginLine(line, at, pointer);
+        editor.NumberTapped += (line, col) => { if (line >= 0) stepper.Show(line, col); else stepper.Hide(); };
+        drag.Started += stepper.Hide;
+
         root.Add(header);
         root.Add(free);
         root.Add(card);
         root.Add(keyboard);
+        root.Add(palette);
+        root.Add(overlay);
     }
 
     float SafeTop()
@@ -125,8 +149,8 @@ public class Hud : MonoBehaviour
         var card = new VisualElement();
         card.style.marginLeft = 28; card.style.marginRight = 28; card.style.marginBottom = 36;
         card.style.backgroundColor = CardBg;
-        Radius(card, 52);
-        Border(card, 2, Hairline);
+        Ui.Radius(card, 52);
+        Ui.Border(card, 2, Hairline);
         card.style.paddingTop = 34; card.style.paddingBottom = 36;
         card.style.paddingLeft = 36; card.style.paddingRight = 36;
 
@@ -149,14 +173,14 @@ public class Hud : MonoBehaviour
         buttons.style.marginTop = 28;
 
         var hintBtn = RoundButton(124, ButtonBg, new Icon(58, DrawBulb), ToggleHint);
-        Border(hintBtn, 2, Hairline);
+        Ui.Border(hintBtn, 2, Hairline);
 
         runBtn = new VisualElement();
         runBtn.style.flexGrow = 1;
         runBtn.style.height = 124;
         runBtn.style.marginLeft = 22; runBtn.style.marginRight = 22;
         runBtn.style.backgroundColor = Accent;
-        Radius(runBtn, 62);
+        Ui.Radius(runBtn, 62);
         runBtn.style.flexDirection = FlexDirection.Row;
         runBtn.style.alignItems = Align.Center;
         runBtn.style.justifyContent = Justify.Center;
@@ -168,7 +192,7 @@ public class Hud : MonoBehaviour
         Transition(runBtn, "opacity", 0.2f, EasingMode.EaseOut);
 
         var resetBtn = RoundButton(124, ButtonBg, new Icon(56, DrawReset), () => ResetPressed?.Invoke());
-        Border(resetBtn, 2, Hairline);
+        Ui.Border(resetBtn, 2, Hairline);
 
         buttons.Add(hintBtn); buttons.Add(runBtn); buttons.Add(resetBtn);
         card.Add(buttons);
@@ -179,8 +203,8 @@ public class Hud : MonoBehaviour
         hint.style.bottom = Length.Percent(100);
         hint.style.marginBottom = 20;
         hint.style.backgroundColor = HintBg;
-        Radius(hint, 36);
-        Border(hint, 2, Hairline);
+        Ui.Radius(hint, 36);
+        Ui.Border(hint, 2, Hairline);
         hint.style.paddingTop = 30; hint.style.paddingBottom = 32;
         hint.style.paddingLeft = 40; hint.style.paddingRight = 40;
         hintText = Text("", fMed, 32, Color.white);
@@ -197,7 +221,7 @@ public class Hud : MonoBehaviour
         message.style.bottom = Length.Percent(100);
         message.style.marginBottom = 20;
         message.style.backgroundColor = HintBg;
-        Radius(message, 36);
+        Ui.Radius(message, 36);
         message.style.paddingTop = 28; message.style.paddingBottom = 32;
         message.style.paddingLeft = 40; message.style.paddingRight = 40;
         msgTag = Text("", fSemi, 24, ErrorRed);
@@ -230,8 +254,21 @@ public class Hud : MonoBehaviour
     // Bu bolume kadar acilmis kelimeler (oneri satiri icin)
     public void SetOpenWords(List<string> words) => keyboard.SetOpenWords(words);
 
-    // Orta (oneri satiri var) / Usta (yok). Kademe secimi Gorev 8'de gelecek; simdilik Orta.
-    public bool ShowSuggestions { get => keyboard.ShowSuggestions; set => keyboard.ShowSuggestions = value; }
+    // Kod yazma kademesi: Acemi (palet, surukle-birak), Orta (klavye + oneri satiri), Usta (klavye).
+    // Secme dugmesi Gorev 8'de; simdilik Orta ya da -kademe baslatma secenegi.
+    public KeyboardTier Tier
+    {
+        get => tier;
+        set
+        {
+            tier = value;
+            editor.Blocks = value == KeyboardTier.Acemi;
+            keyboard.ShowSuggestions = value == KeyboardTier.Orta;
+        }
+    }
+
+    // Acemi paletinin parcalari; fresh: bu bolumde yeni olanlar (turuncu kenarli)
+    public void SetPieces(IEnumerable<string> pieces, ICollection<string> fresh) => palette.SetPieces(pieces, fresh);
 
     // Deneme goruntuleri icin: klavyenin ikinci isaret sayfasi
     public void KeyboardMore(bool on) => keyboard.SetMore(on);
@@ -271,6 +308,7 @@ public class Hud : MonoBehaviour
         iceTotal = ices;
         collected = 0;
         BuildDots();
+        stepper.Hide();
         editor.StopEditing();
         hintText.text = hintRich;
         hint.style.display = DisplayStyle.None;
@@ -296,11 +334,11 @@ public class Hud : MonoBehaviour
         hint.style.display = DisplayStyle.None;
         msgTag.text = tag;
         msgTag.style.color = error ? ErrorRed : IceFill;
-        msgTitle.text = heading;
-        msgText.text = text;
+        msgTitle.text = CodeColors.Inline(heading);
+        msgText.text = CodeColors.Inline(text);
         msgOriginal.text = original ?? "";
         msgOriginal.style.display = string.IsNullOrEmpty(original) ? DisplayStyle.None : DisplayStyle.Flex;
-        Border(message, 2, error ? new Color(ErrorRed.r, ErrorRed.g, ErrorRed.b, 0.55f) : Hairline);
+        Ui.Border(message, 2, error ? new Color(ErrorRed.r, ErrorRed.g, ErrorRed.b, 0.55f) : Hairline);
         message.style.display = DisplayStyle.Flex;
     }
 
@@ -381,6 +419,22 @@ public class Hud : MonoBehaviour
         return c.HasValue ? PanelToScreen(c.Value) : (Vector2?)null;
     }
 
+    // Acemi paletindeki parcanin ekrandaki yeri; palet gorunmuyorsa null. Deneme icin.
+    public Vector2? PieceScreenPoint(string piece)
+    {
+        var c = palette.PieceCenter(piece);
+        return c.HasValue ? PanelToScreen(c.Value) : (Vector2?)null;
+    }
+
+    // Deneme icin: koddaki harfin (satir, sutun 0'dan), satir arasinin ve -/+ dugmesinin ekrandaki yeri
+    public Vector2 CodeCharScreenPoint(int line, int col) => PanelToScreen(editor.CharCenter(line, col));
+    public Vector2 CodeGapScreenPoint(int gap, int col) => PanelToScreen(editor.GapPoint(gap, col));
+    public Vector2? StepperScreenPoint(int delta)
+    {
+        var c = stepper.ButtonCenter(delta);
+        return c.HasValue ? PanelToScreen(c.Value) : (Vector2?)null;
+    }
+
     Vector2 PanelToScreen(Vector2 c)
     {
         float s = Screen.width / Mathf.Max(1f, root.layout.width);
@@ -390,32 +444,38 @@ public class Hud : MonoBehaviour
     void Update()
     {
         if (card == null) return;
-        // Yazarken kod klavyesi acik; kart klavyenin ustune oturur, oyun alani kalan yere kendiliginden sigar
+        // Yazarken kademeye gore klavye ya da palet acik; kart onun ustune oturur, oyun alani kalan yere kendiliginden sigar
         bool typing = editor.Editing;
-        if (typing != (keyboard.style.display == DisplayStyle.Flex))
+        var panelNow = !typing ? null : tier == KeyboardTier.Acemi ? (VisualElement)palette : keyboard;
+        if (panelNow != shownPanel)
         {
-            keyboard.style.display = typing ? DisplayStyle.Flex : DisplayStyle.None;
-            card.style.marginBottom = typing ? 18 : 36;
-            if (!typing) keyboard.ResetState();
+            if (shownPanel == keyboard) keyboard.ResetState();
+            keyboard.style.display = panelNow == keyboard ? DisplayStyle.Flex : DisplayStyle.None;
+            palette.style.display = panelNow == palette ? DisplayStyle.Flex : DisplayStyle.None;
+            card.style.marginBottom = panelNow != null ? 18 : 36;
+            shownPanel = panelNow;
         }
+        if (!typing) stepper.Hide();
 
         // Kod karti en cok ekranin yarisi kadar olsun ve oyun alanina en az ekranin ceyregi kalsin;
         // uzun kod kart icinde kaydirilir
         float rh = root.layout.height, other = card.layout.height - editor.layout.height, top = header.layout.yMax;
-        float kb = typing && !float.IsNaN(keyboard.layout.height) ? keyboard.layout.height : 0f;
+        float kb = shownPanel != null && !float.IsNaN(shownPanel.layout.height) ? shownPanel.layout.height : 0f;
         if (!float.IsNaN(rh) && rh > 0f && !float.IsNaN(other) && !float.IsNaN(top))
         {
             float cardMax = Mathf.Min(rh * 0.5f, rh - kb - card.resolvedStyle.marginBottom - top - rh * 0.25f);
             editor.MaxHeight = Mathf.Max(160f, cardMax - other);
         }
 
-        // Kod alaninin disina (oyun alanina) dokununca yazma biter
+        // Kod alaninin disina (oyun alanina) dokununca yazma biter; -/+ kutusunun disina dokununca kutu kapanir
         var p = UnityEngine.InputSystem.Pointer.current;
-        if (editor.Editing && p != null && p.press.wasPressedThisFrame && root.panel != null)
+        if (editor.Editing && p != null && p.press.wasPressedThisFrame && root.panel != null && !drag.Active)
         {
             var sp = p.position.ReadValue();
             var pos = RuntimePanelUtils.ScreenToPanel(root.panel, new Vector2(sp.x, Screen.height - sp.y));
-            if (root.panel.Pick(pos) == null) editor.StopEditing();
+            var picked = root.panel.Pick(pos);
+            if (picked == null) editor.StopEditing();
+            else if (stepper.Open && picked != stepper && !stepper.Contains(picked)) stepper.Hide();
         }
     }
 
@@ -436,7 +496,7 @@ public class Hud : MonoBehaviour
     {
         var b = new VisualElement();
         b.style.width = size; b.style.height = size;
-        Radius(b, size * 0.5f);
+        Ui.Radius(b, size * 0.5f);
         b.style.backgroundColor = bg;
         b.style.alignItems = Align.Center;
         b.style.justifyContent = Justify.Center;
@@ -461,17 +521,7 @@ public class Hud : MonoBehaviour
         e.style.transitionTimingFunction = new List<EasingFunction> { new EasingFunction(mode) };
     }
 
-    static void Radius(VisualElement e, float r)
-    {
-        e.style.borderTopLeftRadius = r; e.style.borderTopRightRadius = r;
-        e.style.borderBottomLeftRadius = r; e.style.borderBottomRightRadius = r;
-    }
 
-    static void Border(VisualElement e, float w, Color c)
-    {
-        e.style.borderTopWidth = w; e.style.borderBottomWidth = w; e.style.borderLeftWidth = w; e.style.borderRightWidth = w;
-        e.style.borderTopColor = c; e.style.borderBottomColor = c; e.style.borderLeftColor = c; e.style.borderRightColor = c;
-    }
 
     // ---- Simgeler (vektorle cizilir) ----
 

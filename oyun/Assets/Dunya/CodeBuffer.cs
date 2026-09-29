@@ -221,16 +221,31 @@ namespace MarsKod.Dunya
         // ---- Acemi paleti ----
 
         /// <summary>Bırakılacak yerin varsayılan girinti kademesi: üstteki (boş olmayan) satır ":" ile bitiyorsa
-        /// bir kademe içeride, değilse onunla aynı. gap: satır arası (0 = en üst, LineCount = en alt).</summary>
-        public int DefaultIndentLevel(int gap)
+        /// bir kademe içeride, değilse onunla aynı. gap: satır arası (0 = en üst, LineCount = en alt);
+        /// movingLine: taşınan satır (hesaba katılmaz).</summary>
+        public int DefaultIndentLevel(int gap, int movingLine = -1)
+        {
+            int above = LineAbove(gap, movingLine);
+            if (above < 0) return 0;
+            int level = CodeBlocks.Level(lines[above]);
+            return CodeBlocks.IsHeader(lines[above]) ? level + 1 : level;
+        }
+
+        /// <summary>Sürüklerken parmak varsayılandan shift kademe sağa (+) / sola (−) kaydı. Oyuncu Python'un kabul etmediği
+        /// girintiyi de seçebilir (hatasından öğrensin; karar 09-29): 0'dan üstteki satırın bir kademe içerisine kadar.</summary>
+        public int DropIndentLevel(int gap, int shift, int movingLine = -1)
+        {
+            int above = LineAbove(gap, movingLine);
+            int max = above < 0 ? 0 : CodeBlocks.Level(lines[above]) + 1;
+            return Math.Max(0, Math.Min(max, DefaultIndentLevel(gap, movingLine) + shift));
+        }
+
+        // gap'in üstündeki ilk boş olmayan satır (taşınan satır atlanır); yoksa -1
+        int LineAbove(int gap, int movingLine)
         {
             for (int i = Math.Min(gap, lines.Count) - 1; i >= 0; i--)
-            {
-                if (lines[i].Trim().Length == 0) continue;
-                int level = LeadingSpaces(lines[i]) / Indent.Length;
-                return lines[i].TrimEnd().EndsWith(":") ? level + 1 : level;
-            }
-            return 0;
+                if (i != movingLine && lines[i].Trim().Length > 0) return i;
+            return -1;
         }
 
         /// <summary>Paletten bir satır bırakır (türü Dugme). Kod bomboşsa onun yerine geçer. Dönen: satırın numarası.</summary>

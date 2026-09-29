@@ -11,10 +11,16 @@ using UnityEngine.UIElements;
 // Telefonda: dokun -> imlec; basili tut + surukle -> secim; hemen surukle -> kaydir.
 // Bilgisayarda: fareyle surukle -> secim, tekerlek -> kaydir; fiziksel klavye yazar (harf, geri silme, Enter, Tab, oklar).
 // Uzun satir saga-sola, cok satirli kod yukari-asagi kaydirilir; alan en cok MaxHeight kadar buyur.
+// Acemi (Blocks): imlec yok, harf yazilmaz; basili tut (farede surukle) -> satir tasinmak uzere kalkar (LinePicked),
+// dokun -> sayiya dokunulduysa NumberTapped. Surukleme isini BlockDrag yapar; burasi birakma yerini gosterir.
 public class CodeEditor : VisualElement
 {
     // Oyuncu kodu degistirdi (yeni kodun tamami)
     public event Action<string> Changed;
+    // Acemi: satir tasinmak uzere tutuldu (satir, parmagin yeri, parmak numarasi)
+    public event Action<int, Vector2, int> LinePicked;
+    // Acemi: koda dokunuldu; sayiya dokunulduysa (satir, sayinin basladigi sutun), degilse (-1, -1)
+    public event Action<int, int> NumberTapped;
 
     const float FontSize = 37f, NumSize = 30f, Gutter = 68f;
     // Satirlar arasi ek bosluk: satirlar parmakla secilebilecek kadar ferah olsun
@@ -27,18 +33,24 @@ public class CodeEditor : VisualElement
     readonly Color ink, numColor, accent, errorRed;
     readonly Font mono;
     readonly CodeBuffer buffer = new CodeBuffer();
-    readonly VisualElement rowsLayer, textClip, textLayer, selLayer, caret;
+    readonly VisualElement rowsLayer, textClip, textLayer, selLayer, caret, dropMark, numberMark, guideLayer;
     readonly Label colored, probe;
     readonly List<(VisualElement row, VisualElement bar, Label num)> rows = new List<(VisualElement, VisualElement, Label)>();
     int activeLine = -1;
     bool activeError;
     float pitch = FontSize * 1.32f + Spacing, lineHeight = FontSize * 1.32f, charW = FontSize * 0.6f;
     float scrollX, scrollY, maxHeight = float.MaxValue;
-    bool editing, readOnly, pitchMeasured;
+    bool editing, readOnly, pitchMeasured, blocks;
+    // Acemi: tasinmak uzere kaldirilan satir (soluk gorunur), yoksa -1
+    int lifted = -1;
+    // Blok cizgileri (":" ile biten satirin govdesi) ve surukleme sirasinda satirin girecegi blok (baslik satiri, yoksa -1)
+    List<BlockSpan> spans = new List<BlockSpan>();
+    int dropOwner = -1, dropGap = -1;
     int caretSeen = -1;
     float blinkStart;
     // dokunma / fare
     Drag drag;
+    bool dragMouse;
     int dragPointer = -1;
     Vector2 downPos, lastPos;
     IVisualElementScheduledItem longPress;
@@ -88,10 +100,40 @@ public class CodeEditor : VisualElement
         caret.style.position = Position.Absolute;
         caret.style.width = 4;
         caret.style.backgroundColor = accent;
-        Radius(caret, 2);
+        Ui.Radius(caret, 2);
         caret.style.display = DisplayStyle.None;
         textLayer.Add(caret);
         schedule.Execute(UpdateCaret).Every(33);
+
+        // Acemi: birakilacak yer (satirlar arasinda ince turuncu cizgi; basindaki nokta girintiyi gosterir)
+        dropMark = new VisualElement { pickingMode = PickingMode.Ignore };
+        dropMark.style.position = Position.Absolute;
+        dropMark.style.right = -4000; // yatay kaydirmada da sag kenara uzansin
+        dropMark.style.height = 6;
+        dropMark.style.backgroundColor = accent;
+        Ui.Radius(dropMark, 3);
+        var dot = new VisualElement { pickingMode = PickingMode.Ignore };
+        dot.style.position = Position.Absolute;
+        dot.style.left = -9; dot.style.top = -7; dot.style.width = 20; dot.style.height = 20;
+        dot.style.backgroundColor = accent;
+        Ui.Radius(dot, 10);
+        dropMark.Add(dot);
+        dropMark.style.display = DisplayStyle.None;
+        textLayer.Add(dropMark);
+
+        // Acemi: -/+ ile degistirilen sayinin cercevesi
+        numberMark = new VisualElement { pickingMode = PickingMode.Ignore };
+        numberMark.style.position = Position.Absolute;
+        Ui.Border(numberMark, 3, accent);
+        Ui.Radius(numberMark, 8);
+        numberMark.style.display = DisplayStyle.None;
+        textLayer.Insert(0, numberMark);
+
+        // Blok cizgileri: her blogun govdesinin solunda ince dikey cizgi (hangi satirlar tekrarlanacak, bir bakista)
+        guideLayer = new VisualElement { pickingMode = PickingMode.Ignore };
+        guideLayer.style.position = Position.Absolute;
+        guideLayer.style.left = 0; guideLayer.style.top = 0;
+        textLayer.Insert(0, guideLayer);
 
         RegisterCallback<PointerDownEvent>(OnPointerDown);
         RegisterCallback<PointerMoveEvent>(OnPointerMove);
@@ -129,6 +171,19 @@ public class CodeEditor : VisualElement
     {
         get => readOnly;
         set { readOnly = value; if (value) StopEditing(); }
+    }
+
+    // Acemi kademesi: imlec ve secim yok, harf yazilmaz; satirlar surukle-birakla tasinir.
+    public bool Blocks
+    {
+        get => blocks;
+        set
+        {
+            if (blocks == value) return;
+            blocks = value;
+            buffer.SetCaret(buffer.Caret);
+            Repaint();
+        }
     }
 
     // Kod alaninin en cok buyuyebilecegi yukseklik (fazlasi kaydirilir)
@@ -209,6 +264,86 @@ public class CodeEditor : VisualElement
         if (idx >= 0 && idx < rows.Count) EnsureLineVisible(idx);
     }
 
+    // ---- Acemi: surukle-birak ve -/+ icin ----
+
+    // Bir girinti kademesinin (4 bosluk) ekrandaki genisligi
+    public float IndentStep => charW * CodeBuffer.Indent.Length;
+
+    // Noktaya en yakin satir arasi (0 = en ust, LineCount = en alt)
+    public int GapAt(Vector2 world)
+    {
+        var p = textLayer.WorldToLocal(world);
+        return Mathf.Clamp(Mathf.RoundToInt((p.y + (pitch - lineHeight) * 0.5f) / pitch), 0, buffer.LineCount);
+    }
+
+    // Birakilacak yeri gosterir: gap satir arasinda, level kademe iceriden baslayan turuncu cizgi. Satir bir blogun
+    // govdesine girecekse o blogun cizgisi turuncu olup birakilacak yere uzar. movingLine: tasinan satir (yoksa -1).
+    public void ShowDrop(int gap, int level, int movingLine)
+    {
+        dropOwner = CodeBlocks.Owner(Lines(), gap, level, movingLine);
+        dropGap = gap;
+        LayoutGuides();
+        float y = gap * pitch - (pitch - lineHeight) * 0.5f;
+        y = Mathf.Clamp(y, -Spacing * 0.5f + 8f, ContentHeight - Spacing * 0.5f - 8f); // en ustte/altta kesilmesin
+        dropMark.style.left = level * IndentStep;
+        dropMark.style.top = y - 3f;
+        dropMark.style.display = DisplayStyle.Flex;
+    }
+
+    public void HideDrop()
+    {
+        dropMark.style.display = DisplayStyle.None;
+        if (dropOwner < 0 && dropGap < 0) return;
+        dropOwner = dropGap = -1;
+        LayoutGuides();
+    }
+
+    List<string> Lines()
+    {
+        var list = new List<string>(buffer.LineCount);
+        for (int i = 0; i < buffer.LineCount; i++) list.Add(buffer.Line(i));
+        return list;
+    }
+
+    // Tasinmak uzere kaldirilan satir soluk gorunur (-1: hicbiri)
+    public void Lift(int line)
+    {
+        if (lifted == line) return;
+        lifted = line;
+        Repaint();
+    }
+
+    // Surukleyen parmak kod alaninin ust/alt kenarindaysa kodu o yone kaydirir (uzun kodda gorunmeyen yere birakmak icin)
+    public void EdgeScroll(Vector2 world)
+    {
+        var r = worldBound;
+        float zone = pitch * 0.7f;
+        if (world.x < r.xMin || world.x > r.xMax) return;
+        if (world.y < r.yMin + zone && world.y > r.yMin - zone * 2f) ScrollBy(0f, -pitch * 0.2f);
+        else if (world.y > r.yMax - zone && world.y < r.yMax + zone * 2f) ScrollBy(0f, pitch * 0.2f);
+    }
+
+    // (line, col)'daki sayinin cevresine cerceve koyar; sayinin ekrandaki yerini dondurur. Sayi yoksa cerceve kalkar, null.
+    public Rect? MarkNumber(int line, int col)
+    {
+        if (!buffer.FindNumber(line, col, out int start, out int length))
+        {
+            ClearNumberMark();
+            return null;
+        }
+        var r = new Rect(start * charW - 8f, line * pitch - 6f, length * charW + 16f, lineHeight + 12f);
+        numberMark.style.left = r.x; numberMark.style.top = r.y;
+        numberMark.style.width = r.width; numberMark.style.height = r.height;
+        numberMark.style.display = DisplayStyle.Flex;
+        return textLayer.LocalToWorld(r);
+    }
+
+    public void ClearNumberMark() => numberMark.style.display = DisplayStyle.None;
+
+    // Deneme icin: (satir, sutun)'daki harfin ortasi ve gap satir arasinin (sutun hizasinda) panel koordinati
+    public Vector2 CharCenter(int line, int col) => textLayer.LocalToWorld(new Vector2((col + 0.5f) * charW, line * pitch + lineHeight * 0.5f));
+    public Vector2 GapPoint(int gap, int col) => textLayer.LocalToWorld(new Vector2((col + 0.5f) * charW, gap * pitch - (pitch - lineHeight) * 0.5f));
+
     // ---- Dokunma / fare ----
 
     void OnPointerDown(PointerDownEvent e)
@@ -217,9 +352,17 @@ public class CodeEditor : VisualElement
         if (mouse && e.button != 0) return;
         if (!readOnly) { editing = true; Focus(); }
         dragPointer = e.pointerId;
+        dragMouse = mouse;
         downPos = lastPos = e.position;
         this.CapturePointer(e.pointerId);
-        if (mouse)
+        if (blocks)
+        {
+            // Acemi: kisa dokunus sayiya bakar; parmakla basili tutmak ya da fareyle surukleme satiri kaldirir
+            drag = Drag.Pending;
+            longPress?.Pause();
+            if (!mouse) longPress = schedule.Execute(() => { if (drag == Drag.Pending) PickLine(downPos); }).StartingIn(LongPressMs);
+        }
+        else if (mouse)
         {
             // fare: tiklanan yere imlec, surukleyince secim (Shift ile secimi uzatir)
             drag = Drag.Select;
@@ -255,8 +398,10 @@ public class CodeEditor : VisualElement
         Vector2 p = e.position;
         if (drag == Drag.Pending && (p - downPos).magnitude > DragSlop)
         {
-            drag = Drag.Scroll;
             longPress?.Pause();
+            if (blocks && dragMouse) { PickLine(downPos); return; }
+            drag = Drag.Scroll;
+            if (blocks) NumberTapped?.Invoke(-1, -1); // -/+ kutusu kayan koddan ayri kalmasin
         }
         if (drag == Drag.Scroll) ScrollBy(lastPos.x - p.x, lastPos.y - p.y);
         else if (drag == Drag.Select && !readOnly)
@@ -273,10 +418,40 @@ public class CodeEditor : VisualElement
         if (e.pointerId != dragPointer) return;
         if (drag == Drag.Pending && !readOnly)
         {
-            buffer.SetCaret(Hit(e.position));
-            Repaint();
+            if (blocks) TapNumber(e.position);
+            else
+            {
+                buffer.SetCaret(Hit(e.position));
+                Repaint();
+            }
         }
         EndDrag(e.pointerId);
+    }
+
+    // Acemi: dokunulan yerde sayi varsa haber verir (ustunde -/+ acilsin)
+    void TapNumber(Vector2 world)
+    {
+        var (l, c) = buffer.Position(Hit(world));
+        if (buffer.FindNumber(l, c, out int start, out _)) NumberTapped?.Invoke(l, start);
+        else NumberTapped?.Invoke(-1, -1);
+    }
+
+    // Acemi: parmagin altindaki satir tasinmak uzere kalkar (BlockDrag parmagi devralir)
+    void PickLine(Vector2 world)
+    {
+        drag = Drag.None;
+        int line = LineAt(world);
+        if (readOnly || line < 0) return;
+        NumberTapped?.Invoke(-1, -1);
+        LinePicked?.Invoke(line, world, dragPointer);
+    }
+
+    // Noktanin ustundeki satir; satirlarin disindaysa ya da kod bossa -1
+    int LineAt(Vector2 world)
+    {
+        if (buffer.LineCount == 1 && buffer.Line(0).Trim().Length == 0) return -1;
+        int line = RowAt(textLayer.WorldToLocal(world));
+        return line >= 0 && line < buffer.LineCount ? line : -1;
     }
 
     void EndDrag(int pointerId)
@@ -291,16 +466,19 @@ public class CodeEditor : VisualElement
     int Hit(Vector2 world)
     {
         var p = textLayer.WorldToLocal(world);
-        int line = Mathf.Clamp(Mathf.FloorToInt((p.y + (pitch - lineHeight) * 0.5f) / pitch), 0, buffer.LineCount - 1);
+        int line = Mathf.Clamp(RowAt(p), 0, buffer.LineCount - 1);
         int col = Mathf.Max(0, Mathf.RoundToInt(p.x / charW));
         return buffer.Index(line, col);
     }
+
+    // Yazi katmanindaki noktanin satir sirasi (satirin ust/alt boslugu dahil; kodun disinda da sayi verir)
+    int RowAt(Vector2 local) => Mathf.FloorToInt((local.y + (pitch - lineHeight) * 0.5f) / pitch);
 
     // ---- Bilgisayar klavyesi ----
 
     void OnKeyDown(KeyDownEvent e)
     {
-        if (!Editing) return;
+        if (!Editing || blocks) return; // Acemi'de harf yazilmaz
         bool shift = e.shiftKey;
         bool ctrl = (e.ctrlKey || e.commandKey) && !e.altKey; // AltGr (Ctrl+Alt) ile yazilan { [ @ gibi isaretler yazi sayilir
         bool handled = true;
@@ -406,7 +584,7 @@ public class CodeEditor : VisualElement
     // Imlec yazarken 0.5 sn'de bir yanip soner; secim varken ya da yazmiyorken gizli.
     void UpdateCaret()
     {
-        bool show = Editing && !buffer.HasSelection;
+        bool show = Editing && !blocks && !buffer.HasSelection;
         if (show)
         {
             if (buffer.Caret != caretSeen) { caretSeen = buffer.Caret; blinkStart = Time.unscaledTime; }
@@ -425,9 +603,10 @@ public class CodeEditor : VisualElement
             if (i > 0) sb.Append('\n');
             // bos satir da yer kaplasin
             string line = buffer.Line(i);
-            sb.Append(line.Length == 0 ? " " : CodeColors.Line(line));
+            sb.Append(line.Length == 0 ? " " : i == lifted ? CodeColors.Faded(line) : CodeColors.Line(line));
         }
         colored.text = sb.ToString();
+        spans = CodeBlocks.Find(Lines());
 
         while (rows.Count < n) AddRow();
         while (rows.Count > n)
@@ -447,20 +626,20 @@ public class CodeEditor : VisualElement
         var row = new VisualElement { pickingMode = PickingMode.Ignore };
         row.style.position = Position.Absolute;
         row.style.left = 0; row.style.right = 0;
-        Radius(row, 16);
+        Ui.Radius(row, 16);
         Transition(row, "background-color");
 
         var bar = new VisualElement { pickingMode = PickingMode.Ignore };
         bar.style.position = Position.Absolute;
         bar.style.left = 0; bar.style.top = 14; bar.style.bottom = 14; bar.style.width = 6;
         bar.style.backgroundColor = accent;
-        Radius(bar, 3);
+        Ui.Radius(bar, 3);
         bar.style.opacity = 0;
         Transition(bar, "opacity");
         row.Add(bar);
 
         var num = new Label { pickingMode = PickingMode.Ignore };
-        Zero(num);
+        Ui.NoSpacing(num);
         num.style.unityFontDefinition = new StyleFontDefinition(FontDefinition.FromFont(mono));
         num.style.fontSize = NumSize;
         num.style.color = numColor;
@@ -509,6 +688,8 @@ public class CodeEditor : VisualElement
         }
         style.height = ViewHeight;
 
+        LayoutGuides();
+
         // imlec
         var (cl, cc) = buffer.Position(buffer.Caret);
         caret.style.left = Mathf.Max(0f, cc * charW - 2f);
@@ -517,7 +698,7 @@ public class CodeEditor : VisualElement
 
         // secim: satir satir turuncu seritler
         selLayer.Clear();
-        if (Editing && buffer.HasSelection)
+        if (Editing && !blocks && buffer.HasSelection)
         {
             var (la, ca) = buffer.Position(buffer.SelectionStart);
             var (lb, cb) = buffer.Position(buffer.SelectionEnd);
@@ -530,16 +711,48 @@ public class CodeEditor : VisualElement
                 r.style.top = li * pitch - (pitch - lineHeight) * 0.25f;
                 r.style.height = lineHeight + (pitch - lineHeight) * 0.5f;
                 r.style.backgroundColor = new Color(accent.r, accent.g, accent.b, 0.35f);
-                Radius(r, 6);
+                Ui.Radius(r, 6);
                 selLayer.Add(r);
             }
         }
         ApplyScroll();
     }
 
+    // Blok cizgileri: baslik satirinin ilk harfinin altindan govdenin son satirina. Surukleme sirasinda satirin girecegi
+    // blogun cizgisi turuncu ve birakilacak yere kadar uzun (govdesi henuz bos olan blokta da gorunur).
+    void LayoutGuides()
+    {
+        guideLayer.Clear();
+        bool ownerDrawn = false;
+        foreach (var b in spans)
+        {
+            bool owner = b.Header == dropOwner;
+            ownerDrawn |= owner;
+            AddGuide(b.Header, b.Last, b.Level, owner);
+        }
+        if (dropOwner >= 0 && !ownerDrawn && dropOwner < buffer.LineCount)
+            AddGuide(dropOwner, dropOwner, CodeBlocks.Level(buffer.Line(dropOwner)), true);
+    }
+
+    void AddGuide(int header, int last, int level, bool owner)
+    {
+        float top = header * pitch + lineHeight + 2f, bottom = last * pitch + lineHeight;
+        if (owner) bottom = Mathf.Max(bottom, dropGap * pitch - (pitch - lineHeight) * 0.5f);
+        if (bottom <= top) return;
+        var g = new VisualElement { pickingMode = PickingMode.Ignore };
+        g.style.position = Position.Absolute;
+        g.style.left = (level * CodeBuffer.Indent.Length + 0.5f) * charW - (owner ? 2.5f : 1.5f);
+        g.style.width = owner ? 5f : 3f;
+        g.style.top = top;
+        g.style.height = bottom - top;
+        g.style.backgroundColor = owner ? accent : new Color(1f, 1f, 1f, 0.14f);
+        Ui.Radius(g, 2);
+        guideLayer.Add(g);
+    }
+
     void TextStyle(TextElement t, Color c)
     {
-        Zero(t);
+        Ui.NoSpacing(t);
         t.style.unityFontDefinition = new StyleFontDefinition(FontDefinition.FromFont(mono));
         t.style.fontSize = FontSize;
         t.style.color = c;
@@ -548,17 +761,7 @@ public class CodeEditor : VisualElement
         t.style.unityTextAlign = TextAnchor.UpperLeft;
     }
 
-    static void Zero(VisualElement e)
-    {
-        e.style.marginLeft = 0; e.style.marginRight = 0; e.style.marginTop = 0; e.style.marginBottom = 0;
-        e.style.paddingLeft = 0; e.style.paddingRight = 0; e.style.paddingTop = 0; e.style.paddingBottom = 0;
-    }
 
-    static void Radius(VisualElement e, float r)
-    {
-        e.style.borderTopLeftRadius = r; e.style.borderTopRightRadius = r;
-        e.style.borderBottomLeftRadius = r; e.style.borderBottomRightRadius = r;
-    }
 
     static void Transition(VisualElement e, string prop)
     {

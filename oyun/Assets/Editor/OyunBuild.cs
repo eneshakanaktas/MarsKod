@@ -116,7 +116,9 @@ public static class OyunBuild
     public static void BuildAndroid()
     {
         EditorUserBuildSettings.buildAppBundle = false;
-        PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+        // 64 bit (Play Store sart kosar) + 32 bit: ucuz telefonlarin bir kismi 64 bit islemciye ragmen 32 bit Android
+        // kullaniyor (Ragip'in Redmi 9C'si: armeabi-v7a). Yalnizca ARM64 paket onlara kurulamiyordu.
+        PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64 | AndroidArchitecture.ARMv7;
         PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
         Build(BuildTarget.Android, "Build/Android/marskod.apk");
     }

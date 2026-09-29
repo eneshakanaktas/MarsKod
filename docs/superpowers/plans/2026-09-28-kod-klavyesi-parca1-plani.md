@@ -85,18 +85,24 @@ Yeni `CodeBuffer` (Dunya): kod metni + imleç + seçim + satır türleri tek yer
 - Orta/Usta seçimi Görev 8'de; şimdilik klavye Orta (öneri satırı açık). `Hud.ShowSuggestions` ile değişir.
 - Açık soru 3 (12 tuşluk sıra): tuşlar ~80×104 (1080 genişliğe göre), Gboard'un Türkçe Q'suyla aynı sayı; gerçek telefonda parmakla denenmeli.
 
-## Görev 7 — Acemi paleti: sürükle-bırak — belge §4
+## Görev 7 — Acemi paleti: sürükle-bırak — belge §4 ✅ (2026-09-29, Ragıp)
 
-`BlockPalette.cs`:
-- [ ] Bölümün parçaları düğme olarak; yeni açılan komut turuncu kenarlı.
-- [ ] Tut-sürükle: kod kartında satırlar arasında ince turuncu çizgi + girinti gösterimi (varsayılan: üstteki `:` ile bitiyorsa içeride); parmak sağa/sola → girinti kademe kademe.
-- [ ] Koddaki satırı tutup taşıma; kart dışına bırakınca silme (çöp işareti).
-- [ ] Sayıya dokununca −/+ (tür değişmez). Acemi'de imleç yok, harf yazılmaz.
-- [ ] Sanal telefonda Bölüm 3'ü yalnızca sürükle-bırakla çöz; girinti zor gelirse açık soru 2'deki ⇥/⇤ yedeği.
+`BlockPalette.cs` (düğmeler), `BlockDrag.cs` (sürükleme), `NumberStepper.cs` (−/+), `CodeEditor.Blocks` (Acemi modu); saf mantık `CodeBuffer.DefaultIndentLevel` / `DropIndentLevel`, `CodeBlocks`, `Palette.NewPieces`, `KeyboardTier` (`PaletteTests` 11 test; toplam 1153).
+- [x] Bölümün parçaları düğme olarak; bu bölümde ilk kez görülen parça turuncu kenarlı (ilk bölümde hiçbiri: hepsi yeni olunca anlamı kalmıyor).
+- [x] Tut-sürükle: parmağın üstünde satırın kopyası (hayalet) gider; kod kartında satırlar arasında turuncu çizgi, başındaki nokta girintiyi gösterir. Parmak sağa/sola → girinti kademe kademe, 0'dan üstteki satırın bir kademe içerisine kadar; **yanlış girinti engellenmez** (Python hatası + açıklama öğretir; karar belge §4). **Blok çizgisi** (`CodeBlocks.cs`): blok gövdelerinin solunda ince çizgi; sürüklenen satır bir bloğa girecekse çizgi turuncu olup bırakılacak yere uzar. Uzun kodda kartın üst/alt kenarında kod kendiliğinden kayar.
+- [x] Koddaki satır: parmakla basılı tut (0,35 sn) → kalkar (soluk görünür), sürükle → taşı; kart dışına bırakınca silinir (hayalet kırmızı + çöp işareti). Farede tıkla-sürükle yeter. Hemen sürüklemek kodu kaydırır (Orta'daki gibi).
+- [x] Sayıya dokununca üstünde −/+ (basılı tutunca art arda; 0–99; tür değişmez). Acemi'de imleç yok, harf yazılmaz (bilgisayar klavyesi de yazmaz).
+- [x] **Ek (Ragıp):** düğmeye kısa dokunmak satırı kodun sonuna ekler (varsayılan girintiyle). Paletin üstünde "Sürükle: istediğin satıra · Dokun: sona ekle".
+- [x] Otomatik denetim: `-shots` içinde Bölüm 3 fareyle yalnızca paletle çözülür (bırak, dokun, taşı, sola kaydırıp döngüden çıkar, sil, +) → log'da `PALET DENETIMI: TAMAM`; görüntüler `acemi-palet.png`, `acemi-surukle.png`, `acemi-sil.png`, `acemi-sayi.png`, `acemi-bitti.png`.
+- [x] Sanal telefonda Bölüm 3 yalnızca parmakla sürükle-bırakla çözüldü (`for` bırak, satırları basılı tutup içeri taşı, `3` → + + → `5`, Çalıştır → Tamamlandı). Girinti sürüklemeyle rahat oldu; ⇥/⇤ yedeğine (açık soru 2) gerek görülmedi, gerçek telefonda parmakla yine bakılmalı. Görüntüler `docs/tasarim/acemi-telefon-2026-09-29/`.
+- Kademe seçme düğmesi Görev 8'de; o zamana kadar başlatma seçeneği `-kademe acemi|orta|usta` (telefonda `adb shell am start ... -e unity '-kademe acemi'`).
+- Bilerek basit bırakılan: `for` satırı taşınınca altındaki gövde onunla gitmez (tek satır taşınır). İnsan testinde kafa karıştırırsa blok taşıma düşünülür.
+- Ek: üç dosyada tekrar eden arayüz yardımcıları (köşe, kenar, boşluk, telefonun alt payı) `Scripts/Ui.cs`'e toplandı.
 
 ## Görev 8 — Klavye tuşu + kademe seçimi — belge §3, K6, K7
 
 - [ ] Alt sıra: 💡 · ⌨ · ▶ Çalıştır · ↻. ⌨ → küçük kutu: Hazır düğmeler (Acemi) · Klavye + öneri (Orta) · Klavye (Usta); seçili işaretli, o bölümde alınan kademelerin yanında ✓.
+- **Yer için öneri (Ragıp, 09-29, Redmi 9C'de denerken):** ⌨ yerine kod kartının sağ üstündeki "Python" yazısının yeri (bugün işlevsiz). Artısı: dar telefonda (720 px) alt sıra 3 düğmede kalır, Çalıştır daralmaz; kodla ilgili ayar kodun yanında. Eksisi: başparmaktan uzak, soluk kalırsa düğme olduğu anlaşılmaz (belirgin çizilmeli). K6'yı (Enes + Ragıp) değiştirir: Görev 8 başında karar verilsin, Enes'e sorulsun.
 - [ ] Seçim kalıcı, **tek yerde** tutulur (`KeyboardTier` ayarı; Parça 2'de "sistemin önerdiği kademe" buraya bağlanacak).
 
 ## Görev 9 — XP ekranda + kapanış

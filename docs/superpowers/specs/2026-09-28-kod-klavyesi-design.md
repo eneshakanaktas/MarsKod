@@ -72,6 +72,8 @@ Oyuncu kodunu üç yoldan biriyle yazar:
 - **Sürükle-bırak:**
   - Düğme tutulup kod kartına sürüklenir; satırlar arasında bırakılacak yeri gösteren ince turuncu çizgi çıkar.
   - **Girinti:** Çizgi, bırakılacak satırın girintisini de gösterir. Varsayılan: hemen üstteki satır `:` ile bitiyorsa bir kademe içeride, değilse üstteki satırla aynı. Parmak sağa/sola kaydırılınca girinti kademe kademe değişir (4 boşluk adım).
+  - **(09-29, Ragıp) Girinti engellenmez:** Oyuncu Python'un kabul etmediği girintiyi de seçebilir (0'dan üstteki satırın bir kademe içerisine kadar). Yanlış girintide Python hatası ve Türkçe açıklaması çıkar; Acemi kuralı hatasından, nedeniyle öğrenir (engel "buraya konamaz" der ama nedenini söylemez, ve Bölüm 3'ün tipik hatası olan "gövde girintisiz" Acemi'de hiç görülmezdi).
+  - **(09-29, Ragıp) Blok çizgisi:** Her bloğun (`for`, `if`… `:` ile biten satır) gövdesinin solunda ince dikey çizgi: hangi satırların tekrarlanacağı bir bakışta görünür (Scratch'teki C şeklindeki blokların metin koddaki karşılığı). Sürüklenen satır bir bloğun içine girecekse o bloğun çizgisi turuncu olur ve bırakılacak yere uzar. İpucu değildir: neyin içeride *olması gerektiğini* değil, şu an neyin içeride *olduğunu* gösterir. Orta/Usta'da da görünür.
   - Koddaki bir satır tutulup başka yere sürüklenebilir (sıra değiştirme); kod kartının dışına bırakılırsa silinir (sürüklerken çöp kutusu işareti görünür).
 - **Sayı değiştirme:** Koddaki bir sayıya dokununca üstünde − / + çıkar (`range(3)` → `range(5)`). Satırın türü değişmez (düğme kalır).
 - Acemi'de kod kartında harf yazılamaz; imleç yoktur.

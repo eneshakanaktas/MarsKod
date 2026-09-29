@@ -103,6 +103,7 @@ Aşama 1'deki TypeScript motoru (`src/engine`) C#'a birebir taşınır. Sıra: k
 - Bölüm dosyaları kod bilmeyen ekip üyeleri tarafından da yazılabilir; denetleyici hatalıysa uyarır.
 
 ## Aşama 7 — Öğrenme sistemi
+- [ ] **Kod sözlüğü** (karar 09-29, Ragıp): oyuncu istediği an her komutun / Python kelimesinin ne işe yaradığını görür (bir cümle + örnek); açılmamışlar kilitli görünür. Tasarım notu `docs/tasarim/kod-sozlugu.md`. **Sıra: kod klavyesi Parça 1'den sonra, ilk insan testinden önce** (Aşama 7'nin geri kalanını beklemez).
 - [ ] Oyuncu profili (konu başına 🟢/🟡/🔴) ve "Bilgi haritası" ekranı.
 - [ ] 3 kademe ipucu + jeton cüzdanı.
 - [ ] Eğitim bölümü: ~8–10 konu için kısa görsel ders + mini oyun/soru.

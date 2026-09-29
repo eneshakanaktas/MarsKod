@@ -108,6 +108,10 @@ public class Oyun : MonoBehaviour
         hud.MenuPressed += () => LoadLevel((levelIndex + 1) % levels.Count);
         hud.StarsToggled += () => { starsTarget = starsTarget > 0.5f ? 0f : 1f; hud.SetStars(starsTarget > 0.5f); };
 
+        // Kod yazma kademesi (secme dugmesi Gorev 8'de): -kademe acemi|orta|usta
+        for (int i = 0; i < a.Length - 1; i++)
+            if (a[i] == "-kademe" && System.Enum.TryParse(a[i + 1], true, out KeyboardTier t)) hud.Tier = t;
+
         LoadLevels();
         int start = 1;
         for (int i = 0; i < a.Length - 1; i++)
@@ -302,6 +306,7 @@ public class Oyun : MonoBehaviour
         else hud.LoadStartCode(level.StartCode);
         code = hud.Code;
         hud.SetOpenWords(MarsKod.Dunya.Suggestions.OpenWords(levels, level.Number));
+        hud.SetPieces(level.Pieces, Palette.NewPieces(levels, level.Number));
         hud.SetLevel(level.Number, level.Title, level.Goal, level.Ices.Count, level.Hints[0]);
     }
 
@@ -642,6 +647,81 @@ public class Oyun : MonoBehaviour
         hud.StopEditing();
     }
 
+    // ---- Acemi paleti denetimi (-shots icinde): fareyle surukle-birak ----
+    // Bolum 3 yalnizca paletle cozulur: for'u birak, dokunarak satir ekle, satir tasi, sola kaydirip donguden cikar,
+    // kartin disina atip sil, sayiyi + ile 5'e cikar, sonra calistir. Log'da "PALET DENETIMI:" satiri;
+    // goruntuler acemi-palet.png, acemi-surukle.png (hayalet + turuncu cizgi), acemi-sil.png (cop), acemi-sayi.png (-/+).
+    IEnumerator PaletteCheck(string dir)
+    {
+        var mouse = UnityEngine.InputSystem.Mouse.current;
+        if (mouse == null) { Debug.Log("PALET DENETIMI: fare yok, atlandi"); yield break; }
+        int idx = levels.FindIndex(l => l.Pieces.Contains("for i in range(3):"));
+        if (idx < 0) { Debug.Log("PALET DENETIMI: for parcasi olan bolum yok, atlandi"); yield break; }
+        LoadLevel(idx);
+        hud.Tier = KeyboardTier.Acemi;
+        SetCode("");
+        yield return new WaitForSeconds(0.3f);
+        hud.FocusCode(0, 0);
+        yield return new WaitForSeconds(0.5f); // palet acilip yerlessin
+        Cap(Path.Combine(dir, "acemi-palet.png"));
+        yield return new WaitForSeconds(0.3f);
+
+        string problem = null;
+        void Mouse(Vector2 at, bool down) => UnityEngine.InputSystem.InputSystem.QueueStateEvent(mouse,
+            new UnityEngine.InputSystem.LowLevel.MouseState { position = at, buttons = (ushort)(down ? 1 : 0) });
+        IEnumerator Frames(int n) { for (int k = 0; k < n; k++) yield return null; }
+        IEnumerator Click(Vector2? at, string what)
+        {
+            if (!at.HasValue) { problem = problem ?? what + " bulunamadi"; yield break; }
+            Mouse(at.Value, true); yield return Frames(2);
+            Mouse(at.Value, false); yield return Frames(2);
+        }
+        IEnumerator Drag(Vector2? from, Vector2 to, string what, string shot = null)
+        {
+            if (!from.HasValue) { problem = problem ?? what + " bulunamadi"; yield break; }
+            Mouse(from.Value, true); yield return Frames(2);
+            for (int k = 1; k <= 10; k++) { Mouse(Vector2.Lerp(from.Value, to, k / 10f), true); yield return Frames(1); }
+            yield return Frames(3);
+            if (shot != null) { Cap(Path.Combine(dir, shot)); yield return new WaitForSeconds(0.2f); }
+            Mouse(to, false); yield return Frames(3);
+        }
+        void Expect(string step, string want)
+        {
+            if (problem == null && hud.Code != want) problem = step + ": " + hud.Code.Replace("\n", "\\n");
+        }
+
+        yield return Drag(hud.PieceScreenPoint("for i in range(3):"), hud.CodeScreenPoint(), "for parcasi");
+        Expect("for birakildi", "for i in range(3):");
+        yield return Click(hud.PieceScreenPoint("collect()"), "collect parcasi");
+        yield return Click(hud.PieceScreenPoint("move(East)"), "move parcasi");
+        Expect("dokunarak eklendi", "for i in range(3):\n    collect()\n    move(East)");
+        yield return Drag(hud.CodeCharScreenPoint(2, 6), hud.CodeGapScreenPoint(1, 6), "3. satir", "acemi-surukle.png");
+        Expect("satir tasindi", "for i in range(3):\n    move(East)\n    collect()");
+        yield return Click(hud.PieceScreenPoint("move(North)"), "move(North) parcasi");
+        yield return Drag(hud.CodeCharScreenPoint(3, 6), hud.CodeGapScreenPoint(4, 1), "4. satir"); // 5 harf sola: bir kademe disari
+        Expect("donguden cikti", "for i in range(3):\n    move(East)\n    collect()\nmove(North)");
+        yield return Drag(hud.CodeCharScreenPoint(3, 2), new Vector2(Screen.width * 0.5f, Screen.height * 0.75f), "4. satir", "acemi-sil.png");
+        Expect("satir silindi", "for i in range(3):\n    move(East)\n    collect()");
+        yield return Click(hud.CodeCharScreenPoint(0, 15), "sayi");
+        yield return new WaitForSeconds(0.2f);
+        yield return Click(hud.StepperScreenPoint(+1), "+ dugmesi");
+        yield return Click(hud.StepperScreenPoint(+1), "+ dugmesi");
+        yield return new WaitForSeconds(0.2f);
+        Cap(Path.Combine(dir, "acemi-sayi.png"));
+        yield return new WaitForSeconds(0.3f);
+        Expect("sayi degisti", "for i in range(5):\n    move(East)\n    collect()");
+        if (problem == null && hud.CodeKinds != "DDD") problem = "satir turleri " + hud.CodeKinds + " (DDD olmali)";
+
+        hud.StopEditing();
+        OnRun();
+        while (running) yield return null;
+        if (problem == null && !complete) problem = "cozum bolumu bitirmedi";
+        Debug.Log("PALET DENETIMI: " + (problem ?? "TAMAM"));
+        yield return new WaitForSeconds(0.4f);
+        Cap(Path.Combine(dir, "acemi-bitti.png"));
+        yield return new WaitForSeconds(0.3f);
+    }
+
     // ---- Kontrol icin ekran goruntusu: MarsKod.exe -shots <klasor> ----
 
     static void Cap(string path) => ScreenCapture.CaptureScreenshot(path, 2);
@@ -707,13 +787,16 @@ public class Oyun : MonoBehaviour
         Cap(Path.Combine(dir, "klavye-isaretler.png"));
         yield return new WaitForSeconds(0.3f);
         hud.KeyboardMore(false);
-        hud.ShowSuggestions = false;
+        var tierBefore = hud.Tier;
+        hud.Tier = KeyboardTier.Usta;
         yield return new WaitForSeconds(0.3f);
         Cap(Path.Combine(dir, "klavye-usta.png"));
         yield return new WaitForSeconds(0.3f);
-        hud.ShowSuggestions = true;
+        hud.Tier = KeyboardTier.Orta;
         hud.StopEditing();
         yield return KeyboardTapCheck(dir);
+        yield return PaletteCheck(dir);
+        hud.Tier = tierBefore;
 
         if (System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-klavyedenetimi") >= 0) yield return KeyboardCheck(dir);
         LoadLevel(levels.Count - 1);
@@ -733,6 +816,8 @@ public class Oyun : MonoBehaviour
             (2, "h5-kaya", "move(East)\nmove(East)\ncollect()\nmove(East)\n"),
             (1, "h6-kilitli-komut", "move(East)\ncollect()\n"),
             (1, "h7-hedefte-degil", "move(East)\nmove(East)\nmove(East)\n"),
+            (3, "h8-govde-girintisiz", "for i in range(5):\nmove(East)\ncollect()\n"),
+            (3, "h9-sebepsiz-iceride", "move(East)\n    collect()\n"),
         };
         foreach (var (number, name, source) in cases)
         {

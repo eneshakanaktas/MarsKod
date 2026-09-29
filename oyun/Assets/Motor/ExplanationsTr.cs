@@ -44,14 +44,25 @@ namespace MarsKod.Motor
         public static readonly List<Rule> Rules = new List<Rule>
         {
             // --- girinti ---
+            // Yeni baslayan icin: "girinti", "blok" gibi kelimeler yerine ne oldugunu ve neyi degistirecegini anlat.
+            // Ipucu hem suruklemeye (Acemi) hem yazmaya (Orta/Usta) uysun: "sağa kaydır / içeri al".
+            new Rule
+            {
+                Types = Indent,
+                Pattern = @"^expected an indented block after '(for|while)' statement on line (\d+)$",
+                Category = ErrorCategory.Girinti,
+                Title = "`{1}` neyi tekrarlayacağını bilmiyor",
+                Text = "{2}. satırdaki `{1}` bir işi tekrar tekrar yaptırır. Neyi tekrarlayacağını, hemen altındaki biraz sağa kaymış (içeri alınmış) satırlardan anlar. Şu an altında içeride hiç satır yok.",
+                Hint = "Tekrarlanmasını istediğin satırları `{1}` satırının altına koy ve biraz sağa kaydır. İçeri aldığın satırların solunda ince bir çizgi belirir: çizginin yanındakiler tekrarlanır.",
+            },
             new Rule
             {
                 Types = Indent,
                 Pattern = @"^expected an indented block after '(\w+)' statement on line (\d+)$",
                 Category = ErrorCategory.Girinti,
-                Title = "Girinti eksik",
-                Text = "{2}. satırdaki `{1}` iki nokta (:) ile bitiyor. Python, ondan sonraki satırların içeride, yani girintili olmasını bekler.",
-                Hint = "Bu satırın başına 4 boşluk ekle.",
+                Title = "`{1}` satırının altı boş",
+                Text = "{2}. satırdaki `{1}` iki nokta (:) ile bitiyor. İki nokta \"şimdi ne yapılacağını söyleyeceğim\" demektir: Python, bu satıra ait olanları hemen altında, biraz sağa kaymış (içeri alınmış) satırlarda arar. Şu an orada hiç satır yok.",
+                Hint = "`{1}` satırına ait olan satırı hemen altına koy ve biraz sağa kaydır.",
             },
             new Rule
             {
@@ -67,9 +78,9 @@ namespace MarsKod.Motor
                 Types = Indent,
                 Pattern = @"^unexpected indent$",
                 Category = ErrorCategory.Girinti,
-                Title = "Beklenmeyen girinti",
-                Text = "Bu satır sebepsiz yere içeri kaymış. Python'da bir satır sadece bir bloğun (`if`, `for`, `def`...) içindeyse girintili olur.",
-                Hint = "Satırın başındaki boşlukları sil ya da üstteki satırla aynı hizaya getir.",
+                Title = "Bu satır sebepsiz yere içeride",
+                Text = "Bir satır yalnızca iki nokta (:) ile biten bir satırın (`for`, `if`...) altındaysa sağa kayar (içeri alınır); ona ait olduğunu böyle gösterir. Bu satırın üstünde öyle bir satır yok, Python neden içeride olduğunu anlayamıyor.",
+                Hint = "Satırı sola, üstündeki satırla aynı hizaya kaydır.",
             },
             new Rule
             {

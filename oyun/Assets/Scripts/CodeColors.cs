@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 public static class CodeColors
 {
     const string Comment = "#6E6879", Keyword = "#EE9A7C", Call = "#7CC6D4", Constant = "#B9A3E3", Number = "#E6C07E", Text = "#B5D39A";
+    const string Lifted = "#E9E4EE40";
 
     static readonly HashSet<string> Keywords = new HashSet<string>
     {
@@ -39,6 +40,20 @@ public static class CodeColors
             }
             else sb.Append(Escape(m.Value));
         }
+        return sb.ToString();
+    }
+
+    static readonly Regex InlineCode = new Regex("`([^`]+)`", RegexOptions.CultureInvariant);
+
+    // Aciklama metnindeki `kod` parcalari: ters tirnaklar kalkar, kod kod rengiyle gorunur (yeni baslayan isaretlere takilmasin)
+    public static string Inline(string text)
+        => string.IsNullOrEmpty(text) ? text : InlineCode.Replace(text, m => "<color=" + Call + ">" + Escape(m.Groups[1].Value) + "</color>");
+
+    // Tasinmak uzere kaldirilmis satir: tek renk, soluk
+    public static string Faded(string line)
+    {
+        var sb = new StringBuilder();
+        Paint(sb, line, Lifted);
         return sb.ToString();
     }
 

@@ -53,7 +53,7 @@ public class CodeKeyboard : VisualElement
         style.backgroundColor = background;
         style.borderTopLeftRadius = 40; style.borderTopRightRadius = 40;
         style.paddingLeft = Side; style.paddingRight = Side;
-        style.paddingTop = 14; style.paddingBottom = 18 + SafeBottom();
+        style.paddingTop = 14; style.paddingBottom = 18 + Ui.SafeBottom();
 
         // 1. Oneri satiri (Orta)
         suggestRow = new VisualElement();
@@ -66,7 +66,7 @@ public class CodeKeyboard : VisualElement
             var chip = new VisualElement();
             chip.style.flexGrow = 1; chip.style.flexBasis = 0;
             chip.style.alignItems = Align.Center; chip.style.justifyContent = Justify.Center;
-            Radius(chip, 18);
+            Ui.Radius(chip, 18);
             if (i > 0)
             {
                 chip.style.borderLeftWidth = 2;
@@ -157,7 +157,7 @@ public class CodeKeyboard : VisualElement
         popup = new VisualElement { pickingMode = PickingMode.Ignore };
         popup.style.position = Position.Absolute;
         popup.style.backgroundColor = new Color(0.27f, 0.25f, 0.32f, 1f);
-        Radius(popup, 22);
+        Ui.Radius(popup, 22);
         popup.style.alignItems = Align.Center; popup.style.justifyContent = Justify.Center;
         popup.style.display = DisplayStyle.None;
         popupText = KeyText("", 64f, Color.white);
@@ -273,7 +273,7 @@ public class CodeKeyboard : VisualElement
         var bg = special ? specialBg : keyBg;
         k.style.backgroundColor = bg;
         k.userData = bg;
-        Radius(k, 16);
+        Ui.Radius(k, 16);
         k.style.alignItems = Align.Center; k.style.justifyContent = Justify.Center;
         k.RegisterCallback<PointerDownEvent>(e =>
         {
@@ -379,17 +379,7 @@ public class CodeKeyboard : VisualElement
 
     void HidePopup() => popup.style.display = DisplayStyle.None;
 
-    static float SafeBottom()
-    {
-        var sa = Screen.safeArea;
-        return Mathf.Max(0f, sa.yMin) * 1080f / Mathf.Max(1, Screen.width);
-    }
 
-    static void Radius(VisualElement e, float r)
-    {
-        e.style.borderTopLeftRadius = r; e.style.borderTopRightRadius = r;
-        e.style.borderBottomLeftRadius = r; e.style.borderBottomRightRadius = r;
-    }
 
     // ---- Simgeler ----
 

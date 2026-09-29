@@ -8,6 +8,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+using MarsKod.Motor;
 
 namespace MarsKod.Dunya
 {
@@ -41,6 +43,10 @@ namespace MarsKod.Dunya
         public List<string> Commands = new List<string>();
         /// <summary>Öğretilen konular (oyuncu profili bunlara göre tutulacak)</summary>
         public List<string> Topics = new List<string>();
+        /// <summary>Acemi paletindeki düğmeler (her biri tek satır kod). Dosyada yoksa komutlardan türetilir.</summary>
+        public List<string> Pieces = new List<string>();
+        /// <summary>Bu bölümde açılan Python kelimeleri (öneri satırı için; for, in, range...)</summary>
+        public List<string> PythonWords = new List<string>();
         /// <summary>Kademeli ipuçları: 1. yön gösterir, 2. konuyu hatırlatır, 3. kodun bir kısmını verir</summary>
         public List<string> Hints = new List<string>();
         public List<TypicalMistake> Mistakes = new List<TypicalMistake>();
@@ -69,7 +75,7 @@ namespace MarsKod.Dunya
             if (!(root is Dictionary<string, object> d))
                 throw new LevelFormatError("Dosya { ile başlayıp } ile bitmeli.");
 
-            var known = new HashSet<string> { "numara", "baslik", "gorev", "harita", "komutlar", "konular", "ipuclari", "tipik_hatalar", "baslangic_kodu", "cozum" };
+            var known = new HashSet<string> { "numara", "baslik", "gorev", "harita", "komutlar", "konular", "parcalar", "python_kelimeleri", "ipuclari", "tipik_hatalar", "baslangic_kodu", "cozum" };
             foreach (var key in d.Keys)
                 if (!known.Contains(key))
                     throw new LevelFormatError("Bilinmeyen alan: \"" + key + "\". Kullanılabilen alanlar: " + string.Join(", ", known) + ".");
@@ -91,8 +97,29 @@ namespace MarsKod.Dunya
                 if (Array.IndexOf(World.AllCommands, c) < 0)
                     throw new LevelFormatError("\"komutlar\" içinde bilinmeyen komut: \"" + c + "\". Oyundaki komutlar: " + string.Join(", ", World.AllCommands) + ".");
             ReadMap(level, TextList(d, "harita"));
+            level.Pieces = d.ContainsKey("parcalar") ? NonEmptyList(d, "parcalar") : DerivePieces(level.Commands);
+            if (d.ContainsKey("python_kelimeleri")) level.PythonWords = TextList(d, "python_kelimeleri");
             if (d.ContainsKey("tipik_hatalar")) level.Mistakes = ReadMistakes(d["tipik_hatalar"]);
             return level;
+        }
+
+        /// <summary>"parcalar" yazılmamışsa açık komutlardan düğme satırları: move → dört yön, collect → collect().</summary>
+        public static List<string> DerivePieces(IEnumerable<string> commands)
+        {
+            var pieces = new List<string>();
+            foreach (var c in commands)
+            {
+                if (c == "move") pieces.AddRange(Enum.GetNames(typeof(Direction)).Select(dir => "move(" + dir + ")"));
+                else pieces.Add(c + "()");
+            }
+            return pieces;
+        }
+
+        static List<string> NonEmptyList(Dictionary<string, object> d, string key)
+        {
+            var list = TextList(d, key);
+            if (list.Count == 0) throw new LevelFormatError("\"" + key + "\" boş olamaz; en az bir satır yaz (ya da alanı hiç yazma).");
+            return list;
         }
 
         static void ReadMap(Level level, List<string> rows)
@@ -214,9 +241,45 @@ namespace MarsKod.Dunya
             if (level.StartCode.Trim().Length > 0 && ProgramRun.Execute(level.StartCode, level.CreateWorld()).Complete)
                 problems.Add("Başlangıç kodu görevi zaten bitiriyor; oyuncuya iş kalmıyor.");
 
+            problems.AddRange(PieceProblems(level));
+
             for (int i = 0; i < level.Mistakes.Count; i++)
                 if (ProgramRun.Execute(level.Mistakes[i].Code, level.CreateWorld()).Complete)
                     problems.Add((i + 1) + ". tipik hata görevi bitiriyor; hata örneği gerçekten hatalı olmalı.");
+            return problems;
+        }
+
+        static readonly Regex Identifier = new Regex(@"[A-Za-z_]\w*");
+
+        /// <summary>Düğme satırları ve Python kelimeleri: her parça tek başına geçerli bir Python satırı olmalı,
+        /// yalnızca bölümde açık komutları kullanmalı; kelimeleri motor tanımalı.</summary>
+        static List<string> PieceProblems(Level level)
+        {
+            var problems = new List<string>();
+            foreach (var piece in level.Pieces)
+            {
+                if (piece.Contains("\n") || piece.Trim().Length == 0)
+                {
+                    problems.Add("\"parcalar\" içindeki \"" + piece + "\" tek satırlık kod olmalı.");
+                    continue;
+                }
+                string source = piece.TrimEnd().EndsWith(":") ? piece + "\n    pass\n" : piece + "\n";
+                try
+                {
+                    Parser.Parse(source);
+                }
+                catch (Exception e) when (e is PythonException || e is UnsupportedFeature)
+                {
+                    problems.Add("\"parcalar\" içindeki \"" + piece + "\" geçerli bir Python satırı değil.");
+                    continue;
+                }
+                foreach (Match m in Identifier.Matches(piece))
+                    if (Array.IndexOf(World.AllCommands, m.Value) >= 0 && !level.Commands.Contains(m.Value))
+                        problems.Add("\"parcalar\" içindeki \"" + piece + "\" bu bölümde açık olmayan \"" + m.Value + "\" komutunu kullanıyor.");
+            }
+            foreach (var w in level.PythonWords)
+                if (!Suggestions.IsPythonWord(w))
+                    problems.Add("\"python_kelimeleri\" içindeki \"" + w + "\" motorun tanıdığı bir Python kelimesi değil.");
             return problems;
         }
 

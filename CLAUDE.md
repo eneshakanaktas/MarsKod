@@ -35,6 +35,13 @@ Yapım planı: `docs/superpowers/plans/2026-09-25-marskod-yapim-plani.md`.
 - Yeni skill kurmadan önce SkillSpector ile tara; aynı işi yapan iki skill kurma.
 - Fikir/karar değerlendirmede yeri geldiğinde: önce karşı çık, varsayımları sorgula, büyük resmi gör, görülmeyen fırsatları bul, tarafsız dış göz gibi bak. Gerçekçi ol.
 
+## Model ve efor (kritik — Enes, herkes için)
+Her işin başında önerilen "model · efor" ikilisini tek satırla ve gerekçesiyle söyle; iş türü değişince yeniden öner (gerekirse yeni sohbet).
+- **Sonnet 5.5 · medium** (zorlaşırsa high): planı yazılmış, net tarifli kod işleri (plan görevleri, saf C# + testler). Opus'un yarı fiyatı → kota iki kat dayanır.
+- **Opus 5.5 · medium/high**: planlama, tasarım/mimari kararı, plan yazma, zor hata (Unity görüntü sorunları gibi).
+- **Fable 5.1**: yalnızca Opus'un takıldığı en zor işler (Opus'un ~2,5 katı pahalı).
+- Yardımcı ajanlar: arama/okuma → Haiku 4.5; kod yazan → Sonnet 5.5. Aynı sohbette sık model değiştirme.
+
 ## İlerleme notu (kritik)
 Kökteki `ILERLEME.md`'yi oturum başında oku; her önemli adımdan sonra ve oturum sonunda güncelle (ne yapıldı, nerede kalındı, sıradaki adım, açık sorular). Kısa tut, eski girdileri özetle.
 

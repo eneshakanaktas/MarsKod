@@ -53,6 +53,8 @@ En kolayı: var olan bir bölümü kopyala, adını ve numarasını değiştir, 
 | `gorev` | Tek cümle görev, üstte büyük yazıyla görünür ("2 buz topla"). |
 | `harita` | Alanın "resmi" (aşağıda). |
 | `komutlar` | Bu bölümde açık olan oyun komutları. Şimdilik: `move`, `collect`. Listede olmayan komutu kullanan oyuncuya "Bu komut henüz açılmadı" denir. |
+| `parcalar` | İsteğe bağlı. Acemi paletindeki düğmeler; her öğe tek satır kod, örn. `["move(East)", "collect()", "for i in range(3):"]`. Yazılmazsa açık komutlardan çıkar (`move` → dört yön, `collect` → `collect()`). Sayıları bilerek çözümdekinden farklı yaz (`range(3)`), oyuncu değiştirsin. `:` ile biten satır tek başına yazılabilir. |
+| `python_kelimeleri` | İsteğe bağlı. Bu bölümde açılan Python kelimeleri (`["for", "in", "range"]`); Orta kademedeki öneri satırında çıkar. Önceki bölümlerde açılanlar sonrakilerde de açık kalır. |
 | `konular` | Bölümün öğrettiği konular (ileride oyuncu profili bunlarla tutulacak). |
 | `ipuclari` | En az 1, ideali 3 ipucu: 1. yön gösterir, 2. konuyu hatırlatır, 3. kodun bir kısmını verir. `<b>kalın</b>` yazılabilir. Şimdilik ampul düğmesinde 1. ipucu görünür. |
 | `tipik_hatalar` | Oyuncuların sık yapacağı hatalar: hatalı kod + ne olduğunun açıklaması. İsteğe bağlı ama önerilir. |
@@ -83,6 +85,7 @@ Bilgisayarda `motor-test` klasöründe `dotnet test` çalıştırınca her böl�
 - Dosya doğru yazılmış mı (eksik virgül, tırnak, bilinmeyen alan...). Yanlışta satır numarasıyla Türkçe mesaj verir.
 - Doğru çözüm görevi gerçekten bitiriyor mu.
 - Tipik hatalar ve başlangıç kodu görevi bitirmiyor mu (bitiriyorsa örnek gerçekten hatalı değildir).
+- Her `parcalar` öğesi geçerli tek satır Python mu, yalnızca o bölümde açık komutları mı kullanıyor; `python_kelimeleri` motorun tanıdığı kelimeler mi.
 - Numaralar 1'den başlayıp boşluksuz mu, dosya adı numarayla uyumlu mu.
 
 Kod bilmiyorsan: dosyayı yazıp Claude'a "bölüm dosyasını denetle" demen yeterli.

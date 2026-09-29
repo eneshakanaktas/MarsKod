@@ -43,7 +43,7 @@ Yeni `CodeBuffer` (Dunya): kod metni + imleç + seçim + satır türleri tek yer
 - [ ] **Açık soru 1 için tek ayar:** `StartCodeCounts` (başlangıç satırları çözüm türünü etkilesin mi). Varsayılan belgeye göre: etkiler (Dugme).
 - [ ] Kaydetme biçimi: satır türleri kısa bir metne çevrilir/geri okunur (ör. `"DDEO"`); kod ile türlerin satır sayısı uyuşmazsa hepsi en düşüğe (Dugme) düşer (güvenli taraf).
 
-## Görev 3 — XP (Dunya, saf) — belge §6, §7
+## Görev 3 — XP (Dunya, saf) — belge §6, §7 ✅ (2026-09-29, Enes — `Xp.cs`, `XpTests` 20 test; `SolutionKind(tampon, startCodeCounts=true)`, `Award`, `NextBetter`/`NextBetterText`, `Save`/`Load`, `Total`; Baslangic = Acemi sayılır)
 
 `Xp` sınıfı:
 - [ ] `SolutionKind(tampon)` = sayılan satırların en düşük türü.
@@ -52,7 +52,7 @@ Yeni `CodeBuffer` (Dunya): kod metni + imleç + seçim + satır türleri tek yer
 - [ ] Kaydetme biçimi saf metin (ör. `"3:DO;5:E"`); telefona yazma işi Scripts'te (`PlayerPrefs`). Miktarlar tek yerde (Parça 2'de seviyeye göre değişecek).
 - [ ] `XpTests`: 30+50+100=180 sınırı, tekrar XP yok, bozuk kayıt metni sıfırdan başlar.
 
-## Görev 4 — Öneriler + bölüm dosyası alanları (Dunya, saf) — belge §4, §5
+## Görev 4 — Öneriler + bölüm dosyası alanları (Dunya, saf) — belge §4, §5 ✅ (2026-09-29, Enes — `Level.Pieces`/`PythonWords`, `LevelCheck` parça denetimi, `Suggestions.cs` (`Suggest`, `OpenWords`), `SuggestTests` 20 test; bolum-03.json güncellendi, 1., 2. bölüm parçaları komutlardan türer)
 
 - [ ] `Level`: `"parcalar"` (satır listesi) ve `"python_kelimeleri"` alanları. `parcalar` yoksa `komutlar`'dan türetilir (`move` → dört yön, `collect` → `collect()`). Açık Python kelimeleri = bu ve önceki bölümlerin listelerinin birleşimi.
 - [ ] Denetleyici: her parça tek başına geçerli Python satırı mı (`:` ile bitenler hariç motorla sözdizimi denetimi), yalnızca açık komutları mı kullanıyor, `python_kelimeleri` motorun tanıdığı kelimeler mi.

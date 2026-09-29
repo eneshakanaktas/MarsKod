@@ -11,6 +11,8 @@
     ". . . . K ."
   ],
   "komutlar": ["move", "collect"],
+  "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "for i in range(3):"],
+  "python_kelimeleri": ["for", "in", "range"],
   "konular": ["komut sırası", "for döngüsü", "girinti"],
   "ipuclari": [
     "Beş kez aynı iki şeyi yapıyorsun: bir kare ilerle, buzu topla. Aynı satırları tekrar tekrar yazmak yerine Python'a tekrarlatabilirsin.",

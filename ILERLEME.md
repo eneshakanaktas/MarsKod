@@ -15,6 +15,9 @@
 
 ## Sıradaki adım
 
+### Yarın önce yapılacak — Kademe kutusuna ikinci kısayol (Ragıp, 2026-09-29 gece notu)
+**Karar:** Kod kartının sağ üstündeki "Acemi/Orta/Usta" yazısı (`TierMenu`, Görev 8) **olduğu gibi kalacak** — kaldırılmayacak. Buna ek olarak alt sıraya, **Çalıştır/devam düğmesinin hemen sağına (sağ alt köşe)**, şık bir ⌨️ emoji simgeli **ikinci bir kısayol düğmesi** eklenecek (muhtemelen aynı kademe kutusunu açar — başparmağa yakın olsun diye; Görev 8'in notundaki "üst sağın eksisi: başparmaktan uzak" sorununu çözer). Yani iki erişim noktası birlikte: üstte açıklayıcı yazı, altta başparmağa yakın kısayol.
+
 ### Görev 9 bitti — XP ekranda + kapanış (Ragıp, 2026-09-29 gece) — Kod klavyesi Parça 1 tamamlandı
 Bölüm bitince kod kartının üstünde "+30 XP · Acemi ile çözdün" ve altında (varsa) "Orta ile çözersen +50 XP daha" görünüyor (`Hud.SetDone`, metni `Oyun.cs` `Xp` sınıfıyla kurar). Toplam XP artık üst başlıkta yıldız düğmesinin altında küçük bir sayı (`Hud.SetTotalXp`), her bölüm biter bitmez güncelleniyor. **Bulunan ve düzeltilen hata:** `-shots` deneme koşusu gerçek PlayerPrefs XP'sini kaydediyordu (kod kaydının `shotsMode` koruması vardı, XP kaydının yoktu) — düzeltildi, artık deneme çalıştırmaları oyuncunun gerçek XP'sini bozmuyor.
 PC'de doğrulandı: Windows paketi hatasız, iki otomatik denetim (`KOD KLAVYESI DENETIMI`, `PALET DENETIMI`) TAMAM, `dotnet test` 1153. Ekran görüntüleri `docs/tasarim/xp-gorev9-2026-09-29/` (`pc-bolum-sonu-xp.png`, `pc-kademe-kutusu-xp.png`). Android paketi üretildi (`paketler/marskod-oyun.apk`, 52 MB — Redmi 9C düzeltmesinden beri iki mimarili, Görev 9 boyutu artırmadı), sanal telefonda kuruldu ve doğru ekranla açıldığı doğrulandı (`android-bolum3-acemi-0xp.png`).

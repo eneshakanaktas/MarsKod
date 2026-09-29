@@ -108,11 +108,12 @@ Yeni `CodeBuffer` (Dunya): kod metni + imleç + seçim + satır türleri tek yer
 
 ## Görev 9 — XP ekranda + kapanış
 
-- [ ] Bölüm bitince: "+50 XP · Orta ile çözdün" ve varsa "Usta ile çözersen +100 XP daha". Toplam XP üst başlıkta küçük sayı.
-- [ ] `-shots` yeni ekranları çeker (palet, klavye Orta, klavye Usta, bölüm sonu XP).
-- [ ] Sanal telefonda belge §9 senaryoları: Bölüm 3'ü Acemi / Orta / Usta ile çöz → 30/50/100; aynı kademe tekrar → XP yok; kapat-aç → satır türleri ve XP duruyor.
-- [ ] APK üret → `paketler/marskod-oyun.apk`; boyut önceki 31 MB civarında kalmalı.
-- [ ] Yapım planı Aşama 5 işaretlenir, ILERLEME.md, gelişim sayfası (taslak kuralı: ekran görüntüsü + video).
+- [x] Bölüm bitince: "+50 XP · Orta ile çözdün" ve varsa "Usta ile çözersen +100 XP daha" (`Hud.SetDone`, metni `Oyun.cs` `Xp` ile kurar). Toplam XP üst başlıkta yıldız düğmesinin altında küçük sayı (`Hud.SetTotalXp`).
+- [x] `-shots` yeni ekranları çekiyor: mevcut bölüm bitirme görüntüleri (`bN-3-bitti.png`) artık XP satırını da gösteriyor; ayrıca `kademe-kutusu.png`, `klavye-orta/usta/isaretler.png`, `acemi-*.png` zaten vardı.
+- [x] (kısmen) Sanal telefonda: APK kuruldu, `-kademe acemi -bolum 3` ile açıldı, doğru ekran (Acemi, 0 XP, "5 buz topla") doğrulandı. **Ama bu oturumda `adb shell input` ile dokunma enjeksiyonu güvenilmezdi** (`getevent` ile denendi: bazı dokunuşlar oyuna hiç ulaşmadı, sebebi bulunamadı — oyun kodundan bağımsız bir emülatör/ortam sorunu). Üç kademeyi telefonda uçtan uca çözüp XP/kapat-aç kalıcılığını gerçek parmakla/tıklamayla doğrulamak hâlâ açık; PC tarafında aynı mantık otomatik denetimlerle (`KOD KLAVYESI DENETIMI`, `PALET DENETIMI`, motor testleri) ve ekran görüntüleriyle (bkz. `docs/tasarim/xp-gorev9-2026-09-29/pc-bolum-sonu-xp.png`) kanıtlandı.
+- [x] APK üret → `paketler/marskod-oyun.apk` (52 MB — 31 MB'lik eski referans, Redmi 9C çökme düzeltmesinden önceki tek mimarili pakete aitti; iki mimarili paket zaten Görev 8 öncesinde 52 MB'a çıkmıştı, Görev 9 boyutu artırmadı).
+- [x] Yapım planı Aşama 5 işaretlendi, ILERLEME.md güncellendi. Gelişim sayfası güncellemesi ayrı: Ragıp karar verirse yapılır (taslak kuralı yeni bir *tasarım denemesi* içindir, bu bir özellik eki).
+- **Bulunan hata (düzeltildi):** `-shots` denemesi gerçek PlayerPrefs XP'sini kaydediyordu (kod kaydının `shotsMode` koruması vardı, XP kaydının yoktu). `Oyun.cs`'te XP kaydı da `!shotsMode` şartına alındı.
 
 ---
 

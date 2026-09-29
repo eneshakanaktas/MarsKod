@@ -37,7 +37,7 @@ public class Hud : MonoBehaviour
     // Su an acik olan yazma paneli (klavye ya da palet), kapaliyken null
     VisualElement shownPanel;
     KeyboardTier tier = KeyboardTier.Orta;
-    Label chapter, title, runText, msgTag, msgTitle, msgText, msgOriginal, hintText;
+    Label chapter, title, runText, msgTag, msgTitle, msgText, msgOriginal, hintText, xpTotalLabel, xpDoneLabel, xpNextLabel;
     VisualElement dotsRow;
     Icon starIcon;
     readonly List<Icon> dots = new List<Icon>();
@@ -138,12 +138,28 @@ public class Hud : MonoBehaviour
         BuildDots();
         center.Add(dotsRow);
 
+        xpDoneLabel = Text("", fSemi, 32, HeaderText);
+        xpDoneLabel.style.marginTop = 14;
+        xpDoneLabel.style.display = DisplayStyle.None;
+        center.Add(xpDoneLabel);
+
+        xpNextLabel = Text("", fMed, 27, new Color(1f, 1f, 1f, 0.55f));
+        xpNextLabel.style.marginTop = 6;
+        xpNextLabel.style.display = DisplayStyle.None;
+        center.Add(xpNextLabel);
+
         starIcon = new Icon(46, DrawSparkle);
         var starBtn = RoundButton(96, glass, starIcon, () => StarsToggled?.Invoke());
+        var starCol = new VisualElement { pickingMode = PickingMode.Ignore };
+        starCol.style.alignItems = Align.Center;
+        xpTotalLabel = Text("0 XP", fSemi, 24, new Color(1f, 1f, 1f, 0.5f));
+        xpTotalLabel.style.marginTop = 10;
+        starCol.Add(starBtn);
+        starCol.Add(xpTotalLabel);
 
         row.Add(menu);
         row.Add(center);
-        row.Add(starBtn);
+        row.Add(starCol);
         h.Add(row);
         return h;
     }
@@ -325,6 +341,8 @@ public class Hud : MonoBehaviour
         BuildDots();
         stepper.Hide();
         tierMenu.Hide();
+        xpDoneLabel.style.display = DisplayStyle.None;
+        xpNextLabel.style.display = DisplayStyle.None;
         editor.StopEditing();
         hintText.text = hintRich;
         hint.style.display = DisplayStyle.None;
@@ -384,8 +402,10 @@ public class Hud : MonoBehaviour
         if (running) hint.style.display = DisplayStyle.None;
     }
 
-    // hasNext: sonraki bolum varsa dugme "Sonraki bolum" olur
-    public void SetDone(bool hasNext)
+    // hasNext: sonraki bolum varsa dugme "Sonraki bolum" olur.
+    // xpLine: "+50 XP · Orta ile çözdün" gibi (Xp mantığı Oyun.cs'te kurulur, burada yalnızca gösterilir).
+    // nextBetter: "Usta ile çözersen +100 XP daha" ya da bos (alinacak daha zor kademe kalmadiysa).
+    public void SetDone(bool hasNext, string xpLine, string nextBetter)
     {
         chapter.text = "BÖLÜM " + levelNumber + (iceTotal > 0 ? "  ·  " + collected + "/" + iceTotal : "");
         title.text = "Tamamlandı!";
@@ -393,12 +413,21 @@ public class Hud : MonoBehaviour
         title.schedule.Execute(() => title.style.scale = new Scale(Vector3.one)).StartingIn(180);
         runText.text = hasNext ? "Sonraki bölüm" : "Tekrar";
         runBtn.style.opacity = 1f;
+        xpDoneLabel.text = xpLine;
+        xpDoneLabel.style.display = string.IsNullOrEmpty(xpLine) ? DisplayStyle.None : DisplayStyle.Flex;
+        xpNextLabel.text = nextBetter;
+        xpNextLabel.style.display = string.IsNullOrEmpty(nextBetter) ? DisplayStyle.None : DisplayStyle.Flex;
     }
+
+    // Ust basliktaki toplam XP sayaci; Oyun.cs bolum yuklendiginde ve XP kazanildiginda cagirir.
+    public void SetTotalXp(int total) => xpTotalLabel.text = total + " XP";
 
     public void ResetView()
     {
         chapter.text = ChapterText;
         title.text = goal;
+        xpDoneLabel.style.display = DisplayStyle.None;
+        xpNextLabel.style.display = DisplayStyle.None;
         SetCollected(0);
         SetActiveLine(-1);
         SetRunning(false);

@@ -112,6 +112,7 @@ public class Oyun : MonoBehaviour
         hud.StarsToggled += () => { starsTarget = starsTarget > 0.5f ? 0f : 1f; hud.SetStars(starsTarget > 0.5f); };
 
         xp = Xp.Load(PlayerPrefs.GetString("xp", ""));
+        hud.SetTotalXp(xp.Total);
         hud.TierEarned = t => level != null && xp.Has(level.Number, (LineKind)((int)t + 1));
         hud.TierChanged += SaveTier;
 
@@ -463,12 +464,17 @@ public class Oyun : MonoBehaviour
             if (target != null) target.Reach();
             yield return Tween.Wait(0.15f);
             complete = true;
-            if (xp.Award(level.Number, Xp.SolutionKind(hud.Buffer)) > 0)
+            var kind = Xp.SolutionKind(hud.Buffer);
+            int earned = xp.Award(level.Number, kind);
+            string xpLine;
+            if (earned > 0)
             {
-                PlayerPrefs.SetString("xp", xp.Save());
-                PlayerPrefs.Save();
+                if (!shotsMode) { PlayerPrefs.SetString("xp", xp.Save()); PlayerPrefs.Save(); }
+                hud.SetTotalXp(xp.Total);
+                xpLine = "+" + earned + " XP · " + Xp.Name(kind) + " ile çözdün";
             }
-            hud.SetDone(HasNext);
+            else xpLine = Xp.Name(kind) + " ile çözdün · bu XP daha önce alındı";
+            hud.SetDone(HasNext, xpLine, xp.NextBetterText(level.Number, kind));
             done = true;
             yield return robot.Celebrate();
         }

@@ -11,6 +11,8 @@ public class Hud : MonoBehaviour
     public event Action RunPressed, ResetPressed, StarsToggled, MenuPressed;
     // Oyuncu kodu degistirdi (yeni kodun tamami)
     public event Action<string> CodeChanged;
+    // Oyuncu kademe kutusundan yeni bir kademe secti (kalici tutulmasi icin; Tier zaten degisti)
+    public event Action<KeyboardTier> TierChanged;
 
     static readonly Color Accent = Mats.Hex("#E07A5F");
     static readonly Color Ink = Mats.Hex("#E9E4EE");
@@ -25,12 +27,13 @@ public class Hud : MonoBehaviour
     static readonly Color KeyboardBg = new Color(0.075f, 0.07f, 0.095f, 0.98f);
 
     Font fMed, fSemi, fBold, fMono;
-    VisualElement root, header, card, hint, message, runBtn;
+    VisualElement root, header, card, hint, message, runBtn, overlay;
     CodeEditor editor;
     CodeKeyboard keyboard;
     BlockPalette palette;
     BlockDrag drag;
     NumberStepper stepper;
+    TierMenu tierMenu;
     // Su an acik olan yazma paneli (klavye ya da palet), kapaliyken null
     VisualElement shownPanel;
     KeyboardTier tier = KeyboardTier.Orta;
@@ -66,14 +69,15 @@ public class Hud : MonoBehaviour
         root.style.left = 0; root.style.right = 0; root.style.top = 0; root.style.bottom = 0;
 
         // Ustten asagi: baslik · bos alan (oyun alani gorunur) · kod karti · yazarken kod klavyesi (Orta/Usta) ya da palet (Acemi).
-        // En ustte butun ekrani kaplayan katman: suruklenen satir ve sayinin -/+ kutusu.
+        // En ustte butun ekrani kaplayan katman: suruklenen satir, sayinin -/+ kutusu ve kademe kutusu (hepsi kartin ustunde gorunmeli).
         header = BuildHeader();
-        card = BuildBottom();
         var free = new VisualElement { pickingMode = PickingMode.Ignore };
         free.style.flexGrow = 1;
-        var overlay = new VisualElement { pickingMode = PickingMode.Ignore };
+        overlay = new VisualElement { pickingMode = PickingMode.Ignore };
         overlay.style.position = Position.Absolute;
         overlay.style.left = 0; overlay.style.right = 0; overlay.style.top = 0; overlay.style.bottom = 0;
+
+        card = BuildBottom();
 
         keyboard = new CodeKeyboard(editor, fMono, Ink, Accent, KeyboardBg);
         keyboard.style.display = DisplayStyle.None;
@@ -159,7 +163,9 @@ public class Hud : MonoBehaviour
         top.style.justifyContent = Justify.SpaceBetween;
         top.style.paddingLeft = 18; top.style.paddingRight = 8;
         top.Add(Text("kod.py", fMed, 28, new Color(Ink.r, Ink.g, Ink.b, 0.45f)));
-        top.Add(Text("Python", fMed, 28, new Color(Ink.r, Ink.g, Ink.b, 0.28f)));
+        tierMenu = new TierMenu(overlay, fMed, fSemi, Ink, Accent, KeyboardBg, Hairline);
+        tierMenu.Picked += t => { Tier = t; TierChanged?.Invoke(t); };
+        top.Add(tierMenu);
         card.Add(top);
 
         editor = new CodeEditor(fMono, Ink, NumColor, Accent, ErrorRed);
@@ -255,7 +261,7 @@ public class Hud : MonoBehaviour
     public void SetOpenWords(List<string> words) => keyboard.SetOpenWords(words);
 
     // Kod yazma kademesi: Acemi (palet, surukle-birak), Orta (klavye + oneri satiri), Usta (klavye).
-    // Secme dugmesi Gorev 8'de; simdilik Orta ya da -kademe baslatma secenegi.
+    // Kart sag ustundeki kademe kutusundan (TierMenu) ya da -kademe baslatma secenegiyle degisir; kalicilik Oyun.cs'te.
     public KeyboardTier Tier
     {
         get => tier;
@@ -264,14 +270,23 @@ public class Hud : MonoBehaviour
             tier = value;
             editor.Blocks = value == KeyboardTier.Acemi;
             keyboard.ShowSuggestions = value == KeyboardTier.Orta;
+            tierMenu.SetTier(value);
         }
     }
+
+    // Bolumde bu kademeden XP alinip alinmadigini sorar (kademe kutusundaki ✓ icin); Oyun.cs kurar.
+    public Func<KeyboardTier, bool> TierEarned { set => tierMenu.Earned = value; }
+
+    // Oyuncunun kodu + imlec + secim + satir turleri (Xp.SolutionKind icin)
+    public CodeBuffer Buffer => editor.Buffer;
 
     // Acemi paletinin parcalari; fresh: bu bolumde yeni olanlar (turuncu kenarli)
     public void SetPieces(IEnumerable<string> pieces, ICollection<string> fresh) => palette.SetPieces(pieces, fresh);
 
     // Deneme goruntuleri icin: klavyenin ikinci isaret sayfasi
     public void KeyboardMore(bool on) => keyboard.SetMore(on);
+    // Deneme goruntuleri icin: kademe kutusunu acar/kapatir
+    public void ShowTierMenu(bool on) { if (on) tierMenu.Show(); else tierMenu.Hide(); }
     // Satir turlerinin kayit metni (satir basina bir harf)
     public string CodeKinds => editor.Kinds;
 
@@ -309,6 +324,7 @@ public class Hud : MonoBehaviour
         collected = 0;
         BuildDots();
         stepper.Hide();
+        tierMenu.Hide();
         editor.StopEditing();
         hintText.text = hintRich;
         hint.style.display = DisplayStyle.None;
@@ -476,6 +492,14 @@ public class Hud : MonoBehaviour
             var picked = root.panel.Pick(pos);
             if (picked == null) editor.StopEditing();
             else if (stepper.Open && picked != stepper && !stepper.Contains(picked)) stepper.Hide();
+        }
+        // Kademe kutusu acikken disina dokununca kapanir (yazarken olup olmamasindan bagimsiz)
+        if (tierMenu.Open && p != null && p.press.wasPressedThisFrame && root.panel != null)
+        {
+            var sp2 = p.position.ReadValue();
+            var pos2 = RuntimePanelUtils.ScreenToPanel(root.panel, new Vector2(sp2.x, Screen.height - sp2.y));
+            var picked2 = root.panel.Pick(pos2);
+            if (picked2 == null || !tierMenu.Owns(picked2)) tierMenu.Hide();
         }
     }
 

@@ -43,6 +43,8 @@ public class Oyun : MonoBehaviour
     Coroutine program;
     bool running, done, complete;
     float stars = 1f, starsTarget = 1f;
+    // Kademe basina XP; kademe kutusundaki ✓ ve bolum sonu XP (Gorev 9) bunu kullanir.
+    Xp xp;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Boot()
@@ -90,6 +92,7 @@ public class Oyun : MonoBehaviour
         {
             if (a[i] == "-kalite" && i + 1 < a.Length) QualitySettings.SetQualityLevel(int.Parse(a[i + 1]), true);
             if (a[i] == "-cizgisiz") Parts.NoOutline = true;
+            if (a[i] == "-shots") shotsMode = true;
         }
         world = new GameObject("World").transform;
 
@@ -108,7 +111,13 @@ public class Oyun : MonoBehaviour
         hud.MenuPressed += () => LoadLevel((levelIndex + 1) % levels.Count);
         hud.StarsToggled += () => { starsTarget = starsTarget > 0.5f ? 0f : 1f; hud.SetStars(starsTarget > 0.5f); };
 
-        // Kod yazma kademesi (secme dugmesi Gorev 8'de): -kademe acemi|orta|usta
+        xp = Xp.Load(PlayerPrefs.GetString("xp", ""));
+        hud.TierEarned = t => level != null && xp.Has(level.Number, (LineKind)((int)t + 1));
+        hud.TierChanged += SaveTier;
+
+        // Kod yazma kademesi: kayitli tercih kalici (kademe kutusu), -kademe deneme secenegi onune gecer.
+        if (!shotsMode && System.Enum.TryParse(PlayerPrefs.GetString("kademe", ""), true, out KeyboardTier savedTier))
+            hud.Tier = savedTier;
         for (int i = 0; i < a.Length - 1; i++)
             if (a[i] == "-kademe" && System.Enum.TryParse(a[i + 1], true, out KeyboardTier t)) hud.Tier = t;
 
@@ -397,6 +406,12 @@ public class Oyun : MonoBehaviour
         program = StartCoroutine(RunProgram());
     }
 
+    void SaveTier(KeyboardTier t)
+    {
+        PlayerPrefs.SetString("kademe", t.ToString());
+        PlayerPrefs.Save();
+    }
+
     void ResetLevel()
     {
         if (program != null) StopCoroutine(program);
@@ -448,6 +463,11 @@ public class Oyun : MonoBehaviour
             if (target != null) target.Reach();
             yield return Tween.Wait(0.15f);
             complete = true;
+            if (xp.Award(level.Number, Xp.SolutionKind(hud.Buffer)) > 0)
+            {
+                PlayerPrefs.SetString("xp", xp.Save());
+                PlayerPrefs.Save();
+            }
             hud.SetDone(HasNext);
             done = true;
             yield return robot.Celebrate();
@@ -773,6 +793,15 @@ public class Oyun : MonoBehaviour
         Cap(Path.Combine(dir, "uzun-kod.png"));
         yield return new WaitForSeconds(0.3f);
         hud.StopEditing();
+
+        // Kademe kutusu: kod kartinin sag ustundeki dugmeye dokununca acilan liste (Gorev 8)
+        LoadLevel(0);
+        yield return new WaitForSeconds(0.3f);
+        hud.ShowTierMenu(true);
+        yield return new WaitForSeconds(0.3f);
+        Cap(Path.Combine(dir, "kademe-kutusu.png"));
+        yield return new WaitForSeconds(0.2f);
+        hud.ShowTierMenu(false);
 
         // Kod klavyesi: Orta (oneri satiri "mo" icin move), ikinci isaret sayfasi, Usta (oneri satiri yok)
         LoadLevel(levels.Count - 1);

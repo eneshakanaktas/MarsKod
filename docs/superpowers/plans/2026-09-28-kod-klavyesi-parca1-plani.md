@@ -99,11 +99,12 @@ Yeni `CodeBuffer` (Dunya): kod metni + imleç + seçim + satır türleri tek yer
 - Bilerek basit bırakılan: `for` satırı taşınınca altındaki gövde onunla gitmez (tek satır taşınır). İnsan testinde kafa karıştırırsa blok taşıma düşünülür.
 - Ek: üç dosyada tekrar eden arayüz yardımcıları (köşe, kenar, boşluk, telefonun alt payı) `Scripts/Ui.cs`'e toplandı.
 
-## Görev 8 — Klavye tuşu + kademe seçimi — belge §3, K6, K7
+## Görev 8 — Klavye tuşu + kademe seçimi — belge §3, K6, K7 — bitti (Ragıp, 2026-09-29)
 
-- [ ] Alt sıra: 💡 · ⌨ · ▶ Çalıştır · ↻. ⌨ → küçük kutu: Hazır düğmeler (Acemi) · Klavye + öneri (Orta) · Klavye (Usta); seçili işaretli, o bölümde alınan kademelerin yanında ✓.
-- **Yer için öneri (Ragıp, 09-29, Redmi 9C'de denerken):** ⌨ yerine kod kartının sağ üstündeki "Python" yazısının yeri (bugün işlevsiz). Artısı: dar telefonda (720 px) alt sıra 3 düğmede kalır, Çalıştır daralmaz; kodla ilgili ayar kodun yanında. Eksisi: başparmaktan uzak, soluk kalırsa düğme olduğu anlaşılmaz (belirgin çizilmeli). K6'yı (Enes + Ragıp) değiştirir: Görev 8 başında karar verilsin, Enes'e sorulsun.
-- [ ] Seçim kalıcı, **tek yerde** tutulur (`KeyboardTier` ayarı; Parça 2'de "sistemin önerdiği kademe" buraya bağlanacak).
+- [x] **Karar (Ragıp, 09-29): K6 değişti.** ⌨ alt sırada değil, kod kartının sağ üstünde eskiden işlevsiz duran "Python" yazısının yerinde (`TierMenu.cs`): dokununca kutu açılır: Hazır düğmeler (Acemi) · Klavye + öneri (Orta) · Klavye (Usta); seçili satır vurgulu, o bölümde alınan kademenin yanında ✓ (tüm simgeler vektörle çizildi — Poppins fontlarında ⌨/✓ karakterleri boş kutu çıkıyordu). Enes'e bilgi verilmeli.
+- [x] Seçim kalıcı, **tek yerde** tutulur: `Hud.Tier` (`KeyboardTier` ayarı) + `PlayerPrefs` (`"kademe"`); `-kademe` deneme seçeneği kayıtlı tercihin üzerine geçici olarak yazar, kaydetmez.
+- [x] ✓ işareti için XP bağlandı: `Oyun.cs` bölüm biter bitmez `Xp.Award` çağırıyor, `PlayerPrefs` (`"xp"`) kaydediyor (Görev 9'un XP ekranı bunun üstüne kurulacak).
+- [x] Otomatik denetim: mevcut `KOD KLAVYESI DENETIMI: TAMAM` ve `PALET DENETIMI: TAMAM` bozulmadı; `-shots` yeni `kademe-kutusu.png` görüntüsünü de alıyor. Üç kademenin de pilde doğru göründüğü doğrulandı (`docs/tasarim/kademe-kutusu-2026-09-29/`).
 
 ## Görev 9 — XP ekranda + kapanış
 

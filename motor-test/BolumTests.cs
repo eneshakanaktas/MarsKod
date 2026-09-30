@@ -100,7 +100,7 @@ public class BolumTests
     [InlineData("\"gorev\": \"Git\"", "\"gorev\": \"Git\", \"zorluk\": 2", "Bilinmeyen alan: \"zorluk\"")]
     public void Yanlis_dosya_anlasilir_mesaj_verir(string from, string to, string expected)
     {
-        var e = Assert.Throws<LevelFormatError>(() => Level.Parse(Mini.Replace(from, to)));
+        var e = Assert.Throws<DataFormatError>(() => Level.Parse(Mini.Replace(from, to)));
         Assert.Contains(expected, e.Message);
     }
 
@@ -111,7 +111,7 @@ public class BolumTests
     [InlineData("\"gorev\": \"Git\",", "\"gorev\": \"Git,", "4. satır", "Tırnak kapanmamış")]
     public void JSON_yazim_yanlisi_satir_numarasiyla_gelir(string from, string to, string line, string expected)
     {
-        var e = Assert.Throws<LevelFormatError>(() => Level.Parse(Mini.Replace(from, to)));
+        var e = Assert.Throws<DataFormatError>(() => Level.Parse(Mini.Replace(from, to)));
         Assert.Contains(line, e.Message);
         Assert.Contains(expected, e.Message);
     }

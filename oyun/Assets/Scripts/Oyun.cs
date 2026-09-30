@@ -42,9 +42,15 @@ public class Oyun : MonoBehaviour
     bool shotsMode;
     Coroutine program;
     bool running, done, complete;
+    // Adim adim modu: her satirdan sonra ⏭ basisini bekler (stepRequested: bir satir daha calissin)
+    bool stepMode, stepRequested;
     float stars = 1f, starsTarget = 1f;
     // Kademe basina XP; kademe kutusundaki ✓ ve bolum sonu XP (Gorev 9) bunu kullanir.
     Xp xp;
+    // Bolum basina kac ipucu acildi (ilk insan testinde uc ipucu da bedava)
+    HintLog hints;
+    // Kod sozlugu (Resources/Sozluk/sozluk.json); dosya okunamazsa bos
+    Glossary glossary = new Glossary();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Boot()
@@ -67,15 +73,42 @@ public class Oyun : MonoBehaviour
             {
                 var l = Level.Parse(file.text);
                 if (l.Cols != Cols || l.Rows != Rows)
-                    throw new LevelFormatError("Harita " + l.Cols + "x" + l.Rows + "; sahne şimdilik yalnızca " + Cols + "x" + Rows + " çiziyor.");
+                    throw new DataFormatError("Harita " + l.Cols + "x" + l.Rows + "; sahne şimdilik yalnızca " + Cols + "x" + Rows + " çiziyor.");
                 levels.Add(l);
             }
-            catch (LevelFormatError e)
+            catch (DataFormatError e)
             {
                 Debug.LogError("Bölüm dosyası okunamadı: " + file.name + ": " + e.Message);
             }
         }
         levels.Sort((a, b) => a.Number.CompareTo(b.Number));
+    }
+
+    void LoadGlossary()
+    {
+        var file = Resources.Load<TextAsset>("Sozluk/sozluk");
+        if (file == null) { Debug.LogError("Kod sözlüğü dosyası bulunamadı: Resources/Sozluk/sozluk.json"); return; }
+        try
+        {
+            glossary = Glossary.Parse(file.text);
+        }
+        catch (DataFormatError e)
+        {
+            Debug.LogError("Kod sözlüğü okunamadı: " + e.Message);
+        }
+    }
+
+    // Sozluk kartlari: her sayfa, acildigi bolum ve oynanan bolumde yeni mi (hicbir bolumde acilmayan sayfa gosterilmez)
+    List<GlossaryView.Entry> GlossaryEntries()
+    {
+        var entries = new List<GlossaryView.Entry>();
+        foreach (var page in glossary.Pages)
+        {
+            var opens = Glossary.OpensAt(page, levels);
+            if (opens.HasValue)
+                entries.Add(new GlossaryView.Entry { Page = page, OpensAt = opens.Value, Fresh = opens.Value == level.Number });
+        }
+        return entries;
     }
 
     void Start()
@@ -105,16 +138,22 @@ public class Oyun : MonoBehaviour
         hud = gameObject.AddComponent<Hud>();
         hud.Build();
         hud.RunPressed += OnRun;
+        hud.StepPressed += OnStep;
         hud.CodeChanged += OnCodeChanged;
         hud.ResetPressed += ResetLevel;
-        // Bolum secme ekrani gelene kadar: sol ustteki dugme siradaki bolume gecer
-        hud.MenuPressed += () => LoadLevel((levelIndex + 1) % levels.Count);
+        // Sol ustteki dugme bolum secme ekranini acar
+        hud.MenuPressed += () => hud.ShowLevelSelect(LevelEntries());
+        hud.LevelPicked += PickLevel;
+        hud.GlossaryPressed += () => hud.ShowGlossary(GlossaryEntries());
         hud.StarsToggled += () => { starsTarget = starsTarget > 0.5f ? 0f : 1f; hud.SetStars(starsTarget > 0.5f); };
 
         xp = Xp.Load(PlayerPrefs.GetString("xp", ""));
         hud.SetTotalXp(xp.Total);
         hud.TierEarned = t => level != null && xp.Has(level.Number, (LineKind)((int)t + 1));
         hud.TierChanged += SaveTier;
+
+        hints = HintLog.Load(shotsMode ? "" : PlayerPrefs.GetString("ipucu", ""));
+        hud.MoreHintPressed += RevealHint;
 
         // Kod yazma kademesi: kayitli tercih kalici (kademe kutusu), -kademe deneme secenegi onune gecer.
         if (!shotsMode && System.Enum.TryParse(PlayerPrefs.GetString("kademe", ""), true, out KeyboardTier savedTier))
@@ -123,6 +162,7 @@ public class Oyun : MonoBehaviour
             if (a[i] == "-kademe" && System.Enum.TryParse(a[i + 1], true, out KeyboardTier t)) hud.Tier = t;
 
         LoadLevels();
+        LoadGlossary();
         int start = 1;
         for (int i = 0; i < a.Length - 1; i++)
             if (a[i] == "-bolum") int.TryParse(a[i + 1], out start);
@@ -284,6 +324,7 @@ public class Oyun : MonoBehaviour
         if (program != null) StopCoroutine(program);
         program = null;
         running = false; done = false; complete = false;
+        stepMode = false; stepRequested = false;
         levelIndex = index;
         level = levels[index];
 
@@ -317,7 +358,8 @@ public class Oyun : MonoBehaviour
         code = hud.Code;
         hud.SetOpenWords(MarsKod.Dunya.Suggestions.OpenWords(levels, level.Number));
         hud.SetPieces(level.Pieces, Palette.NewPieces(levels, level.Number));
-        hud.SetLevel(level.Number, level.Title, level.Goal, level.Ices.Count, level.Hints[0]);
+        hud.SetLevel(level.Number, level.Title, level.Goal, level.Ices.Count);
+        hud.SetHints(level.Hints, hints.Shown(level.Number));
     }
 
     void LateUpdate()
@@ -342,9 +384,14 @@ public class Oyun : MonoBehaviour
         };
     }
 
+    // Kameranin kullandigi bant; arayuz degisince (ipucu balonu acildi vb.) hedefe yumusakca kayar
+    Vector2? smoothBand;
+
     void FitCamera()
     {
-        var band = hud.FreeBand();
+        var target = hud.FreeBand();
+        smoothBand = smoothBand.HasValue ? Vector2.Lerp(smoothBand.Value, target, 1f - Mathf.Exp(-Time.deltaTime * 12f)) : target;
+        var band = smoothBand.Value;
         float bottom = band.x + 0.015f, top = band.y - HorizonGap;
         const float side = 0.035f;
         float needW = 1f - 2f * side, needH = Mathf.Max(0.1f, top - bottom);
@@ -397,14 +444,57 @@ public class Oyun : MonoBehaviour
 
     void OnRun()
     {
-        if (running) return;
+        if (running)
+        {
+            // adim adim modunda "Devam": kalan satirlar normal hizda
+            if (stepMode) { stepMode = false; stepRequested = false; }
+            return;
+        }
         if (done && complete && HasNext)
         {
             LoadLevel(levelIndex + 1);
             return;
         }
+        StartProgram(stepping: false);
+    }
+
+    // ⏭: kod calismiyorsa adim adim baslatir (ilk satir hemen calisir); calisiyorsa bir satir daha ilerletir
+    // (normal hizda calisirken basilirsa o satirdan sonra durur).
+    void OnStep()
+    {
+        if (running) { stepMode = true; stepRequested = true; return; }
+        if (done && complete) return;
+        StartProgram(stepping: true);
+    }
+
+    void StartProgram(bool stepping)
+    {
         if (done) ResetLevel();
+        stepMode = stepping;
+        stepRequested = stepping;
         program = StartCoroutine(RunProgram());
+    }
+
+    // Bolum secme ekraninin satirlari: her bolumun adi, hedefi, kazanilan XP'si (XP > 0 = cozuldu)
+    List<LevelSelect.Entry> LevelEntries() => levels.Select(l => new LevelSelect.Entry
+    {
+        Number = l.Number, Title = l.Title, Goal = l.Goal,
+        Xp = xp.LevelTotal(l.Number), Current = l == level,
+    }).ToList();
+
+    void PickLevel(int number)
+    {
+        int idx = levels.FindIndex(l => l.Number == number);
+        if (idx >= 0) LoadLevel(idx);
+    }
+
+    // "Bir ipucu daha": siradaki ipucu acilir ve bolum tekrar acilinca da gorunur (deneme kosusunda kaydedilmez)
+    void RevealHint()
+    {
+        hud.SetHints(level.Hints, hints.Reveal(level.Number, level.Hints.Count));
+        if (shotsMode) return;
+        PlayerPrefs.SetString("ipucu", hints.Save());
+        PlayerPrefs.Save();
     }
 
     void SaveTier(KeyboardTier t)
@@ -418,6 +508,7 @@ public class Oyun : MonoBehaviour
         if (program != null) StopCoroutine(program);
         program = null;
         running = false; done = false; complete = false;
+        stepMode = false; stepRequested = false;
         robot.ResetTo(Pos(level.Robot), StartYaw);
         foreach (var ice in ices) ice.Restore();
         if (target != null) target.Restore();
@@ -439,16 +530,29 @@ public class Oyun : MonoBehaviour
         robot.GlanceAtCamera(true);
         for (int i = 0; i < count; i++)
         {
+            if (stepMode)
+            {
+                if (!stepRequested)
+                {
+                    hud.SetRunning(true, paused: true);
+                    while (stepMode && !stepRequested) yield return null;
+                    hud.SetRunning(true);
+                }
+                stepRequested = false;
+            }
             var entry = report.Trace[i];
             hud.SetActiveLine(entry.Line - 1);
             if (entry.Events.Count == 0)
-            {
                 yield return pauseOnEmpty ? Tween.Wait(0.28f) : null;
-                continue;
+            else
+            {
+                yield return Tween.Wait(0.12f);
+                foreach (var e in entry.Events) yield return Play(e);
             }
-            yield return Tween.Wait(0.12f);
-            foreach (var e in entry.Events) yield return Play(e);
+            // satir bitti: yaninda degiskenlerin yeni hali ("i = 2")
+            hud.SetActiveLine(entry.Line - 1, vars: entry.VarsText());
         }
+        stepMode = false;
         robot.GlanceAtCamera(false);
 
         if (report.Stopped)
@@ -748,6 +852,127 @@ public class Oyun : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
     }
 
+    // ---- Bolum secme denetimi (-shots icinde): ekran acilir, 2. bolumun satirina fareyle tiklanir ----
+    // Bolumler once cozuldugu icin satirlarda ✓ ve XP gorunur. Log'da "BOLUM SECME DENETIMI:" satiri; goruntu bolum-secme.png.
+    IEnumerator LevelSelectCheck(string dir)
+    {
+        var mouse = UnityEngine.InputSystem.Mouse.current;
+        LoadLevel(0);
+        hud.ShowLevelSelect(LevelEntries());
+        yield return new WaitForSeconds(0.5f);
+        Cap(Path.Combine(dir, "bolum-secme.png"));
+        yield return new WaitForSeconds(0.3f);
+        var at = hud.LevelRowScreenPoint(2);
+        string problem = mouse == null ? "fare yok" : !at.HasValue ? "2. bolumun satiri bulunamadi" : null;
+        if (problem == null)
+        {
+            yield return MouseClick(mouse, at.Value);
+            yield return new WaitForSeconds(0.4f);
+            if (level.Number != 2) problem = "secilen bolum " + level.Number + " (2 olmali)";
+            else if (hud.LevelRowScreenPoint(2).HasValue) problem = "ekran kapanmadi";
+        }
+        Debug.Log("BOLUM SECME DENETIMI: " + (problem ?? "TAMAM"));
+        hud.HideLevelSelect();
+    }
+
+    // Deneme icin: ekrandaki noktaya fareyle bir kez tiklar (bas, iki kare bekle, birak)
+    static IEnumerator MouseClick(UnityEngine.InputSystem.Mouse mouse, Vector2 at)
+    {
+        UnityEngine.InputSystem.InputSystem.QueueStateEvent(mouse, new UnityEngine.InputSystem.LowLevel.MouseState { position = at, buttons = 1 });
+        yield return null; yield return null;
+        UnityEngine.InputSystem.InputSystem.QueueStateEvent(mouse, new UnityEngine.InputSystem.LowLevel.MouseState { position = at, buttons = 0 });
+        yield return null;
+    }
+
+    // ---- Adim adim denetimi (-shots icinde): son bolumun cozumunde ⏭'a uc kez, sonra Devam'a fareyle tiklanir ----
+    // Uc adimda for, move, collect calisir: robot bir kare ilerler (ve yalnizca bir kare), satirin yaninda "i = 0" yazar ve kod bekler;
+    // Devam kalanini bitirir. Log'da "ADIM ADIM DENETIMI:" satiri; goruntu adim-adim.png.
+    IEnumerator StepCheck(string dir)
+    {
+        var mouse = UnityEngine.InputSystem.Mouse.current;
+        if (mouse == null) { Debug.Log("ADIM ADIM DENETIMI: fare yok, atlandi"); yield break; }
+        LoadLevel(levels.Count - 1);
+        SetCode(level.Solution);
+        yield return new WaitForSeconds(0.4f);
+        for (int k = 0; k < 3; k++)
+        {
+            yield return MouseClick(mouse, hud.StepScreenPoint());
+            yield return new WaitForSeconds(1.2f); // satirin animasyonu bitsin
+        }
+        Cap(Path.Combine(dir, "adim-adim.png"));
+        yield return new WaitForSeconds(0.3f);
+        var start = level.Robot;
+        var oneStep = Pos(new Cell(start.Col + 1, start.Row));
+        string problem = !running || !stepMode ? "kod adim adim beklemiyor"
+            : Vector3.Distance(robot.transform.localPosition, oneStep) > 0.05f ? "robot tam bir kare ilerlemedi"
+            : null;
+        yield return MouseClick(mouse, hud.RunScreenPoint()); // Devam
+        while (running) yield return null;
+        if (problem == null && !complete) problem = "Devam sonrasi bolum bitmedi";
+        Debug.Log("ADIM ADIM DENETIMI: " + (problem ?? "TAMAM"));
+        yield return new WaitForSeconds(0.3f);
+    }
+
+    // ---- Sozluk denetimi (-shots icinde): son bolumde kitap dugmesine, sonra "range" kisayoluna fareyle tiklanir ----
+    // Sozluk acilmali ve range karti (en sondaki) tamamen gorunur olmali. Log'da "SOZLUK DENETIMI:" satiri;
+    // goruntuler sozluk.png (acilis, for/range YENI), sozluk-range.png (kisayoldan sonra).
+    IEnumerator GlossaryCheck(string dir)
+    {
+        var mouse = UnityEngine.InputSystem.Mouse.current;
+        if (mouse == null) { Debug.Log("SOZLUK DENETIMI: fare yok, atlandi"); yield break; }
+        LoadLevel(levels.Count - 1);
+        yield return new WaitForSeconds(0.3f);
+        Cap(Path.Combine(dir, "sozluk-dugmesi.png"));
+        yield return new WaitForSeconds(0.3f);
+        yield return MouseClick(mouse, hud.GlossaryButtonScreenPoint());
+        yield return new WaitForSeconds(0.5f);
+        Cap(Path.Combine(dir, "sozluk.png"));
+        yield return new WaitForSeconds(0.3f);
+        string problem = !hud.GlossaryOpen ? "kitap dugmesi sozlugu acmadi" : null;
+        if (problem == null)
+        {
+            var at = hud.GlossaryShortcutScreenPoint("range");
+            if (!at.HasValue) problem = "range kisayolu bulunamadi";
+            else
+            {
+                yield return MouseClick(mouse, at.Value);
+                yield return new WaitForSeconds(0.5f);
+                Cap(Path.Combine(dir, "sozluk-range.png"));
+                yield return new WaitForSeconds(0.3f);
+                if (!hud.GlossaryCardInView("range")) problem = "kisayol range kartini tam gostermedi";
+            }
+        }
+        Debug.Log("SOZLUK DENETIMI: " + (problem ?? "TAMAM"));
+        hud.HideGlossary();
+    }
+
+    // ---- Ipucu denetimi (-shots icinde): son bolumde balon acilir, "Bir ipucu daha"ya iki kez fareyle tiklanir ----
+    // Log'da "IPUCU DENETIMI:" satiri; goruntuler ipucu-1.png (yalnizca ilk ipucu), ipucu-3.png (ucu de acik).
+    IEnumerator HintCheck(string dir)
+    {
+        var mouse = UnityEngine.InputSystem.Mouse.current;
+        LoadLevel(levels.Count - 1);
+        hud.ShowHint(true);
+        yield return new WaitForSeconds(0.4f);
+        Cap(Path.Combine(dir, "ipucu-1.png"));
+        yield return new WaitForSeconds(0.3f);
+        string problem = mouse == null ? "fare yok" : null;
+        for (int k = 0; k < 2 && problem == null; k++)
+        {
+            var at = hud.MoreHintScreenPoint();
+            if (!at.HasValue) { problem = "'Bir ipucu daha' dugmesi bulunamadi (" + (k + 1) + ". tiklama)"; break; }
+            yield return MouseClick(mouse, at.Value);
+            yield return new WaitForSeconds(0.3f);
+        }
+        int want = Mathf.Min(3, level.Hints.Count);
+        if (problem == null && hints.Shown(level.Number) != want) problem = "acik ipucu " + hints.Shown(level.Number) + " (" + want + " olmali)";
+        if (problem == null && hud.MoreHintScreenPoint().HasValue) problem = "hepsi acikken dugme hala gorunuyor";
+        Debug.Log("IPUCU DENETIMI: " + (problem ?? "TAMAM"));
+        Cap(Path.Combine(dir, "ipucu-3.png"));
+        yield return new WaitForSeconds(0.3f);
+        hud.ShowHint(false);
+    }
+
     // ---- Kontrol icin ekran goruntusu: MarsKod.exe -shots <klasor> ----
 
     static void Cap(string path) => ScreenCapture.CaptureScreenshot(path, 2);
@@ -776,6 +1001,11 @@ public class Oyun : MonoBehaviour
             Cap(Path.Combine(dir, b + "3-bitti.png"));
             yield return new WaitForSeconds(0.3f);
         }
+        yield return LevelSelectCheck(dir);
+        yield return HintCheck(dir);
+        yield return StepCheck(dir);
+        yield return GlossaryCheck(dir);
+
         // Kod yazarken: imlec kodun sonunda
         LoadLevel(levels.Count - 1);
         yield return new WaitForSeconds(0.3f);
@@ -806,6 +1036,12 @@ public class Oyun : MonoBehaviour
         hud.ShowTierMenu(true);
         yield return new WaitForSeconds(0.3f);
         Cap(Path.Combine(dir, "kademe-kutusu.png"));
+        yield return new WaitForSeconds(0.2f);
+        hud.ShowTierMenu(false);
+        yield return new WaitForSeconds(0.2f);
+        hud.ShowTierMenu(true, true);
+        yield return new WaitForSeconds(0.3f);
+        Cap(Path.Combine(dir, "kademe-kisayol.png"));
         yield return new WaitForSeconds(0.2f);
         hud.ShowTierMenu(false);
 

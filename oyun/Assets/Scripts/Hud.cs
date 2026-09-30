@@ -9,10 +9,18 @@ using UnityEngine.UIElements;
 public class Hud : MonoBehaviour
 {
     public event Action RunPressed, ResetPressed, StarsToggled, MenuPressed;
+    // Calistir'in sag ucundaki ⏭: kodu bir satir ilerletir (adim adim modu)
+    public event Action StepPressed;
+    // Sol ustteki kitap: kod sozlugu
+    public event Action GlossaryPressed;
     // Oyuncu kodu degistirdi (yeni kodun tamami)
     public event Action<string> CodeChanged;
     // Oyuncu kademe kutusundan yeni bir kademe secti (kalici tutulmasi icin; Tier zaten degisti)
     public event Action<KeyboardTier> TierChanged;
+    // Oyuncu bolum secme ekranindan bir bolum secti (bolum numarasi)
+    public event Action<int> LevelPicked;
+    // Oyuncu ipucu balonunda "Bir ipucu daha" dedi
+    public event Action MoreHintPressed;
 
     static readonly Color Accent = Mats.Hex("#E07A5F");
     static readonly Color Ink = Mats.Hex("#E9E4EE");
@@ -27,17 +35,20 @@ public class Hud : MonoBehaviour
     static readonly Color KeyboardBg = new Color(0.075f, 0.07f, 0.095f, 0.98f);
 
     Font fMed, fSemi, fBold, fMono;
-    VisualElement root, header, card, hint, message, runBtn, overlay;
+    VisualElement root, header, card, message, runBtn, stepBtn, glossaryBtn, overlay;
+    GlossaryView glossary;
+    HintPanel hint;
     CodeEditor editor;
     CodeKeyboard keyboard;
     BlockPalette palette;
     BlockDrag drag;
     NumberStepper stepper;
     TierMenu tierMenu;
+    LevelSelect levelSelect;
     // Su an acik olan yazma paneli (klavye ya da palet), kapaliyken null
     VisualElement shownPanel;
     KeyboardTier tier = KeyboardTier.Orta;
-    Label chapter, title, runText, msgTag, msgTitle, msgText, msgOriginal, hintText, xpTotalLabel, xpDoneLabel, xpNextLabel;
+    Label chapter, title, runText, msgTag, msgTitle, msgText, msgOriginal, xpTotalLabel, xpDoneLabel, xpNextLabel;
     VisualElement dotsRow;
     Icon starIcon;
     readonly List<Icon> dots = new List<Icon>();
@@ -91,6 +102,13 @@ public class Hud : MonoBehaviour
         editor.NumberTapped += (line, col) => { if (line >= 0) stepper.Show(line, col); else stepper.Hide(); };
         drag.Started += stepper.Hide;
 
+        // Bolum secme ekrani en ustte: butun ekrani kaplar (sol ustteki dugmeyle acilir)
+        levelSelect = new LevelSelect(fMed, fSemi, fBold, Ink, Accent, ButtonBg, Hairline);
+        levelSelect.Picked += n => LevelPicked?.Invoke(n);
+        overlay.Add(levelSelect);
+        glossary = new GlossaryView(fMed, fSemi, fBold, fMono, Ink, Accent, ButtonBg, Hairline);
+        overlay.Add(glossary);
+
         root.Add(header);
         root.Add(free);
         root.Add(card);
@@ -118,7 +136,12 @@ public class Hud : MonoBehaviour
         row.style.alignItems = Align.FlexStart;
 
         var glass = new Color(1f, 1f, 1f, 0.12f);
-        var menu = RoundButton(96, glass, new Icon(42, DrawMenu), () => MenuPressed?.Invoke());
+        // Sol sutun: bolumler, altinda kod sozlugu (her an acilabilir)
+        var menuCol = new VisualElement { pickingMode = PickingMode.Ignore };
+        menuCol.Add(RoundButton(96, glass, new Icon(42, DrawMenu), () => MenuPressed?.Invoke()));
+        glossaryBtn = RoundButton(96, glass, new Icon(46, DrawBook), () => GlossaryPressed?.Invoke());
+        glossaryBtn.style.marginTop = 20;
+        menuCol.Add(glossaryBtn);
 
         var center = new VisualElement { pickingMode = PickingMode.Ignore };
         center.style.flexGrow = 1;
@@ -157,7 +180,7 @@ public class Hud : MonoBehaviour
         starCol.Add(starBtn);
         starCol.Add(xpTotalLabel);
 
-        row.Add(menu);
+        row.Add(menuCol);
         row.Add(center);
         row.Add(starCol);
         h.Add(row);
@@ -204,36 +227,46 @@ public class Hud : MonoBehaviour
         runBtn.style.backgroundColor = Accent;
         Ui.Radius(runBtn, 62);
         runBtn.style.flexDirection = FlexDirection.Row;
-        runBtn.style.alignItems = Align.Center;
-        runBtn.style.justifyContent = Justify.Center;
-        runBtn.Add(new Icon(38, DrawPlay));
+        runBtn.style.alignItems = Align.Stretch;
+        // Sol: Calistir (hepsi normal hizda). Sag uc: ⏭ adim (her basista bir satir); ayri dugme yok, alt sira sikismasin.
+        var runMain = new VisualElement();
+        runMain.style.flexGrow = 1;
+        runMain.style.flexDirection = FlexDirection.Row;
+        runMain.style.alignItems = Align.Center;
+        runMain.style.justifyContent = Justify.Center;
+        runMain.Add(new Icon(38, DrawPlay));
         runText = Text("Çalıştır", fSemi, 42, Color.white);
         runText.style.marginLeft = 16;
-        runBtn.Add(runText);
-        Pressable(runBtn, () => RunPressed?.Invoke());
+        runMain.Add(runText);
+        runMain.RegisterCallback<ClickEvent>(_ => RunPressed?.Invoke());
+        runBtn.Add(runMain);
+        stepBtn = new VisualElement();
+        stepBtn.style.width = 116;
+        stepBtn.style.alignItems = Align.Center;
+        stepBtn.style.justifyContent = Justify.Center;
+        stepBtn.style.borderLeftWidth = 3;
+        stepBtn.style.borderLeftColor = new Color(1f, 1f, 1f, 0.35f);
+        stepBtn.style.marginTop = 26; stepBtn.style.marginBottom = 26;
+        stepBtn.Add(new Icon(40, DrawStep));
+        stepBtn.RegisterCallback<ClickEvent>(_ => StepPressed?.Invoke());
+        runBtn.Add(stepBtn);
+        Pressable(runBtn, null);
         Transition(runBtn, "opacity", 0.2f, EasingMode.EaseOut);
 
         var resetBtn = RoundButton(124, ButtonBg, new Icon(56, DrawReset), () => ResetPressed?.Invoke());
         Ui.Border(resetBtn, 2, Hairline);
 
-        buttons.Add(hintBtn); buttons.Add(runBtn); buttons.Add(resetBtn);
+        // Kademe kutusunun ikinci kisayolu; yeri tasarim belgesi K6: ipucu · klavye · Calistir · bastan al
+        var tierBtn = RoundButton(124, ButtonBg, new Icon(62, DrawKeyboard), null);
+        Ui.Border(tierBtn, 2, Hairline);
+        tierBtn.style.marginLeft = 22;
+        tierMenu.SetShortcut(tierBtn);
+
+        buttons.Add(hintBtn); buttons.Add(tierBtn); buttons.Add(runBtn); buttons.Add(resetBtn);
         card.Add(buttons);
 
-        hint = new VisualElement();
-        hint.style.position = Position.Absolute;
-        hint.style.left = 0; hint.style.right = 0;
-        hint.style.bottom = Length.Percent(100);
-        hint.style.marginBottom = 20;
-        hint.style.backgroundColor = HintBg;
-        Ui.Radius(hint, 36);
-        Ui.Border(hint, 2, Hairline);
-        hint.style.paddingTop = 30; hint.style.paddingBottom = 32;
-        hint.style.paddingLeft = 40; hint.style.paddingRight = 40;
-        hintText = Text("", fMed, 32, Color.white);
-        hintText.enableRichText = true;
-        hintText.style.whiteSpace = WhiteSpace.Normal;
-        hint.Add(hintText);
-        hint.style.display = DisplayStyle.None;
+        hint = new HintPanel(fMed, fSemi, Accent, HintBg, Hairline);
+        hint.MorePressed += () => MoreHintPressed?.Invoke();
         card.Add(hint);
 
         // Hata ya da bilgi kutusu: hint ile ayni yerde, kod kartinin ustunde. Dokununca kapanir.
@@ -302,7 +335,12 @@ public class Hud : MonoBehaviour
     // Deneme goruntuleri icin: klavyenin ikinci isaret sayfasi
     public void KeyboardMore(bool on) => keyboard.SetMore(on);
     // Deneme goruntuleri icin: kademe kutusunu acar/kapatir
-    public void ShowTierMenu(bool on) { if (on) tierMenu.Show(); else tierMenu.Hide(); }
+    public void ShowTierMenu(bool on, bool fromShortcut = false)
+    {
+        if (!on) tierMenu.Hide();
+        else if (fromShortcut) tierMenu.ShowFromShortcut();
+        else tierMenu.Show();
+    }
     // Satir turlerinin kayit metni (satir basina bir harf)
     public string CodeKinds => editor.Kinds;
 
@@ -330,8 +368,8 @@ public class Hud : MonoBehaviour
 
     // ---- Disaridan cagrilanlar ----
 
-    // Yeni bolum: ust baslik, buz sayaci ve ipucu balonu bu bolume gore kurulur.
-    public void SetLevel(int number, string name, string goalText, int ices, string hintRich)
+    // Yeni bolum: ust baslik ve buz sayaci bu bolume gore kurulur, ipucu balonu kapanir (icerigi SetHints ile gelir).
+    public void SetLevel(int number, string name, string goalText, int ices)
     {
         levelNumber = number;
         levelName = name;
@@ -344,28 +382,39 @@ public class Hud : MonoBehaviour
         xpDoneLabel.style.display = DisplayStyle.None;
         xpNextLabel.style.display = DisplayStyle.None;
         editor.StopEditing();
-        hintText.text = hintRich;
-        hint.style.display = DisplayStyle.None;
+        hint.Hide();
         ResetView();
     }
 
     // Ekranda ust baslik ile alttaki kod karti arasinda kalan bos bant (0 = ekran alti, 1 = ekran ustu).
     // Kamera oyun alanini bu banda sigdirir; kod uzayip kisalinca alan kendiliginden buyur/kuculur.
+    // Kartin ustundeki ipucu balonu ya da hata kutusu aciksa bant onun ustunde biter (alan kuculur ama ortulmez).
     public Vector2 FreeBand()
     {
         float h = root.layout.height;
         if (float.IsNaN(h) || h <= 0f || float.IsNaN(card.layout.yMin) || float.IsNaN(header.layout.yMax))
             return new Vector2(0.3f, 0.9f);
-        return new Vector2(1f - card.layout.yMin / h, 1f - header.layout.yMax / h);
+        float bottom = card.layout.yMin;
+        if (hint.Open) bottom = Mathf.Min(bottom, TopInRoot(hint));
+        if (message.style.display == DisplayStyle.Flex) bottom = Mathf.Min(bottom, TopInRoot(message));
+        return new Vector2(1f - bottom / h, 1f - header.layout.yMax / h);
+    }
+
+    // Ogenin ust kenari, root icinde (henuz yerlesmediyse cok buyuk sayi: hesaba katilmaz)
+    float TopInRoot(VisualElement e)
+    {
+        float y = e.worldBound.yMin - root.worldBound.yMin;
+        return float.IsNaN(y) ? float.MaxValue : y;
     }
 
     // Calisan satiri isaretler (idx 0'dan baslar, -1 = hicbiri). error: satir kirmizi yanar.
-    public void SetActiveLine(int idx, bool error = false) => editor.SetActiveLine(idx, error);
+    // vars: satirin sagindaki degiskenler ("i = 2"), yoksa null.
+    public void SetActiveLine(int idx, bool error = false, string vars = null) => editor.SetActiveLine(idx, error, vars);
 
     // tag: kutunun ustundeki kucuk etiket ("PYTHON HATASI", "OYUN KURALI"...); original: Python'un kendi (Ingilizce) mesaji, yoksa null.
     public void ShowMessage(string tag, string heading, string text, string original, bool error)
     {
-        hint.style.display = DisplayStyle.None;
+        hint.Hide();
         msgTag.text = tag;
         msgTag.style.color = error ? ErrorRed : IceFill;
         msgTitle.text = CodeColors.Inline(heading);
@@ -394,12 +443,14 @@ public class Hud : MonoBehaviour
         }
     }
 
-    public void SetRunning(bool running)
+    // paused: adim adim modunda bir sonraki basisi bekliyor (Calistir "Devam" olur, kalanini normal hizda calistirir)
+    public void SetRunning(bool running, bool paused = false)
     {
-        runText.text = running ? "Çalışıyor…" : "Çalıştır";
-        runBtn.style.opacity = running ? 0.6f : 1f;
+        runText.text = !running ? "Çalıştır" : paused ? "Devam" : "Çalışıyor…";
+        runBtn.style.opacity = running && !paused ? 0.6f : 1f;
+        stepBtn.style.display = DisplayStyle.Flex;
         editor.ReadOnly = running; // calisirken kod degistirilemez
-        if (running) hint.style.display = DisplayStyle.None;
+        if (running) hint.Hide();
     }
 
     // hasNext: sonraki bolum varsa dugme "Sonraki bolum" olur.
@@ -413,11 +464,39 @@ public class Hud : MonoBehaviour
         title.schedule.Execute(() => title.style.scale = new Scale(Vector3.one)).StartingIn(180);
         runText.text = hasNext ? "Sonraki bölüm" : "Tekrar";
         runBtn.style.opacity = 1f;
+        stepBtn.style.display = DisplayStyle.None; // bolum bitti: adimlanacak bir sey yok
         xpDoneLabel.text = xpLine;
         xpDoneLabel.style.display = string.IsNullOrEmpty(xpLine) ? DisplayStyle.None : DisplayStyle.Flex;
         xpNextLabel.text = nextBetter;
         xpNextLabel.style.display = string.IsNullOrEmpty(nextBetter) ? DisplayStyle.None : DisplayStyle.Flex;
     }
+
+    // Bolum secme ekranini acar; satirlar (cozuldu mu, kac XP) Oyun.cs'ten gelir. Acikken yazma ve acilir kutular kapanir.
+    public void ShowLevelSelect(IReadOnlyList<LevelSelect.Entry> entries)
+    {
+        CloseTransient();
+        levelSelect.Show(entries);
+    }
+
+    // Kod sozlugunu acar; sayfalar ve hangi bolumde acildiklari Oyun.cs'ten gelir.
+    public void ShowGlossary(IReadOnlyList<GlossaryView.Entry> entries)
+    {
+        CloseTransient();
+        glossary.Show(entries);
+    }
+
+    public void HideGlossary() => glossary.Hide();
+
+    // Tam ekran bir katman acilmadan once: yazma ve acilir kutular kapanir
+    void CloseTransient()
+    {
+        editor.StopEditing();
+        stepper.Hide();
+        tierMenu.Hide();
+        hint.Hide();
+    }
+
+    public void HideLevelSelect() => levelSelect.Hide();
 
     // Ust basliktaki toplam XP sayaci; Oyun.cs bolum yuklendiginde ve XP kazanildiginda cagirir.
     public void SetTotalXp(int total) => xpTotalLabel.text = total + " XP";
@@ -440,11 +519,17 @@ public class Hud : MonoBehaviour
         starIcon.MarkDirtyRepaint();
     }
 
-    void ToggleHint()
+    void ToggleHint() => ShowHint(!hint.Open);
+
+    // Ipucu balonunun icerigi: bolumun butun ipuclari ve kacinin acik oldugu (Oyun.cs, HintLog)
+    public void SetHints(IReadOnlyList<string> hints, int shown) => hint.SetHints(hints, shown);
+
+    // Ipucu balonunu acar/kapatir (acilinca hata kutusu kapanir; ayni yeri paylasiyorlar)
+    public void ShowHint(bool on)
     {
-        bool show = hint.style.display == DisplayStyle.None;
-        if (show) HideMessage();
-        hint.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
+        if (!on) { hint.Hide(); return; }
+        HideMessage();
+        hint.Show();
     }
 
     public bool Editing => editor.Editing;
@@ -477,6 +562,34 @@ public class Hud : MonoBehaviour
     public Vector2? StepperScreenPoint(int delta)
     {
         var c = stepper.ButtonCenter(delta);
+        return c.HasValue ? PanelToScreen(c.Value) : (Vector2?)null;
+    }
+
+    // Sozluk: kitap dugmesi, kisayol ve kartin yeri; sozluk acik mi. Deneme icin.
+    public Vector2 GlossaryButtonScreenPoint() => PanelToScreen(glossaryBtn.worldBound.center);
+    public bool GlossaryOpen => glossary.Open;
+    public Vector2? GlossaryShortcutScreenPoint(string title)
+    {
+        var c = glossary.ShortcutCenter(title);
+        return c.HasValue ? PanelToScreen(c.Value) : (Vector2?)null;
+    }
+    public bool GlossaryCardInView(string title) => glossary.CardInView(title);
+
+    // Calistir ve ⏭ bolmelerinin ekrandaki yeri. Deneme icin.
+    public Vector2 RunScreenPoint() => PanelToScreen(runText.parent.worldBound.center);
+    public Vector2 StepScreenPoint() => PanelToScreen(stepBtn.worldBound.center);
+
+    // Ipucu balonundaki "Bir ipucu daha" dugmesinin ekrandaki yeri; yoksa null. Deneme icin.
+    public Vector2? MoreHintScreenPoint()
+    {
+        var c = hint.MoreCenter();
+        return c.HasValue ? PanelToScreen(c.Value) : (Vector2?)null;
+    }
+
+    // Bolum secme ekranindaki satirin ekrandaki yeri; ekran kapaliysa null. Deneme icin.
+    public Vector2? LevelRowScreenPoint(int number)
+    {
+        var c = levelSelect.RowCenter(number);
         return c.HasValue ? PanelToScreen(c.Value) : (Vector2?)null;
     }
 
@@ -621,6 +734,28 @@ public class Hud : MonoBehaviour
         else { p.strokeColor = new Color(1f, 1f, 1f, 0.5f); p.lineWidth = 3f; p.Stroke(); }
     }
 
+    // Acik kitap: iki sayfa, ortada sirt
+    static void DrawBook(Painter2D p, Rect r)
+    {
+        float w = r.width, h = r.height;
+        p.strokeColor = new Color(1f, 1f, 1f, 0.92f);
+        p.lineWidth = w * 0.08f;
+        p.lineCap = LineCap.Round;
+        p.lineJoin = LineJoin.Round;
+        // iki sayfa: sirttan disa dogru hafif yukselen dortgenler
+        foreach (float side in new[] { -1f, 1f })
+        {
+            float outer = 0.5f + side * 0.42f;
+            p.BeginPath();
+            p.MoveTo(new Vector2(w * 0.5f, h * 0.3f));
+            p.LineTo(new Vector2(w * outer, h * 0.2f));
+            p.LineTo(new Vector2(w * outer, h * 0.72f));
+            p.LineTo(new Vector2(w * 0.5f, h * 0.82f));
+            p.ClosePath();
+            p.Stroke();
+        }
+    }
+
     static void DrawBulb(Painter2D p, Rect r)
     {
         float s = r.width;
@@ -637,6 +772,45 @@ public class Hud : MonoBehaviour
         p.BeginPath();
         p.MoveTo(new Vector2(s * 0.42f, s * 0.84f));
         p.LineTo(new Vector2(s * 0.58f, s * 0.84f));
+        p.Stroke();
+    }
+
+    static void DrawKeyboard(Painter2D p, Rect r)
+    {
+        float w = r.width, h = r.height;
+        p.strokeColor = Ink;
+        p.lineWidth = w * 0.075f;
+        p.lineCap = LineCap.Round;
+        p.lineJoin = LineJoin.Round;
+        // govde
+        float x0 = w * 0.06f, x1 = w * 0.94f, y0 = h * 0.24f, y1 = h * 0.76f, c = w * 0.1f;
+        p.BeginPath();
+        p.MoveTo(new Vector2(x0 + c, y0));
+        p.LineTo(new Vector2(x1 - c, y0));
+        p.ArcTo(new Vector2(x1, y0), new Vector2(x1, y0 + c), c);
+        p.LineTo(new Vector2(x1, y1 - c));
+        p.ArcTo(new Vector2(x1, y1), new Vector2(x1 - c, y1), c);
+        p.LineTo(new Vector2(x0 + c, y1));
+        p.ArcTo(new Vector2(x0, y1), new Vector2(x0, y1 - c), c);
+        p.LineTo(new Vector2(x0, y0 + c));
+        p.ArcTo(new Vector2(x0, y0), new Vector2(x0 + c, y0), c);
+        p.ClosePath();
+        p.Stroke();
+        // tuslar: iki sira nokta + bosluk cubugu
+        p.fillColor = Ink;
+        for (int i = 0; i < 4; i++)
+        {
+            float x = w * (0.24f + 0.173f * i);
+            foreach (float y in new[] { 0.41f, 0.54f })
+            {
+                p.BeginPath();
+                p.Arc(new Vector2(x, h * y), w * 0.036f, Deg(0), Deg(360));
+                p.Fill();
+            }
+        }
+        p.BeginPath();
+        p.MoveTo(new Vector2(w * 0.3f, h * 0.65f));
+        p.LineTo(new Vector2(w * 0.7f, h * 0.65f));
         p.Stroke();
     }
 
@@ -663,6 +837,29 @@ public class Hud : MonoBehaviour
         p.LineTo(tip - dir * s * 0.03f - perp * s * 0.12f);
         p.ClosePath();
         p.Fill();
+    }
+
+    // ⏭: ucgen + dik cizgi (bir satir ilerle)
+    static void DrawStep(Painter2D p, Rect r)
+    {
+        float s = r.width;
+        p.fillColor = Color.white;
+        p.strokeColor = Color.white;
+        p.lineJoin = LineJoin.Round;
+        p.lineCap = LineCap.Round;
+        p.lineWidth = s * 0.1f;
+        p.BeginPath();
+        p.MoveTo(new Vector2(s * 0.14f, s * 0.16f));
+        p.LineTo(new Vector2(s * 0.64f, s * 0.5f));
+        p.LineTo(new Vector2(s * 0.14f, s * 0.84f));
+        p.ClosePath();
+        p.Fill();
+        p.Stroke();
+        p.lineWidth = s * 0.13f;
+        p.BeginPath();
+        p.MoveTo(new Vector2(s * 0.84f, s * 0.16f));
+        p.LineTo(new Vector2(s * 0.84f, s * 0.84f));
+        p.Stroke();
     }
 
     static void DrawPlay(Painter2D p, Rect r)

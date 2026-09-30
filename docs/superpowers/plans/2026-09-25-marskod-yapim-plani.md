@@ -79,10 +79,11 @@ Aşama 1'deki TypeScript motoru (`src/engine`) C#'a birebir taşınır. Sıra: k
 
 ## Aşama 3 — İnce dilim: ilk oynanabilir sürüm 🎯
 - [x] Oyun ekranı: üstte Mars alanı (`oyun/` sahnesi hazır), altta kod alanı (şimdilik normal klavye; `CodeEditor.cs`), ▶ Çalıştır.
-- [ ] Robot hareketleri animasyonlu; hata olunca satır kırmızı.
-- [ ] ⏯ Adım adım modu: kod satır satır, değişkenler etiketli kutular.
-- [ ] Çift dilli hata kutusu.
-- [ ] Bölüm seçimi + bölüm sonu ekranı.
+- [x] Robot hareketleri animasyonlu; hata olunca satır kırmızı. (09-27'de motoru sahneye bağlarken yapıldı)
+- [x] ⏯ Adım adım modu: kod satır satır, değişkenler etiketli kutular. ✅ (09-30, Ragıp) Çalıştır'ın sağ ucunda ⏭ bölmesi (her basış bir satır, Çalıştır → "Devam" kalanını normal hızda); değişkenler kutu yerine çalışan satırın sağında soluk yazı ("i = 2") — kart büyümesin diye (Ragıp'ın kararı). Kayıt: `TraceEntry.Vars`.
+- [x] Çift dilli hata kutusu. (09-27'de yapıldı: Türkçe açıklama + Python'un kendi mesajı)
+- [x] Bölüm seçimi + bölüm sonu ekranı. ✅ (09-30, Ragıp) `LevelSelect.cs`; bölüm sonu XP satırları Görev 9'da. Kilit yok (insan testinden sonra karar).
+- [x] 3 kademeli ipucu. ✅ (09-30, Ragıp) `HintPanel.cs` + `HintLog.cs`; ilk insan testinde üçü de bedava.
 - [ ] **İnsan testi (erken):** Kod bilmeyen 1–2 kişiye 3 bölüm oynat; takıldıkları yeri not et.
 
 **Bitti sayılır:** Telefonda 3 bölüm baştan sona oynanıyor.

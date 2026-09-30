@@ -14,8 +14,8 @@
   "konular": ["komut sırası", "yönler"],
   "ipuclari": [
     "İki buz var ve aralarında bir kaya duruyor. Robot kayanın içinden geçemez.",
-    "<b>collect()</b> robotun durduğu karedeki buzu toplar. Kayaya çarpmamak için etrafından dolaş.",
-    "Birinci buzu topladıktan sonra: <b>move(North)</b>, <b>move(East)</b>, <b>collect()</b>."
+    "`collect()` robotun durduğu karedeki buzu toplar. Kayaya çarpmamak için etrafından dolaş.",
+    "Birinci buzu topladıktan sonra: `move(North)`, `move(East)`, `collect()`."
   ],
   "tipik_hatalar": [
     {

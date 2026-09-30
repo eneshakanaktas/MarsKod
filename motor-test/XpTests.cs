@@ -71,6 +71,18 @@ public class XpTests
     }
 
     [Fact]
+    public void Bolum_XPsi_yalnizca_o_bolumu_sayar()
+    {
+        var xp = new Xp();
+        xp.Award(1, LineKind.Dugme);
+        xp.Award(1, LineKind.Elle);
+        xp.Award(2, LineKind.Oneri);
+        Assert.Equal(130, xp.LevelTotal(1));
+        Assert.Equal(50, xp.LevelTotal(2));
+        Assert.Equal(0, xp.LevelTotal(3));
+    }
+
+    [Fact]
     public void Sonraki_zor_kademe_alinmamis_olan()
     {
         var xp = new Xp();

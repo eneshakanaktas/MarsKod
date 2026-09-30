@@ -14,6 +14,21 @@ namespace MarsKod.Dunya
         /// <summary>1'den başlar</summary>
         public int Line;
         public readonly List<WorldEvent> Events = new List<WorldEvent>();
+        /// <summary>Satır çalıştıktan sonra değişkenler: ad ve Python'daki görünüşü (fonksiyon, sınıf gibi değer olmayanlar yok).
+        /// Adım adım modunda satırın yanında gösterilir.</summary>
+        public readonly List<KeyValuePair<string, string>> Vars = new List<KeyValuePair<string, string>>();
+
+        /// <summary>Satırın yanında gösterilecek metin: "i = 2 · adim = 5"; uzun değer kısaltılır. Değişken yoksa boş.</summary>
+        public string VarsText(int maxValueLength = 14)
+        {
+            var parts = new List<string>(Vars.Count);
+            foreach (var pair in Vars)
+            {
+                string value = pair.Value.Length > maxValueLength ? pair.Value.Substring(0, maxValueLength - 1) + "…" : pair.Value;
+                parts.Add(pair.Key + " = " + value);
+            }
+            return string.Join(" · ", parts);
+        }
     }
 
     public sealed class RunReport
@@ -46,6 +61,7 @@ namespace MarsKod.Dunya
             var report = new RunReport();
             Interpreter interpreter = null;
             TraceEntry current = null;
+            Frame frame = null; // current satirinin calistigi cerceve (degiskenleri satir bitince okunur)
             world.Events.Clear();
             try
             {
@@ -53,8 +69,9 @@ namespace MarsKod.Dunya
                 interpreter = new Interpreter(new InterpreterOptions { MaxSteps = maxSteps, Externals = world.Commands() });
                 foreach (var step in interpreter.Run(module))
                 {
-                    Flush(world, current);
+                    Flush(world, current, frame);
                     current = new TraceEntry { Line = step.Line };
+                    frame = step.Frame;
                     report.Trace.Add(current);
                 }
             }
@@ -69,16 +86,27 @@ namespace MarsKod.Dunya
                 report.Rule = e;
                 report.StopLine = current?.Line;
             }
-            Flush(world, current);
+            Flush(world, current, frame);
             report.Output = interpreter?.Output ?? "";
             report.Complete = !report.Stopped && world.Complete;
             return report;
         }
 
-        static void Flush(World world, TraceEntry entry)
+        // Biten satira dunyada olanlari ve degiskenlerin son halini yazar
+        static void Flush(World world, TraceEntry entry, Frame frame)
         {
-            if (entry != null) entry.Events.AddRange(world.Events);
+            if (entry != null)
+            {
+                entry.Events.AddRange(world.Events);
+                if (frame != null)
+                    foreach (var pair in frame.Vars)
+                        if (!pair.Key.StartsWith("__", StringComparison.Ordinal) && IsValue(pair.Value)) entry.Vars.Add(new KeyValuePair<string, string>(pair.Key, Values.Repr(pair.Value)));
+            }
             world.Events.Clear();
         }
+
+        // Oyuncuya degisken olarak gosterilecek deger mi (fonksiyon, sinif, yerlesik fonksiyon degil; Python'un
+        // kendi __name__ gibi adlari yukarida ayiklanir)
+        static bool IsValue(object v) => !(v is PyFunction || v is PyBuiltin || v is PyMethod || v is PyType);
     }
 }

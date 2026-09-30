@@ -1,6 +1,6 @@
 # Kod sözlüğü (tasarım notu)
 
-> Tarih: 2026-09-29 · Fikir ve karar: Ragıp (Claude ile) · Durum: **yapılacak**; ayrıntılar Enes/Hamza ile konuşulacak.
+> Tarih: 2026-09-29 · Fikir ve karar: Ragıp (Claude ile) · Durum: **ilk sürüm yapıldı (09-30, Ragıp)**: oyun ekranında sol üstte 📖 düğmesi (bölümler düğmesinin altı), her kelime için kart (açıklama + renkli örnek), üstte kısayollar, oynanan bölümde yeni olanlar "YENİ". Dosya `Resources/Sozluk/sozluk.json`, kılavuz `docs/tasarim/sozluk-dosyasi.md`. Henüz yok: kilitli sayfalar (bütün bölümler açık olduğu için), canlandırma, turuncu parçaya basılı tutunca sayfa açılması. Açık sorular hâlâ Enes/Hamza ile konuşulmalı (aşağıda; 1 ve 2 şimdilik Ragıp'ın kararıyla cevaplandı: yer sol üst, önce metin + örnek).
 > Yapım planında: Aşama 7'nin ilk maddesi, ama ilk insan testinden **önce** yapılmalı (aşağıda "Ne zaman").
 
 ## Neden

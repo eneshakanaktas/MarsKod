@@ -1,0 +1,50 @@
+{
+  "sayfalar": [
+    {
+      "baslik": "move",
+      "kelimeler": ["move"],
+      "aciklama": "Robotu bir kare yürütür. Hangi yöne gideceğini parantezin içine yazarsın.",
+      "ornek": [
+        "move(East)   # doğuya (sağa) bir kare",
+        "move(North)  # kuzeye (yukarı) bir kare"
+      ]
+    },
+    {
+      "baslik": "Yönler",
+      "kelimeler": ["North", "East", "South", "West"],
+      "aciklama": "Dört yön var: North kuzey (yukarı), East doğu (sağ), South güney (aşağı), West batı (sol). move'a nereye gideceğini söylerler.",
+      "ornek": [
+        "move(South)  # aşağı",
+        "move(West)   # sola"
+      ]
+    },
+    {
+      "baslik": "collect",
+      "kelimeler": ["collect"],
+      "aciklama": "Robotun durduğu karedeki buzu toplar. Karede buz yoksa hiçbir şey olmaz; önce robotu buzun üstüne götür.",
+      "ornek": [
+        "move(East)",
+        "collect()    # buzu topla"
+      ]
+    },
+    {
+      "baslik": "for",
+      "kelimeler": ["for", "in"],
+      "aciklama": "Bir işi istediğin kadar tekrarlatır. Altındaki girintili (4 boşluk içeriden başlayan) satırlar her turda bir kez çalışır. Satırın sonundaki iki nokta (:) şart.",
+      "ornek": [
+        "for i in range(3):",
+        "    move(East)   # 3 kez",
+        "    collect()    # 3 kez"
+      ]
+    },
+    {
+      "baslik": "range",
+      "kelimeler": ["range"],
+      "aciklama": "for'a kaç tur döneceğini söyler: range(3) üç tur demek. i her turda bir artar: 0, 1, 2. Kodu Çalıştır'ın sağ ucundaki adım düğmesiyle satır satır çalıştırırsan i'nin değerini satırın yanında görürsün.",
+      "ornek": [
+        "for i in range(4):",
+        "    move(North)  # 4 kez yukarı"
+      ]
+    }
+  ]
+}

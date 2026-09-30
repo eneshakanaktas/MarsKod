@@ -16,8 +16,8 @@
   "konular": ["komut sırası", "for döngüsü", "girinti"],
   "ipuclari": [
     "Beş kez aynı iki şeyi yapıyorsun: bir kare ilerle, buzu topla. Aynı satırları tekrar tekrar yazmak yerine Python'a tekrarlatabilirsin.",
-    "<b>for i in range(5):</b> altındaki girintili (içeriden başlayan) satırları 5 kez tekrarlar. Satırın sonundaki iki noktayı unutma.",
-    "<b>for i in range(5):</b> satırının altına, 4 boşluk içeriden <b>move(East)</b> ve <b>collect()</b> yaz."
+    "`for i in range(5):` altındaki girintili (içeriden başlayan) satırları 5 kez tekrarlar. Satırın sonundaki iki noktayı unutma.",
+    "`for i in range(5):` satırının altına, 4 boşluk içeriden `move(East)` ve `collect()` yaz."
   ],
   "tipik_hatalar": [
     {

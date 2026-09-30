@@ -9,6 +9,7 @@ Yapım planı: `docs/superpowers/plans/2026-09-25-marskod-yapim-plani.md`.
 - `oyun/Assets/Motor/` — mini-Python motoru (C#). Giriş: `PythonEngine.RunPython`, adım adım: `Interpreter.Run`, Türkçe açıklama: `Explain`. Metinler: `ExplanationsTr.cs`.
 - `oyun/Assets/Dunya/` — Mars dünyası kuralları (saf C#): ızgara, robot, buz, kaya, hedef, oyun komutları (`move`, `collect`...). Oyuncu kodunu çalıştırıp olanları kaydeden: `ProgramRun.Execute`. Bölüm dosyası okuma + denetleyici: `Level.cs`.
 - `oyun/Assets/Resources/Bolumler/` — bölüm dosyaları (`bolum-NN.json`); kılavuz `docs/tasarim/bolum-dosyasi.md`. `dotnet test` her bölümü denetler.
+- `oyun/Assets/Resources/Sozluk/sozluk.json` — kod sözlüğü metinleri; kılavuz `docs/tasarim/sozluk-dosyasi.md`. `dotnet test` bölümlerle uyumunu denetler.
 - `motor-test/` — motor ve dünya testleri (.NET). Motoru Unity'nin sınırlarıyla derler (C# 9, .NET Standard 2.1).
 - `prototipler/` — görsel taslaklar (unitytaslak1, godot…). Dokunma; kural: `docs/tasarim/taslaklar.md`.
 - `arsiv/expo/` — eski Expo/TypeScript kodu (TypeScript motoru dahil); motor C#'a taşındı. Dokunulmaz, yeni özellik eklenmez; son hâli git etiketi `expo-son`. `tests/python-cases/` örnekleri dilden bağımsız; C# motoru bunlarla sınanır.

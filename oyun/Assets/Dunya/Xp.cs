@@ -88,14 +88,22 @@ namespace MarsKod.Dunya
             return next == null ? "" : Name(next.Value) + " ile çözersen +" + Amount(next.Value) + " XP daha";
         }
 
+        /// <summary>Bu bölümden kazanılan XP (bölüm seçme ekranı için); hiç çözülmediyse 0.</summary>
+        public int LevelTotal(int level)
+        {
+            int sum = 0;
+            if (taken.TryGetValue(level, out var set))
+                foreach (var k in set) sum += Amount(k);
+            return sum;
+        }
+
         /// <summary>Toplam XP.</summary>
         public int Total
         {
             get
             {
                 int sum = 0;
-                foreach (var set in taken.Values)
-                    foreach (var k in set) sum += Amount(k);
+                foreach (int level in taken.Keys) sum += LevelTotal(level);
                 return sum;
             }
         }

@@ -11,6 +11,19 @@ public class DunyaTests
     static World Board() => new World(6, 6, new Cell(0, 2), new[] { new Cell(2, 2), new Cell(3, 2), new Cell(4, 2) });
 
     [Fact]
+    public void Kayit_her_satirdan_sonraki_degiskenleri_tutar()
+    {
+        var report = ProgramRun.Execute("adim = 'uzun bir metin burada'\nfor i in range(2):\n    move(East)\ndef f():\n    pass\n", Board());
+        // satır 1: adim atandı; for satırından sonra i = 0; fonksiyon (f) gösterilmez
+        Assert.Equal("adim = 'uzun bir met…", report.Trace[0].VarsText());
+        Assert.Equal(new[] { "adim", "i" }, report.Trace[1].Vars.Select(v => v.Key));
+        Assert.Equal("0", report.Trace[1].Vars[1].Value);
+        Assert.Equal("1", report.Trace[3].Vars[1].Value);
+        Assert.DoesNotContain(report.Trace.Last().Vars, v => v.Key == "f");
+        Assert.Equal("", ProgramRun.Execute("move(East)\n", Board()).Trace[0].VarsText());
+    }
+
+    [Fact]
     public void Bolum_1_cozumu_tum_buzlari_toplar()
     {
         var world = Board();

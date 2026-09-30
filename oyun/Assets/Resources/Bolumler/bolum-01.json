@@ -14,8 +14,8 @@
   "konular": ["komut sırası", "yönler"],
   "ipuclari": [
     "Hedef kare robotun 3 kare doğusunda, 1 kare kuzeyinde.",
-    "<b>move(East)</b> robotu doğuya bir kare götürür, <b>move(North)</b> kuzeye. Robot satırları yukarıdan aşağıya sırayla yapar.",
-    "Üç kez <b>move(East)</b>, sonra bir kez <b>move(North)</b>."
+    "`move(East)` robotu doğuya bir kare götürür, `move(North)` kuzeye. Robot satırları yukarıdan aşağıya sırayla yapar.",
+    "Üç kez `move(East)`, sonra bir kez `move(North)`."
   ],
   "tipik_hatalar": [
     {

@@ -120,7 +120,7 @@ public class SuggestTests
     [Fact]
     public void Bos_parcalar_listesi_hata()
     {
-        var e = Assert.Throws<LevelFormatError>(() => Parse("\"parcalar\": [],"));
+        var e = Assert.Throws<DataFormatError>(() => Parse("\"parcalar\": [],"));
         Assert.Contains("parcalar", e.Message);
     }
 

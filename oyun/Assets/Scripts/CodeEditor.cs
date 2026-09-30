@@ -35,9 +35,12 @@ public class CodeEditor : VisualElement
     readonly CodeBuffer buffer = new CodeBuffer();
     readonly VisualElement rowsLayer, textClip, textLayer, selLayer, caret, dropMark, numberMark, guideLayer;
     readonly Label colored, probe;
+    // Calisan satirin sagindaki soluk yazi: satir bitince degiskenler ("i = 2"), adim adim modu icin
+    readonly Label varsNote;
     readonly List<(VisualElement row, VisualElement bar, Label num)> rows = new List<(VisualElement, VisualElement, Label)>();
     int activeLine = -1;
     bool activeError;
+    string activeVars = "";
     float pitch = FontSize * 1.32f + Spacing, lineHeight = FontSize * 1.32f, charW = FontSize * 0.6f;
     float scrollX, scrollY, maxHeight = float.MaxValue;
     bool editing, readOnly, pitchMeasured, blocks;
@@ -94,6 +97,13 @@ public class CodeEditor : VisualElement
         probe.style.position = Position.Absolute;
         probe.style.visibility = Visibility.Hidden;
         textLayer.Add(probe);
+
+        varsNote = new Label { pickingMode = PickingMode.Ignore, enableRichText = false };
+        TextStyle(varsNote, new Color(ink.r, ink.g, ink.b, 0.5f));
+        varsNote.style.fontSize = NumSize;
+        varsNote.style.position = Position.Absolute;
+        varsNote.style.display = DisplayStyle.None;
+        textLayer.Add(varsNote);
 
         // Imlec: kalin, turuncu, yanip sonen bir cizgi
         caret = new VisualElement { pickingMode = PickingMode.Ignore };
@@ -248,10 +258,13 @@ public class CodeEditor : VisualElement
     }
 
     // Calisan satiri isaretler (0'dan baslar, -1 = hicbiri). error: satir kirmizi yanar. Satir gorunmuyorsa oraya kayar.
-    public void SetActiveLine(int idx, bool error = false)
+    // vars: satirin saginda soluk yazi (degiskenler, "i = 2"); bos ya da null ise yazi yok.
+    public void SetActiveLine(int idx, bool error = false, string vars = null)
     {
         activeLine = idx;
         activeError = error;
+        activeVars = vars ?? "";
+        PlaceVarsNote();
         var color = error ? errorRed : accent;
         for (int i = 0; i < rows.Count; i++)
         {
@@ -262,6 +275,17 @@ public class CodeEditor : VisualElement
             rows[i].num.style.color = a ? color : numColor;
         }
         if (idx >= 0 && idx < rows.Count) EnsureLineVisible(idx);
+    }
+
+    // Degisken yazisini calisan satirin sonuna, iki harf bosluk birakarak koyar
+    void PlaceVarsNote()
+    {
+        bool show = activeVars.Length > 0 && activeLine >= 0 && activeLine < buffer.LineCount;
+        varsNote.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
+        if (!show) return;
+        varsNote.text = activeVars;
+        varsNote.style.left = (buffer.Line(activeLine).Length + 2) * charW;
+        varsNote.style.top = activeLine * pitch + (lineHeight - NumSize * 1.32f) * 0.5f;
     }
 
     // ---- Acemi: surukle-birak ve -/+ icin ----
@@ -617,7 +641,7 @@ public class CodeEditor : VisualElement
         }
         for (int i = 0; i < rows.Count; i++) rows[i].num.text = (i + 1).ToString();
         if (activeLine >= rows.Count) activeLine = -1;
-        SetActiveLine(activeLine, activeError);
+        SetActiveLine(activeLine, activeError, activeVars);
         Layout();
     }
 
@@ -689,6 +713,7 @@ public class CodeEditor : VisualElement
         style.height = ViewHeight;
 
         LayoutGuides();
+        PlaceVarsNote(); // harf genisligi olculunce yeri degisir
 
         // imlec
         var (cl, cc) = buffer.Position(buffer.Caret);

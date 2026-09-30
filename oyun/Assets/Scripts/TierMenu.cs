@@ -28,6 +28,7 @@ public class TierMenu : VisualElement
     readonly Dictionary<KeyboardTier, (VisualElement row, Label ad, Icon check)> rows
         = new Dictionary<KeyboardTier, (VisualElement, Label, Icon)>();
     KeyboardTier tier = KeyboardTier.Orta;
+    VisualElement shortcut;
 
     public TierMenu(VisualElement overlay, Font fMed, Font fSemi, Color ink, Color accent, Color background, Color hairline)
     {
@@ -67,7 +68,16 @@ public class TierMenu : VisualElement
     public bool Open => box.style.display == DisplayStyle.Flex;
 
     // picked, disariya tiklandiginda kapatmak icin: bu kutunun (dugme ya da acilir liste) parcasi mi.
-    public bool Owns(VisualElement picked) => this == picked || Contains(picked) || box == picked || box.Contains(picked);
+    public bool Owns(VisualElement picked) =>
+        this == picked || Contains(picked) || box == picked || box.Contains(picked)
+        || (shortcut != null && (shortcut == picked || shortcut.Contains(picked)));
+
+    // Kademe kutusunu acan ikinci dugme (alt sirada, basparmaga yakin): kutu bunun ustunde acilir.
+    public void SetShortcut(VisualElement button)
+    {
+        shortcut = button;
+        button.RegisterCallback<ClickEvent>(_ => { if (Open) Hide(); else Show(shortcut); });
+    }
 
     public void SetTier(KeyboardTier t)
     {
@@ -90,7 +100,8 @@ public class TierMenu : VisualElement
         p.Stroke();
     }
 
-    static void DrawCheck(Painter2D p, Rect r, Color c)
+    // Tik isareti; bolum secme ekrani (LevelSelect) da kullanir.
+    public static void DrawCheck(Painter2D p, Rect r, Color c)
     {
         float w = r.width, h = r.height;
         p.strokeColor = c;
@@ -104,11 +115,14 @@ public class TierMenu : VisualElement
         p.Stroke();
     }
 
-    public void Show()
+    // opener: kutuyu acan dugme; verilmezse kart ustundeki kademe yazisi (kutu altinda acilir).
+    public void Show(VisualElement opener = null)
     {
         Refresh();
-        if (!Place()) Hide();
+        if (!Place(opener ?? this)) Hide();
     }
+
+    public void ShowFromShortcut() => Show(shortcut);
 
     public void Hide() => box.style.display = DisplayStyle.None;
 
@@ -146,14 +160,17 @@ public class TierMenu : VisualElement
         }
     }
 
-    // Kutuyu dugmenin altina, sag kenari dugmeyle hizali koyar (ekranin disina tasmasin diye sola kayabilir).
-    bool Place()
+    // Kutuyu dugmenin altina (kart ustundeki yazi) ya da ustune (alt sira dugmesi), sag kenari dugmeyle hizali koyar
+    // (ekranin disina tasmasin diye sola kayabilir).
+    bool Place(VisualElement opener)
     {
-        var r = worldBound;
+        var r = opener.worldBound;
         var area = box.parent.layout;
         if (float.IsNaN(area.width) || float.IsNaN(r.xMax)) return false;
         box.style.left = Mathf.Clamp(r.xMax - BoxW, 12f, Mathf.Max(12f, area.width - BoxW - 12f));
-        box.style.top = r.yMax + 14f;
+        bool above = opener != this;
+        box.style.top = above ? StyleKeyword.Auto : new StyleLength(r.yMax + 14f);
+        box.style.bottom = above ? new StyleLength(area.height - r.yMin + 14f) : StyleKeyword.Auto;
         box.style.display = DisplayStyle.Flex;
         return true;
     }

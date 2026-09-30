@@ -56,7 +56,7 @@ En kolayı: var olan bir bölümü kopyala, adını ve numarasını değiştir, 
 | `parcalar` | İsteğe bağlı. Acemi paletindeki düğmeler; her öğe tek satır kod, örn. `["move(East)", "collect()", "for i in range(3):"]`. Yazılmazsa açık komutlardan çıkar (`move` → dört yön, `collect` → `collect()`). Sayıları bilerek çözümdekinden farklı yaz (`range(3)`), oyuncu değiştirsin. `:` ile biten satır tek başına yazılabilir. |
 | `python_kelimeleri` | İsteğe bağlı. Bu bölümde açılan Python kelimeleri (`["for", "in", "range"]`); Orta kademedeki öneri satırında çıkar. Önceki bölümlerde açılanlar sonrakilerde de açık kalır. |
 | `konular` | Bölümün öğrettiği konular (ileride oyuncu profili bunlarla tutulacak). |
-| `ipuclari` | En az 1, ideali 3 ipucu: 1. yön gösterir, 2. konuyu hatırlatır, 3. kodun bir kısmını verir. `<b>kalın</b>` yazılabilir. Şimdilik ampul düğmesinde 1. ipucu görünür. |
+| `ipuclari` | En az 1, ideali 3 ipucu: 1. yön gösterir, 2. konuyu hatırlatır, 3. kodun bir kısmını verir. Kod parçası ters tırnak içine yazılır (`` `move(East)` ``): tırnaklar görünmez, kod renginde çıkar. Ampule basınca 1. ipucu görünür; oyuncu "Bir ipucu daha" dedikçe 2. ve 3. altına eklenir (şimdilik üçü de bedava). |
 | `tipik_hatalar` | Oyuncuların sık yapacağı hatalar: hatalı kod + ne olduğunun açıklaması. İsteğe bağlı ama önerilir. |
 | `baslangic_kodu` | Oyuncunun önüne ilk gelen kod (isteğe bağlı; kod yazma alanı gelince kullanılacak). |
 | `cozum` | Bir doğru çözüm. Kod yazma alanı gelene kadar kartta bu görünür. |

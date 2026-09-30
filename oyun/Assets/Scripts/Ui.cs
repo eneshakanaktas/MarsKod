@@ -23,6 +23,17 @@ public static class Ui
         e.style.paddingLeft = 0; e.style.paddingRight = 0; e.style.paddingTop = 0; e.style.paddingBottom = 0;
     }
 
+    // Tek parca yazi (dokunmayi gecirir): yazi tipi, boyut, renk
+    public static Label Text(string s, Font font, float size, Color color)
+    {
+        var l = new Label(s) { pickingMode = PickingMode.Ignore };
+        NoSpacing(l);
+        l.style.unityFontDefinition = new StyleFontDefinition(FontDefinition.FromFont(font));
+        l.style.fontSize = size;
+        l.style.color = color;
+        return l;
+    }
+
     // Telefonun alttaki guvenli payi (hareket cubugu vb.), arayuz biriminde
     public static float SafeBottom()
     {

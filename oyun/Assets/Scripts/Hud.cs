@@ -93,7 +93,8 @@ public class Hud : MonoBehaviour
         keyboard = new CodeKeyboard(editor, fMono, Ink, Accent, KeyboardBg);
         keyboard.style.display = DisplayStyle.None;
         drag = new BlockDrag(overlay, card, editor, fMono, Ink, Accent, ErrorRed);
-        palette = new BlockPalette(editor, drag, fMono, fMed, Ink, Accent, KeyboardBg);
+        palette = new BlockPalette(editor, drag, fMono, fMed, Ink, Accent, ErrorRed, KeyboardBg);
+        drag.AttachPalette(palette);
         palette.style.display = DisplayStyle.None;
         stepper = new NumberStepper(editor, fSemi, Ink, Accent, ButtonBg);
         overlay.Add(stepper);
@@ -553,6 +554,13 @@ public class Hud : MonoBehaviour
     public Vector2? PieceScreenPoint(string piece)
     {
         var c = palette.PieceCenter(piece);
+        return c.HasValue ? PanelToScreen(c.Value) : (Vector2?)null;
+    }
+
+    // Acemi paletindeki Sil dugmesinin ekrandaki yeri; palet gorunmuyorsa null. Deneme icin.
+    public Vector2? TrashScreenPoint()
+    {
+        var c = palette.TrashCenter();
         return c.HasValue ? PanelToScreen(c.Value) : (Vector2?)null;
     }
 

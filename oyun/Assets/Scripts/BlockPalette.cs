@@ -12,17 +12,19 @@ public class BlockPalette : VisualElement
     readonly CodeEditor editor;
     readonly BlockDrag drag;
     readonly Font mono;
-    readonly Color ink, accent, chipBg, pressedBg, hairline;
-    readonly VisualElement chipsBox;
+    readonly Color ink, accent, chipBg, pressedBg, hairline, trashBg, trashHotBg;
+    readonly VisualElement chipsBox, trashChip;
     // Dugmeler parcalariyla (deneme icin tiklatmak amaciyla)
     readonly Dictionary<string, VisualElement> chipsByPiece = new Dictionary<string, VisualElement>();
 
-    public BlockPalette(CodeEditor editor, BlockDrag drag, Font mono, Font captionFont, Color ink, Color accent, Color background)
+    public BlockPalette(CodeEditor editor, BlockDrag drag, Font mono, Font captionFont, Color ink, Color accent, Color danger, Color background)
     {
         this.editor = editor; this.drag = drag; this.mono = mono; this.ink = ink; this.accent = accent;
         chipBg = new Color(1f, 1f, 1f, 0.09f);
         pressedBg = new Color(1f, 1f, 1f, 0.22f);
         hairline = new Color(1f, 1f, 1f, 0.08f);
+        trashBg = new Color(danger.r, danger.g, danger.b, 0.14f);
+        trashHotBg = new Color(danger.r, danger.g, danger.b, 0.45f);
 
         style.backgroundColor = background;
         style.borderTopLeftRadius = 40; style.borderTopRightRadius = 40;
@@ -43,9 +45,11 @@ public class BlockPalette : VisualElement
         chipsBox.style.flexWrap = Wrap.Wrap;
         chipsBox.style.justifyContent = Justify.Center;
         Add(chipsBox);
+
+        trashChip = TrashChip(captionFont, danger);
     }
 
-    // Bolumun parcalari; fresh: bu bolumde yeni olanlar (turuncu kenarli)
+    // Bolumun parcalari; fresh: bu bolumde yeni olanlar (turuncu kenarli). Cop dugmesi hep en sonda.
     public void SetPieces(IEnumerable<string> pieces, ICollection<string> fresh)
     {
         chipsBox.Clear();
@@ -56,6 +60,67 @@ public class BlockPalette : VisualElement
             chipsByPiece[piece] = chip;
             chipsBox.Add(chip);
         }
+        chipsBox.Add(trashChip);
+    }
+
+    // Cop dugmesinin ekrandaki yeri; palet gorunmuyorsa null. Deneme icin.
+    public Vector2? TrashCenter() => Visible ? trashChip.worldBound.center : (Vector2?)null;
+
+    // Parmak (surukledigi satirla) cop dugmesinin ustunde mi? BlockDrag sorar: ustundeyse birakinca satir silinir.
+    public bool OverTrash(Vector2 point) => Visible && trashChip.worldBound.Contains(point);
+
+    // Surukleme sirasinda dugme parlar: "buraya birakirsan silinir"
+    public void SetTrashHot(bool hot) => trashChip.style.backgroundColor = hot ? trashHotBg : trashBg;
+
+    bool Visible => resolvedStyle.display != DisplayStyle.None;
+
+    // Cop dugmesi: dokununca kodun son satirini siler; koddan surukledigin satir ustune birakilinca o satir silinir
+    VisualElement TrashChip(Font label, Color danger)
+    {
+        var chip = new VisualElement();
+        chip.style.flexDirection = FlexDirection.Row;
+        chip.style.alignItems = Align.Center;
+        chip.style.marginLeft = 8; chip.style.marginRight = 8; chip.style.marginTop = 8; chip.style.marginBottom = 8;
+        chip.style.paddingLeft = 28; chip.style.paddingRight = 28; chip.style.paddingTop = 22; chip.style.paddingBottom = 22;
+        chip.style.backgroundColor = trashBg;
+        Ui.Radius(chip, 22);
+        Ui.Border(chip, 3, new Color(danger.r, danger.g, danger.b, 0.5f));
+
+        var icon = new Icon(CodeSize, (p, r) => BlockDrag.DrawTrash(p, r, danger));
+        chip.Add(icon);
+        var text = new Label("Sil") { pickingMode = PickingMode.Ignore };
+        Ui.NoSpacing(text);
+        text.style.unityFontDefinition = new StyleFontDefinition(FontDefinition.FromFont(label));
+        text.style.fontSize = CodeSize - 4f;
+        text.style.color = danger;
+        text.style.marginLeft = 14;
+        chip.Add(text);
+
+        // Basilip kalkinca siler; basili tutup surukleme yok (surukleme koddaki satir icin, BlockDrag yapar)
+        int pointer = -1;
+        void Release()
+        {
+            chip.style.backgroundColor = trashBg;
+            if (pointer >= 0 && chip.HasPointerCapture(pointer)) chip.ReleasePointer(pointer);
+            pointer = -1;
+        }
+        chip.RegisterCallback<PointerDownEvent>(e =>
+        {
+            e.StopPropagation();
+            if (editor.ReadOnly || drag.Active) return;
+            pointer = e.pointerId;
+            chip.CapturePointer(pointer);
+            chip.style.backgroundColor = trashHotBg;
+        });
+        chip.RegisterCallback<PointerUpEvent>(e =>
+        {
+            if (e.pointerId != pointer) return;
+            bool inside = chip.worldBound.Contains(e.position);
+            Release();
+            if (inside) editor.Edit(b => b.DeleteLastLine());
+        });
+        chip.RegisterCallback<PointerCancelEvent>(_ => Release());
+        return chip;
     }
 
     // Parcanin dugmesinin ekrandaki yeri (panel koordinati); palet gorunmuyorsa null. Deneme icin.

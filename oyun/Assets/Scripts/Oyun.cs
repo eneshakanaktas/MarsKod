@@ -840,6 +840,16 @@ public class Oyun : MonoBehaviour
         Cap(Path.Combine(dir, "acemi-sayi.png"));
         yield return new WaitForSeconds(0.3f);
         Expect("sayi degisti", "for i in range(5):\n    move(East)\n    collect()");
+        // Sil dugmesi: dokununca son satir gider; koddan surukleyip ustune birakinca o satir gider. Ikisinde de
+        // paletten ayni satiri yeniden ekleyip kodu eski hâline getirir (asagidaki cozum calissin).
+        yield return Click(hud.TrashScreenPoint(), "Sil dugmesi");
+        Expect("Sil dokunusu son satiri sildi", "for i in range(5):\n    move(East)");
+        yield return Click(hud.PieceScreenPoint("collect()"), "collect parcasi");
+        Expect("silinen satir geri eklendi", "for i in range(5):\n    move(East)\n    collect()");
+        yield return Drag(hud.CodeCharScreenPoint(2, 6), hud.TrashScreenPoint() ?? Vector2.zero, "3. satir", "acemi-sil-dugmesi.png");
+        Expect("satir Sil dugmesine birakildi", "for i in range(5):\n    move(East)");
+        yield return Click(hud.PieceScreenPoint("collect()"), "collect parcasi");
+        Expect("silinen satir geri eklendi (2)", "for i in range(5):\n    move(East)\n    collect()");
         if (problem == null && hud.CodeKinds != "DDD") problem = "satir turleri " + hud.CodeKinds + " (DDD olmali)";
 
         hud.StopEditing();

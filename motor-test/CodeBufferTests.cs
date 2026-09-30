@@ -335,6 +335,22 @@ public class CodeBufferTests
     }
 
     [Fact]
+    public void Son_satir_silinir_sondaki_bos_satirlar_atlanir_bos_kodda_bir_sey_olmaz()
+    {
+        var b = Buf("for i in range(3):\n    move(East)|");
+        b.Enter(); // sonda boş satır var
+        Assert.True(b.DeleteLastLine());
+        Assert.Equal("for i in range(3):", b.Text.TrimEnd());
+        Assert.True(b.DeleteLastLine());
+        Assert.Equal("", b.Text.Trim());
+        Assert.False(b.DeleteLastLine());
+
+        var bos = Buf("|");
+        Assert.False(bos.DeleteLastLine());
+        Assert.Equal("", bos.Text);
+    }
+
+    [Fact]
     public void Sayi_arttirilip_azaltilir()
     {
         var b = Buf("|for i in range(3):");

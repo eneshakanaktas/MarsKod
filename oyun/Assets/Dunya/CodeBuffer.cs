@@ -295,6 +295,19 @@ namespace MarsKod.Dunya
             SetCaret(Index(Math.Min(i, lines.Count - 1), 0));
         }
 
+        /// <summary>Kodun son dolu satırını siler (Acemi paletindeki çöp düğmesi). Kod boşsa bir şey yapmaz.
+        /// Sondaki boş satırlar atlanır, onlar zaten görünmez sayılır.</summary>
+        public bool DeleteLastLine()
+        {
+            for (int i = lines.Count - 1; i >= 0; i--)
+            {
+                if (lines[i].Trim().Length == 0) continue;
+                DeleteLine(i);
+                return true;
+            }
+            return false;
+        }
+
         /// <summary>(satır, sütun)'daki ya da hemen solundaki tam sayıyı bulur.</summary>
         public bool FindNumber(int line, int col, out int start, out int length)
         {

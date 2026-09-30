@@ -6,7 +6,8 @@ using UnityEngine.UIElements;
 // Paletten gelen parca ya da koddan kaldirilan satir parmakla tasinir; parmagin ustunde satirin bir kopyasi (hayalet) gider.
 // Hayalet kod kartinin ustundeyken CodeEditor satirlar arasinda turuncu cizgiyle birakilacak yeri gosterir. Parmak
 // saga/sola kayinca girinti kademe kademe degisir; yalnizca Python'un kabul ettigi kademeler (CodeBuffer.IndentRange).
-// Koddan kaldirilan satir kartin disina birakilirsa silinir (hayalette cop isareti). Kod yalnizca CodeEditor.Edit ile degisir.
+// Koddan kaldirilan satir kartin disina ya da paletteki cop dugmesinin ustune birakilirsa silinir (hayalette cop isareti,
+// dugme parlar). Kod yalnizca CodeEditor.Edit ile degisir.
 public class BlockDrag
 {
     // Surukleme basladi (Hud: -/+ kutusunu kapatir)
@@ -20,6 +21,7 @@ public class BlockDrag
     readonly Label ghostText;
     readonly Icon trash;
     readonly Color ghostBg, trashBg;
+    BlockPalette palette; // cop dugmesi burada
     string text;
     int fromLine = -1, pointerId = -1, gap = -1, level;
     float lift;
@@ -69,6 +71,9 @@ public class BlockDrag
 
     public bool Active => pointerId >= 0;
 
+    // Palet BlockDrag'den sonra kurulur (palet surukleyiciyi bilir); cop dugmesi icin baglanir
+    public void AttachPalette(BlockPalette p) => palette = p;
+
     // Paletten bir parca tasinmaya basladi
     public void BeginPiece(string piece, Vector2 at, int pointer) => Begin(piece, -1, at, pointer);
 
@@ -105,7 +110,10 @@ public class BlockDrag
         ghost.style.left = Mathf.Clamp(t.x - 40f, 0f, Mathf.Max(0f, parent.width - w));
         ghost.style.top = t.y - h;
 
-        bool inside = dropZone.worldBound.Contains(t);
+        // Cop dugmesi parmagin altina bakar (hayaletin degil): hayalet parmagin ustunde gider, koda denk gelebilir
+        bool overTrash = fromLine >= 0 && palette != null && palette.OverTrash(p);
+        palette?.SetTrashHot(overTrash);
+        bool inside = !overTrash && dropZone.worldBound.Contains(t);
         if (inside)
         {
             gap = editor.GapAt(t);
@@ -144,11 +152,12 @@ public class BlockDrag
         editor.HideDrop();
         editor.Lift(-1);
         ghost.style.display = DisplayStyle.None;
+        palette?.SetTrashHot(false);
         if (ghost.HasPointerCapture(id)) ghost.ReleasePointer(id);
     }
 
-    // Cop kutusu: kapakli kova
-    static void DrawTrash(Painter2D p, Rect r, Color c)
+    // Cop kutusu: kapakli kova (hayalette ve paletteki Sil dugmesinde)
+    public static void DrawTrash(Painter2D p, Rect r, Color c)
     {
         float s = r.width;
         p.strokeColor = c;

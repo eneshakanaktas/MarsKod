@@ -3,7 +3,8 @@
 // Biçim ve örnek: docs/tasarim/bolum-dosyasi.md
 //
 // Harita "resim gibi" yazılır: her satır bir sıra, en üstteki satır kuzey (alanın arkası).
-//   R robot   B buz   K kaya   T tehlikeli kristal   H hedef kare   . boş     (aradaki boşluklar önemsizdir)
+//   R robot   B buz   E enerji hücresi   K kaya   T tehlikeli kristal   H hedef kare   . boş     (aradaki boşluklar önemsizdir)
+//   Toplanacak işaretleri (B, E...) Collectible.cs'te; bir bölümde tek tür toplanır.
 
 using System;
 using System.Collections.Generic;
@@ -29,7 +30,10 @@ namespace MarsKod.Dunya
         public string Goal;
         public int Cols, Rows;
         public Cell Robot;
+        /// <summary>Toplanacak nesnelerin kareleri (türü Item; tarihsel adı Ices)</summary>
         public List<Cell> Ices = new List<Cell>();
+        /// <summary>Bu bölümde toplanan şey (buz, enerji hücresi...)</summary>
+        public Collectible Item = Collectible.Ice;
         public List<Cell> Rocks = new List<Cell>();
         /// <summary>Tehlikeli kırmızı kristaller (üstünden geçilir, toplanmaz)</summary>
         public List<Cell> Crystals = new List<Cell>();
@@ -51,7 +55,7 @@ namespace MarsKod.Dunya
 
         public World CreateWorld() => new World(Cols, Rows, Robot, Ices, Rocks, Target, Commands, Crystals);
 
-        public const char RobotMark = 'R', IceMark = 'B', RockMark = 'K', CrystalMark = 'T', TargetMark = 'H', EmptyMark = '.';
+        public const char RobotMark = 'R', RockMark = 'K', CrystalMark = 'T', TargetMark = 'H', EmptyMark = '.';
 
         // ---- dosyadan okuma ----
 
@@ -111,6 +115,7 @@ namespace MarsKod.Dunya
             level.Cols = lines[0].Length;
             if (level.Cols == 0) throw new DataFormatError("Haritanın ilk satırı boş.");
             bool robot = false;
+            var kinds = new HashSet<Collectible>();
             for (int i = 0; i < lines.Count; i++)
             {
                 if (lines[i].Length != level.Cols)
@@ -126,7 +131,6 @@ namespace MarsKod.Dunya
                             robot = true;
                             level.Robot = cell;
                             break;
-                        case IceMark: level.Ices.Add(cell); break;
                         case RockMark: level.Rocks.Add(cell); break;
                         case CrystalMark: level.Crystals.Add(cell); break;
                         case TargetMark:
@@ -135,17 +139,31 @@ namespace MarsKod.Dunya
                             break;
                         case EmptyMark: break;
                         default:
+                            if (Collectibles.Marks.TryGetValue(lines[i][col], out var kind))
+                            {
+                                kinds.Add(kind);
+                                level.Ices.Add(cell);
+                                break;
+                            }
                             throw new DataFormatError("Haritanın " + (i + 1) + ". satırında bilinmeyen işaret: '" + lines[i][col] + "'. Kullanılabilenler: "
-                                + RobotMark + " robot, " + IceMark + " buz, " + RockMark + " kaya, " + CrystalMark + " kristal, " + TargetMark + " hedef, " + EmptyMark + " boş.");
+                                + RobotMark + " robot, " + MarkList() + ", " + RockMark + " kaya, " + CrystalMark + " kristal, " + TargetMark + " hedef, " + EmptyMark + " boş.");
                     }
                 }
             }
             if (!robot) throw new DataFormatError("Haritada robot (" + RobotMark + ") yok.");
+            if (kinds.Count > 1)
+                throw new DataFormatError("Haritada iki tür toplanacak var (" + string.Join(", ", kinds.Select(Collectibles.Name)) + "); bir bölümde tek tür olmalı.");
+            if (kinds.Count == 1) level.Item = kinds.First();
             if (level.Ices.Count == 0 && level.Target == null)
-                throw new DataFormatError("Haritada görev yok: en az bir buz (" + IceMark + ") ya da bir hedef (" + TargetMark + ") olmalı.");
+                throw new DataFormatError("Haritada görev yok: toplanacak bir şey (" + MarkList() + ") ya da bir hedef (" + TargetMark + ") olmalı.");
             if (level.Ices.Count > 0 && !level.Commands.Contains("collect"))
-                throw new DataFormatError("Haritada buz var ama \"komutlar\" içinde \"collect\" yok; buzlar toplanamaz.");
+                throw new DataFormatError("Haritada toplanacak " + Collectibles.Name(level.Item) + " var ama \"komutlar\" içinde \"collect\" yok; toplanamaz.");
+            if (level.Commands.Contains("ice_here") && level.Item != Collectible.Ice)
+                throw new DataFormatError("\"ice_here\" yalnızca buz (B) olan bölümlerde açılabilir; bu bölümde " + Collectibles.Name(level.Item) + " toplanıyor.");
         }
+
+        /// <summary>"B buz, E enerji hücresi" (hata mesajları için)</summary>
+        static string MarkList() => string.Join(", ", Collectibles.Marks.Select(m => m.Key + " " + Collectibles.Name(m.Value)));
 
         static List<TypicalMistake> ReadMistakes(object v)
         {

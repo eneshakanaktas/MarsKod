@@ -1,46 +1,46 @@
 {
   "numara": 7,
-  "baslik": "Tarayıcı",
-  "gorev": "2 buz topla",
+  "baslik": "Gidiş dönüş",
+  "gorev": "11 hücre topla",
   "harita": [
     ". . . . . .",
+    ". . K . . .",
+    "K . . . . .",
     ". . . . . .",
-    ". . . . . .",
-    ". . . . . .",
-    ". . B . . .",
-    "R B . . . ."
+    "E E E E E E",
+    "R E E E E E"
   ],
-  "komutlar": ["move", "collect", "ice_here"],
-  "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "if ice_here():"],
-  "python_kelimeleri": ["if"],
-  "konular": ["if koşulu", "ice_here", "girinti"],
+  "komutlar": ["move", "collect"],
+  "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "for i in range(3):"],
+  "konular": ["for döngüsü", "art arda döngüler", "döngüler arasında tek satır"],
   "ipuclari": [
-    "Robot bir karede durup önce bakabilir: `ice_here()` \"burada buz var mı?\" diye sorar. İki buz var; ikisinin üstünde de aynı şeyi yap.",
-    "`if ice_here():` altındaki girintili satırlar yalnızca cevap Doğru (True) ise çalışır. Satırın sonundaki iki nokta ve alttaki girinti şart.",
-    "İkinci buz bir kare yukarıda ve bir kare sağda: `move(North)`, `move(East)`, sonra aynı `if` kalıbını bir kez daha yaz."
+    "Hücreler iki sıra: alttakini doğuya giderek, üsttekini batıya dönerek topla. Köşede de bir hücre var.",
+    "İki döngünün arasına girintisiz satırlar yazabilirsin; bunlar yalnızca bir kez çalışır. Köşede yukarı çık ve oradaki hücreyi topla.",
+    "Birinci döngüden sonra girintisiz `move(North)` ve `collect()`; sonra `for i in range(5):` altında `move(West)` ve `collect()`."
   ],
   "tipik_hatalar": [
     {
-      "kod": ["move(East)", "if ice_here():", "collect()"],
-      "aciklama": "if satırının altındaki collect() girintisiz; Python \"if'in içi nerede?\" diye şaşırır. Altındaki satırı 4 boşluk içeri al."
+      "kod": ["for i in range(5):", "    move(East)", "    collect()", "move(North)", "for i in range(5):", "    move(West)", "    collect()"],
+      "aciklama": "Köşedeki hücre kaldı: yukarı çıkınca bir kez collect() gerek."
     },
     {
-      "kod": ["move(East)", "if ice_here():", "    collect()", "move(East)", "if ice_here():", "    collect()"],
-      "aciklama": "İkinci buz doğuda değil, bir kare yukarıda: önce move(North), sonra move(East)."
+      "kod": ["for i in range(5):", "    move(East)", "    collect()", "move(North)", "collect()", "for i in range(5):", "    move(East)", "    collect()"],
+      "aciklama": "Üst sırada geri dönmek gerek: ikinci döngü batıya (West) gitmeli. Doğuya giden robot alanın dışına çıkmak ister."
     },
     {
-      "kod": ["if ice_here():", "    collect()", "move(East)"],
-      "aciklama": "if ilk karede baktı; orada buz yok. Sonra yürüdü ama bir daha bakmadı."
+      "kod": ["for i in range(5):", "    move(East)", "    collect()", "    move(North)", "    collect()", "for i in range(5):", "    move(West)", "    collect()"],
+      "aciklama": "move(North) ve collect() girintili kaldı, ilk döngünün içine girdi: robot her turda yukarı çıkar ve merdiven gibi kayar."
     }
   ],
-  "baslangic_kodu": ["move(East)", "if ice_here():", "    collect()"],
+  "baslangic_kodu": ["for i in range(5):", "    move(East)", "    collect()"],
   "cozum": [
-    "move(East)",
-    "if ice_here():",
+    "for i in range(5):",
+    "    move(East)",
     "    collect()",
     "move(North)",
-    "move(East)",
-    "if ice_here():",
+    "collect()",
+    "for i in range(5):",
+    "    move(West)",
     "    collect()"
   ]
 }

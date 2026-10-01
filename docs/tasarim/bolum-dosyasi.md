@@ -71,13 +71,16 @@ Harfler arasındaki boşluklar önemsizdir, sadece okumayı kolaylaştırır. Ş
 | İşaret | Anlamı |
 |---|---|
 | `R` | Robot (tam olarak bir tane) |
-| `B` | Buz (toplanacak) |
+| `E` | Enerji hücresi (toplanacak; Bölge 1: Bölüm 1-10) |
+| `B` | Buz (toplanacak; Bölge 2: Bölüm 11-20) |
 | `K` | Kaya (robot içinden geçemez) |
 | `T` | Tehlikeli kırmızı kristal (üstünden geçilir; `collect()` ile toplamaya çalışmak robotu durdurur, oyun kuralı) |
 | `H` | Hedef kare (en fazla bir tane; kod bitince robot burada durmalı) |
 | `.` | Boş kare |
 
-Görev: tüm buzlar toplanmış **ve** (hedef varsa) robot hedef karede olmalı. Kod hatayla ya da oyun kuralıyla (kaya, alan sınırı) durursa görev tamam sayılmaz.
+Bir bölümde tek tür toplanacak olur (`E` ile `B` aynı haritada olmaz). `ice_here` yalnızca buz (`B`) olan bölümlerde açılabilir. Yeni bölge nesnesi eklemek: `oyun/Assets/Dunya/Collectible.cs` (işaret + Türkçe ad), görünüşü sahnede.
+
+Görev: tüm toplanacaklar toplanmış **ve** (hedef varsa) robot hedef karede olmalı. Kod hatayla ya da oyun kuralıyla (kaya, alan sınırı) durursa görev tamam sayılmaz.
 
 ## Denetim
 

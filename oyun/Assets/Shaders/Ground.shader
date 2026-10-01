@@ -137,6 +137,34 @@ Shader "MarsKod/Ground"
                 return a;
             }
 
+            // Kutup buzulu (Bolge 2): kar ortusu, yer yer mavi buz levhalari ve catlaklari, ruzgarin diktigi kar dalgalari,
+            // buzun arasina karismis ince kizil toz seritleri (Mars'in kutbundaki buz tozludur). sRGB.
+            float3 iceSheet(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float detail = 1.0 - far * 0.5;
+                float3 a = lerp(float3(0.70, 0.76, 0.85), float3(0.80, 0.85, 0.92), fbm(q * 2.2));
+                a *= 0.92 + 0.12 * fbm(q * 0.35 + 4.0);
+                a *= 1.0 + detail * 0.06 * (vnoise2(q * 38.0) - 0.5);
+
+                // mavi buz levhalari (alanin icinde soluk: kareler net okunsun)
+                float sheet = smoothstep(0.56, 0.66, fbm(q * 0.45 + 3.0)) * (1.0 - 0.7 * inArea);
+                float3 blue = lerp(float3(0.46, 0.60, 0.78), float3(0.56, 0.70, 0.86), fbm(q * 3.0 + 8.0));
+                a = lerp(a, blue, sheet);
+                float crack = 1.0 - smoothstep(0.0, 0.012, abs(fbm(q * 1.4 + 2.0) - 0.5));
+                a *= 1.0 - crack * sheet * 0.18 * detail * (1.0 - inArea);
+
+                // kizil toz seritleri
+                float dust = smoothstep(0.62, 0.8, fbm(float2(q.x * 0.25 + q.y * 0.1, q.y * 1.2) + 13.0)) * (1.0 - inArea);
+                a = lerp(a, float3(0.66, 0.52, 0.48), dust * 0.35);
+
+                // ruzgarin diktigi kar dalgalari
+                float duneMask = smoothstep(0.5, 0.7, fbm(q * 0.3 + 31.0)) * (1.0 - inArea) * (1.0 - far) * (1.0 - sheet);
+                float ripple = sin(dot(q, float2(0.6, 0.8)) * 18.0 + fbm(q * 1.5) * 6.0);
+                a *= 1.0 + duneMask * 0.05 * ripple;
+                return a;
+            }
+
             half4 frag (Varyings i) : SV_Target
             {
                 float3 p = i.posWS;
@@ -148,7 +176,7 @@ Shader "MarsKod/Ground"
                 float inArea = 1.0 - smoothstep(0.0, 0.03, outside);
                 float far = smoothstep(8.0, 20.0, outside);   // koloniye dogru cok gec ve yavas sadelesir
 
-                float3 a = regolith(p, far, inArea);
+                float3 a = MarsPolar() ? iceSheet(p, far, inArea) : regolith(p, far, inArea);
 
                 // oyun alani: ayni zemin, biraz daha duzgun; kare sinirlari ince ve soluk
                 // sinirlar alanin kenarindan (-_Area) birer birim arayla; tek/cift kare sayisinda da dogru
@@ -171,7 +199,7 @@ Shader "MarsKod/Ground"
                 float3 amb = SampleSH(n);
                 float3 dawn = _DawnColor.rgb * saturate(dot(n, -_DawnDir.xyz) + 0.15);
                 // gunese dogru (uzakta) zemin hafifce isinir
-                float3 warmth = float3(0.30, 0.13, 0.06) * exp(-length((p.xz - float2(0.8, 16.0)) * float2(0.16, 0.09)));
+                float3 warmth = (MarsPolar() ? float3(0.06, 0.11, 0.24) : float3(0.30, 0.13, 0.06)) * exp(-length((p.xz - float2(0.8, 16.0)) * float2(0.16, 0.09)));
                 // alani sadece kose direklerindeki kucuk lambalar hafifce aydinlatir
                 float lamps = 0.0;
                 [unroll] for (int k = 0; k < 4; k++)

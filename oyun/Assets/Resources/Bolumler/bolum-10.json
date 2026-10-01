@@ -1,42 +1,47 @@
 {
   "numara": 10,
-  "baslik": "Karışık sıra",
-  "gorev": "3 buz, 2 kristal",
+  "baslik": "Telsiz",
+  "gorev": "5 hücre ve hedef",
   "harita": [
-    "T . . . . .",
-    "B . . . . .",
-    "B . . . . .",
-    "T . . . . .",
-    "B . . . . .",
+    ". . K . H .",
+    ". . . . . .",
+    "E . E . E .",
+    "E . . . . .",
+    "E K . K . .",
     "R . . . . ."
   ],
-  "komutlar": ["move", "collect", "ice_here"],
-  "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "for i in range(3):", "if ice_here():"],
-  "konular": ["for döngüsü", "if koşulu", "döngünün içinde if", "girinti"],
+  "komutlar": ["move", "collect"],
+  "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "for i in range(4):"],
+  "konular": ["for döngüsü", "art arda döngüler", "döngüde birden çok komut", "hedef kare"],
   "ipuclari": [
-    "Sütunda buzlar ve kristaller karışık. Robot her karede yürüyüp bakmalı, buz varsa toplamalı.",
-    "`for` yürümeyi tekrarlar, `if` her karede karar verir. `if` döngünün içinde olmalı, `collect()` de `if`'in içinde: iki kat girinti.",
-    "`for i in range(5):` altında `move(North)` ve `if ice_here():`; onun da altında, bir girinti daha içeride `collect()`."
+    "Hedef karedeki telsiz enerji bekliyor. Önce sütundaki hücreleri, sonra ikişer kare arayla dizilmiş olanları topla; en sonda telsize çık.",
+    "Yolu parçalara böl: her parça bir `for`. Bir döngünün içinde birden fazla komut olabilir; döngüden sonra girintisiz tek satırlar da yazabilirsin.",
+    "`for i in range(3):` ile kuzeye topla; `for i in range(2):` içinde iki kez `move(East)` ve `collect()`; en sonda iki kez `move(North)`."
   ],
   "tipik_hatalar": [
     {
-      "kod": ["for i in range(5):", "    move(North)", "    collect()"],
-      "aciklama": "Döngü her karede toplar; ikinci karede kristal var ve robot durur. Önce bakmak gerek."
+      "kod": ["for i in range(3):", "    move(North)", "    collect()", "for i in range(2):", "    move(East)", "    move(East)", "    collect()"],
+      "aciklama": "Bütün hücreler toplandı ama robot telsizin (hedef karenin) üstünde değil; iki adım daha kuzeye."
     },
     {
-      "kod": ["for i in range(5):", "    move(North)", "if ice_here():", "    collect()"],
-      "aciklama": "if döngünün dışında kaldı: robot sona kadar yürür ve yalnızca bir kez bakar (orada kristal var)."
+      "kod": ["for i in range(3):", "    move(North)", "    collect()", "for i in range(2):", "    move(East)", "    collect()", "move(North)", "move(North)"],
+      "aciklama": "Hücreler ikişer kare arayla: ikinci döngüde her turda iki kez move(East) gerek."
     },
     {
-      "kod": ["for i in range(3):", "    move(North)", "    if ice_here():", "        collect()"],
-      "aciklama": "range(3) üç kare yürür; en üstteki buz kalır."
+      "kod": ["for i in range(4):", "    move(North)", "    collect()", "for i in range(2):", "    move(East)", "    move(East)", "    collect()", "move(North)"],
+      "aciklama": "range(4) bir kare fazla: robot hücre sırasının bir üstüne çıkar, doğudaki hücreleri ıskalar."
     }
   ],
-  "baslangic_kodu": ["for i in range(5):", "    move(North)"],
+  "baslangic_kodu": ["for i in range(3):", "    move(North)", "    collect()"],
   "cozum": [
-    "for i in range(5):",
+    "for i in range(3):",
     "    move(North)",
-    "    if ice_here():",
-    "        collect()"
+    "    collect()",
+    "for i in range(2):",
+    "    move(East)",
+    "    move(East)",
+    "    collect()",
+    "move(North)",
+    "move(North)"
   ]
 }

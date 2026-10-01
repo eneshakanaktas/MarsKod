@@ -1,0 +1,42 @@
+{
+  "numara": 15,
+  "baslik": "Karışık sıra",
+  "gorev": "3 buz, 2 kristal",
+  "harita": [
+    "T . . . . .",
+    "B . . . . .",
+    "B . . . . .",
+    "T . . . . .",
+    "B . . . . .",
+    "R . . . . ."
+  ],
+  "komutlar": ["move", "collect", "ice_here"],
+  "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "for i in range(3):", "if ice_here():"],
+  "konular": ["for döngüsü", "if koşulu", "döngünün içinde if", "girinti"],
+  "ipuclari": [
+    "Sütunda buzlar ve kristaller karışık. Robot her karede yürüyüp bakmalı, buz varsa toplamalı.",
+    "`for` yürümeyi tekrarlar, `if` her karede karar verir. `if` döngünün içinde olmalı, `collect()` de `if`'in içinde: iki kat girinti.",
+    "`for i in range(5):` altında `move(North)` ve `if ice_here():`; onun da altında, bir girinti daha içeride `collect()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(5):", "    move(North)", "    collect()"],
+      "aciklama": "Döngü her karede toplar; ikinci karede kristal var ve robot durur. Önce bakmak gerek."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(North)", "if ice_here():", "    collect()"],
+      "aciklama": "if döngünün dışında kaldı: robot sona kadar yürür ve yalnızca bir kez bakar (orada kristal var)."
+    },
+    {
+      "kod": ["for i in range(3):", "    move(North)", "    if ice_here():", "        collect()"],
+      "aciklama": "range(3) üç kare yürür; en üstteki buz kalır."
+    }
+  ],
+  "baslangic_kodu": ["for i in range(5):", "    move(North)"],
+  "cozum": [
+    "for i in range(5):",
+    "    move(North)",
+    "    if ice_here():",
+    "        collect()"
+  ]
+}

@@ -1,21 +1,21 @@
 {
   "numara": 2,
   "baslik": "Kaya engeli",
-  "gorev": "2 buz topla",
+  "gorev": "2 hücre topla",
   "harita": [
     ". . . . . .",
     ". . . . . .",
-    ". . . B . .",
-    "R . B K . .",
+    ". . . E . .",
+    "R . E K . .",
     ". . . . K .",
     ". . . . . ."
   ],
   "komutlar": ["move", "collect"],
   "konular": ["komut sırası", "yönler"],
   "ipuclari": [
-    "İki buz var ve aralarında bir kaya duruyor. Robot kayanın içinden geçemez.",
-    "`collect()` robotun durduğu karedeki buzu toplar. Kayaya çarpmamak için etrafından dolaş.",
-    "Birinci buzu topladıktan sonra: `move(North)`, `move(East)`, `collect()`."
+    "İki enerji hücresi var ve aralarında bir kaya duruyor. Robot kayanın içinden geçemez.",
+    "`collect()` robotun durduğu karedeki enerji hücresini toplar. Kayaya çarpmamak için etrafından dolaş.",
+    "Birinci hücreyi topladıktan sonra: `move(North)`, `move(East)`, `collect()`."
   ],
   "tipik_hatalar": [
     {
@@ -24,7 +24,7 @@
     },
     {
       "kod": ["move(East)", "move(East)", "move(North)", "move(East)", "collect()"],
-      "aciklama": "Robot birinci buzun üstünden geçti ama toplamadı: collect() unutulmuş."
+      "aciklama": "Robot birinci hücrenin üstünden geçti ama toplamadı: collect() unutulmuş."
     },
     {
       "kod": ["move(East)", "move(East)", "collect", "move(North)", "move(East)", "collect"],

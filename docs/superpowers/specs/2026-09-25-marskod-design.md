@@ -22,7 +22,7 @@ Hedef kitle:
 | Konu | Karar |
 |---|---|
 | Programlama dili | Python (ilk sürümde tek dil) |
-| Tema | Mars kolonisi: robot kaynak toplar → depolar → koloni binalarına dağıtır. Dünya yok; her şey koloni içinde. |
+| Tema | Mars kolonisi: robot kaynak toplar → depolar → koloni binalarına dağıtır. Gezegen değişmez; **Mars'ın farklı bölgeleri** (karar 2026-10-01, Ragıp) → `docs/tasarim/hikaye-ve-bolgeler.md`. |
 | Kod yazma | Kademeli geçiş: parça klavyesiyle başlanır, komutta ustalaştıkça o komut elle yazılır; sonunda tam klavye. **Ayrıntı (2026-09-28, Enes):** Acemi (sürükle-bırak düğmeler) / Orta (oyunun kendi klavyesi + öneri) / Usta (öneri yok); kademeye göre XP; oyuncu klavye tuşuyla seçebilir → `2026-09-28-kod-klavyesi-design.md`. |
 | İpucu | 3 kademe; 1. ipucu bedava, 2.–3. oyunla kazanılan jetonla. |
 | Para | İlk sürümde reklam ve gerçek para yok; sistem sonradan eklenebilecek şekilde kurulur. |
@@ -41,6 +41,8 @@ Kod yaz → ▶ Çalıştır → robot Mars'ta çalışır → kaynak toplanır/
 Yeni kod konuları hikâyeyle açılır: örn. Araştırma Laboratuvarı yeterince malzeme alınca "tarama sensörü geliştirildi" der ve oyuncu `if` komutunu kazanır.
 
 Uzun vadeli dünya planı:
+
+> **Güncelleme (2026-10-01, Ragıp):** Aşağıdaki tablo bölge planıyla yeniden yazılacak: her bölgede Python konusu, toplanan şey ve araç birlikte değişir; hikâye çok önemli, gerekirse tasarım baştan yapılır. Kararlar ve öneriler: `docs/tasarim/hikaye-ve-bolgeler.md`.
 
 | Dünya | Oyunda | Kodda | İlk sürümde? |
 |---|---|---|---|

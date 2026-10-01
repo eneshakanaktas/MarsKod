@@ -2,14 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum RobotModel { Rover, Toy }
+public enum RobotModel { Spark, Rover, Toy }
 
-// Oyuncunun robotu: hareket ve ortak davranis burada, gorunum alt siniflarda (ColonyRover, ToyRobot).
+// Oyuncunun robotu: hareket ve ortak davranis burada, gorunum alt siniflarda (SparkBot, ColonyRover, ToyRobot).
 // Ileri yonu +Z. Olculer bir kare = 1 birim.
 public abstract class Robot : MonoBehaviour
 {
-    // Kullanilan robot. Eski oyuncak robota donmek icin Toy yapmak yeter (deneme: -robot oyuncak).
-    public const RobotModel DefaultModel = RobotModel.Rover;
+    // Kullanilan robot: Kivilcim (SparkBot). Digerlerine donmek icin burayi degistirmek yeter
+    // (deneme: -robot gezgin = Enes'in koloni gezgini, -robot oyuncak = ilk robot).
+    public const RobotModel DefaultModel = RobotModel.Spark;
 
     protected Transform rig;
     protected readonly List<Transform> wheels = new List<Transform>();
@@ -29,7 +30,9 @@ public abstract class Robot : MonoBehaviour
     {
         var go = new GameObject("Robot");
         go.transform.SetParent(parent, false);
-        Robot r = model == RobotModel.Toy ? go.AddComponent<ToyRobot>() : (Robot)go.AddComponent<ColonyRover>();
+        Robot r = model == RobotModel.Toy ? go.AddComponent<ToyRobot>()
+            : model == RobotModel.Rover ? go.AddComponent<ColonyRover>()
+            : (Robot)go.AddComponent<SparkBot>();
         go.transform.localScale = Vector3.one * r.ModelScale;
         r.rig = Parts.Empty("Rig", go.transform);
         r.Build();
@@ -42,6 +45,7 @@ public abstract class Robot : MonoBehaviour
 
     public void ResetTo(Vector3 localPos, float yaw)
     {
+        StopAllCoroutines();   // yarim kalan tepki (ShowPuzzled) bolum yeniden baslayinca biter
         transform.localPosition = localPos;
         SetYaw(yaw);
         rig.localPosition = Vector3.zero;
@@ -104,4 +108,14 @@ public abstract class Robot : MonoBehaviour
     // Surerken basini (kamerasini) kameraya dogru hafifce cevirir.
     public abstract void GlanceAtCamera(bool on);
     public abstract IEnumerator Celebrate();
+
+    // Kod hatayla durdu ya da gorev bitmedi: kisa bir saskinlik tepkisi (gorunum isterse; varsayilan yok)
+    protected virtual IEnumerator Puzzled() { yield break; }
+
+    // Tepkiyi kendi basina oynatir (oyunun akisini bekletmez)
+    public void ShowPuzzled()
+    {
+        StopAllCoroutines();
+        StartCoroutine(Puzzled());
+    }
 }

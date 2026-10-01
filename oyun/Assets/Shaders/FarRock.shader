@@ -68,7 +68,7 @@ Shader "MarsKod/FarRock"
                 Light mainLight = GetMainLight(TransformWorldToShadowCoord(p));
                 float3 lightCol = mainLight.color * saturate(dot(n, mainLight.direction)) * mainLight.shadowAttenuation;
                 float3 dawn = _DawnColor.rgb * saturate(dot(n, -_DawnDir.xyz));
-                float3 col = _BaseColor.rgb * (lightCol + SampleSH(n) + dawn);
+                float3 col = MarsRegionSurface(_BaseColor.rgb, n) * (lightCol + SampleSH(n) + dawn);
                 col *= MarsVignette(suv);
                 return half4(MarsFadeToBackdrop(col, p, suv, _FogRange.xy, _Area.xy), 1.0);
             }

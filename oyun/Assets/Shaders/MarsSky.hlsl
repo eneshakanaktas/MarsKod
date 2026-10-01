@@ -4,6 +4,8 @@
 #define MARSKOD_SKY_INCLUDED
 
 float _StarsOn;
+float _Region;    // bolge (RegionLook.cs): 0 inis ovasi, 1 kutup buzulu
+bool MarsPolar() { return _Region > 0.5; }
 // Cok hafif genel aydinlatma: arka plan ve zeminin karistigi ova rengi ayni oranda (yoksa yeni renk siniri olusur)
 static const float MARS_EXPOSURE = 1.06;
 float _Horizon;   // ufuk: fotograf koordinatinda (asagida)
@@ -562,6 +564,42 @@ void drawDrone(float2 sp, float t, float seed, float legTime, float H, float sc,
 }
 
 
+// ---- Enerji hucresi lambalari (ColonyPower.cs) ----
+// Ana koloninin onundeki ovada bir sira lamba: bolumdeki her hucre icin bir tane. Sonukken soluk bir yuva,
+// hucre koloniye ulasinca yesil-sari yanar; yandigi an buyuk bir parlama yayilip soner.
+#define MAX_POWER_LAMPS 12
+float4 _PowerLamps[MAX_POWER_LAMPS];   // xy: fotograftaki konum (y ufka gore), z: yandigi an (_Time.y; < 0 sonuk)
+float _PowerLampCount;
+
+float3 powerLamps(float2 sp, float t, float sc, float onePx, inout float3 halo)
+{
+    float3 c = 0.0;
+    int n = (int)_PowerLampCount;
+    float litEnd = -1e5;   // son yanan lambanin x'i (lambalar soldan saga sirayla yanar)
+    for (int k = 0; k < MAX_POWER_LAMPS; k++)
+    {
+        if (k >= n) break;
+        float4 lamp = _PowerLamps[k];
+        float2 p = float2(lamp.x, _Horizon + lamp.y);
+        if (lamp.z < 0.0)
+        {
+            c += float3(0.30, 0.34, 0.20) * glowDot(sp, p, 1.3 * sc) * 0.8;
+            continue;
+        }
+        litEnd = p.x;
+        float flash = exp(-max(t - lamp.z, 0.0) * 2.2);
+        float pulse = 0.85 + 0.15 * sin(t * 2.0 + k * 0.7);
+        c += float3(0.82, 1.0, 0.42) * glowDot(sp, p, (1.6 + 1.2 * flash) * sc) * pulse;
+        halo += float3(0.55, 0.85, 0.25) * (glowDot(sp, p, 5.0 * sc) * 0.30 + glowDot(sp, p, 18.0 * sc) * flash);
+    }
+    // lambalari baglayan ince kablo: yanan kisim yesil, kalani soluk
+    float2 first = float2(_PowerLamps[0].x, _Horizon + _PowerLamps[0].y);
+    float last = _PowerLamps[max(n - 1, 0)].x;
+    float wire = (1.0 - smoothstep(0.4, 1.0, abs(sp.y - first.y) / onePx)) * bandMask(sp.x, first.x, last, onePx);
+    c += lerp(float3(0.10, 0.11, 0.08), float3(0.40, 0.55, 0.18), step(sp.x, litEnd)) * wire;
+    return c;
+}
+
 // Sahne tek bir fotograf gibi davranir: arayuz (klavye, ipucu) alani daraltinca kamera yerinden oynamaz, yalnizca
 // gorus acisi genisler; bu, fotografi kucultup kaydirmakla ayni seydir (Oyun.FitCamera). Arka plan da ayni fotografin
 // parcasidir: ekran konumu fotograf konumuna cevrilir, boylece koloni ile zemin birlikte kuculur, birbirine gore kaymaz.
@@ -572,8 +610,8 @@ float2 MarsPictureUV(float2 suv)
     return n * 0.5 + 0.5;
 }
 
-// Ekran konumuna (suv, alttan 0) gore arka plan rengi (sRGB).
-float3 MarsBackdrop(float2 suv)
+// Inis ovasi (Bolge 1) arka plani: ekran konumuna (suv, alttan 0) gore renk (sRGB).
+float3 PlainBackdrop(float2 suv)
 {
     float2 uv = MarsPictureUV(suv);
     float aspect = _ScreenParams.x / _ScreenParams.y;
@@ -753,6 +791,11 @@ float3 MarsBackdrop(float2 suv)
         cLights += float3(0.9, 0.95, 1.0) * glowDot(cs, float2(-0.016, P + 0.0395), 1.6 * sc) * blinkW;
     }
 
+    // Enerji hucresi lambalari (yalnizca enerji bolumlerinde; ufkun hemen altindaki serit)
+    float3 powerLights = 0.0;
+    float3 powerHalo = 0.0;
+    if (_PowerLampCount > 0.5 && abs(uv.y - (_Horizon - 0.05)) < 0.03) powerLights = powerLamps(sp, t, sc, onePx, powerHalo);
+
     // Koloniler arasinda yuk tasiyan dronelar
     [unroll] for (int dr = 0; dr < DRONE_COUNT; dr++)
         drawDrone(sp, t, dr + 1.0, 11.0 + fmod(dr * 3.7, 6.0), _Horizon, sc, pixel, col, siteLights);
@@ -774,7 +817,19 @@ float3 MarsBackdrop(float2 suv)
     col += float3(1.0, 0.66, 0.38) * halo * (0.10 + 0.35 * haze);
     col += siteLights * 1.6;
     col += siteHalo * (0.16 + 0.35 * haze);
+    col += powerLights * 1.4 + powerHalo * 0.5;
     return col * MARS_EXPOSURE;
+}
+
+#include "PolarSky.hlsl"
+
+// Ekran konumuna (suv, alttan 0) gore arka plan rengi (sRGB): bolgenin kendi manzarasi
+float3 MarsBackdrop(float2 suv)
+{
+    float3 col;
+    [branch] if (MarsPolar()) col = PolarBackdrop(suv);
+    else col = PlainBackdrop(suv);
+    return col;
 }
 
 float MarsVignette(float2 uv)
@@ -793,7 +848,8 @@ float3 MarsDustHaze(float3 col, float3 posWS, float2 area)
     if (posWS.z < 0.0) o.y *= 0.4;
     float dist = length(o * float2(0.8, 1.0));
     float haze = smoothstep(0.4, 7.0, dist) * 0.8;
-    float3 plainCol = SRGBToLinear(float3(0.176, 0.110, 0.106) * MARS_EXPOSURE); // ufuk dibindeki ovanin rengi (ekrandan olculdu)
+    // ufuk dibindeki ovanin rengi (ova: ekrandan olculdu; kutup: PolarSky.hlsl)
+    float3 plainCol = SRGBToLinear(MarsPolar() ? POLAR_PLAIN : float3(0.176, 0.110, 0.106) * MARS_EXPOSURE);
     return lerp(col, plainCol, haze);
 }
 
@@ -812,6 +868,14 @@ float3 MarsFadeToBackdrop(float3 col, float3 posWS, float2 suv, float2 fogRange,
         col = lerp(col, bd, fog);
     }
     return col;
+}
+
+// Kutup buzulunda cevredeki kaya ve esyalarin ustune kar yagmistir; yanlari soguk, mavimsi. Renkler dogrusal.
+float3 MarsRegionSurface(float3 albedo, float3 n)
+{
+    if (!MarsPolar()) return albedo;
+    float3 cold = dot(albedo, float3(0.3, 0.5, 0.2)) * float3(0.85, 0.95, 1.2);
+    return lerp(cold, float3(0.55, 0.62, 0.74), smoothstep(0.45, 0.75, n.y));
 }
 
 #endif

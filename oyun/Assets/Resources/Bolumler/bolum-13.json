@@ -1,0 +1,43 @@
+{
+  "numara": 13,
+  "baslik": "Kırmızı kristal",
+  "gorev": "Kristale dokunma",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    "R B T B . ."
+  ],
+  "komutlar": ["move", "collect", "ice_here"],
+  "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "if ice_here():"],
+  "konular": ["if koşulu", "ice_here", "kristal kuralı"],
+  "ipuclari": [
+    "Ortadaki karede kırmızı bir kristal var. Robot üstünden geçebilir ama collect() onu toplamaya çalışırsa durur.",
+    "`ice_here()` robota \"burada buz var mı?\" diye sorar. `if` ile birlikte: yalnızca buz varsa topla, kristal varsa hiçbir şey yapma.",
+    "Her kareye geldiğinde aynı iki satırı yaz: `if ice_here():` ve altında girintili `collect()`. Önce `move(East)` ile yürümeyi unutma."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["move(East)", "collect()", "move(East)", "collect()"],
+      "aciklama": "Ortadaki karede kristal var; collect() onu toplamaya çalışır ve robot durur."
+    },
+    {
+      "kod": ["move(East)", "if ice_here():", "    collect()", "move(East)", "if ice_here():", "    collect()"],
+      "aciklama": "Robot kristalin üstünde durdu; üçüncü karedeki buza hiç gitmedi."
+    }
+  ],
+  "baslangic_kodu": ["move(East)", "collect()", "move(East)", "collect()", "move(East)", "collect()"],
+  "cozum": [
+    "move(East)",
+    "if ice_here():",
+    "    collect()",
+    "move(East)",
+    "if ice_here():",
+    "    collect()",
+    "move(East)",
+    "if ice_here():",
+    "    collect()"
+  ]
+}

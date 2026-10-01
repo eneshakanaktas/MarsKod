@@ -56,7 +56,49 @@ public class BolumTests
         Assert.DoesNotContain("for", Load("bolum-02.json").Solution);
     }
 
+    [Fact]
+    public void Bolge_1_enerji_hucresi_bolge_2_buz_toplar()
+    {
+        // Karar (Ragıp, 10-01; docs/tasarim/hikaye.md): Bölüm 1-10 iniş ovası (enerji hücresi), 11-20 kutup buzulu (buz)
+        foreach (var f in Files())
+        {
+            var level = Load((string)f[0]);
+            if (level.Ices.Count == 0) continue;
+            var expected = Regions.Item(Regions.Of(level.Number));
+            Assert.True(expected == level.Item, "Bölüm " + level.Number + ": " + level.Item);
+        }
+    }
+
+    [Fact]
+    public void Her_on_bolum_yeni_bolge()
+    {
+        Assert.Equal(Region.Plain, Regions.Of(1));
+        Assert.Equal(Region.Plain, Regions.Of(10));
+        Assert.Equal(Region.PolarIce, Regions.Of(11));
+        Assert.Equal(Region.PolarIce, Regions.Of(20));
+        Assert.Equal(Collectible.EnergyCell, Regions.Item(Region.Plain));
+        Assert.Equal(Collectible.Ice, Regions.Item(Region.PolarIce));
+    }
+
     // ---- dosya biçimi ----
+
+    [Fact]
+    public void Enerji_hucresi_E_ile_yazilir_ve_buz_gibi_toplanir()
+    {
+        var level = Level.Parse(Mini.Replace("\"R . B\"", "\"R . E\""));
+        Assert.Equal(Collectible.EnergyCell, level.Item);
+        Assert.Equal(new[] { new Cell(2, 0) }, level.Ices);
+        Assert.Empty(LevelCheck.Problems(level));
+        Assert.Equal(Collectible.Ice, Level.Parse(Mini).Item);
+    }
+
+    [Fact]
+    public void Ice_here_enerji_hucresi_bolumunde_acilamaz()
+    {
+        var json = Mini.Replace("\"R . B\"", "\"R . E\"").Replace("[\"move\", \"collect\"]", "[\"move\", \"collect\", \"ice_here\"]");
+        var e = Assert.Throws<DataFormatError>(() => Level.Parse(json));
+        Assert.Contains("yalnızca buz (B) olan bölümlerde", e.Message);
+    }
 
     const string Mini = """
         {
@@ -98,6 +140,7 @@ public class BolumTests
     [InlineData("\"komutlar\": [\"move\", \"collect\"]", "\"komutlar\": [\"move\"]", "\"collect\" yok")]
     [InlineData("\"ipuclari\": [\"bir\"]", "\"ipuclari\": []", "en az bir ipucu")]
     [InlineData("\"gorev\": \"Git\"", "\"gorev\": \"Git\", \"zorluk\": 2", "Bilinmeyen alan: \"zorluk\"")]
+    [InlineData("\"harita\": [\"K . H\", \"R . B\"]", "\"harita\": [\"K . E\", \"R . B\"]", "iki tür toplanacak")]
     public void Yanlis_dosya_anlasilir_mesaj_verir(string from, string to, string expected)
     {
         var e = Assert.Throws<DataFormatError>(() => Level.Parse(Mini.Replace(from, to)));

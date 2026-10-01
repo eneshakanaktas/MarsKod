@@ -23,8 +23,6 @@ public class Oyun : MonoBehaviour
     // Ufkun (tepeler, koloni) alanin arka kenarindan yuksekligi; tam boy fotografta ekran yuksekliginin orani.
     // Fotograf kuculurse bu mesafe de onunla birlikte kuculur.
     const float HorizonAboveArea = 0.106f;
-    // cok hafif genel aydinlatma; arka planin karsiligi MarsSky.hlsl MARS_EXPOSURE
-    const float AmbientLift = 1.12f;
     const float StartYaw = 125f;
 
 
@@ -33,7 +31,11 @@ public class Oyun : MonoBehaviour
     Transform world;
     Robot robot;
     RobotModel robotModel = Robot.DefaultModel;
-    readonly List<Ice> ices = new List<Ice>();
+    readonly List<IPickup> pickups = new List<IPickup>();
+    // Enerji hucresi bolumlerinde koloninin guc lambalari
+    ColonyPower colonyPower;
+    // Isiklar: renkleri bolgeye gore (RegionLook)
+    Light skyLight, sunLight;
     Target target;
     Transform levelRoot;
     Material ground;
@@ -135,6 +137,7 @@ public class Oyun : MonoBehaviour
             if (a[i] == "-cizgisiz") Parts.NoOutline = true;
             if (a[i] == "-shots") shotsMode = true;
             if (a[i] == "-robot" && i + 1 < a.Length && a[i + 1] == "oyuncak") robotModel = RobotModel.Toy;
+            if (a[i] == "-robot" && i + 1 < a.Length && a[i + 1] == "gezgin") robotModel = RobotModel.Rover;
         }
         world = new GameObject("World").transform;
 
@@ -143,6 +146,7 @@ public class Oyun : MonoBehaviour
         BuildBoard();
 
         robot = Robot.Create(world, robotModel);
+        colonyPower = ColonyPower.Create(world, cam);
 
         hud = gameObject.AddComponent<Hud>();
         hud.Build();
@@ -207,39 +211,25 @@ public class Oyun : MonoBehaviour
         mr.receiveShadows = false;
     }
 
+    // Isiklarin yonu ve golgesi; renkleri ve ortam isigi bolgeye gore (RegionLook, bolum yuklenince)
     void SetupLight()
     {
-        var sun = new GameObject("Sun").AddComponent<Light>();
-        sun.type = LightType.Directional;
-        // safak oncesi: gunes yok; soguk, los bir gok isigi (robot okunabilsin diye yumusak golge verir)
-        sun.color = Mats.Hex("#B9B8D8");
-        sun.intensity = 0.58f;
-        sun.shadows = LightShadows.Soft;
-        sun.shadowStrength = 0.6f;
-        sun.transform.rotation = Quaternion.Euler(52f, -35f, 0f);
+        // los gok isigi (robot okunabilsin diye yumusak golge verir)
+        skyLight = new GameObject("Sun").AddComponent<Light>();
+        skyLight.type = LightType.Directional;
+        skyLight.shadows = LightShadows.Soft;
+        skyLight.shadowStrength = 0.6f;
+        skyLight.transform.rotation = Quaternion.Euler(52f, -35f, 0f);
 
-        // Tepelerin ardindan dogmak uzere olan gunes: arkadan, alcaktan gelen sicak, golgesiz isik
-        var dawn = new GameObject("Dawn").AddComponent<Light>();
-        dawn.type = LightType.Directional;
-        dawn.color = Mats.Hex("#FF9E66");
-        dawn.intensity = 0.53f;
-        dawn.shadows = LightShadows.None;
-        dawn.transform.rotation = Quaternion.Euler(14f, 168f, 0f);
-        // zemin cizimi (Ground.shader) safak isigini buradan okur
-        Shader.SetGlobalVector("_DawnDir", dawn.transform.forward);
-        Shader.SetGlobalVector("_DawnColor", dawn.color.linear * dawn.intensity);
+        // tepelerin ardindaki gunes: arkadan, alcaktan gelen, golgesiz isik
+        sunLight = new GameObject("Dawn").AddComponent<Light>();
+        sunLight.type = LightType.Directional;
+        sunLight.shadows = LightShadows.None;
+        sunLight.transform.rotation = Quaternion.Euler(14f, 168f, 0f);
 
-        // Yumusak ortam isigi: ustten serin gokyuzu, yanlardan sicak
-        RenderSettings.ambientMode = AmbientMode.Trilight;
-        RenderSettings.ambientSkyColor = Mats.Hex("#5E5B7C");
-        RenderSettings.ambientEquatorColor = Mats.Hex("#4C4352");
-        RenderSettings.ambientGroundColor = Mats.Hex("#241D25");
-        var sh = new SphericalHarmonicsL2();
-        sh.AddAmbientLight(Mats.Hex("#524C60").linear * AmbientLift);
-        sh.AddDirectionalLight(Vector3.up, Mats.Hex("#4A4A6A").linear * AmbientLift, 0.9f);
-        RenderSettings.ambientProbe = sh;
         RenderSettings.skybox = null;
         RenderSettings.fog = false;
+        RegionLook.For(Region.Plain).Apply(skyLight, sunLight);
     }
 
     // Oyun alani: cevresiyle ayni hizada, Mars yuzeyine gomulu bir bolge (godottaslak2'deki gibi).
@@ -349,27 +339,22 @@ public class Oyun : MonoBehaviour
 
         if (levelRoot != null) Destroy(levelRoot.gameObject);
         levelRoot = Parts.Empty("Level", world);
-        ices.Clear();
+        var region = Regions.Of(level.Number);
+        RegionLook.For(region).Apply(skyLight, sunLight);
+        pickups.Clear();
         for (int i = 0; i < level.Ices.Count; i++)
-            ices.Add(Ice.Create(levelRoot, Pos(level.Ices[i]), i + 1));
+            pickups.Add(Pickups.Create(level.Item, levelRoot, Pos(level.Ices[i]), i + 1));
         for (int i = 0; i < level.Crystals.Count; i++)
-            Ice.CreateHazard(levelRoot, Pos(level.Crystals[i]), 20 + i); // toplanmaz: ices listesinde degil
+            Ice.CreateHazard(levelRoot, Pos(level.Crystals[i]), 20 + i); // toplanmaz: pickups listesinde degil
+        colonyPower.Begin(PowerLampCount);
+        int frostCount = level.Item == Collectible.Ice ? level.Ices.Count : 0; // zemindeki buz izi yalnizca buzun altinda
         for (int i = 0; i < 6; i++)
         {
-            var p = i < level.Ices.Count ? Pos(level.Ices[i]) : Vector3.zero;
-            ground.SetVector("_Frost" + i, new Vector4(p.x, p.z, 0.45f, i < level.Ices.Count ? 1f : 0f));
+            var p = i < frostCount ? Pos(level.Ices[i]) : Vector3.zero;
+            ground.SetVector("_Frost" + i, new Vector4(p.x, p.z, 0.45f, i < frostCount ? 1f : 0f));
         }
-        var rockMat = Mats.Lit(Mats.Hex("#7A4A3B"), 0.15f);
-        var rockDark = Mats.Lit(Mats.Hex("#5E3A2F"), 0.12f);
         for (int i = 0; i < level.Rocks.Count; i++)
-        {
-            // engel kaya: kareyi dolduran iri bir kaya + yaninda kucuk bir parca (kod bilmeyen de "buradan gecilmez" diye okusun)
-            var p = Pos(level.Rocks[i]);
-            var big = Parts.Add("Obstacle", levelRoot, MeshFactory.Rock(0.34f, 200 + i), rockMat, p + new Vector3(0f, 0.05f, 0f));
-            big.localRotation = Quaternion.Euler(0, i * 71f + 20f, 0);
-            var small = Parts.Add("Obstacle", levelRoot, MeshFactory.Rock(0.13f, 300 + i), rockDark, p + new Vector3(0.28f, 0.02f, -0.22f));
-            small.localRotation = Quaternion.Euler(0, i * 37f, 0);
-        }
+            Obstacles.Create(region, levelRoot, Pos(level.Rocks[i]), i);
         target = level.Target.HasValue ? Target.Create(levelRoot, Pos(level.Target.Value)) : null;
 
         robot.ResetTo(Pos(level.Robot), StartYaw);
@@ -379,7 +364,7 @@ public class Oyun : MonoBehaviour
         code = hud.Code;
         hud.SetOpenWords(MarsKod.Dunya.Suggestions.OpenWords(levels, level.Number));
         hud.SetPieces(level.Pieces, Palette.NewPieces(levels, level.Number));
-        hud.SetLevel(level.Number, level.Title, level.Goal, level.Ices.Count);
+        hud.SetLevel(level.Number, level.Title, level.Goal, level.Ices.Count, level.Item);
         hintView.Close();
     }
 
@@ -535,6 +520,9 @@ public class Oyun : MonoBehaviour
         PlayerPrefs.Save();
     }
 
+    // Enerji hucresi bolumunde her hucre icin kolonide bir lamba; diger bolumlerde lamba yok
+    int PowerLampCount => level.Item == Collectible.EnergyCell ? level.Ices.Count : 0;
+
     void ResetLevel()
     {
         if (program != null) StopCoroutine(program);
@@ -542,7 +530,8 @@ public class Oyun : MonoBehaviour
         running = false; done = false; complete = false;
         stepMode = false; stepRequested = false;
         robot.ResetTo(Pos(level.Robot), StartYaw);
-        foreach (var ice in ices) ice.Restore();
+        foreach (var pickup in pickups) pickup.Restore();
+        colonyPower.Begin(PowerLampCount);
         if (target != null) target.Restore();
         hud.ResetView();
     }
@@ -591,6 +580,7 @@ public class Oyun : MonoBehaviour
         {
             hud.SetActiveLine(report.StopLine.HasValue ? report.StopLine.Value - 1 : -1, error: true);
             ShowStop(report);
+            robot.ShowPuzzled();
             hud.SetRunning(false);
             done = true;
         }
@@ -618,13 +608,14 @@ public class Oyun : MonoBehaviour
         {
             hud.SetActiveLine(-1);
             if (world.IceLeft > 0)
-                hud.ShowMessage("GÖREV", "Kod bitti, buzlar bitmedi",
-                    "Kodun sonuna kadar çalıştı ama " + world.IceLeft + " buz daha toplanmayı bekliyor. Robot yalnızca kodda yazanı yapar: eksik adımı bul.",
+                hud.ShowMessage("GÖREV", "Kod bitti, " + Collectibles.PluralName(level.Item) + " bitmedi",
+                    "Kodun sonuna kadar çalıştı ama " + world.IceLeft + " " + Collectibles.Name(level.Item) + " daha toplanmayı bekliyor. Robot yalnızca kodda yazanı yapar: eksik adımı bul.",
                     null, error: false);
             else
                 hud.ShowMessage("GÖREV", "Kod bitti, robot hedefte değil",
                     "Kodun sonuna kadar çalıştı ama robot işaretli kareye varmadı. Kod bittiğinde robot hedef karede durmalı: yolu adım adım say.",
                     null, error: false);
+            robot.ShowPuzzled();
             hud.SetRunning(false);
             done = true;
         }
@@ -657,7 +648,8 @@ public class Oyun : MonoBehaviour
                 yield return Tween.Wait(0.12f);
                 if (c.IceIndex >= 0)
                 {
-                    ices[c.IceIndex].Pop();
+                    pickups[c.IceIndex].Pop();
+                    colonyPower.Deliver(world.TransformPoint(Pos(level.Ices[c.IceIndex])));
                     hud.SetCollected(c.Total);
                 }
                 yield return Tween.Wait(c.IceIndex >= 0 ? 0.4f : 0.3f);

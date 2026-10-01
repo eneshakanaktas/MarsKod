@@ -1,12 +1,12 @@
 {
   "numara": 4,
   "baslik": "İki yönlü",
-  "gorev": "7 buz topla",
+  "gorev": "7 hücre topla",
   "harita": [
-    "R B B B B .",
-    ". . . . B .",
-    ". K . . B .",
-    ". . . . B .",
+    "R E E E E .",
+    ". . . . E .",
+    ". K . . E .",
+    ". . . . E .",
     ". . . . . .",
     ". . K . . ."
   ],
@@ -14,8 +14,8 @@
   "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "for i in range(2):"],
   "konular": ["for döngüsü", "art arda döngüler", "girinti"],
   "ipuclari": [
-    "Buzlar iki sıra hâlinde: önce doğuya doğru, sonra güneye doğru. Tek bir döngü ikisini birden yapamaz.",
-    "Bir döngü bitince altına girintisiz yeni bir `for` yazabilirsin; Python önce birincisini, sonra ikincisini tekrarlar. Her sırada kaç buz olduğunu say.",
+    "Enerji hücreleri iki sıra hâlinde: önce doğuya doğru, sonra güneye doğru. Tek bir döngü ikisini birden yapamaz.",
+    "Bir döngü bitince altına girintisiz yeni bir `for` yazabilirsin; Python önce birincisini, sonra ikincisini tekrarlar. Her sırada kaç hücre olduğunu say.",
     "İlk döngü `for i in range(4):` ile doğuya gider. Altına, girintisiz ikinci bir `for` yaz; içinde `move(South)` ve `collect()` olsun."
   ],
   "tipik_hatalar": [
@@ -25,11 +25,11 @@
     },
     {
       "kod": ["for i in range(4):", "    move(East)", "    collect()", "for i in range(3):", "    move(East)", "    collect()"],
-      "aciklama": "İkinci döngü de doğuya gidiyor; buzlar güneyde."
+      "aciklama": "İkinci döngü de doğuya gidiyor; hücreler güneyde."
     },
     {
       "kod": ["for i in range(4):", "    move(East)", "    collect()", "for i in range(2):", "    move(South)", "    collect()"],
-      "aciklama": "Güneyde 3 buz var; range(2) bir tanesini bırakır."
+      "aciklama": "Güneyde 3 hücre var; range(2) bir tanesini bırakır."
     },
     {
       "kod": ["for i in range(4):", "    move(East)", "    collect()", "for i in range(3):", "    move(South)", "collect()"],

@@ -29,6 +29,7 @@ public class Hud : MonoBehaviour
     static readonly Color HintBg = Mats.Hex("#2E2A38");
     static readonly Color Hairline = new Color(1f, 1f, 1f, 0.07f);
     static readonly Color IceFill = Mats.Hex("#A9E6F5");
+    static readonly Color CellFill = Mats.Hex("#C8F25A");
     static readonly Color NumColor = Mats.Hex("#4F4A5A");
     static readonly Color HeaderText = Mats.Hex("#F5F1F7");
     static readonly Color ErrorRed = Mats.Hex("#FF6B6B");
@@ -56,6 +57,7 @@ public class Hud : MonoBehaviour
     bool starsOn = true;
     // Bolum bilgisi (SetLevel ile gelir)
     int levelNumber = 1, iceTotal = 3;
+    Collectible item = Collectible.Ice;
     string levelName = "", goal = "3 buz topla";
 
     public void Build()
@@ -352,7 +354,7 @@ public class Hud : MonoBehaviour
     // Satir turlerinin kayit metni (satir basina bir harf)
     public string CodeKinds => editor.Kinds;
 
-    // Buz sayaci: bolumdeki buz kadar nokta (buz yoksa sayac gizli)
+    // Toplama sayaci: bolumdeki buz/hucre kadar simge (yoksa sayac gizli); simge toplanan ture gore
     void BuildDots()
     {
         dotsRow.Clear();
@@ -360,7 +362,9 @@ public class Hud : MonoBehaviour
         for (int i = 0; i < iceTotal; i++)
         {
             int idx = i;
-            var d = new Icon(36, (p, r) => DrawIceDot(p, r, idx < collected));
+            var d = item == Collectible.EnergyCell
+                ? new Icon(36, (p, r) => DrawCellDot(p, r, idx < collected))
+                : new Icon(36, (p, r) => DrawIceDot(p, r, idx < collected));
             d.style.marginLeft = 10; d.style.marginRight = 10;
             Transition(d, "scale", 0.28f, EasingMode.EaseOutBack);
             dots.Add(d);
@@ -376,9 +380,10 @@ public class Hud : MonoBehaviour
 
     // ---- Disaridan cagrilanlar ----
 
-    // Yeni bolum: ust baslik ve buz sayaci bu bolume gore kurulur, ipucu balonu kapanir.
-    public void SetLevel(int number, string name, string goalText, int ices)
+    // Yeni bolum: ust baslik ve toplama sayaci bu bolume gore kurulur, ipucu balonu kapanir.
+    public void SetLevel(int number, string name, string goalText, int ices, Collectible kind)
     {
+        item = kind;
         levelNumber = number;
         levelName = name;
         goal = goalText;
@@ -747,6 +752,44 @@ public class Hud : MonoBehaviour
         else { p.strokeColor = new Color(1f, 1f, 1f, 0.5f); p.lineWidth = 3f; p.Stroke(); }
     }
 
+    // Pil: dik, kosesi yuvarlak govde + ustte kucuk kutup ucu
+    static void DrawCellDot(Painter2D p, Rect r, bool filled)
+    {
+        float w = r.width, h = r.height;
+        var color = filled ? CellFill : new Color(1f, 1f, 1f, 0.5f);
+        p.lineJoin = LineJoin.Round;
+        p.lineWidth = 3f;
+        p.strokeColor = color;
+        RoundedRect(p, new Rect(w * 0.27f, h * 0.18f, w * 0.46f, h * 0.78f), w * 0.08f);
+        if (filled) { p.fillColor = color; p.Fill(); }
+        p.Stroke();
+        p.BeginPath();
+        p.MoveTo(new Vector2(w * 0.40f, h * 0.17f));
+        p.LineTo(new Vector2(w * 0.40f, h * 0.06f));
+        p.LineTo(new Vector2(w * 0.60f, h * 0.06f));
+        p.LineTo(new Vector2(w * 0.60f, h * 0.17f));
+        p.fillColor = color;
+        p.Fill();
+        p.Stroke();
+    }
+
+    // Kosesi c yaricapla yuvarlanmis dikdortgen yolu (cizmez; ardindan Fill/Stroke)
+    static void RoundedRect(Painter2D p, Rect b, float c)
+    {
+        float x0 = b.xMin, x1 = b.xMax, y0 = b.yMin, y1 = b.yMax;
+        p.BeginPath();
+        p.MoveTo(new Vector2(x0 + c, y0));
+        p.LineTo(new Vector2(x1 - c, y0));
+        p.ArcTo(new Vector2(x1, y0), new Vector2(x1, y0 + c), c);
+        p.LineTo(new Vector2(x1, y1 - c));
+        p.ArcTo(new Vector2(x1, y1), new Vector2(x1 - c, y1), c);
+        p.LineTo(new Vector2(x0 + c, y1));
+        p.ArcTo(new Vector2(x0, y1), new Vector2(x0, y1 - c), c);
+        p.LineTo(new Vector2(x0, y0 + c));
+        p.ArcTo(new Vector2(x0, y0), new Vector2(x0 + c, y0), c);
+        p.ClosePath();
+    }
+
     // Acik kitap: iki sayfa, ortada sirt
     static void DrawBook(Painter2D p, Rect r)
     {
@@ -796,18 +839,7 @@ public class Hud : MonoBehaviour
         p.lineCap = LineCap.Round;
         p.lineJoin = LineJoin.Round;
         // govde
-        float x0 = w * 0.06f, x1 = w * 0.94f, y0 = h * 0.24f, y1 = h * 0.76f, c = w * 0.1f;
-        p.BeginPath();
-        p.MoveTo(new Vector2(x0 + c, y0));
-        p.LineTo(new Vector2(x1 - c, y0));
-        p.ArcTo(new Vector2(x1, y0), new Vector2(x1, y0 + c), c);
-        p.LineTo(new Vector2(x1, y1 - c));
-        p.ArcTo(new Vector2(x1, y1), new Vector2(x1 - c, y1), c);
-        p.LineTo(new Vector2(x0 + c, y1));
-        p.ArcTo(new Vector2(x0, y1), new Vector2(x0, y1 - c), c);
-        p.LineTo(new Vector2(x0, y0 + c));
-        p.ArcTo(new Vector2(x0, y0), new Vector2(x0 + c, y0), c);
-        p.ClosePath();
+        RoundedRect(p, new Rect(w * 0.06f, h * 0.24f, w * 0.88f, h * 0.52f), w * 0.1f);
         p.Stroke();
         // tuslar: iki sira nokta + bosluk cubugu
         p.fillColor = Ink;

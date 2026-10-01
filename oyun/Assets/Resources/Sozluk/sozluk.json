@@ -21,10 +21,10 @@
     {
       "baslik": "collect",
       "kelimeler": ["collect"],
-      "aciklama": "Robotun durduğu karedeki buzu toplar. Karede buz yoksa hiçbir şey olmaz; önce robotu buzun üstüne götür.",
+      "aciklama": "Robotun durduğu karedeki nesneyi toplar: enerji hücresi, buz... Karede toplanacak bir şey yoksa hiçbir şey olmaz; önce robotu onun üstüne götür.",
       "ornek": [
         "move(East)",
-        "collect()    # buzu topla"
+        "collect()    # hücreyi topla"
       ]
     },
     {

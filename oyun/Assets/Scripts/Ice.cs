@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 
 // Kucuk buz kumesi: 4 kristal + buzlu taban. Toplaninca kucuk bir "pop" ve halka.
-public class Ice : MonoBehaviour
+public class Ice : MonoBehaviour, IPickup
 {
     Transform cluster, ring;
     Material mat, ringMat;
@@ -47,10 +47,7 @@ public class Ice : MonoBehaviour
         foreach (var s in specs)
             Parts.Add("Crystal", cluster, MeshFactory.Crystal(s.r, s.body, s.tip), mat, s.pos).localRotation = Quaternion.Euler(s.rot);
 
-        ringMat = Mats.Custom("Ring", "MarsKod/Ring");
-        ringMat.SetColor("_Color", Mats.Hex("#D9F7FF"));
-        ring = Parts.Add("Ring", transform, MeshFactory.Quad(new Vector2(0.8f, 0.8f)), ringMat, new Vector3(0, 0.008f, 0), outline: false, castShadow: false);
-        ring.gameObject.SetActive(false);
+        ring = PickupFx.AddRing(transform, Mats.Hex("#D9F7FF"), out ringMat);
     }
 
     void Update()
@@ -66,28 +63,8 @@ public class Ice : MonoBehaviour
     IEnumerator PopCo()
     {
         popping = true;
-        StartCoroutine(RingCo());
-        yield return Tween.Run(0.1f, t => cluster.localScale = Vector3.one * Mathf.Lerp(1f, 1.22f, Tween.OutCubic(t)));
-        yield return Tween.Run(0.22f, t =>
-        {
-            float e = Tween.InCubic(t);
-            cluster.localScale = Vector3.one * Mathf.Lerp(1.22f, 0f, e);
-            cluster.localPosition = new Vector3(0, 0.25f * Tween.OutCubic(t), 0);
-        });
-        cluster.gameObject.SetActive(false);
-    }
-
-    IEnumerator RingCo()
-    {
-        ring.gameObject.SetActive(true);
-        yield return Tween.Run(0.5f, t =>
-        {
-            float e = Tween.OutCubic(t);
-            ringMat.SetFloat("_R", Mathf.Lerp(0.2f, 0.95f, e));
-            ringMat.SetFloat("_W", Mathf.Lerp(0.05f, 0.09f, e));
-            ringMat.SetFloat("_A", 0.9f * (1f - t));
-        });
-        ring.gameObject.SetActive(false);
+        StartCoroutine(PickupFx.RingPulse(ring, ringMat));
+        yield return PickupFx.PopAway(cluster, 1.22f, 0.25f);
     }
 
     public void Restore()

@@ -1,12 +1,12 @@
 {
   "numara": 3,
   "baslik": "Tekrar tekrar",
-  "gorev": "5 buz topla",
+  "gorev": "5 hücre topla",
   "harita": [
     ". . . . . .",
     ". K . . . .",
     ". . . . . .",
-    "R B B B B B",
+    "R E E E E E",
     ". . . . . .",
     ". . . . K ."
   ],
@@ -15,7 +15,7 @@
   "python_kelimeleri": ["for", "in", "range"],
   "konular": ["komut sırası", "for döngüsü", "girinti"],
   "ipuclari": [
-    "Beş kez aynı iki şeyi yapıyorsun: bir kare ilerle, buzu topla. Aynı satırları tekrar tekrar yazmak yerine Python'a tekrarlatabilirsin.",
+    "Beş kez aynı iki şeyi yapıyorsun: bir kare ilerle, hücreyi topla. Aynı satırları tekrar tekrar yazmak yerine Python'a tekrarlatabilirsin.",
     "`for i in range(5):` altındaki girintili (içeriden başlayan) satırları 5 kez tekrarlar. Satırın sonundaki iki noktayı unutma.",
     "`for i in range(5):` satırının altına, 4 boşluk içeriden `move(East)` ve `collect()` yaz."
   ],
@@ -34,7 +34,7 @@
     },
     {
       "kod": ["for i in range(4):", "    move(East)", "    collect()"],
-      "aciklama": "range(4) dört kez tekrarlar; son buz kalır."
+      "aciklama": "range(4) dört kez tekrarlar; son hücre kalır."
     },
     {
       "kod": ["for i in range(6):", "    move(East)", "    collect()"],

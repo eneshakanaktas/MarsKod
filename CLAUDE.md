@@ -61,5 +61,5 @@ Kökteki `ILERLEME.md`'yi oturum başında oku; her önemli adımdan sonra ve ot
 2. "GitHub'dan güncel hâli çekiyorum" de → `git pull`.
 3. `ILERLEME.md`'yi oku → "En son [kim], [ne zaman], [ne yaptı]; sıradaki iş; açık sorular" özetini 2-4 satırda ver.
 4. Çalışırken ILERLEME.md'yi yerelde güncel tut (girdilere kişinin adını yaz). Push etme.
-5. Kapanış: Kişi "bugünlük bitti" (veya benzeri) deyince → ILERLEME.md'ye günün özetini adıyla yaz → commit + push → "GitHub'a yüklendi" diye onayla. Push hata verirse (başkası önce yüklediyse) pull + birleştir, sonra tekrar push; çözemezsen kullanıcıya açıkla.
+5. Kapanış: Kişi "bugünlük bitti" (veya benzeri) deyince → ILERLEME.md'ye günün özetini adıyla yaz; üstteki "En son (özet)" bölümünü güncelle, başlıklardaki "commit edilmedi" etiketlerini "GitHub'a yüklendi (commit no)" yap → commit + push → "GitHub'a yüklendi" diye onayla. Push hata verirse (başkası önce yüklediyse) pull + birleştir, sonra tekrar push; çözemezsen kullanıcıya açıkla.
 Kişi "bitti" demeden oturumu bırakacak gibiyse (vedalaşma vb.) push'u hatırlat.

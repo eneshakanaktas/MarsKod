@@ -1,0 +1,44 @@
+{
+  "numara": 5,
+  "baslik": "Küçük sınav",
+  "gorev": "5 buz ve hedef",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". K . . . .",
+    ". . . . . H",
+    ". . . B B B",
+    "R B B K . ."
+  ],
+  "komutlar": ["move", "collect"],
+  "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "for i in range(4):"],
+  "konular": ["for döngüsü", "art arda döngüler", "komut sırası", "hedef kare"],
+  "ipuclari": [
+    "Yolu parçalara böl: kayaya kadar bir sıra buz, kayanın etrafından bir adım, sonra ikinci sıra buz ve en sonda hedef."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(2):", "    move(East)", "    collect()", "move(North)", "for i in range(3):", "    move(East)", "    collect()"],
+      "aciklama": "Bütün buzlar toplandı ama robot hedef karede durmuyor."
+    },
+    {
+      "kod": ["for i in range(3):", "    move(East)", "    collect()"],
+      "aciklama": "Üçüncü adımda robot kayaya çarpar; önce kuzeye çıkmalı."
+    },
+    {
+      "kod": ["for i in range(2):", "    move(East)", "    collect()", "move(North)", "for i in range(2):", "    move(East)", "    collect()", "move(North)"],
+      "aciklama": "Üst sırada 3 buz var; range(2) bir tanesini bırakır."
+    }
+  ],
+  "baslangic_kodu": ["move(East)", "collect()"],
+  "cozum": [
+    "for i in range(2):",
+    "    move(East)",
+    "    collect()",
+    "move(North)",
+    "for i in range(3):",
+    "    move(East)",
+    "    collect()",
+    "move(North)"
+  ]
+}

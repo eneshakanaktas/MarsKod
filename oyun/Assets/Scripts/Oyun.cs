@@ -20,6 +20,9 @@ public class Oyun : MonoBehaviour
     const float CameraPitch = 60f, CameraFov = 32f;
     // Alanin ustunde ufuk, tepeler ve koloni icin birakilan bant (ekran yuksekliginin orani).
     const float HorizonGap = 0.075f;
+    // Ufkun (tepeler, koloni) alanin arka kenarindan yuksekligi; tam boy fotografta ekran yuksekliginin orani.
+    // Fotograf kuculurse bu mesafe de onunla birlikte kuculur.
+    const float HorizonAboveArea = 0.106f;
     const float StartYaw = 125f;
 
 
@@ -116,6 +119,7 @@ public class Oyun : MonoBehaviour
         Application.targetFrameRate = 60;
         // arka plan ve zemin ayni gokyuzu/ufuk cizimini kullanir (MarsSky.hlsl)
         Shader.SetGlobalFloat("_Horizon", 0.79f);
+        Shader.SetGlobalVector("_Picture", new Vector4(1f, 0f, 0f, 0f));
         Shader.SetGlobalVector("_Sun", new Vector4(0.02f, -0.068f, 0f, 0f));
         Shader.SetGlobalVector("_Focus", new Vector4(0.5f, 0.56f, 0f, 0f));
         Shader.SetGlobalFloat("_StarsOn", 1f);
@@ -238,6 +242,8 @@ public class Oyun : MonoBehaviour
     // uzakta zemin arka plana (tepeler, koloni) dikissiz karisir. Kare sinirlari zeminde ince, soluk cizgiler.
     const float AreaHalfX = Cols * 0.5f, AreaHalfZ = Rows * 0.5f;
     const float Bend = 0.03f;
+    // Zeminin (ve ustundeki kayalarin) arka plana karismaya basladigi ve bitirdigi uzaklik (z)
+    static readonly Vector4 GroundFogRange = new Vector4(9f, 19f, 0, 0);
 
     static float TerrainHeight(float x, float z)
     {
@@ -285,7 +291,7 @@ public class Oyun : MonoBehaviour
 
         ground = Mats.Custom("Ground", "MarsKod/Ground");
         ground.SetVector("_Area", new Vector4(AreaHalfX, AreaHalfZ, 0, 0));
-        ground.SetVector("_FogRange", new Vector4(9f, 19f, 0, 0));
+        ground.SetVector("_FogRange", GroundFogRange);
         // alandaki krater kapali: bolumlerde kareler bos ya da dolu net okunmali
         // zemin kendine golge dusurmez (duz zeminde ince golge seritleri olusturuyordu); robot ve kayalarin golgesini alir
         Parts.Add("Terrain", board, mesh, ground, Vector3.zero, outline: false, castShadow: false);
@@ -303,8 +309,9 @@ public class Oyun : MonoBehaviour
         }
 
         // Kayalar: alanin disina serpistirilmis, uzaklastikca seyrek. Alanin icindeki kayalar bolumden gelir (engel).
-        var rockMat = Mats.Lit(Mats.Hex("#6B4034"), 0.15f);
-        var rockDark = Mats.Lit(Mats.Hex("#553229"), 0.12f);
+        // Zeminle birlikte arka plana karisirlar: zemin ufukta gokyuzune donustugu yerde havada asili kalmazlar.
+        var rockMat = FarRockMat("#6B4034");
+        var rockDark = FarRockMat("#553229");
         for (int i = 0; i < 130; i++)
         {
             float x = R(-9f, 9f), z = R(-6f, 8.5f);
@@ -316,6 +323,16 @@ public class Oyun : MonoBehaviour
                 new Vector3(x, TerrainHeight(x, z) + size * 0.12f, z), outline: false);
             rk.localRotation = Quaternion.Euler(R(-10, 10), R(0, 360), R(-10, 10));
         }
+    }
+
+    // Suslu kaya malzemesi: zeminle ayni isik ve ayni arka plana karisma (FarRock.shader)
+    static Material FarRockMat(string hex)
+    {
+        var m = Mats.Custom("FarRock", "MarsKod/FarRock");
+        m.SetColor("_BaseColor", Mats.Hex(hex));
+        m.SetVector("_FogRange", GroundFogRange);
+        m.SetVector("_Area", new Vector4(AreaHalfX, AreaHalfZ, 0, 0));
+        return m;
     }
 
     // Bolumu kurar: buzlar, engel kayalari, hedef kare, zemindeki buz izleri, karttaki kod ve ust baslik.
@@ -397,6 +414,7 @@ public class Oyun : MonoBehaviour
         float needW = 1f - 2f * side, needH = Mathf.Max(0.1f, top - bottom);
 
         cam.transform.rotation = Quaternion.Euler(CameraPitch, 0f, 0f);
+        cam.fieldOfView = CameraFov;
         cam.ResetProjectionMatrix();
         Rect Extent(float d)
         {
@@ -409,32 +427,36 @@ public class Oyun : MonoBehaviour
             }
             return Rect.MinMaxRect(x0, y0, x1, y1);
         }
-        // Alan banda tam oturana kadar kamerayi yaklastir/uzaklastir (ikiye bolerek arama)
+        // 1) Fotograf: kamera, alan ekranin genisligini dolduracak uzakliga gelir (ikiye bolerek arama).
+        //    Bu uzaklik yalnizca ekran genisligine bagli; klavye/ipucu acilinca degismez.
         float lo = 3f, hi = 80f;
         for (int k = 0; k < 24; k++)
         {
             float mid = (lo + hi) * 0.5f;
-            var e = Extent(mid);
-            if (e.width <= needW && e.height <= needH) hi = mid; else lo = mid;
+            if (Extent(mid).width <= needW) hi = mid; else lo = mid;
         }
         float d = hi;
+        var photo = Extent(d);
+
+        // 2) Bant alana yetmiyorsa (klavye, ipucu, uzun kod) fotograf butunuyle kuculur: kamera yerinde kalir,
+        //    yalnizca gorus acisi genisler. Zemin, kayalar, koloni ve gokyuzu birlikte kuculur; birbirine gore kaymaz.
+        float scale = Mathf.Min(1f, needH / photo.height);
+        cam.fieldOfView = 2f * Mathf.Atan(Mathf.Tan(CameraFov * 0.5f * Mathf.Deg2Rad) / scale) * Mathf.Rad2Deg;
+        cam.ResetProjectionMatrix();
         var ext = Extent(d);
-        cam.nearClipPlane = Mathf.Max(0.3f, d - 10f);
+        cam.nearClipPlane = Mathf.Max(0.3f, d - 15f);
         cam.farClipPlane = d + 45f;
 
-        // Goruntuyu dikeyde kaydir: alan bandin ortasina gelsin (perspektif bozulmaz)
+        // 3) Fotografi dikeyde kaydir: alan bandin ortasina gelsin (perspektif bozulmaz)
+        float shift = 2f * ((bottom + top) * 0.5f - ext.center.y);
         var p = cam.projectionMatrix;
-        p[1, 2] = -2f * ((bottom + top) * 0.5f - ext.center.y);
+        p[1, 2] = -shift;
         cam.projectionMatrix = p;
 
-        // Tepeler ve koloni zeminin gercekten bittigi cizgiye otursun: kivrik zeminin ekrandaki en ust noktasini bul
-        float horizon = 0f;
-        for (float z = AreaHalfZ; z < 24f; z += 0.25f)
-        {
-            var v = cam.WorldToViewportPoint(new Vector3(0f, TerrainHeight(0f, z), z));
-            if (v.z > 0f) horizon = Mathf.Max(horizon, v.y);
-        }
-        Shader.SetGlobalFloat("_Horizon", Mathf.Clamp(horizon + 0.05f, top + 0.02f, 0.9f));
+        // Arka plan (tepeler, koloni, gokyuzu) ayni fotografin parcasi: ayni olcek ve kayma (MarsSky.hlsl, MarsPictureUV).
+        // Ufuk fotografta alanin arka kenarinin biraz ustunde sabittir.
+        Shader.SetGlobalVector("_Picture", new Vector4(scale, shift, 0f, 0f));
+        Shader.SetGlobalFloat("_Horizon", photo.yMax + HorizonAboveArea);
 
         var urp = GraphicsSettings.currentRenderPipeline as UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset;
         if (urp != null && urp.shadowDistance < d + 8f) urp.shadowDistance = d + 8f;
@@ -956,12 +978,14 @@ public class Oyun : MonoBehaviour
         hud.HideGlossary();
     }
 
-    // ---- Ipucu denetimi (-shots icinde): son bolumde balon acilir, "Bir ipucu daha"ya iki kez fareyle tiklanir ----
-    // Log'da "IPUCU DENETIMI:" satiri; goruntuler ipucu-1.png (yalnizca ilk ipucu), ipucu-3.png (ucu de acik).
+    // ---- Ipucu denetimi (-shots icinde): uc ipucu olan son bolumde balon acilir, "Bir ipucu daha"ya iki kez fareyle tiklanir ----
+    // (Sinav bolumlerinde tek ipucu var; onlar atlanir.) Log'da "IPUCU DENETIMI:" satiri; goruntuler ipucu-1.png (yalnizca ilk ipucu), ipucu-3.png (ucu de acik).
     IEnumerator HintCheck(string dir)
     {
         var mouse = UnityEngine.InputSystem.Mouse.current;
-        LoadLevel(levels.Count - 1);
+        int idx = levels.FindLastIndex(l => l.Hints.Count >= 3);
+        if (idx < 0) { Debug.Log("IPUCU DENETIMI: uc ipucu olan bolum yok, atlandi"); yield break; }
+        LoadLevel(idx);
         hud.ShowHint(true);
         yield return new WaitForSeconds(0.4f);
         Cap(Path.Combine(dir, "ipucu-1.png"));

@@ -45,6 +45,7 @@ public static class OyunBuild
         Make("Outline", "MarsKod/Outline", null);
         Make("Ring", "MarsKod/Ring", null);
         Make("Ground", "MarsKod/Ground", null);
+        Make("FarRock", "MarsKod/FarRock", null);
     }
 
     static void Make(string name, string shader, System.Action<Material> init)

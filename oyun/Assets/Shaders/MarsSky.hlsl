@@ -1,10 +1,11 @@
-// MarsKod ortak gokyuzu/ufuk cizimi. Hem arka plan (Backdrop.shader) hem zemin (Ground.shader) kullanir;
+// MarsKod ortak gokyuzu/ufuk cizimi. Arka plan (Backdrop.shader), zemin (Ground.shader) ve uzak kayalar (FarRock.shader) kullanir;
 // boylece uzaktaki zemin arka plana dikissiz karisir. Degerler C#'tan genel (global) olarak verilir.
 #ifndef MARSKOD_SKY_INCLUDED
 #define MARSKOD_SKY_INCLUDED
 
 float _StarsOn;
-float _Horizon;
+float _Horizon;   // ufuk: fotograf koordinatinda (asagida)
+float4 _Picture;  // x: fotografin olcegi (1 = tam boy), y: dikey kayma (ekranin -1..1 biriminde)
 float4 _Focus;
 float4 _Sun;
 
@@ -135,13 +136,25 @@ float colonyShape(float2 sp, float P)
 }
 
 
-// Ekran konumuna (uv, alttan 0) gore arka plan rengi (sRGB).
-float3 MarsBackdrop(float2 uv)
+// Sahne tek bir fotograf gibi davranir: arayuz (klavye, ipucu) alani daraltinca kamera yerinden oynamaz, yalnizca
+// gorus acisi genisler; bu, fotografi kucultup kaydirmakla ayni seydir (Oyun.FitCamera). Arka plan da ayni fotografin
+// parcasidir: ekran konumu fotograf konumuna cevrilir, boylece koloni ile zemin birlikte kuculur, birbirine gore kaymaz.
+float2 MarsPictureUV(float2 suv)
 {
+    float2 n = suv * 2.0 - 1.0;
+    n = float2(n.x, n.y - _Picture.y) / max(_Picture.x, 1e-3);
+    return n * 0.5 + 0.5;
+}
+
+// Ekran konumuna (suv, alttan 0) gore arka plan rengi (sRGB).
+float3 MarsBackdrop(float2 suv)
+{
+    float2 uv = MarsPictureUV(suv);
     float aspect = _ScreenParams.x / _ScreenParams.y;
-    float x = (uv.x - 0.5) * aspect;       // ekran yuksekligi biriminde
-    float pixel = 1.5 / _ScreenParams.y;
-    float onePx = 1.0 / _ScreenParams.y;
+    float x = (uv.x - 0.5) * aspect;       // fotograf yuksekligi biriminde
+    float picturePx = _ScreenParams.y * max(_Picture.x, 1e-3); // ekrandaki bir pikselin fotograftaki karsiligi (kenar yumusatma)
+    float pixel = 1.5 / picturePx;
+    float onePx = 1.0 / picturePx;
     float2 sp = float2(x, uv.y);
     float t = _Time.y;
 
@@ -171,13 +184,9 @@ float3 MarsBackdrop(float2 uv)
     // Gunes isiltisi (sicak, genis)
     col += (float3(0.66, 0.31, 0.13) * exp(-dSun * 6.5) * 1.0 + float3(0.32, 0.13, 0.10) * exp(-dSun * 2.4) * 0.65) * breath;
 
-    // Sabit duran kayalar
-    float4 rk;
-    rk = rock(sp, float2(0.14, 0.935), 0.0105, 1.0, pixel); col = lerp(col, rk.rgb, rk.a);
-    rk = rock(sp, float2(-0.16, 0.875), 0.0060, 4.0, pixel); col = lerp(col, rk.rgb, rk.a);
-    rk = rock(sp, float2(0.05, 0.978), 0.0042, 7.0, pixel); col = lerp(col, rk.rgb, rk.a);
-    rk = rock(sp, float2(-0.08, 0.952), 0.0036, 2.0, pixel); col = lerp(col, rk.rgb * 0.85, rk.a);
-    rk = rock(sp, float2(0.19, 0.848), 0.0032, 9.0, pixel); col = lerp(col, rk.rgb * 0.8, rk.a);
+    // Mars'in iki uydusu: Phobos (yakin, kraterli kucuk yumru) ve Deimos (uzak; Mars'tan parlak bir yildiz gibi gorunur)
+    float4 phobos = rock(sp, float2(0.14, 0.935), 0.0105, 1.0, pixel); col = lerp(col, phobos.rgb, phobos.a);
+    col += float3(0.95, 0.92, 0.86) * glowDot(sp, float2(-0.17, 0.885), 1.6 * _ScreenParams.y / 1170.0) * 0.9 * starMask;
 
     // Tepeler (arkadan aydinlanan siluetler)
     float3 warm = float3(0.95, 0.55, 0.28);
@@ -300,6 +309,36 @@ float MarsVignette(float2 uv)
     float aspect = _ScreenParams.x / _ScreenParams.y;
     float2 vd = float2((uv.x - 0.5) * aspect / max(aspect, 0.4), uv.y - 0.5);
     return 1.0 - 0.35 * smoothstep(0.3, 0.85, length(vd * float2(1.4, 1.0)));
+}
+
+// Toz pusu: oyun alanindan (area: yari boyut x, z) uzaklastikca zemin solar ve ufuktaki ovanin rengine yaklasir;
+// en cok koloniye dogru, yanlarda daha az, kameraya dogru cok az. Gercek uzakliga bagli oldugu icin fotograf
+// kuculse de (klavye acik) gecis yumusak kalir; zemin ufka vardiginda arka planla zaten ayni renktedir.
+float3 MarsDustHaze(float3 col, float3 posWS, float2 area)
+{
+    float2 o = max(abs(posWS.xz) - area, 0.0);
+    if (posWS.z < 0.0) o.y *= 0.4;
+    float dist = length(o * float2(0.8, 1.0));
+    float haze = smoothstep(0.4, 7.0, dist) * 0.8;
+    float3 plainCol = SRGBToLinear(float3(0.176, 0.110, 0.106)); // ufuk dibindeki ovanin rengi (ekrandan olculdu)
+    return lerp(col, plainCol, haze);
+}
+
+// Zemindeki her sey (zemin, uzaktaki kayalar) ayni kuralla arka plana karisir: once toz pusu, sonra uzaklastikca
+// (fogRange: z basla, z bit) ve ekranda cizilen ufka yaklastikca. Kamera geri cekilip zemin ekranda yukari kaysa da
+// zemin nerede gokyuzune donuyorsa ustundeki kaya da orada kaybolur (havada asili kaya kalmaz). Renkler dogrusal.
+float3 MarsFadeToBackdrop(float3 col, float3 posWS, float2 suv, float2 fogRange, float2 area)
+{
+    col = MarsDustHaze(col, posWS, area);
+    float distFog = smoothstep(fogRange.x, fogRange.y, posWS.z);
+    float scrFog = smoothstep(_Horizon - 0.15, _Horizon - 0.06, MarsPictureUV(suv).y);
+    float fog = max(distFog, scrFog);
+    if (fog > 0.001)
+    {
+        float3 bd = SRGBToLinear(saturate(MarsBackdrop(suv) * MarsVignette(suv)));
+        col = lerp(col, bd, fog);
+    }
+    return col;
 }
 
 #endif

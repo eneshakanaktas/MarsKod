@@ -172,16 +172,7 @@ Shader "MarsKod/Ground"
 
                 col *= MarsVignette(suv);
 
-                // arka plana dikissiz karisma
-                float distFog = smoothstep(_FogRange.x, _FogRange.y, p.z);
-                float scrFog = smoothstep(_Horizon - 0.15, _Horizon - 0.06, suv.y);
-                float fog = max(distFog, scrFog);
-                if (fog > 0.001)
-                {
-                    float3 bd = SRGBToLinear(saturate(MarsBackdrop(suv) * MarsVignette(suv)));
-                    col = lerp(col, bd, fog);
-                }
-                return half4(col, 1.0);
+                return half4(MarsFadeToBackdrop(col, p, suv, _FogRange.xy, _Area.xy), 1.0);
             }
             ENDHLSL
         }

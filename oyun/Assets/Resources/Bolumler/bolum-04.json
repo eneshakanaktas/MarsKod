@@ -1,0 +1,48 @@
+{
+  "numara": 4,
+  "baslik": "İki yönlü",
+  "gorev": "7 buz topla",
+  "harita": [
+    "R B B B B .",
+    ". . . . B .",
+    ". K . . B .",
+    ". . . . B .",
+    ". . . . . .",
+    ". . K . . ."
+  ],
+  "komutlar": ["move", "collect"],
+  "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "for i in range(2):"],
+  "konular": ["for döngüsü", "art arda döngüler", "girinti"],
+  "ipuclari": [
+    "Buzlar iki sıra hâlinde: önce doğuya doğru, sonra güneye doğru. Tek bir döngü ikisini birden yapamaz.",
+    "Bir döngü bitince altına girintisiz yeni bir `for` yazabilirsin; Python önce birincisini, sonra ikincisini tekrarlar. Her sırada kaç buz olduğunu say.",
+    "İlk döngü `for i in range(4):` ile doğuya gider. Altına, girintisiz ikinci bir `for` yaz; içinde `move(South)` ve `collect()` olsun."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(7):", "    move(East)", "    collect()"],
+      "aciklama": "Tek döngü hep doğuya gider: robot köşeyi dönemez ve alanın dışına çıkmak ister."
+    },
+    {
+      "kod": ["for i in range(4):", "    move(East)", "    collect()", "for i in range(3):", "    move(East)", "    collect()"],
+      "aciklama": "İkinci döngü de doğuya gidiyor; buzlar güneyde."
+    },
+    {
+      "kod": ["for i in range(4):", "    move(East)", "    collect()", "for i in range(2):", "    move(South)", "    collect()"],
+      "aciklama": "Güneyde 3 buz var; range(2) bir tanesini bırakır."
+    },
+    {
+      "kod": ["for i in range(4):", "    move(East)", "    collect()", "for i in range(3):", "    move(South)", "collect()"],
+      "aciklama": "collect() ikinci döngünün dışında kaldı: robot güneye 3 kez iner ama yalnızca en sonda toplar."
+    }
+  ],
+  "baslangic_kodu": ["for i in range(4):", "    move(East)", "    collect()"],
+  "cozum": [
+    "for i in range(4):",
+    "    move(East)",
+    "    collect()",
+    "for i in range(3):",
+    "    move(South)",
+    "    collect()"
+  ]
+}

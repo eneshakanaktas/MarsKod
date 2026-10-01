@@ -180,6 +180,12 @@ public class Hud : MonoBehaviour
         xpTotalLabel.style.marginTop = 10;
         starCol.Add(starBtn);
         starCol.Add(xpTotalLabel);
+        // pusula: XP'nin altinda, yerlesimi etkilemez (baslik uzayip oyun alani kuculmesin)
+        var compass = new Compass(92, fSemi);
+        compass.style.position = Position.Absolute;
+        compass.style.left = 2;
+        compass.style.top = 96 + 10 + 40 + 14;
+        starCol.Add(compass);
 
         row.Add(menuCol);
         row.Add(center);

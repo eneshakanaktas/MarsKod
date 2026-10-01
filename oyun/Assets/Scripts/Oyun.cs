@@ -23,6 +23,8 @@ public class Oyun : MonoBehaviour
     // Ufkun (tepeler, koloni) alanin arka kenarindan yuksekligi; tam boy fotografta ekran yuksekliginin orani.
     // Fotograf kuculurse bu mesafe de onunla birlikte kuculur.
     const float HorizonAboveArea = 0.106f;
+    // cok hafif genel aydinlatma; arka planin karsiligi MarsSky.hlsl MARS_EXPOSURE
+    const float AmbientLift = 1.12f;
     const float StartYaw = 125f;
 
 
@@ -30,6 +32,7 @@ public class Oyun : MonoBehaviour
     Material backdrop;
     Transform world;
     Robot robot;
+    RobotModel robotModel = Robot.DefaultModel;
     readonly List<Ice> ices = new List<Ice>();
     Target target;
     Transform levelRoot;
@@ -130,6 +133,7 @@ public class Oyun : MonoBehaviour
             if (a[i] == "-kalite" && i + 1 < a.Length) QualitySettings.SetQualityLevel(int.Parse(a[i + 1]), true);
             if (a[i] == "-cizgisiz") Parts.NoOutline = true;
             if (a[i] == "-shots") shotsMode = true;
+            if (a[i] == "-robot" && i + 1 < a.Length && a[i + 1] == "oyuncak") robotModel = RobotModel.Toy;
         }
         world = new GameObject("World").transform;
 
@@ -137,7 +141,7 @@ public class Oyun : MonoBehaviour
         SetupLight();
         BuildBoard();
 
-        robot = Robot.Create(world);
+        robot = Robot.Create(world, robotModel);
 
         hud = gameObject.AddComponent<Hud>();
         hud.Build();
@@ -208,7 +212,7 @@ public class Oyun : MonoBehaviour
         sun.type = LightType.Directional;
         // safak oncesi: gunes yok; soguk, los bir gok isigi (robot okunabilsin diye yumusak golge verir)
         sun.color = Mats.Hex("#B9B8D8");
-        sun.intensity = 0.55f;
+        sun.intensity = 0.58f;
         sun.shadows = LightShadows.Soft;
         sun.shadowStrength = 0.6f;
         sun.transform.rotation = Quaternion.Euler(52f, -35f, 0f);
@@ -217,7 +221,7 @@ public class Oyun : MonoBehaviour
         var dawn = new GameObject("Dawn").AddComponent<Light>();
         dawn.type = LightType.Directional;
         dawn.color = Mats.Hex("#FF9E66");
-        dawn.intensity = 0.5f;
+        dawn.intensity = 0.53f;
         dawn.shadows = LightShadows.None;
         dawn.transform.rotation = Quaternion.Euler(14f, 168f, 0f);
         // zemin cizimi (Ground.shader) safak isigini buradan okur
@@ -230,8 +234,8 @@ public class Oyun : MonoBehaviour
         RenderSettings.ambientEquatorColor = Mats.Hex("#4C4352");
         RenderSettings.ambientGroundColor = Mats.Hex("#241D25");
         var sh = new SphericalHarmonicsL2();
-        sh.AddAmbientLight(Mats.Hex("#524C60").linear);
-        sh.AddDirectionalLight(Vector3.up, Mats.Hex("#4A4A6A").linear, 0.9f);
+        sh.AddAmbientLight(Mats.Hex("#524C60").linear * AmbientLift);
+        sh.AddDirectionalLight(Vector3.up, Mats.Hex("#4A4A6A").linear * AmbientLift, 0.9f);
         RenderSettings.ambientProbe = sh;
         RenderSettings.skybox = null;
         RenderSettings.fog = false;
@@ -255,27 +259,25 @@ public class Oyun : MonoBehaviour
                 + (Mathf.PerlinNoise(x * 0.5f + 11f, z * 0.5f + 2f) - 0.5f) * 0.25f;
         float h = k * n * (1f + o * 0.08f);
         // kucuk bir gezegen yuzeyi gibi uzakta hafifce asagi kivrilir: zemin ufka dogal perspektifle uzanir
-        float bz = Mathf.Max(z - (AreaHalfZ + 0.8f), 0f), bx = Mathf.Max(Mathf.Abs(x) - (AreaHalfX + 1.5f), 0f);
+        // yanlarda kivrilma bir yerde durur: zemin genis gorunumde (klavye + ipucu) ucurum gibi dusmesin
+        float bz = Mathf.Max(z - (AreaHalfZ + 0.8f), 0f), bx = Mathf.Min(Mathf.Max(Mathf.Abs(x) - (AreaHalfX + 1.5f), 0f), 14f);
         return h - Bend * (bz * bz + 0.5f * bx * bx);
     }
 
     void BuildBoard()
     {
         var board = Parts.Empty("Board", world);
-        var rng = new System.Random(7);
-        float R(float a, float b) => a + (float)rng.NextDouble() * (b - a);
 
-        // Arazi agi
+        // Arazi agi: ortada sik, yanlarda seyrek. Klavye + ipucu acilip sahne cok kuculdugunde de zeminin kenari
+        // (arkasindaki karanlik) gorunmesin diye yanlara genis uzanir.
         // z0: kod karti uzayip kamera geri cekilince ekranin alti da zemin gorsun (kartin kenarlarinda siyah kalmasin)
-        const float x0 = -16f, x1 = 16f, z0 = -30f, z1 = 24f, step = 0.4f;
-        int nx = Mathf.RoundToInt((x1 - x0) / step) + 1, nz = Mathf.RoundToInt((z1 - z0) / step) + 1;
+        var xs = TerrainAxis(-16f, 16f, 0.4f, 48f, 1.6f);
+        var zs = TerrainAxis(-30f, 24f, 0.4f, 0f, 1f);
+        int nx = xs.Count, nz = zs.Count;
         var verts = new Vector3[nx * nz];
         for (int j = 0; j < nz; j++)
         for (int i = 0; i < nx; i++)
-        {
-            float x = x0 + i * step, z = z0 + j * step;
-            verts[j * nx + i] = new Vector3(x, TerrainHeight(x, z), z);
-        }
+            verts[j * nx + i] = new Vector3(xs[i], TerrainHeight(xs[i], zs[j]), zs[j]);
         var tris = new List<int>();
         for (int j = 0; j < nz - 1; j++)
         for (int i = 0; i < nx - 1; i++)
@@ -283,7 +285,7 @@ public class Oyun : MonoBehaviour
             int a = j * nx + i, b = a + 1, c = a + nx + 1, d = a + nx;
             tris.Add(a); tris.Add(d); tris.Add(c); tris.Add(a); tris.Add(c); tris.Add(b);
         }
-        var mesh = new Mesh { name = "Terrain" };
+        var mesh = new Mesh { name = "Terrain", indexFormat = IndexFormat.UInt32 };
         mesh.vertices = verts;
         mesh.SetTriangles(tris, 0);
         mesh.RecalculateNormals();
@@ -308,21 +310,20 @@ public class Oyun : MonoBehaviour
             Parts.Add("Lamp", board, lampMesh, lamp, basePos + Vector3.up * 0.33f, outline: false, castShadow: false);
         }
 
-        // Kayalar: alanin disina serpistirilmis, uzaklastikca seyrek. Alanin icindeki kayalar bolumden gelir (engel).
+        // Kayalar, kaya kumeleri, olcum istasyonlari, sandiklar (Scenery.cs). Alanin icindeki kayalar bolumden gelir (engel).
         // Zeminle birlikte arka plana karisirlar: zemin ufukta gokyuzune donustugu yerde havada asili kalmazlar.
-        var rockMat = FarRockMat("#6B4034");
-        var rockDark = FarRockMat("#553229");
-        for (int i = 0; i < 130; i++)
-        {
-            float x = R(-9f, 9f), z = R(-6f, 8.5f);
-            if (Mathf.Abs(x) < AreaHalfX + 0.45f && Mathf.Abs(z) < AreaHalfZ + 0.45f) continue;
-            float dist = Mathf.Max(Mathf.Abs(x) - AreaHalfX, Mathf.Abs(z) - AreaHalfZ);
-            if (R(0f, 1f) < dist * 0.05f) continue; // uzakta daha seyrek
-            float size = Mathf.Lerp(0.05f, 0.3f, Mathf.Pow(R(0f, 1f), 2.2f));
-            var rk = Parts.Add("Rock", board, MeshFactory.Rock(size, i), i % 3 == 0 ? rockDark : rockMat,
-                new Vector3(x, TerrainHeight(x, z) + size * 0.12f, z), outline: false);
-            rk.localRotation = Quaternion.Euler(R(-10, 10), R(0, 360), R(-10, 10));
-        }
+        Scenery.Build(board, TerrainHeight, new Vector2(AreaHalfX, AreaHalfZ), FarRockMat);
+    }
+
+    // inner0..inner1 arasi fine adimla; disinda outer'a kadar coarse adimla (outer = 0: disari uzanmaz)
+    static List<float> TerrainAxis(float inner0, float inner1, float fine, float outer, float coarse)
+    {
+        var a = new List<float>();
+        if (outer > 0f) for (float v = -outer; v < inner0 - 0.01f; v += coarse) a.Add(v);
+        int n = Mathf.RoundToInt((inner1 - inner0) / fine);
+        for (int i = 0; i <= n; i++) a.Add(inner0 + i * fine);
+        if (outer > 0f) for (float v = inner1 + coarse; v <= outer + 0.01f; v += coarse) a.Add(v);
+        return a;
     }
 
     // Suslu kaya malzemesi: zeminle ayni isik ve ayni arka plana karisma (FarRock.shader)
@@ -1097,6 +1098,27 @@ public class Oyun : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
         Cap(Path.Combine(dir, "klavye-usta.png"));
         yield return new WaitForSeconds(0.3f);
+        // Klavye + ipucu: sahne en cok kuculdugunde zeminin kenari gorunmemeli, cevre bos durmamali
+        hud.ShowHint(true);
+        yield return new WaitForSeconds(0.8f);
+        Cap(Path.Combine(dir, "klavye-ipucu.png"));
+        yield return new WaitForSeconds(0.2f);
+        hud.ShowHint(false);
+        int threeHints = levels.FindLastIndex(l => l.Hints.Count >= 3);
+        if (threeHints >= 0)
+        {
+            LoadLevel(threeHints);
+            hud.FocusCode(code.Length, code.Length);
+            hud.ShowHint(true);
+            yield return new WaitForSeconds(0.8f);
+            Cap(Path.Combine(dir, "klavye-ipucu3.png"));
+            yield return new WaitForSeconds(0.2f);
+            hud.ShowHint(false);
+            LoadLevel(levels.Count - 1);
+            SetCode("for i in range(5):\n    mo");
+            hud.FocusCode(code.Length, code.Length);
+            yield return new WaitForSeconds(0.3f);
+        }
         hud.Tier = KeyboardTier.Orta;
         hud.StopEditing();
         yield return KeyboardTapCheck(dir);

@@ -48,6 +48,7 @@ Shader "MarsKod/Ground"
             float4 _DawnColor;  // C#'tan: safak isiginin rengi (dogrusal) * siddet
             float4 _RobotPos;   // C#'tan: robotun konumu
             float4 _RobotFwd;   // C#'tan: robotun baktigi yon
+            float4 _RobotBeam;  // C#'tan: robotun onune dusen isigin rengi
 
             struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; };
             struct Varyings
@@ -66,6 +67,18 @@ Shader "MarsKod/Ground"
                 o.positionCS = TransformWorldToHClip(o.posWS);
                 o.screenPos = ComputeScreenPos(o.positionCS);
                 return o;
+            }
+
+            // Krater: icte koyu (gunes arkadan, alcaktan: uzak ic duvar golgede), kenari hafif kabarik ve aydinlik,
+            // cevresinde soluk bir firlatma halkasi. d: merkezden uzaklik / yaricap, dir: merkezden yon.
+            float craterShade(float d, float2 dir, float strength)
+            {
+                float inside = 1.0 - smoothstep(0.85, 1.0, d);
+                float bowl = lerp(0.70 + 0.16 * d * d, 1.0, smoothstep(0.85, 1.0, d));
+                float farWall = inside * saturate(dir.y) * smoothstep(0.3, 0.95, d) * 0.18;
+                float rim = exp(-pow((d - 1.0) / 0.12, 2.0)) * 0.20;
+                float ejecta = exp(-pow((d - 1.5) / 0.35, 2.0)) * 0.05;
+                return lerp(1.0, (bowl - farWall) * (1.0 + rim + ejecta), strength);
             }
 
             float frostAt(float2 xz, float2 q, float4 f)
@@ -88,14 +101,26 @@ Shader "MarsKod/Ground"
                 float light = smoothstep(0.84, 0.93, vnoise2(q * 19.0 + 19.0)) * detail;
                 a = lerp(a, float3(0.62, 0.43, 0.34), light * 0.35);
 
-                // etraftaki kraterler (oyun alaninin disinda)
+                // etraftaki kraterler (oyun alaninin disinda): sik kucukler + seyrek buyukler
                 float2 cell = floor(q / 3.2);
                 float2 center = (cell + 0.2 + 0.6 * hash22(cell + 5.0)) * 3.2;
-                float cr = 0.25 + 0.4 * hash21(cell + 9.0);
-                float d = length(q - center) / cr;
-                float has = step(hash21(cell + 2.0), 0.4) * (1.0 - inArea) * (1.0 - far * 0.7);
-                a *= lerp(1.0, lerp(0.82 + 0.14 * d * d, 1.0, smoothstep(0.85, 1.0, d)), has);
-                a *= 1.0 + has * 0.15 * exp(-pow((d - 1.0) / 0.13, 2.0));
+                float cr = 0.25 + 0.45 * hash21(cell + 9.0);
+                float has = step(hash21(cell + 2.0), 0.5) * (1.0 - inArea) * (1.0 - far * 0.6);
+                a *= craterShade(length(q - center) / cr, normalize(q - center + 1e-4), has);
+
+                float2 bigCell = floor(q / 9.0);
+                float2 bigCenter = (bigCell + 0.25 + 0.5 * hash22(bigCell + 17.0)) * 9.0;
+                float bigR = 1.1 + 1.5 * hash21(bigCell + 23.0);
+                // buyuk krater alanin yakinina dusmez (normal gorunum sade kalsin)
+                float2 bigOut = max(abs(bigCenter) - _Area.xy, 0.0);
+                float bigHas = step(hash21(bigCell + 29.0), 0.45) * step(bigR + 2.5, length(bigOut)) * (1.0 - far * 0.5);
+                a *= craterShade(length(q - bigCenter) / bigR, normalize(q - bigCenter + 1e-4), bigHas);
+
+                // ruzgarin diktigi kum dalgaciklari (yer yer, lekeler halinde)
+                float duneMask = smoothstep(0.6, 0.75, fbm(q * 0.3 + 31.0)) * (1.0 - inArea) * (1.0 - far);
+                float ripple = sin(dot(q, float2(0.8, 0.6)) * 26.0 + fbm(q * 1.5) * 6.0);
+                a *= 1.0 + duneMask * 0.035 * ripple;
+
 
                 // alandaki kucuk krater
                 if (_Crater.z > 0.0)
@@ -163,7 +188,7 @@ Shader "MarsKod/Ground"
                 float lateral = dot(rd, float2(-_RobotFwd.z, _RobotFwd.x));
                 // tam onune dogru acilan hüzme: robotun burnundan baslar, uzaklastikca genisler ve soner
                 float beam = smoothstep(0.2, 0.45, along) * exp(-along / 1.1) * exp(-lateral * lateral / (0.02 + 0.06 * along * along));
-                float3 robotLight = float3(0.55, 0.85, 0.95) * beam * 2.2;
+                float3 robotLight = _RobotBeam.rgb * beam * 2.2;
 
                 // isik kaynagi tepenin ardindaki gunes: zemin gunese (uzaga) dogru hafifce aydinlanir, kameraya dogru kararir
                 float toSun = smoothstep(-5.0, 14.0, p.z);

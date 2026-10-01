@@ -4,6 +4,8 @@
 #define MARSKOD_SKY_INCLUDED
 
 float _StarsOn;
+// Cok hafif genel aydinlatma: arka plan ve zeminin karistigi ova rengi ayni oranda (yoksa yeni renk siniri olusur)
+static const float MARS_EXPOSURE = 1.06;
 float _Horizon;   // ufuk: fotograf koordinatinda (asagida)
 float4 _Picture;  // x: fotografin olcegi (1 = tam boy), y: dikey kayma (ekranin -1..1 biriminde)
 float4 _Focus;
@@ -135,6 +137,430 @@ float colonyShape(float2 sp, float P)
     return d;
 }
 
+// ---- Cevredeki koloniler ve ayrik yapilar ----
+// Ortadaki koloniden farkli gorunurler; fotograf kuculunce (klavye acik) kenarlarda acıga cikarlar.
+// Yakindakiler ana koloniyle ayni duzlemde (P) durur; uzaktakiler daha kucuk (FAR_SCALE), orta tepelerin onunde.
+static const float COLONY_X  = 0.045;   // ana koloni
+static const float MINING_X  = 0.205;   // maden ocagi (yakin, sag)
+static const float HABITAT_X = -0.262;  // yasam kuleleri (yakin, sol)
+static const float GREEN_X   = 0.335;   // sera ciftligi (uzak, sag)
+static const float MAST_X    = 0.415;   // haberlesme diregi (uzak, sag)
+static const float LANDER_X  = -0.400;  // inis pisti (uzak, sol)
+static const float SCOPES_X  = -0.330;  // radyo teleskoplari (uzak, sol)
+static const float FUEL_X    = -0.345;  // yakit tesisi (orta sira, sol)
+static const float SOLAR_X   = 0.290;   // gunes tarlasi (orta sira, sag)
+static const float CARGO_X   = -0.235;  // yuk deposu + drone pedi (on sira, sol)
+static const float GARAGE_X  = 0.370;   // arac garaji (on sira, sag)
+static const float DISH_X    = 0.140;   // buyuk canak anten (on sira, sag)
+static const float FAR_BASE  = -0.036;  // uzak yapilarin zemini (_Horizon'a gore)
+static const float FAR_SCALE = 0.6;
+// Ovadaki yapi siralari: 0 = ufuk (ana koloniyle ayni), 1 = orta, 2 = on (alana biraz yakin; daha asagida, daha buyuk)
+#define SITE_ROWS 3
+static const float kRowBase[SITE_ROWS]  = { -0.047, -0.056, -0.066 };
+static const float kRowScale[SITE_ROWS] = { 1.0, 1.2, 1.4 };
+static const float3 kRowColor[SITE_ROWS] = { float3(0.060, 0.048, 0.062), float3(0.046, 0.036, 0.048), float3(0.038, 0.030, 0.040) };
+
+float bandMask(float x, float a, float b, float soft) { return smoothstep(a - soft, a, x) * (1.0 - smoothstep(b, b + soft, x)); }
+// tepesi (0, h) tabani 2w olan ucgen
+float sdCone(float2 p, float w, float h) { p.x = abs(p.x); float l = length(float2(h, w)); return max(-p.y, dot(p, float2(h, w) / l) - w * h / l); }
+float sdHalfEllipse(float2 p, float2 r) { return max((length(p / r) - 1.0) * min(r.x, r.y), -p.y); }
+// yerel koordinattaki isik (q, c), fotografta s kadar kucultulmus yapi icin
+float siteGlow(float2 q, float2 c, float px, float s) { return glowDot(q * s, c * s, px); }
+
+// Maden ocagi: sondaj kulesi, cevher silosu, tasima bandi, isci barinagi (q: tabanin ortasina gore)
+float miningShape(float2 q)
+{
+    float d = 1e5;
+    float2 qa = float2(abs(q.x), q.y);
+    d = min(d, sdSeg(qa, float2(0.009, 0.0), float2(0.0025, 0.050), 0.0011));
+    [unroll] for (int k = 0; k < 4; k++)
+    {
+        float y0 = 0.006 + k * 0.011, y1 = y0 + 0.011;
+        d = min(d, sdSeg(q, float2(-(0.009 - 0.13 * y0), y0), float2(0.009 - 0.13 * y1, y1), 0.0005));
+    }
+    d = min(d, sdBox(q - float2(0.0, 0.0515), float2(0.0042, 0.0018)));
+    d = min(d, sdBox(q - float2(0.0, 0.058), float2(0.0005, 0.005)));
+    d = min(d, sdBox(q - float2(0.0, 0.0035), float2(0.012, 0.0035)) - 0.0008);
+    d = min(d, sdBox(q - float2(0.031, 0.012), float2(0.0085, 0.012)));
+    d = min(d, sdCone(q - float2(0.031, 0.024), 0.0095, 0.007));
+    d = min(d, sdSeg(q, float2(0.010, 0.006), float2(0.024, 0.027), 0.0009));
+    d = min(d, sdBox(q - float2(0.017, 0.0085), float2(0.0005, 0.0085)));
+    d = min(d, sdBox(q - float2(-0.026, 0.0045), float2(0.011, 0.0045)) - 0.0010);
+    d = min(d, sdBox(q - float2(0.002, 0.0006), float2(0.046, 0.0012)));
+    return d;
+}
+
+// Yasam kuleleri: iki silindir kule, aralarinda kopru, anten diregi
+float habitatShape(float2 q)
+{
+    float d = sdSeg(q, float2(0.0, 0.0075), float2(0.0, 0.031), 0.0078);
+    d = min(d, sdSeg(q, float2(0.019, 0.006), float2(0.019, 0.019), 0.0062));
+    d = min(d, sdBox(q - float2(0.0095, 0.0135), float2(0.006, 0.0017)));
+    d = min(d, sdBox(q - float2(-0.017, 0.022), float2(0.0006, 0.022)));
+    d = min(d, sdBox(q - float2(-0.017, 0.036), float2(0.0035, 0.0005)));
+    d = min(d, sdBox(q - float2(-0.017, 0.030), float2(0.0025, 0.0005)));
+    d = min(d, sdBox(q - float2(0.002, 0.0006), float2(0.030, 0.0012)));
+    return d;
+}
+
+float greenhouseVaults(float2 q)
+{
+    float d = 1e5;
+    [unroll] for (int k = -1; k <= 1; k++) d = min(d, sdHalfEllipse(q - float2(k * 0.022, 0.0), float2(0.0098, 0.0075)));
+    return d;
+}
+
+// Sera ciftligi: uc uzun tonoz sera + koridor
+float greenhouseShape(float2 q)
+{
+    float d = greenhouseVaults(q);
+    d = min(d, sdBox(q - float2(0.0, 0.0018), float2(0.030, 0.0018)));
+    d = min(d, sdBox(q - float2(0.0, 0.0006), float2(0.036, 0.0012)));
+    return d;
+}
+
+float mastShape(float2 q)
+{
+    float2 qa = float2(abs(q.x), q.y);
+    float d = sdSeg(q, float2(0.0, 0.0), float2(0.0, 0.050), 0.0009);
+    d = min(d, sdSeg(qa, float2(0.0045, 0.0), float2(0.0, 0.016), 0.0006));
+    d = min(d, max(sdCircle(q - float2(0.0035, 0.032), 0.0045), q.x - 0.0035));
+    return d;
+}
+
+// Inis pisti ve uzerinde duran inis araci
+float landerShape(float2 q)
+{
+    float2 qa = float2(abs(q.x), q.y);
+    float d = sdBox(q - float2(0.0, 0.0008), float2(0.028, 0.0016));
+    d = min(d, sdSeg(q, float2(0.0, 0.011), float2(0.0, 0.019), 0.0055));
+    d = min(d, sdCone(q - float2(0.0, 0.020), 0.0055, 0.009));
+    d = min(d, sdSeg(qa, float2(0.004, 0.010), float2(0.011, 0.0016), 0.0007));
+    d = min(d, sdBox(q - float2(0.0, 0.0045), float2(0.0028, 0.0022)));
+    return d;
+}
+
+// Gokyuzune bakan canak, yandan: sig bir kase (m: agzinin ortasi, w: yari genisligi; agzi sol-yukari bakar)
+static const float2 DISH_UP = float2(-0.45, 0.893);
+float sdDish(float2 q, float2 m, float w)
+{
+    float R = w / 0.66;
+    float2 c = m + DISH_UP * R * 0.75;
+    return max(sdCircle(q - c, R), dot(q - c, DISH_UP) + R * 0.75);
+}
+
+float scopesShape(float2 q)
+{
+    float d = 1e5;
+    [unroll] for (int k = -1; k <= 1; k++)
+    {
+        float2 o = float2(k * 0.016, 0.0);
+        d = min(d, sdBox(q - o - float2(0.0, 0.004), float2(0.0007, 0.004)));
+        d = min(d, sdDish(q - o, float2(0.0, 0.0095), 0.0055));
+    }
+    d = min(d, sdBox(q - float2(0.0, 0.0006), float2(0.024, 0.0012)));
+    return d;
+}
+
+// Yakit tesisi: ayakli tank, alevli baca, kontrol binasi, borular
+float fuelPlantShape(float2 q)
+{
+    float d = sdCircle(q - float2(0.0, 0.014), 0.008);
+    d = min(d, sdSeg(float2(abs(q.x), q.y), float2(0.006, 0.0), float2(0.004, 0.009), 0.0007));
+    d = min(d, sdBox(q - float2(0.016, 0.014), float2(0.0012, 0.014)));
+    d = min(d, sdBox(q - float2(-0.019, 0.004), float2(0.008, 0.004)) - 0.0008);
+    d = min(d, sdSeg(q, float2(-0.011, 0.006), float2(-0.006, 0.011), 0.0006));
+    d = min(d, sdSeg(q, float2(0.007, 0.012), float2(0.015, 0.008), 0.0006));
+    return d;
+}
+
+// Gunes tarlasi: egik panel sirasi + cevirici kulubesi
+float solarFarmShape(float2 q)
+{
+    float d = 1e5;
+    [unroll] for (int k = -2; k <= 2; k++)
+    {
+        float x = k * 0.012;
+        d = min(d, sdSeg(q, float2(x - 0.005, 0.003), float2(x + 0.004, 0.0065), 0.0008));
+        d = min(d, sdBox(q - float2(x, 0.0018), float2(0.0004, 0.0018)));
+    }
+    d = min(d, sdBox(q - float2(0.034, 0.003), float2(0.004, 0.003)));
+    return d;
+}
+
+// Yuk deposu: ust uste konteynerler, vinc, drone pedi
+float cargoDepotShape(float2 q)
+{
+    float d = sdBox(q - float2(-0.012, 0.0035), float2(0.0085, 0.0035));
+    d = min(d, sdBox(q - float2(0.006, 0.0035), float2(0.0085, 0.0035)));
+    d = min(d, sdBox(q - float2(-0.004, 0.0105), float2(0.0085, 0.0035)));
+    d = min(d, sdBox(q - float2(0.024, 0.016), float2(0.0008, 0.016)));
+    d = min(d, sdSeg(q, float2(0.024, 0.031), float2(-0.004, 0.031), 0.0007));
+    d = min(d, sdBox(q - float2(0.002, 0.026), float2(0.0002, 0.005)));
+    d = min(d, sdBox(q - float2(-0.030, 0.0008), float2(0.006, 0.0008)));
+    return d;
+}
+
+// Arac garaji (tonoz) ve onunde park etmis arac
+float garageShape(float2 q)
+{
+    float d = sdHalfEllipse(q, float2(0.020, 0.010));
+    d = min(d, sdBox(q - float2(0.029, 0.0028), float2(0.0055, 0.0016)) - 0.0006);
+    d = min(d, sdCircle(q - float2(0.025, 0.0012), 0.0013));
+    d = min(d, sdCircle(q - float2(0.033, 0.0012), 0.0013));
+    return d;
+}
+
+float bigDishShape(float2 q)
+{
+    float d = sdSeg(float2(abs(q.x), q.y), float2(0.006, 0.0), float2(0.0, 0.012), 0.0008);
+    d = min(d, sdDish(q, float2(0.0, 0.017), 0.011));
+    d = min(d, sdSeg(q, float2(0.0, 0.017), float2(0.0, 0.017) + DISH_UP * 0.010, 0.0005));
+    return d;
+}
+
+// Ana kolonininkiyle ayni duzlemdeki yapilar (siluet + golge bunu kullanir)
+float nearSitesShape(float2 sp, float P)
+{
+    float d = 1e5;
+    if (sp.x > -0.205 && sp.x < 0.14)       d = colonyShape(sp - float2(COLONY_X, 0.0), P);
+    else if (sp.x > 0.15 && sp.x < 0.265)   d = miningShape(sp - float2(MINING_X, P));
+    else if (sp.x > -0.30 && sp.x < -0.205) d = habitatShape(sp - float2(HABITAT_X, P));
+    return d;
+}
+
+float farSitesShape(float2 sp, float H)
+{
+    float y = H + FAR_BASE;
+    float d = 1e5;
+    if (sp.x > 0.30 && sp.x < 0.37)           d = greenhouseShape((sp - float2(GREEN_X, y)) / FAR_SCALE);
+    else if (sp.x > 0.40 && sp.x < 0.43)      d = mastShape((sp - float2(MAST_X, y)) / FAR_SCALE);
+    else if (sp.x > -0.425 && sp.x < -0.375)  d = landerShape((sp - float2(LANDER_X, y)) / FAR_SCALE);
+    else if (sp.x > -0.355 && sp.x < -0.305)  d = scopesShape((sp - float2(SCOPES_X, y)) / FAR_SCALE);
+    return d * FAR_SCALE;
+}
+
+// Ovadaki bir sira (row) yapilarin mesafesi; tabani _Horizon + kRowBase, boyu kRowScale
+float rowSitesShape(int row, float2 sp, float H)
+{
+    float base = H + kRowBase[row];
+    float s = kRowScale[row];
+    float d = 1e5;
+    if (row == 0) d = nearSitesShape(sp, base);
+    else if (row == 1)
+    {
+        if (sp.x > -0.385 && sp.x < -0.305)     d = fuelPlantShape((sp - float2(FUEL_X, base)) / s) * s;
+        else if (sp.x > 0.24 && sp.x < 0.345)   d = solarFarmShape((sp - float2(SOLAR_X, base)) / s) * s;
+    }
+    else
+    {
+        if (sp.x > -0.285 && sp.x < -0.19)      d = cargoDepotShape((sp - float2(CARGO_X, base)) / s) * s;
+        else if (sp.x > 0.335 && sp.x < 0.43)   d = garageShape((sp - float2(GARAGE_X, base)) / s) * s;
+        else if (sp.x > 0.115 && sp.x < 0.165)  d = bigDishShape((sp - float2(DISH_X, base)) / s) * s;
+    }
+    return d;
+}
+
+// Yapilarin isiklari: her koloninin kendi rengi var (ana koloni sicak turuncu). halo: sisin icinde dagilan parlaklik.
+float3 miningLights(float2 q, float t, float sc, inout float3 halo)
+{
+    float3 cool = float3(0.85, 0.92, 1.0);
+    float blink = pow(0.5 + 0.5 * sin(t * 1.7 + 0.8), 8.0);
+    float3 L = float3(1.0, 0.30, 0.25) * glowDot(q, float2(0.0, 0.063), 1.6 * sc) * blink;
+    L += cool * glowDot(q, float2(-0.004, 0.010), 1.3 * sc);
+    [unroll] for (int k = 0; k < 4; k++)
+    {
+        float f = frac(t * 0.25 + k * 0.25);
+        L += float3(1.0, 0.70, 0.40) * glowDot(q, lerp(float2(0.010, 0.0072), float2(0.024, 0.0282), f), 0.8 * sc) * 0.7 * sin(3.14159 * f);
+    }
+    L += float3(1.0, 0.82, 0.60) * (glowDot(q, float2(-0.031, 0.005), 1.0 * sc) + glowDot(q, float2(-0.021, 0.005), 1.0 * sc));
+    L += float3(1.0, 0.65, 0.30) * glowDot(q, float2(0.031, 0.008), 0.9 * sc) * 0.6;
+    halo += cool * glowDot(q, float2(-0.004, 0.010), 8.0 * sc) * 0.6;
+    halo += float3(1.0, 0.3, 0.25) * glowDot(q, float2(0.0, 0.063), 6.0 * sc) * blink * 0.3;
+    return L;
+}
+
+float3 habitatLights(float2 q, float t, float sc, float onePx, inout float3 halo)
+{
+    float3 cool = float3(0.72, 0.86, 1.0);
+    float3 L = 0.0;
+    [unroll] for (int r = 0; r < 3; r++)
+    {
+        float y = 0.013 + r * 0.007;
+        L += cool * glowDot(q, float2(-0.0035, y), 0.9 * sc) * step(0.3, hash11(r * 2.0 + 5.0));
+        L += cool * glowDot(q, float2(0.0035, y), 0.9 * sc) * step(0.3, hash11(r * 2.0 + 6.0));
+    }
+    L += cool * (glowDot(q, float2(0.019, 0.011), 0.9 * sc) + glowDot(q, float2(0.019, 0.017), 0.9 * sc));
+    L += cool * (1.0 - smoothstep(-onePx, onePx, sdBox(q - float2(0.0095, 0.0135), float2(0.005, 0.0005)))) * 0.8;
+    L += float3(0.9, 0.95, 1.0) * glowDot(q, float2(-0.017, 0.0445), 1.5 * sc) * pow(0.5 + 0.5 * sin(t * 1.4 + 2.0), 10.0);
+    halo += cool * glowDot(q, float2(0.004, 0.020), 9.0 * sc) * 0.6;
+    return L;
+}
+
+float3 farSitesLights(float2 sp, float H, float t, float sc, inout float3 halo)
+{
+    float s = FAR_SCALE;
+    float y = H + FAR_BASE;
+    float3 L = 0.0;
+    if (sp.x > 0.28 && sp.x < 0.39)
+    {
+        // sera: bitki buyutme isiklari (pembe-mor)
+        float2 q = (sp - float2(GREEN_X, y)) / s;
+        float3 pink = float3(1.0, 0.45, 0.80);
+        [unroll] for (int k = -1; k <= 1; k++)
+        {
+            L += pink * siteGlow(q, float2(k * 0.022, 0.003), 1.1 * sc, s) * 0.8;
+            halo += pink * siteGlow(q, float2(k * 0.022, 0.003), 7.0 * sc, s) * 0.45;
+        }
+    }
+    else if (sp.x > 0.39 && sp.x < 0.44)
+    {
+        float2 q = (sp - float2(MAST_X, y)) / s;
+        L += float3(1.0, 0.30, 0.25) * siteGlow(q, float2(0.0, 0.051), 1.4 * sc, s) * pow(0.5 + 0.5 * sin(t * 2.6 + 4.0), 8.0);
+    }
+    else if (sp.x > -0.44 && sp.x < -0.36)
+    {
+        // pist kenari isiklari sirayla yanar (yesil)
+        float2 q = (sp - float2(LANDER_X, y)) / s;
+        float3 green = float3(0.45, 1.0, 0.60);
+        [unroll] for (int k = 0; k < 5; k++)
+        {
+            float on = smoothstep(0.8, 1.0, 0.5 + 0.5 * sin(t * 2.0 - k * 0.9));
+            L += green * siteGlow(q, float2(-0.026 + k * 0.013, 0.0018), 1.0 * sc, s) * (0.3 + 0.7 * on);
+        }
+        L += float3(1.0, 0.9, 0.75) * siteGlow(q, float2(0.0, 0.016), 0.9 * sc, s);
+        halo += green * siteGlow(q, float2(0.0, 0.002), 7.0 * sc, s) * 0.3;
+    }
+    if (sp.x > -0.36 && sp.x < -0.30)
+    {
+        float2 q = (sp - float2(SCOPES_X, y)) / s;
+        L += float3(1.0, 0.30, 0.25) * siteGlow(q, float2(0.0, 0.009), 1.0 * sc, s) * pow(0.5 + 0.5 * sin(t * 1.6 + 1.0), 8.0);
+    }
+    return L * 0.8;
+}
+
+// Orta ve on siradaki yapilarin isiklari
+float3 rowSitesLights(float2 sp, float H, float t, float sc, inout float3 halo)
+{
+    float3 L = 0.0;
+    float3 warm = float3(1.0, 0.78, 0.52);
+    float3 red = float3(1.0, 0.30, 0.25);
+    if (sp.x > -0.39 && sp.x < -0.30)
+    {
+        // yakit tesisi: bacadaki alev titrer
+        float s = kRowScale[1];
+        float2 q = (sp - float2(FUEL_X, H + kRowBase[1])) / s;
+        float flick = 0.75 + 0.25 * sin(t * 13.0) * sin(t * 7.3 + 1.0);
+        float3 flame = float3(1.0, 0.55, 0.20);
+        L += flame * siteGlow(q, float2(0.016, 0.0295), 1.5 * sc, s) * flick;
+        halo += flame * siteGlow(q, float2(0.016, 0.030), 7.0 * sc, s) * 0.5 * flick;
+        L += warm * (siteGlow(q, float2(-0.022, 0.005), 0.9 * sc, s) + siteGlow(q, float2(-0.016, 0.005), 0.9 * sc, s));
+        L += warm * siteGlow(q, float2(0.0, 0.010), 0.8 * sc, s) * 0.5;
+    }
+    else if (sp.x > 0.24 && sp.x < 0.35)
+    {
+        float s = kRowScale[1];
+        float2 q = (sp - float2(SOLAR_X, H + kRowBase[1])) / s;
+        L += float3(0.6, 1.0, 0.7) * siteGlow(q, float2(0.034, 0.004), 0.8 * sc, s) * (0.6 + 0.4 * step(0.5, frac(t * 0.7)));
+    }
+    if (sp.x > -0.29 && sp.x < -0.18)
+    {
+        // yuk deposu: pedin kenar isiklari (amber), vinc tepesi, konteyner lambalari
+        float s = kRowScale[2];
+        float2 q = (sp - float2(CARGO_X, H + kRowBase[2])) / s;
+        float3 amber = float3(1.0, 0.65, 0.25);
+        float pulse = 0.4 + 0.6 * pow(0.5 + 0.5 * sin(t * 2.4), 4.0);
+        L += amber * (siteGlow(q, float2(-0.0355, 0.0018), 0.9 * sc, s) + siteGlow(q, float2(-0.0245, 0.0018), 0.9 * sc, s)) * pulse;
+        L += red * siteGlow(q, float2(0.024, 0.0325), 1.3 * sc, s) * pow(0.5 + 0.5 * sin(t * 1.9 + 0.5), 8.0);
+        L += warm * (siteGlow(q, float2(-0.012, 0.0055), 0.8 * sc, s) + siteGlow(q, float2(0.006, 0.0055), 0.8 * sc, s)) * 0.7;
+        halo += amber * siteGlow(q, float2(-0.030, 0.002), 7.0 * sc, s) * 0.35 * pulse;
+    }
+    else if (sp.x > 0.33 && sp.x < 0.44)
+    {
+        // garaj: acik kapidan isik, aracin farlari
+        float s = kRowScale[2];
+        float2 q = (sp - float2(GARAGE_X, H + kRowBase[2])) / s;
+        float door = 1.0 - smoothstep(-0.0006, 0.0006, sdBox(q - float2(0.006, 0.0032), float2(0.0035, 0.0032)));
+        L += warm * door * 0.22;
+        L += float3(0.9, 0.95, 1.0) * siteGlow(q, float2(0.0348, 0.0030), 1.1 * sc, s);
+        halo += warm * siteGlow(q, float2(0.006, 0.003), 8.0 * sc, s) * 0.35;
+        halo += float3(0.9, 0.95, 1.0) * siteGlow(q, float2(0.038, 0.0028), 6.0 * sc, s) * 0.3;
+    }
+    else if (sp.x > 0.11 && sp.x < 0.17)
+    {
+        float s = kRowScale[2];
+        float2 q = (sp - float2(DISH_X, H + kRowBase[2])) / s;
+        L += red * siteGlow(q, float2(0.0, 0.017) + DISH_UP * 0.0105, 1.2 * sc, s) * pow(0.5 + 0.5 * sin(t * 1.2 + 3.0), 10.0);
+    }
+    return L;
+}
+
+// ---- Yuk tasiyan dronelar ----
+// Duraklar arasinda rastgele sirayla gider: kalkar, yay cizerek ucar, iner. x, y (_Horizon'a gore), boy.
+#define DRONE_STOPS 12
+#define DRONE_COUNT 5
+static const float3 kDroneStops[DRONE_STOPS] =
+{
+    float3(-0.152, -0.026, 1.0),   // ana koloni: su tesisi
+    float3(-0.080, -0.028, 1.0),   // ana koloni: kubbeler
+    float3( 0.050, -0.040, 1.0),   // ana koloni: rampa
+    float3( 0.236, -0.014, 1.0),   // maden silosu
+    float3(-0.262, -0.006, 1.0),   // yasam kulesi
+    float3( 0.335, -0.0295, 0.6),  // sera
+    float3(-0.389, -0.0335, 0.6),  // inis pisti
+    float3(-0.345, -0.0276, 1.2),  // yakit tanki
+    float3( 0.331, -0.0468, 1.2),  // gunes tarlasi kulubesi
+    float3(-0.271, -0.0618, 1.4),  // yuk deposu pedi
+    float3(-0.241, -0.0444, 1.4),  // konteyner ustu
+    float3( 0.370, -0.0500, 1.4)   // garaj catisi
+};
+
+float droneRawStop(float n, float seed) { return floor(hash11(n * 3.17 + seed * 41.3) * DRONE_STOPS); }
+float droneStop(float n, float seed)
+{
+    float a = droneRawStop(n, seed);
+    if (a == droneRawStop(n - 1.0, seed)) a = fmod(a + 1.0, DRONE_STOPS);
+    return a;
+}
+
+// Dronun konumu (xy) ve boyu (z)
+float3 dronePose(float t, float seed, float legTime, float H)
+{
+    float tt = t / legTime + seed * 0.37;
+    float n = floor(tt), u = frac(tt);
+    float3 a = kDroneStops[(int)droneStop(n, seed)];
+    float3 b = kDroneStops[(int)droneStop(n + 1.0, seed)];
+    float e = smoothstep(0.12, 0.88, u);
+    float lift = 0.008 * smoothstep(0.0, 0.12, u) * (1.0 - smoothstep(0.88, 1.0, u));
+    float arc = 0.035 * abs(b.x - a.x) * sin(3.14159 * e);
+    float bob = 0.0005 * sin(t * 2.3 + seed * 5.0) * smoothstep(0.0, 0.05, lift);
+    float2 pos = lerp(a.xy, b.xy, e) + float2(0.0, H + lift + arc + bob);
+    return float3(pos, lerp(a.z, b.z, e));
+}
+
+// Siluet col'a cizilir, isiklar lights'a eklenir (sisin icinden parlasin diye en son)
+void drawDrone(float2 sp, float t, float seed, float legTime, float H, float sc, float pixel, inout float3 col, inout float3 lights)
+{
+    float3 pose = dronePose(t, seed, legTime, H);
+    float2 p = sp - pose.xy;
+    if (dot(p, p) > 0.0004) return;
+    float k = pose.z;
+    float d = sdBox(p, float2(0.0030, 0.0007) * k);
+    d = min(d, sdBox(p - float2(0.0, -0.0026) * k, float2(0.0012, 0.0011) * k));
+    d = min(d, sdBox(p - float2(0.0, -0.0012) * k, float2(0.0002, 0.0008) * k));
+    col = lerp(col, float3(0.05, 0.04, 0.05), (1.0 - smoothstep(-pixel, pixel, d)) * 0.9);
+
+    // isiklar nokta gibidir: fotograf kuculunce silueti kadar kuculmez, uzakta da fark edilsin
+    float g = k * sc / sqrt(max(_Picture.x, 0.2));
+    float ph = frac(t * 0.8 + seed * 0.61);
+    float strobe = exp(-pow((ph - 0.05) / 0.02, 2.0)) + exp(-pow((ph - 0.17) / 0.02, 2.0));
+    lights += float3(1.0, 0.25, 0.20) * glowDot(sp, pose.xy + float2(-0.0034, 0.0002) * k, 1.4 * g);
+    lights += float3(0.30, 1.0, 0.45) * glowDot(sp, pose.xy + float2(0.0034, 0.0002) * k, 1.4 * g);
+    lights += float3(1.0, 1.0, 1.0) * glowDot(sp, pose.xy + float2(0.0, 0.0009) * k, 1.8 * g) * strobe * 1.5;
+    lights += float3(1.0, 0.95, 0.9) * glowDot(sp, pose.xy + float2(0.0, 0.0009) * k, 7.0 * g) * strobe * 0.25;
+    lights += float3(1.0, 0.75, 0.45) * glowDot(sp, pose.xy - float2(0.0, 0.0045) * k, 5.0 * g) * 0.12;
+}
+
 
 // Sahne tek bir fotograf gibi davranir: arayuz (klavye, ipucu) alani daraltinca kamera yerinden oynamaz, yalnizca
 // gorus acisi genisler; bu, fotografi kucultup kaydirmakla ayni seydir (Oyun.FitCamera). Arka plan da ayni fotografin
@@ -194,9 +620,14 @@ float3 MarsBackdrop(float2 suv)
     float farH  = _Horizon - 0.018 + mesa * 0.042 + ridge(x * 9.0, 5.0) * 0.006;
     float midH  = _Horizon - 0.034 + ridge(x * 3.2, 11.0) * 0.040;
     float P = _Horizon - 0.047;   // koloni platformu
-    float2 cs = sp - float2(0.045, 0.0);   // koloni biraz ortaya
+    float2 cs = sp - float2(COLONY_X, 0.0);   // koloni biraz ortaya
+    // yakin yapilarin altinda tepe duzlesir; uzak yapilarin onunde alcalir ki gorunsunler
     float pad = smoothstep(-0.25, -0.21, cs.x) * (1.0 - smoothstep(0.045, 0.08, cs.x));
+    pad = max(pad, bandMask(x, MINING_X - 0.047, MINING_X + 0.049, 0.02));
+    pad = max(pad, bandMask(x, HABITAT_X - 0.032, HABITAT_X + 0.034, 0.015));
     float nearH = lerp(_Horizon - 0.054 + ridge(x * 4.4, 23.0) * 0.026, P, pad);
+    float valley = max(bandMask(x, GREEN_X - 0.03, GREEN_X + 0.03, 0.02), max(bandMask(x, MAST_X - 0.01, MAST_X + 0.01, 0.015), bandMask(x, LANDER_X - 0.025, LANDER_X + 0.025, 0.02)));
+    nearH = lerp(nearH, min(nearH, _Horizon - 0.046), valley);
 
     float3 farC  = float3(0.19, 0.13, 0.165) + warm * exp(-dSun * 6.0) * 0.16;
     float3 midC  = float3(0.13, 0.095, 0.125) + warm * exp(-dSun * 7.0) * 0.07;
@@ -210,6 +641,26 @@ float3 MarsBackdrop(float2 suv)
     float rimMid = smoothstep(midH - 2.0 * onePx, midH, uv.y) * (0.03 + 0.35 * exp(-dSun * 6.0));
     col = lerp(col, midC + warm * rimMid, mMid);
 
+    // Uzak yapilar: orta tepelerin onunde, kucuk ve puslu
+    float3 siteLights = 0.0;
+    float3 siteHalo = 0.0;
+    float sc = _ScreenParams.y / 1170.0;
+    if (abs(x) > 0.28 && uv.y > _Horizon + FAR_BASE - 0.005 && uv.y < _Horizon + FAR_BASE + 0.04)
+    {
+        float farD = farSitesShape(sp, _Horizon);
+        float fm = 1.0 - smoothstep(-pixel, pixel, farD);
+        float fAbove = 1.0 - smoothstep(-pixel, pixel, farSitesShape(sp + float2(0.0, 1.5 * onePx), _Horizon));
+        col = lerp(col, float3(0.080, 0.060, 0.080), fm);
+        col += warm * fm * (1.0 - fAbove) * (exp(-dSun * 4.0) + 0.35) * 0.45;
+        // sera tonozlari icten pembe isikla aydinlanir
+        if (x > 0.30 && x < 0.37)
+        {
+            float vm = 1.0 - smoothstep(-pixel, pixel, greenhouseVaults((sp - float2(GREEN_X, _Horizon + FAR_BASE)) / FAR_SCALE) * FAR_SCALE);
+            col = lerp(col, float3(0.38, 0.15, 0.31), vm * 0.8);
+        }
+    }
+    siteLights += farSitesLights(sp, _Horizon, t, sc, siteHalo);
+
     float mNear = 1.0 - smoothstep(nearH - pixel, nearH + pixel, uv.y);
     float rimNear = smoothstep(nearH - 2.0 * onePx, nearH, uv.y) * (0.03 + 0.30 * exp(-dSun * 6.0));
 
@@ -221,36 +672,52 @@ float3 MarsBackdrop(float2 suv)
     float pd = length(float2((x - sunPos.x) * 0.9, (nearH - uv.y) * 2.2));
     float pdSoft = length(float2((x - sunPos.x) * 0.7, (nearH - uv.y) * 1.6));
     float3 sunOnGround = (float3(0.30, 0.14, 0.07) * exp(-pd * 5.0) * 0.6 + float3(0.18, 0.09, 0.055) * exp(-pdSoft * 2.0) * 0.55) * breath;
-    // koloninin bize dogru uzanan golgesi (gunes arkadan vurdugu icin)
+    // yapilarin bize dogru uzanan golgesi (gunes arkadan vurdugu icin)
     float shadow = 0.0;
-    if (cs.x > -0.30 && cs.x < 0.12 && uv.y < P && uv.y > P - 0.05)
+    [unroll] for (int r = 0; r < SITE_ROWS; r++)
     {
-        float depth = P - uv.y;
-        float2 q = float2(cs.x + (cs.x - (sunPos.x - 0.045)) * depth * 6.0, P + depth * 3.5);
-        // yumusak, bulanik gölge (yansima gibi keskin olmasin)
-        float blur = 0.002 + depth * 0.35;
-        float sm = 1.0 - smoothstep(-blur, blur, colonyShape(q, P));
-        shadow = sm * exp(-depth * 70.0) * 0.8;
+        float base = _Horizon + kRowBase[r];
+        if (abs(x) < 0.45 && uv.y < base && uv.y > base - 0.05)
+        {
+            float depth = base - uv.y;
+            float2 q = float2(x + (x - sunPos.x) * depth * 6.0, base + depth * 3.5);
+            // yumusak, bulanik gölge (yansima gibi keskin olmasin)
+            float blur = 0.002 + depth * 0.35;
+            float sm = 1.0 - smoothstep(-blur, blur, rowSitesShape(r, q, _Horizon));
+            shadow = max(shadow, sm * exp(-depth * 70.0 / kRowScale[r]) * 0.8);
+        }
     }
     plain += sunOnGround * (1.0 - 0.85 * shadow);
     plain *= 1.0 - 0.35 * shadow;
-    col = lerp(col, lerp(nearC + warm * rimNear, plain, smoothstep(0.0, 0.006, plainT)), mNear);
+    col = lerp(col, lerp(nearC + warm * rimNear, plain, smoothstep(0.0, 0.03, plainT)), mNear);
 
-    // Koloni
+    // Koloni ve yakindaki yapilar (siluet)
     float3 cLights = 0.0;
     float halo = 0.0;
-    if (cs.x > -0.26 && cs.x < 0.08 && uv.y > P - 0.01 && uv.y < P + 0.08)
+    bool nearBand = uv.y > P - 0.01 && uv.y < P + 0.08;
+    float frontMask = 0.0;   // orta/on siradaki yapilar: toz pusu onlari daha az orter (bize daha yakinlar)
+    [unroll] for (int row = 0; row < SITE_ROWS; row++)
     {
-        float cm = 1.0 - smoothstep(-pixel, pixel, colonyShape(cs, P));
-        // isik sadece ust kenarlara vurur (arkadan, alcaktan gelen gunes)
-        float above = 1.0 - smoothstep(-pixel, pixel, colonyShape(cs + float2(0.0, 2.0 * onePx), P));
-        float rim = cm * (1.0 - above) * exp(-dSun * 4.0);
-        col = lerp(col, float3(0.06, 0.048, 0.062), cm);
-        col += warm * rim * 0.45;
+        float base = _Horizon + kRowBase[row];
+        if (abs(x) < 0.45 && uv.y > base - 0.01 && uv.y < base + 0.08)
+        {
+            float cm = 1.0 - smoothstep(-pixel, pixel, rowSitesShape(row, sp, _Horizon));
+            // isik sadece ust kenarlara vurur (arkadan, alcaktan gelen gunes)
+            float above = 1.0 - smoothstep(-pixel, pixel, rowSitesShape(row, sp + float2(0.0, 2.0 * onePx), _Horizon));
+            bool mainColony = row == 0 && cs.x > -0.26 && cs.x < 0.08;
+            float rim = cm * (1.0 - above) * (exp(-dSun * 4.0) + (mainColony ? 0.0 : 0.35));
+            col = lerp(col, kRowColor[row], cm);
+            if (row > 0) frontMask = max(frontMask, cm);
+            col += warm * rim * 0.45;
+        }
+    }
+    if (abs(x) > 0.10 && uv.y > _Horizon - 0.075 && uv.y < _Horizon - 0.01) siteLights += rowSitesLights(sp, _Horizon, t, sc, siteHalo);
+    if (x > 0.14 && x < 0.28 && nearBand) siteLights += miningLights(sp - float2(MINING_X, P), t, sc, siteHalo);
+    if (x > -0.31 && x < -0.20 && nearBand) siteLights += habitatLights(sp - float2(HABITAT_X, P), t, sc, onePx, siteHalo);
 
-
-        // isiklar
-        float sc = _ScreenParams.y / 1170.0;
+    // Ana koloninin isiklari
+    if (cs.x > -0.26 && cs.x < 0.08 && nearBand)
+    {
         float lights = 0.0;
         [unroll] for (int k = -2; k <= 2; k++) lights += glowDot(cs, float2(-0.125 + k * 0.0055, P + 0.0045), 1.2 * sc) * step(0.2, hash11(k + 3.0));
         lights += glowDot(cs, float2(-0.095, P + 0.004), 1.1 * sc) + glowDot(cs, float2(-0.089, P + 0.004), 1.1 * sc);
@@ -286,8 +753,12 @@ float3 MarsBackdrop(float2 suv)
         cLights += float3(0.9, 0.95, 1.0) * glowDot(cs, float2(-0.016, P + 0.0395), 1.6 * sc) * blinkW;
     }
 
+    // Koloniler arasinda yuk tasiyan dronelar
+    [unroll] for (int dr = 0; dr < DRONE_COUNT; dr++)
+        drawDrone(sp, t, dr + 1.0, 11.0 + fmod(dr * 3.7, 6.0), _Horizon, sc, pixel, col, siteLights);
+
     // ufuk hizasinda alcak sis (gunese yakin daha sicak)
-    col += lerp(float3(0.12, 0.08, 0.09), float3(0.30, 0.15, 0.08), exp(-dSun * 4.0)) * exp(-abs(uv.y - nearH) * 70.0) * 0.28;
+    col += lerp(float3(0.12, 0.08, 0.09), float3(0.30, 0.15, 0.08), exp(-dSun * 4.0)) * exp(-abs(uv.y - nearH) * 45.0) * 0.30;
 
     // Hafif kum firtinasi: tepelerin ve koloninin ustunden yavasca suzulen dagnik toz
     float hb = (uv.y - (_Horizon - 0.03)) / 0.06;
@@ -295,13 +766,15 @@ float3 MarsBackdrop(float2 suv)
     float2 hp = float2(x * 5.0 - t * 0.035, uv.y * 20.0);
     float warp = fbm(hp * 0.6 + float2(t * 0.015, 3.0));
     float wisps = smoothstep(0.35, 0.80, fbm(hp + float2(warp * 1.6, warp * 0.4)));
-    float haze = hazeBand * (0.15 + 0.85 * wisps) * 0.6;
+    float haze = hazeBand * (0.15 + 0.85 * wisps) * 0.6 * (1.0 - 0.6 * frontMask);
     float3 hazeCol = lerp(float3(0.27, 0.18, 0.18), float3(0.56, 0.31, 0.18), exp(-dSun * 3.0));
     col = lerp(col, hazeCol, haze);
     // koloni isiklari sisin icinden parlar, etraflarinda hafif hale olusur
     col += cLights * 1.3;
     col += float3(1.0, 0.66, 0.38) * halo * (0.10 + 0.35 * haze);
-    return col;
+    col += siteLights * 1.6;
+    col += siteHalo * (0.16 + 0.35 * haze);
+    return col * MARS_EXPOSURE;
 }
 
 float MarsVignette(float2 uv)
@@ -320,7 +793,7 @@ float3 MarsDustHaze(float3 col, float3 posWS, float2 area)
     if (posWS.z < 0.0) o.y *= 0.4;
     float dist = length(o * float2(0.8, 1.0));
     float haze = smoothstep(0.4, 7.0, dist) * 0.8;
-    float3 plainCol = SRGBToLinear(float3(0.176, 0.110, 0.106)); // ufuk dibindeki ovanin rengi (ekrandan olculdu)
+    float3 plainCol = SRGBToLinear(float3(0.176, 0.110, 0.106) * MARS_EXPOSURE); // ufuk dibindeki ovanin rengi (ekrandan olculdu)
     return lerp(col, plainCol, haze);
 }
 

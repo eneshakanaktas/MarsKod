@@ -1,0 +1,46 @@
+{
+  "numara": 7,
+  "baslik": "Tarayıcı",
+  "gorev": "2 buz topla",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . B . . .",
+    "R B . . . ."
+  ],
+  "komutlar": ["move", "collect", "ice_here"],
+  "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "if ice_here():"],
+  "python_kelimeleri": ["if"],
+  "konular": ["if koşulu", "ice_here", "girinti"],
+  "ipuclari": [
+    "Robot bir karede durup önce bakabilir: `ice_here()` \"burada buz var mı?\" diye sorar. İki buz var; ikisinin üstünde de aynı şeyi yap.",
+    "`if ice_here():` altındaki girintili satırlar yalnızca cevap Doğru (True) ise çalışır. Satırın sonundaki iki nokta ve alttaki girinti şart.",
+    "İkinci buz bir kare yukarıda ve bir kare sağda: `move(North)`, `move(East)`, sonra aynı `if` kalıbını bir kez daha yaz."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["move(East)", "if ice_here():", "collect()"],
+      "aciklama": "if satırının altındaki collect() girintisiz; Python \"if'in içi nerede?\" diye şaşırır. Altındaki satırı 4 boşluk içeri al."
+    },
+    {
+      "kod": ["move(East)", "if ice_here():", "    collect()", "move(East)", "if ice_here():", "    collect()"],
+      "aciklama": "İkinci buz doğuda değil, bir kare yukarıda: önce move(North), sonra move(East)."
+    },
+    {
+      "kod": ["if ice_here():", "    collect()", "move(East)"],
+      "aciklama": "if ilk karede baktı; orada buz yok. Sonra yürüdü ama bir daha bakmadı."
+    }
+  ],
+  "baslangic_kodu": ["move(East)", "if ice_here():", "    collect()"],
+  "cozum": [
+    "move(East)",
+    "if ice_here():",
+    "    collect()",
+    "move(North)",
+    "move(East)",
+    "if ice_here():",
+    "    collect()"
+  ]
+}

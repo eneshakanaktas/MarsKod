@@ -1,0 +1,46 @@
+{
+  "numara": 6,
+  "baslik": "Merdiven",
+  "gorev": "5 buz topla",
+  "harita": [
+    ". . . . . B",
+    ". . . . B .",
+    ". . . B . .",
+    ". . B . . .",
+    ". B . . . .",
+    "R K . . . ."
+  ],
+  "komutlar": ["move", "collect"],
+  "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "for i in range(3):"],
+  "konular": ["for döngüsü", "döngüde birden çok komut", "komut sırası"],
+  "ipuclari": [
+    "Buzlar bir merdiven gibi: her buz bir kare yukarıda ve bir kare sağda. Aynı iki adımı tekrar tekrar atacaksın.",
+    "Döngünün içine birden fazla komut yazabilirsin; her turda hepsi sırayla çalışır. Robotun hemen sağında kaya var, o yüzden önce kuzeye çık.",
+    "`for i in range(5):` altına girintili üç satır yaz: `move(North)`, `move(East)` ve `collect()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(5):", "    move(East)", "    move(North)", "    collect()"],
+      "aciklama": "Robotun sağında kaya var; önce doğuya gidince kayaya çarpar. Önce kuzey, sonra doğu."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(North)", "    move(East)"],
+      "aciklama": "Robot merdiveni tırmanıyor ama hiç collect() yok; buzlar yerinde kalır."
+    },
+    {
+      "kod": ["for i in range(4):", "    move(North)", "    move(East)", "    collect()"],
+      "aciklama": "Beş buz var; range(4) dördünü toplar, sonuncusu kalır."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(North)", "    move(East)", "collect()"],
+      "aciklama": "collect() döngünün dışında kaldı: robot beş basamak çıkar ama yalnızca en sonda bir kez toplar."
+    }
+  ],
+  "baslangic_kodu": ["for i in range(5):", "    move(North)"],
+  "cozum": [
+    "for i in range(5):",
+    "    move(North)",
+    "    move(East)",
+    "    collect()"
+  ]
+}

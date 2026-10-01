@@ -3,7 +3,7 @@
 // Biçim ve örnek: docs/tasarim/bolum-dosyasi.md
 //
 // Harita "resim gibi" yazılır: her satır bir sıra, en üstteki satır kuzey (alanın arkası).
-//   R robot   B buz   K kaya   H hedef kare   . boş     (aradaki boşluklar önemsizdir)
+//   R robot   B buz   K kaya   T tehlikeli kristal   H hedef kare   . boş     (aradaki boşluklar önemsizdir)
 
 using System;
 using System.Collections.Generic;
@@ -31,6 +31,8 @@ namespace MarsKod.Dunya
         public Cell Robot;
         public List<Cell> Ices = new List<Cell>();
         public List<Cell> Rocks = new List<Cell>();
+        /// <summary>Tehlikeli kırmızı kristaller (üstünden geçilir, toplanmaz)</summary>
+        public List<Cell> Crystals = new List<Cell>();
         public Cell? Target;
         /// <summary>Bu bölümde açık oyun komutları (move, collect...)</summary>
         public List<string> Commands = new List<string>();
@@ -47,9 +49,9 @@ namespace MarsKod.Dunya
         public string StartCode = "";
         public string Solution;
 
-        public World CreateWorld() => new World(Cols, Rows, Robot, Ices, Rocks, Target, Commands);
+        public World CreateWorld() => new World(Cols, Rows, Robot, Ices, Rocks, Target, Commands, Crystals);
 
-        public const char RobotMark = 'R', IceMark = 'B', RockMark = 'K', TargetMark = 'H', EmptyMark = '.';
+        public const char RobotMark = 'R', IceMark = 'B', RockMark = 'K', CrystalMark = 'T', TargetMark = 'H', EmptyMark = '.';
 
         // ---- dosyadan okuma ----
 
@@ -126,6 +128,7 @@ namespace MarsKod.Dunya
                             break;
                         case IceMark: level.Ices.Add(cell); break;
                         case RockMark: level.Rocks.Add(cell); break;
+                        case CrystalMark: level.Crystals.Add(cell); break;
                         case TargetMark:
                             if (level.Target != null) throw new DataFormatError("Haritada birden fazla hedef (" + TargetMark + ") var; en fazla bir hedef olabilir.");
                             level.Target = cell;
@@ -133,7 +136,7 @@ namespace MarsKod.Dunya
                         case EmptyMark: break;
                         default:
                             throw new DataFormatError("Haritanın " + (i + 1) + ". satırında bilinmeyen işaret: '" + lines[i][col] + "'. Kullanılabilenler: "
-                                + RobotMark + " robot, " + IceMark + " buz, " + RockMark + " kaya, " + TargetMark + " hedef, " + EmptyMark + " boş.");
+                                + RobotMark + " robot, " + IceMark + " buz, " + RockMark + " kaya, " + CrystalMark + " kristal, " + TargetMark + " hedef, " + EmptyMark + " boş.");
                     }
                 }
             }

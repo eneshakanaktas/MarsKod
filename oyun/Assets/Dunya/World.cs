@@ -73,6 +73,19 @@ namespace MarsKod.Dunya
         public int Total;
     }
 
+    /// <summary>Robot ice_here() ile bulunduğu kareye baktı (taramayı sahne gösterir).</summary>
+    public sealed class Scanned : WorldEvent
+    {
+        public Cell At;
+        public bool Found;
+    }
+
+    /// <summary>Robot tehlikeli kristali toplamaya çalıştı; kural gereği durur.</summary>
+    public sealed class Rejected : WorldEvent
+    {
+        public Cell At;
+    }
+
     /// <summary>
     /// Oyun kuralı yüzünden durma (Python hatası değil): örn. robot alanın dışına çıkmak istedi.
     /// Oyuncunun kodu bunu yakalayamaz; çalıştırma olduğu yerde biter.
@@ -98,6 +111,8 @@ namespace MarsKod.Dunya
         readonly List<Cell> ices;
         readonly bool[] taken;
         readonly HashSet<Cell> rocks;
+        /// <summary>Tehlikeli kristaller: üstünden geçilir ama toplanamaz</summary>
+        readonly HashSet<Cell> crystals;
         /// <summary>Bu bölümde açık olan komutlar; null ise hepsi açık</summary>
         readonly HashSet<string> allowed;
 
@@ -112,10 +127,10 @@ namespace MarsKod.Dunya
         public bool Complete => IceLeft == 0 && OnTarget;
 
         /// <summary>Oyunda olan tüm komutlar (bölüm dosyasındaki "komutlar" bunlardan seçilir)</summary>
-        public static readonly string[] AllCommands = { "move", "collect" };
+        public static readonly string[] AllCommands = { "move", "collect", "ice_here" };
 
         public World(int cols, int rows, Cell robot, IEnumerable<Cell> iceCells,
-            IEnumerable<Cell> rockCells = null, Cell? target = null, IEnumerable<string> commands = null)
+            IEnumerable<Cell> rockCells = null, Cell? target = null, IEnumerable<string> commands = null, IEnumerable<Cell> crystalCells = null)
         {
             Cols = cols;
             Rows = rows;
@@ -123,6 +138,7 @@ namespace MarsKod.Dunya
             ices = new List<Cell>(iceCells);
             taken = new bool[ices.Count];
             rocks = new HashSet<Cell>(rockCells ?? Array.Empty<Cell>());
+            crystals = new HashSet<Cell>(crystalCells ?? Array.Empty<Cell>());
             Target = target;
             allowed = commands == null ? null : new HashSet<string>(commands);
         }
@@ -130,6 +146,8 @@ namespace MarsKod.Dunya
         public bool Inside(Cell c) => c.Col >= 0 && c.Col < Cols && c.Row >= 0 && c.Row < Rows;
 
         public bool RockAt(Cell c) => rocks.Contains(c);
+
+        public bool CrystalAt(Cell c) => crystals.Contains(c);
 
         /// <summary>Bu karede henüz toplanmamış buzun sırası; yoksa -1</summary>
         public int IceAt(Cell c)
@@ -161,6 +179,12 @@ namespace MarsKod.Dunya
         /// <summary>Bulunduğu karedeki buzu toplar. Buz varsa True döner.</summary>
         public bool Collect()
         {
+            if (CrystalAt(Robot))
+            {
+                Events.Add(new Rejected { At = Robot });
+                throw new GameRuleStop("Tehlikeli kristal",
+                    "Kırmızı kristal toplanmaz, robot bu yüzden durdu. Bu bir oyun kuralı, Python hatası değil: kristalin üstünden geçebilirsin ama collect() onu toplamaya çalışır. Önce ice_here() ile bak: buz varsa topla.");
+            }
             int i = IceAt(Robot);
             if (i >= 0)
             {
@@ -171,9 +195,17 @@ namespace MarsKod.Dunya
             return i >= 0;
         }
 
+        /// <summary>Bulunduğu karede toplanmamış buz var mı? Toplamaz, yalnızca bakar.</summary>
+        public bool IceHere()
+        {
+            bool found = IceAt(Robot) >= 0;
+            Events.Add(new Scanned { At = Robot, Found = found });
+            return found;
+        }
+
         // --- oyuncunun kullandığı komutlar ---
 
-        /// <summary>Motora dışarıdan verilen isimler: move, collect ve yönler (North, East, South, West).</summary>
+        /// <summary>Motora dışarıdan verilen isimler: move, collect, ice_here ve yönler (North, East, South, West).</summary>
         public Dictionary<string, object> Commands()
         {
             var commands = new Dictionary<string, object>
@@ -192,6 +224,13 @@ namespace MarsKod.Dunya
                     NoKeywords("collect", kwargs);
                     if (args.Count != 0) throw Values.PyError("TypeError", "collect() takes no arguments (" + args.Count + " given)");
                     return Collect();
+                }),
+                ["ice_here"] = new PyBuiltin("ice_here", (args, kwargs) =>
+                {
+                    Unlocked("ice_here");
+                    NoKeywords("ice_here", kwargs);
+                    if (args.Count != 0) throw Values.PyError("TypeError", "ice_here() takes no arguments (" + args.Count + " given)");
+                    return IceHere();
                 }),
             };
             // Yönler şimdilik metin olarak tutulur: print(East) -> East

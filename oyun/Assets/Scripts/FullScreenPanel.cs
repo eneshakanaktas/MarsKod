@@ -64,7 +64,7 @@ public class FullScreenPanel : VisualElement
         return b;
     }
 
-    static void DrawClose(Painter2D p, Rect r)
+    public static void DrawClose(Painter2D p, Rect r)
     {
         float w = r.width, h = r.height;
         p.strokeColor = new Color(0.91f, 0.89f, 0.93f);

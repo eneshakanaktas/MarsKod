@@ -11,21 +11,28 @@ public class Ice : MonoBehaviour
     bool popping;
 
     public static Ice Create(Transform parent, Vector3 localPos, int seed)
+        => Create(parent, localPos, seed, Mats.Hex("#8FE3FF"), Mats.Hex("#3BB0E0") * 0.55f);
+
+    // Tehlikeli kristal: ayni kume, kirmizi ve daha parlak (toplanmaz, uzerinden gecilir)
+    public static Ice CreateHazard(Transform parent, Vector3 localPos, int seed)
+        => Create(parent, localPos, seed, Mats.Hex("#FF5A4F"), Mats.Hex("#E02A2A") * 0.8f);
+
+    static Ice Create(Transform parent, Vector3 localPos, int seed, Color body, Color glow)
     {
         var go = new GameObject("Ice");
         go.transform.SetParent(parent, false);
         go.transform.localPosition = localPos;
         go.transform.localScale = Vector3.one * 1.5f;
         var ice = go.AddComponent<Ice>();
-        ice.Build(seed);
+        ice.Build(seed, body, glow);
         return ice;
     }
 
-    void Build(int seed)
+    void Build(int seed, Color body, Color glow)
     {
         phase = seed * 1.7f;
-        baseEmission = Mats.Hex("#3BB0E0") * 0.55f;
-        mat = Mats.Emissive(Mats.Hex("#8FE3FF"), baseEmission, 0.9f);
+        baseEmission = glow;
+        mat = Mats.Emissive(body, baseEmission, 0.9f);
 
         cluster = Parts.Empty("Cluster", transform);
         cluster.localRotation = Quaternion.Euler(0, seed * 47f, 0);

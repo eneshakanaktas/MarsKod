@@ -55,6 +55,7 @@ public class Oyun : MonoBehaviour
     Xp xp;
     // Bolum basina kac ipucu acildi (ilk insan testinde uc ipucu da bedava)
     HintLog hints;
+    readonly HintView hintView = new HintView();
     // Kod sozlugu (Resources/Sozluk/sozluk.json); dosya okunamazsa bos
     Glossary glossary = new Glossary();
 
@@ -161,7 +162,7 @@ public class Oyun : MonoBehaviour
         hud.TierChanged += SaveTier;
 
         hints = HintLog.Load(shotsMode ? "" : PlayerPrefs.GetString("ipucu", ""));
-        hud.MoreHintPressed += RevealHint;
+        hud.HintPressed += PressHint;
 
         // Kod yazma kademesi: kayitli tercih kalici (kademe kutusu), -kademe deneme secenegi onune gecer.
         if (!shotsMode && System.Enum.TryParse(PlayerPrefs.GetString("kademe", ""), true, out KeyboardTier savedTier))
@@ -351,6 +352,8 @@ public class Oyun : MonoBehaviour
         ices.Clear();
         for (int i = 0; i < level.Ices.Count; i++)
             ices.Add(Ice.Create(levelRoot, Pos(level.Ices[i]), i + 1));
+        for (int i = 0; i < level.Crystals.Count; i++)
+            Ice.CreateHazard(levelRoot, Pos(level.Crystals[i]), 20 + i); // toplanmaz: ices listesinde degil
         for (int i = 0; i < 6; i++)
         {
             var p = i < level.Ices.Count ? Pos(level.Ices[i]) : Vector3.zero;
@@ -377,7 +380,7 @@ public class Oyun : MonoBehaviour
         hud.SetOpenWords(MarsKod.Dunya.Suggestions.OpenWords(levels, level.Number));
         hud.SetPieces(level.Pieces, Palette.NewPieces(levels, level.Number));
         hud.SetLevel(level.Number, level.Title, level.Goal, level.Ices.Count);
-        hud.SetHints(level.Hints, hints.Shown(level.Number));
+        hintView.Close();
     }
 
     void LateUpdate()
@@ -511,10 +514,16 @@ public class Oyun : MonoBehaviour
         if (idx >= 0) LoadLevel(idx);
     }
 
-    // "Bir ipucu daha": siradaki ipucu acilir ve bolum tekrar acilinca da gorunur (deneme kosusunda kaydedilmez)
-    void RevealHint()
+    // Ampul: 1. -> 2. -> 3. ipucu, bir daha basinca kapanir; tekrar acilinca yine 1.'den baslar.
+    // Bolumde en cok kacinci ipucuna gidildigi saklanir (ileride yildiz/jeton kurali buna bakar; deneme kosusunda kaydedilmez).
+    void PressHint()
     {
-        hud.SetHints(level.Hints, hints.Reveal(level.Number, level.Hints.Count));
+        if (!hud.HintOpen) hintView.Close(); // balon baska bir sebeple kapandiysa (hata kutusu, calistirma) bastan basla
+        int total = level.Hints.Count;
+        hintView.Press(total);
+        if (!hintView.Open) { hud.HideHint(); return; }
+        hints.Reach(level.Number, hintView.Current, total);
+        hud.ShowHint(level.Hints[hintView.Current - 1], hintView.Current, total);
         if (shotsMode) return;
         PlayerPrefs.SetString("ipucu", hints.Save());
         PlayerPrefs.Save();
@@ -652,6 +661,14 @@ public class Oyun : MonoBehaviour
                     hud.SetCollected(c.Total);
                 }
                 yield return Tween.Wait(c.IceIndex >= 0 ? 0.4f : 0.3f);
+                break;
+            case Scanned sc:
+                StartCoroutine(ScanPulse.Play(levelRoot, Pos(sc.At), sc.Found));
+                yield return Tween.Wait(0.45f);
+                break;
+            case Rejected _:
+                yield return robot.Collect();
+                yield return robot.Bump();
                 break;
         }
     }
@@ -935,9 +952,9 @@ public class Oyun : MonoBehaviour
         Cap(Path.Combine(dir, "adim-adim.png"));
         yield return new WaitForSeconds(0.3f);
         var start = level.Robot;
-        var oneStep = Pos(new Cell(start.Col + 1, start.Row));
+        float oneCell = Vector3.Distance(Pos(start), Pos(new Cell(start.Col + 1, start.Row))); // hangi yone gittigi onemli degil
         string problem = !running || !stepMode ? "kod adim adim beklemiyor"
-            : Vector3.Distance(robot.transform.localPosition, oneStep) > 0.05f ? "robot tam bir kare ilerlemedi"
+            : Mathf.Abs(Vector3.Distance(robot.transform.localPosition, Pos(start)) - oneCell) > 0.05f ? "robot tam bir kare ilerlemedi"
             : null;
         yield return MouseClick(mouse, hud.RunScreenPoint()); // Devam
         while (running) yield return null;
@@ -979,33 +996,48 @@ public class Oyun : MonoBehaviour
         hud.HideGlossary();
     }
 
-    // ---- Ipucu denetimi (-shots icinde): uc ipucu olan son bolumde balon acilir, "Bir ipucu daha"ya iki kez fareyle tiklanir ----
-    // (Sinav bolumlerinde tek ipucu var; onlar atlanir.) Log'da "IPUCU DENETIMI:" satiri; goruntuler ipucu-1.png (yalnizca ilk ipucu), ipucu-3.png (ucu de acik).
+    // ---- Ipucu denetimi (-shots icinde): uc ipucu olan son bolumde ampule fareyle basilir ----
+    // 1. -> 2. -> 3. ipucu, bir daha basinca kapanir; tekrar acilinca 1.'den baslar ve kayitta en yuksek sira (3) durur; × balonu kapatir.
+    // (Sinav bolumlerinde tek ipucu var; onlar atlanir.) Log'da "IPUCU DENETIMI:" satiri; goruntuler ipucu-1.png ve ipucu-3.png.
     IEnumerator HintCheck(string dir)
     {
         var mouse = UnityEngine.InputSystem.Mouse.current;
         int idx = levels.FindLastIndex(l => l.Hints.Count >= 3);
         if (idx < 0) { Debug.Log("IPUCU DENETIMI: uc ipucu olan bolum yok, atlandi"); yield break; }
         LoadLevel(idx);
-        hud.ShowHint(true);
-        yield return new WaitForSeconds(0.4f);
-        Cap(Path.Combine(dir, "ipucu-1.png"));
         yield return new WaitForSeconds(0.3f);
         string problem = mouse == null ? "fare yok" : null;
-        for (int k = 0; k < 2 && problem == null; k++)
+        int total = level.Hints.Count;
+        for (int k = 1; k <= total + 1 && problem == null; k++)
         {
-            var at = hud.MoreHintScreenPoint();
-            if (!at.HasValue) { problem = "'Bir ipucu daha' dugmesi bulunamadi (" + (k + 1) + ". tiklama)"; break; }
-            yield return MouseClick(mouse, at.Value);
-            yield return new WaitForSeconds(0.3f);
+            yield return MouseClick(mouse, hud.HintButtonScreenPoint());
+            yield return new WaitForSeconds(0.4f);
+            if (k > total) { if (hud.HintOpen) problem = "son basista balon kapanmadi"; continue; }
+            if (!hud.HintOpen || hintView.Current != k) problem = k + ". basista " + hintView.Current + ". ipucu acik (" + k + " olmali)";
+            if (k == 1) Cap(Path.Combine(dir, "ipucu-1.png"));
+            if (k == total) Cap(Path.Combine(dir, "ipucu-3.png"));
         }
-        int want = Mathf.Min(3, level.Hints.Count);
-        if (problem == null && hints.Shown(level.Number) != want) problem = "acik ipucu " + hints.Shown(level.Number) + " (" + want + " olmali)";
-        if (problem == null && hud.MoreHintScreenPoint().HasValue) problem = "hepsi acikken dugme hala gorunuyor";
+        if (problem == null && hints.Shown(level.Number) != total) problem = "kayitli en yuksek ipucu " + hints.Shown(level.Number) + " (" + total + " olmali)";
+        if (problem == null)
+        {
+            yield return MouseClick(mouse, hud.HintButtonScreenPoint());
+            yield return new WaitForSeconds(0.3f);
+            if (!hud.HintOpen || hintView.Current != 1) problem = "yeniden acilinca 1. ipucundan baslamadi";
+        }
+        if (problem == null)
+        {
+            var x = hud.HintCloseScreenPoint();
+            if (!x.HasValue) problem = "× dugmesi bulunamadi";
+            else
+            {
+                yield return MouseClick(mouse, x.Value);
+                yield return new WaitForSeconds(0.3f);
+                if (hud.HintOpen) problem = "× balonu kapatmadi";
+            }
+        }
+        if (problem == null && hints.Shown(level.Number) != total) problem = "yeniden acma kaydi dusurdu";
         Debug.Log("IPUCU DENETIMI: " + (problem ?? "TAMAM"));
-        Cap(Path.Combine(dir, "ipucu-3.png"));
-        yield return new WaitForSeconds(0.3f);
-        hud.ShowHint(false);
+        hud.HideHint();
     }
 
     // ---- Kontrol icin ekran goruntusu: MarsKod.exe -shots <klasor> ----
@@ -1034,6 +1066,18 @@ public class Oyun : MonoBehaviour
             while (running) yield return null;
             yield return new WaitForSeconds(0.4f);
             Cap(Path.Combine(dir, b + "3-bitti.png"));
+            yield return new WaitForSeconds(0.3f);
+        }
+        // Kirmizi kristal: kor kor toplayan baslangic kodu robotu durdurur (OYUN KURALI kutusu)
+        int crystalLevel = levels.FindIndex(l => l.Crystals.Count > 0);
+        if (crystalLevel >= 0)
+        {
+            LoadLevel(crystalLevel);
+            yield return new WaitForSeconds(0.5f);
+            OnRun();
+            while (running) yield return null;
+            yield return new WaitForSeconds(0.6f);
+            Cap(Path.Combine(dir, "kristal-durdu.png"));
             yield return new WaitForSeconds(0.3f);
         }
         yield return LevelSelectCheck(dir);
@@ -1099,21 +1143,25 @@ public class Oyun : MonoBehaviour
         Cap(Path.Combine(dir, "klavye-usta.png"));
         yield return new WaitForSeconds(0.3f);
         // Klavye + ipucu: sahne en cok kuculdugunde zeminin kenari gorunmemeli, cevre bos durmamali
-        hud.ShowHint(true);
+        PressHint();
         yield return new WaitForSeconds(0.8f);
         Cap(Path.Combine(dir, "klavye-ipucu.png"));
         yield return new WaitForSeconds(0.2f);
-        hud.ShowHint(false);
+        hud.HideHint();
         int threeHints = levels.FindLastIndex(l => l.Hints.Count >= 3);
         if (threeHints >= 0)
         {
             LoadLevel(threeHints);
             hud.FocusCode(code.Length, code.Length);
-            hud.ShowHint(true);
+            PressHint(); PressHint(); // 2. ipucu (bolum 4'te en uzunu)
+            yield return new WaitForSeconds(0.8f);
+            Cap(Path.Combine(dir, "klavye-ipucu2.png"));
+            yield return new WaitForSeconds(0.2f);
+            PressHint();
             yield return new WaitForSeconds(0.8f);
             Cap(Path.Combine(dir, "klavye-ipucu3.png"));
             yield return new WaitForSeconds(0.2f);
-            hud.ShowHint(false);
+            hud.HideHint();
             LoadLevel(levels.Count - 1);
             SetCode("for i in range(5):\n    mo");
             hud.FocusCode(code.Length, code.Length);

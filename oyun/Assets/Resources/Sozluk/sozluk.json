@@ -45,6 +45,30 @@
         "for i in range(4):",
         "    move(North)  # 4 kez yukarı"
       ]
+    },
+    {
+      "baslik": "if",
+      "kelimeler": ["if"],
+      "aciklama": "Bir şeye bakıp karar verir: soru doğruysa altındaki girintili satırlar çalışır, değilse atlanır. for gibi satırın sonunda iki nokta (:) ve altında girinti şart. if bir kez bakar; her karede bakmak istersen for'un içine koy.",
+      "ornek": [
+        "if ice_here():",
+        "    collect()    # yalnızca buz varsa",
+        "",
+        "for i in range(5):",
+        "    move(North)",
+        "    if ice_here():   # her karede bak",
+        "        collect()"
+      ]
+    },
+    {
+      "baslik": "ice_here",
+      "kelimeler": ["ice_here"],
+      "aciklama": "Robot durduğu karede buz var mı diye bakar; buz varsa True (doğru), yoksa False (yanlış) verir, hiçbir şey toplamaz. Kırmızı kristal buz değildir: ice_here() orada False der. Kristalin üstünden geçebilirsin ama collect() onu toplamaya çalışırsa robot durur; o yüzden önce bak.",
+      "ornek": [
+        "move(East)",
+        "if ice_here():",
+        "    collect()    # kristalde collect() çağrılmaz"
+      ]
     }
   ]
 }

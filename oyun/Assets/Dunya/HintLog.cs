@@ -1,5 +1,5 @@
 // İpuçları: bölüm başına kaç ipucunun açıldığı (tasarım belgesi §6; karar 09-30: ilk insan testinde üçü de bedava).
-// 1. ipucu her zaman açık sayılır; oyuncu "Bir ipucu daha" dedikçe 2. ve 3. açılır ve bölüm tekrar açılınca da görünür.
+// 1. ipucu her zaman açık sayılır; oyuncu ampule bastıkça 2. ve 3. ipucuna ulaşır; ulaştığı en yüksek sıra saklanır (görünüm her açılışta 1.'den başlar, HintView).
 // Saf mantık; telefona yazma işi Scripts'te (Save/Load metni PlayerPrefs'e gider). İleride yıldız ve jeton kuralı buna bakar.
 
 using System.Collections.Generic;
@@ -15,12 +15,13 @@ namespace MarsKod.Dunya
         /// <summary>Bölümde açılmış ipucu sayısı (en az 1: ilk ipucu bedava ve hep açık).</summary>
         public int Shown(int level) => shown.TryGetValue(level, out int n) && n > 1 ? n : 1;
 
-        /// <summary>Bir ipucu daha açar; bölümde available kadar ipucu var. Yeni açık sayısını döndürür (hepsi açıksa değişmez).</summary>
-        public int Reveal(int level, int available)
+        /// <summary>Oyuncu bölümde n. ipucuna kadar gitti; bölümde available kadar ipucu var. Kayıtlı en yüksek sayı korunur, yeni açık sayısı döner.</summary>
+        public int Reach(int level, int n, int available)
         {
-            int n = Shown(level);
-            if (n < available) shown[level] = ++n;
-            return n;
+            int best = Shown(level);
+            n = n < available ? n : available;
+            if (n > best) shown[level] = best = n;
+            return best;
         }
 
         // ---- kaydetme: "3:2;5:3" (bölüm numarası : açılan ipucu sayısı; yalnızca 1'den fazlası yazılır) ----

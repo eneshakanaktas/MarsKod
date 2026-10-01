@@ -19,8 +19,8 @@ public class Hud : MonoBehaviour
     public event Action<KeyboardTier> TierChanged;
     // Oyuncu bolum secme ekranindan bir bolum secti (bolum numarasi)
     public event Action<int> LevelPicked;
-    // Oyuncu ipucu balonunda "Bir ipucu daha" dedi
-    public event Action MoreHintPressed;
+    // Oyuncu ampule basti (hangi ipucunun gorunecegine Oyun.cs karar verir)
+    public event Action HintPressed;
 
     static readonly Color Accent = Mats.Hex("#E07A5F");
     static readonly Color Ink = Mats.Hex("#E9E4EE");
@@ -35,7 +35,7 @@ public class Hud : MonoBehaviour
     static readonly Color KeyboardBg = new Color(0.075f, 0.07f, 0.095f, 0.98f);
 
     Font fMed, fSemi, fBold, fMono;
-    VisualElement root, header, card, message, runBtn, stepBtn, glossaryBtn, overlay;
+    VisualElement root, header, card, message, runBtn, stepBtn, glossaryBtn, hintBtn, overlay;
     GlossaryView glossary;
     HintPanel hint;
     CodeEditor editor;
@@ -191,6 +191,11 @@ public class Hud : MonoBehaviour
         row.Add(center);
         row.Add(starCol);
         h.Add(row);
+
+        // Ipucu balonu: baslikla ayni yerde, soldaki ve sagdaki dugmelerin arasinda (yerlesimi etkilemez, oyun alani kuculmez)
+        hint = new HintPanel(fMed, fSemi, HintBg, Hairline, SafeTop() + 32, 44 + 96 + 20);
+        hint.ClosePressed += hint.Hide;
+        h.Add(hint);
         return h;
     }
 
@@ -224,7 +229,7 @@ public class Hud : MonoBehaviour
         buttons.style.alignItems = Align.Center;
         buttons.style.marginTop = 28;
 
-        var hintBtn = RoundButton(124, ButtonBg, new Icon(58, DrawBulb), ToggleHint);
+        hintBtn = RoundButton(124, ButtonBg, new Icon(58, DrawBulb), () => HintPressed?.Invoke());
         Ui.Border(hintBtn, 2, Hairline);
 
         runBtn = new VisualElement();
@@ -272,11 +277,7 @@ public class Hud : MonoBehaviour
         buttons.Add(hintBtn); buttons.Add(tierBtn); buttons.Add(runBtn); buttons.Add(resetBtn);
         card.Add(buttons);
 
-        hint = new HintPanel(fMed, fSemi, Accent, HintBg, Hairline);
-        hint.MorePressed += () => MoreHintPressed?.Invoke();
-        card.Add(hint);
-
-        // Hata ya da bilgi kutusu: hint ile ayni yerde, kod kartinin ustunde. Dokununca kapanir.
+        // Hata ya da bilgi kutusu: kod kartinin ustunde. Dokununca kapanir.
         message = new VisualElement();
         message.style.position = Position.Absolute;
         message.style.left = 0; message.style.right = 0;
@@ -375,7 +376,7 @@ public class Hud : MonoBehaviour
 
     // ---- Disaridan cagrilanlar ----
 
-    // Yeni bolum: ust baslik ve buz sayaci bu bolume gore kurulur, ipucu balonu kapanir (icerigi SetHints ile gelir).
+    // Yeni bolum: ust baslik ve buz sayaci bu bolume gore kurulur, ipucu balonu kapanir.
     public void SetLevel(int number, string name, string goalText, int ices)
     {
         levelNumber = number;
@@ -395,14 +396,13 @@ public class Hud : MonoBehaviour
 
     // Ekranda ust baslik ile alttaki kod karti arasinda kalan bos bant (0 = ekran alti, 1 = ekran ustu).
     // Kamera oyun alanini bu banda sigdirir; kod uzayip kisalinca alan kendiliginden buyur/kuculur.
-    // Kartin ustundeki ipucu balonu ya da hata kutusu aciksa bant onun ustunde biter (alan kuculur ama ortulmez).
+    // Kartin ustundeki hata kutusu aciksa bant onun ustunde biter (alan kuculur ama ortulmez). Ipucu balonu basliktadir, bandi etkilemez.
     public Vector2 FreeBand()
     {
         float h = root.layout.height;
         if (float.IsNaN(h) || h <= 0f || float.IsNaN(card.layout.yMin) || float.IsNaN(header.layout.yMax))
             return new Vector2(0.3f, 0.9f);
         float bottom = card.layout.yMin;
-        if (hint.Open) bottom = Mathf.Min(bottom, TopInRoot(hint));
         if (message.style.display == DisplayStyle.Flex) bottom = Mathf.Min(bottom, TopInRoot(message));
         return new Vector2(1f - bottom / h, 1f - header.layout.yMax / h);
     }
@@ -526,18 +526,16 @@ public class Hud : MonoBehaviour
         starIcon.MarkDirtyRepaint();
     }
 
-    void ToggleHint() => ShowHint(!hint.Open);
+    public bool HintOpen => hint.Open;
 
-    // Ipucu balonunun icerigi: bolumun butun ipuclari ve kacinin acik oldugu (Oyun.cs, HintLog)
-    public void SetHints(IReadOnlyList<string> hints, int shown) => hint.SetHints(hints, shown);
-
-    // Ipucu balonunu acar/kapatir (acilinca hata kutusu kapanir; ayni yeri paylasiyorlar)
-    public void ShowHint(bool on)
+    // Ipucu balonunu gosterir: n. ipucu (1'den), toplam total (acilinca hata kutusu kapanir)
+    public void ShowHint(string text, int n, int total)
     {
-        if (!on) { hint.Hide(); return; }
         HideMessage();
-        hint.Show();
+        hint.Show(text, n, total);
     }
+
+    public void HideHint() => hint.Hide();
 
     public bool Editing => editor.Editing;
 
@@ -593,10 +591,11 @@ public class Hud : MonoBehaviour
     public Vector2 RunScreenPoint() => PanelToScreen(runText.parent.worldBound.center);
     public Vector2 StepScreenPoint() => PanelToScreen(stepBtn.worldBound.center);
 
-    // Ipucu balonundaki "Bir ipucu daha" dugmesinin ekrandaki yeri; yoksa null. Deneme icin.
-    public Vector2? MoreHintScreenPoint()
+    // Ampul dugmesinin ve (balon aciksa) balondaki × dugmesinin ekrandaki yeri. Deneme icin.
+    public Vector2 HintButtonScreenPoint() => PanelToScreen(hintBtn.worldBound.center);
+    public Vector2? HintCloseScreenPoint()
     {
-        var c = hint.MoreCenter();
+        var c = hint.CloseCenter();
         return c.HasValue ? PanelToScreen(c.Value) : (Vector2?)null;
     }
 

@@ -52,7 +52,7 @@ En kolayı: var olan bir bölümü kopyala, adını ve numarasını değiştir, 
 | `baslik` | Kısa ad, ekranın üstünde küçük harflerle görünür ("BÖLÜM 2 · KAYA ENGELİ"). |
 | `gorev` | Tek cümle görev, üstte büyük yazıyla görünür ("2 buz topla"). |
 | `harita` | Alanın "resmi" (aşağıda). |
-| `komutlar` | Bu bölümde açık olan oyun komutları. Şimdilik: `move`, `collect`. Listede olmayan komutu kullanan oyuncuya "Bu komut henüz açılmadı" denir. |
+| `komutlar` | Bu bölümde açık olan oyun komutları. Şimdilik: `move`, `collect`, `ice_here` ("bu karede buz var mı?" diye bakar, True/False verir; `if` için). Listede olmayan komutu kullanan oyuncuya "Bu komut henüz açılmadı" denir. |
 | `parcalar` | İsteğe bağlı. Acemi paletindeki düğmeler; her öğe tek satır kod, örn. `["move(East)", "collect()", "for i in range(3):"]`. Yazılmazsa açık komutlardan çıkar (`move` → dört yön, `collect` → `collect()`). Sayıları bilerek çözümdekinden farklı yaz (`range(3)`), oyuncu değiştirsin. `:` ile biten satır tek başına yazılabilir. |
 | `python_kelimeleri` | İsteğe bağlı. Bu bölümde açılan Python kelimeleri (`["for", "in", "range"]`); Orta kademedeki öneri satırında çıkar. Önceki bölümlerde açılanlar sonrakilerde de açık kalır. |
 | `konular` | Bölümün öğrettiği konular (ileride oyuncu profili bunlarla tutulacak). |
@@ -73,6 +73,7 @@ Harfler arasındaki boşluklar önemsizdir, sadece okumayı kolaylaştırır. Ş
 | `R` | Robot (tam olarak bir tane) |
 | `B` | Buz (toplanacak) |
 | `K` | Kaya (robot içinden geçemez) |
+| `T` | Tehlikeli kırmızı kristal (üstünden geçilir; `collect()` ile toplamaya çalışmak robotu durdurur, oyun kuralı) |
 | `H` | Hedef kare (en fazla bir tane; kod bitince robot burada durmalı) |
 | `.` | Boş kare |
 

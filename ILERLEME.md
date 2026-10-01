@@ -1,5 +1,18 @@
 # İlerleme Notu — MarsKod (geçici isim)
 
+## 📌 Enes'e not (Ragıp'tan, 2026-10-01 gece) — oturum başında ilk bunu oku
+**Hikâye:** Hikâye işini Ragıp üstleniyor (Ragıp + Claude). Ragıp'ın düşüncesi: hikâye tek bir kişiden çıkarsa daha tutarlı ve doğru olur. Ragıp yarın Enes'le bunu ayrıca konuşacak. Hikâye ileride oyunun YouTube dizisine de dönüşecek (video işi Play Store'dan sonra), bu yüzden hikâye en önemli işlerden. **Enes'in oturumlarında hikâyeye dokunulmaz:** hikâye metni, karakterler ve adları, bölgelerin olayları, ara sahneler, Defne'nin kayıtları yazılmaz/değiştirilmez. Fikir varsa not edilip Ragıp'a iletilir.
+**Robot değişti:** Yeni robot **Kıvılcım** (`SparkBot.cs`: yarı insansı, süzülen; göğsünde Ece'nin çizimi). Enes'in koloni gezgini silinmedi: `MarsKod.exe -robot gezgin` ile açılır; ileride yaşlı maden robotu "Kor" için temel olabilir (Ragıp soracak). Kıvılcım bir hikâye karakteri: görünüşünü değiştirmeden önce Ragıp'a sorulur (hata düzeltmek serbest).
+
+**Enes için yarınki iş listesi (8-10 saat; hikâyeye dokunmaz, önem sırasıyla):**
+1. **Ses** (~1,5 sa): oyunda hiç ses yok. Kodla üretilen kısa sesler (paket büyümesin): düğmeler, `move`, toplama, engele çarpma, hata, bölüm sonu kutlaması, kolonide lamba yanması. Robotun bip'leri sade kalsın (Kıvılcım'ın "dili" hikâyede belirlenecek). Ayarlara ses aç/kapa.
+2. **Klavye açıkken oyun alanının sıkışması** (~1 sa): Enes'in kendi açık bıraktığı sorun (klavye + ipucu açıkken alan çok küçülüyor).
+3. **Bölüm 16-20** (~2 sa): `if` derinleşir (Bölge 2'nin kalanı, buz + kırmızı kristal + `ice_here()`). Yalnızca bulmaca; bölüm adları ve görev yazıları hikâyesiz ve sade olsun ("Çift tarama" gibi), hikâye metni sonra Ragıp'tan gelir. Kılavuz `docs/tasarim/bolum-dosyasi.md`, `dotnet test` denetler.
+4. **Mini sınav** (~2 sa): tasarım belgesindeki "her 5 bölümde mini sınav" (soru-cevap; şimdiki Bölüm 5 yalnızca tek ipuçlu bölüm). Sorular Python bilgisi üzerine, hikâyesiz.
+5. **Bölüm ilerlemesi ve kilit** (~1 sa): bölüm seçme ekranında bitirilen/açık/kilitli bölümler, kayıt telefonda (yapım planı Aşama 8'in yerel kısmı).
+6. **Kalan zaman:** performans hazırlığı (telefon denemesi 2 gün sonra: kare hızı göstergesi, gereksiz çizimlerin azaltılması) veya otomatik denetimlerin genişletilmesi (yeni bölümler ve ses için).
+Yapılmayacaklar: hikâye/karakter/ara sahne, yeni bölge görselleri (Bölge 3+ hikâyeye bağlı), Kıvılcım'ın görünüşü, ilk açılış sahnesi (Bölüm 1'in sözsüz açılışı hikâyenin parçası).
+
 ## En son (özet)
 - **Ragıp, 2026-10-01 (akşam → gece), GitHub'a yüklendi (78d555e):** Enes'in işleri derlendi + Android paketi; bölge/hikâye kararları; bölüm yeniden düzeni (1-10 enerji hücresi, eski 6-10 → 11-15); enerji hücresi görünüşü + kolonide yanan güç lambaları; bölge sistemi + kutup buzulu görünüşü (Bölüm 11-20); yeni robot **Kıvılcım** (yarı insansı, süzülen; göğsünde Ece'nin çizimi). Ayrıntılar aşağıda. 1219 test, Windows paketi hatasız, altı denetim TAMAM. **Hiçbiri telefonda denenmedi.**
 - **Enes, 2026-10-01:** Sil düğmesi, Bölüm 4-10 (şimdi 11-15), koloni gezgini robotu, arka plan koloniler + drone, çevre doldurma, pusula, ipucu başlıkta, kırmızı kristal + `ice_here()` (commit 20fbb65).

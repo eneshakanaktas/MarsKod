@@ -8,7 +8,7 @@ using UnityEngine.UIElements;
 // Olculer 1080 genislikli telefon ekranina gore (piksel).
 public class Hud : MonoBehaviour
 {
-    public event Action RunPressed, ResetPressed, StarsToggled, MenuPressed;
+    public event Action RunPressed, ResetPressed, StarsToggled, MenuPressed, SoundToggled;
     // Calistir'in sag ucundaki ⏭: kodu bir satir ilerletir (adim adim modu)
     public event Action StepPressed;
     // Sol ustteki kitap: kod sozlugu
@@ -46,19 +46,22 @@ public class Hud : MonoBehaviour
     NumberStepper stepper;
     TierMenu tierMenu;
     LevelSelect levelSelect;
+    OpeningScene opening;
+    QuizView quiz;
     // Su an acik olan yazma paneli (klavye ya da palet), kapaliyken null
     VisualElement shownPanel;
     KeyboardTier tier = KeyboardTier.Orta;
-    Label chapter, title, runText, msgTag, msgTitle, msgText, msgOriginal, xpTotalLabel, xpDoneLabel, xpNextLabel;
+    Label chapter, title, runText, msgTag, msgTitle, msgText, msgOriginal, xpTotalLabel, xpDoneLabel, xpNextLabel, outroLabel, introText;
     VisualElement dotsRow;
-    Icon starIcon;
+    Icon starIcon, soundIcon;
+    bool soundOn = true;
     readonly List<Icon> dots = new List<Icon>();
     int collected;
     bool starsOn = true;
     // Bolum bilgisi (SetLevel ile gelir)
     int levelNumber = 1, iceTotal = 3;
     Collectible item = Collectible.Ice;
-    string levelName = "", goal = "3 buz topla";
+    string levelName = "", goal = "3 buz topla", levelLabel = "BÖLÜM";
 
     public void Build()
     {
@@ -111,6 +114,10 @@ public class Hud : MonoBehaviour
         overlay.Add(levelSelect);
         glossary = new GlossaryView(fMed, fSemi, fBold, fMono, Ink, Accent, ButtonBg, Hairline);
         overlay.Add(glossary);
+        opening = new OpeningScene(fBold);
+        overlay.Add(opening);
+        quiz = new QuizView(fMed, fSemi, fBold, Ink, Accent, ButtonBg, Hairline, ErrorRed, CellFill);
+        overlay.Add(quiz);
 
         root.Add(header);
         root.Add(free);
@@ -145,6 +152,10 @@ public class Hud : MonoBehaviour
         glossaryBtn = RoundButton(96, glass, new Icon(46, DrawBook), () => GlossaryPressed?.Invoke());
         glossaryBtn.style.marginTop = 20;
         menuCol.Add(glossaryBtn);
+        soundIcon = new Icon(44, DrawSpeaker);
+        var soundBtn = RoundButton(96, glass, soundIcon, () => SoundToggled?.Invoke());
+        soundBtn.style.marginTop = 20;
+        menuCol.Add(soundBtn);
 
         var center = new VisualElement { pickingMode = PickingMode.Ignore };
         center.style.flexGrow = 1;
@@ -157,6 +168,23 @@ public class Hud : MonoBehaviour
         Transition(title, "scale", 0.35f, EasingMode.EaseOutBack);
         center.Add(chapter);
         center.Add(title);
+
+        introText = Text("", fMed, 30, new Color(1f, 1f, 1f, 0.78f));
+        introText.style.marginTop = 10;
+        introText.style.maxWidth = 620;
+        introText.style.whiteSpace = WhiteSpace.Normal;
+        introText.style.unityTextAlign = TextAnchor.UpperCenter;
+        introText.style.display = DisplayStyle.None;
+        Transition(introText, "opacity", 0.5f, EasingMode.EaseOutSine);
+        center.Add(introText);
+
+        outroLabel = Text("", fMed, 30, new Color(1f, 1f, 1f, 0.78f));
+        outroLabel.style.marginTop = 10;
+        outroLabel.style.maxWidth = 620;
+        outroLabel.style.whiteSpace = WhiteSpace.Normal;
+        outroLabel.style.unityTextAlign = TextAnchor.UpperCenter;
+        outroLabel.style.display = DisplayStyle.None;
+        center.Add(outroLabel);
 
         dotsRow = new VisualElement { pickingMode = PickingMode.Ignore };
         dotsRow.style.flexDirection = FlexDirection.Row;
@@ -199,6 +227,18 @@ public class Hud : MonoBehaviour
         hint.ClosePressed += hint.Hide;
         h.Add(hint);
         return h;
+    }
+
+    // "Program giris" metnini basligin altinda kisa sure gosterir, sonra kendiliginden kaybolur.
+    void ShowIntro(string text)
+    {
+        introText.style.display = DisplayStyle.None;
+        if (string.IsNullOrEmpty(text)) return;
+        introText.text = text;
+        introText.style.opacity = 1f;
+        introText.style.display = DisplayStyle.Flex;
+        introText.schedule.Execute(() => introText.style.opacity = 0f).StartingIn(2600);
+        introText.schedule.Execute(() => introText.style.display = DisplayStyle.None).StartingIn(3100);
     }
 
     VisualElement BuildBottom()
@@ -252,7 +292,7 @@ public class Hud : MonoBehaviour
         runText = Text("Çalıştır", fSemi, 42, Color.white);
         runText.style.marginLeft = 16;
         runMain.Add(runText);
-        runMain.RegisterCallback<ClickEvent>(_ => RunPressed?.Invoke());
+        runMain.RegisterCallback<ClickEvent>(_ => { Sound.Tap(); RunPressed?.Invoke(); });
         runBtn.Add(runMain);
         stepBtn = new VisualElement();
         stepBtn.style.width = 116;
@@ -262,7 +302,7 @@ public class Hud : MonoBehaviour
         stepBtn.style.borderLeftColor = new Color(1f, 1f, 1f, 0.35f);
         stepBtn.style.marginTop = 26; stepBtn.style.marginBottom = 26;
         stepBtn.Add(new Icon(40, DrawStep));
-        stepBtn.RegisterCallback<ClickEvent>(_ => StepPressed?.Invoke());
+        stepBtn.RegisterCallback<ClickEvent>(_ => { Sound.Tap(); StepPressed?.Invoke(); });
         runBtn.Add(stepBtn);
         Pressable(runBtn, null);
         Transition(runBtn, "opacity", 0.2f, EasingMode.EaseOut);
@@ -376,15 +416,17 @@ public class Hud : MonoBehaviour
     // Turkce buyuk harf (i -> İ, ı -> I); telefonun dil ayarina guvenmeden
     static string Upper(string s) => s.Replace('i', 'İ').Replace('ı', 'I').ToUpperInvariant();
 
-    string ChapterText => "BÖLÜM " + levelNumber + (levelName.Length > 0 ? "  ·  " + Upper(levelName) : "");
+    string ChapterText => levelLabel + " " + levelNumber + (levelName.Length > 0 ? "  ·  " + Upper(levelName) : "");
 
     // ---- Disaridan cagrilanlar ----
 
     // Yeni bolum: ust baslik ve toplama sayaci bu bolume gore kurulur, ipucu balonu kapanir.
-    public void SetLevel(int number, string name, string goalText, int ices, Collectible kind)
+    // intro: "program metni" (giris); bosa boslukla kisa sure gorunur, bosta hic gorunmez.
+    public void SetLevel(int number, string label, string name, string goalText, int ices, Collectible kind, string intro = "")
     {
         item = kind;
         levelNumber = number;
+        levelLabel = label;
         levelName = name;
         goal = goalText;
         iceTotal = ices;
@@ -394,14 +436,17 @@ public class Hud : MonoBehaviour
         tierMenu.Hide();
         xpDoneLabel.style.display = DisplayStyle.None;
         xpNextLabel.style.display = DisplayStyle.None;
+        outroLabel.style.display = DisplayStyle.None;
         editor.StopEditing();
         hint.Hide();
         ResetView();
+        ShowIntro(intro);
     }
 
     // Ekranda ust baslik ile alttaki kod karti arasinda kalan bos bant (0 = ekran alti, 1 = ekran ustu).
     // Kamera oyun alanini bu banda sigdirir; kod uzayip kisalinca alan kendiliginden buyur/kuculur.
-    // Kartin ustundeki hata kutusu aciksa bant onun ustunde biter (alan kuculur ama ortulmez). Ipucu balonu basliktadir, bandi etkilemez.
+    // Kartin ustundeki hata kutusu aciksa bant onun ustunde biter, ipucu balonu aciksa bant onun altinda baslar
+    // (ikisi de alani kucultur ama ortmez; uzun ipucu + klavye birlikte acikken alan asiri sikismasin diye).
     public Vector2 FreeBand()
     {
         float h = root.layout.height;
@@ -409,7 +454,9 @@ public class Hud : MonoBehaviour
             return new Vector2(0.3f, 0.9f);
         float bottom = card.layout.yMin;
         if (message.style.display == DisplayStyle.Flex) bottom = Mathf.Min(bottom, TopInRoot(message));
-        return new Vector2(1f - bottom / h, 1f - header.layout.yMax / h);
+        float top = header.layout.yMax;
+        if (hint.Open) top = Mathf.Max(top, BottomInRoot(hint));
+        return new Vector2(1f - bottom / h, 1f - top / h);
     }
 
     // Ogenin ust kenari, root icinde (henuz yerlesmediyse cok buyuk sayi: hesaba katilmaz)
@@ -417,6 +464,13 @@ public class Hud : MonoBehaviour
     {
         float y = e.worldBound.yMin - root.worldBound.yMin;
         return float.IsNaN(y) ? float.MaxValue : y;
+    }
+
+    // Ogenin alt kenari, root icinde (henuz yerlesmediyse cok kucuk sayi: hesaba katilmaz)
+    float BottomInRoot(VisualElement e)
+    {
+        float y = e.worldBound.yMax - root.worldBound.yMin;
+        return float.IsNaN(y) ? float.MinValue : y;
     }
 
     // Calisan satiri isaretler (idx 0'dan baslar, -1 = hicbiri). error: satir kirmizi yanar.
@@ -468,15 +522,18 @@ public class Hud : MonoBehaviour
     // hasNext: sonraki bolum varsa dugme "Sonraki bolum" olur.
     // xpLine: "+50 XP · Orta ile çözdün" gibi (Xp mantığı Oyun.cs'te kurulur, burada yalnızca gösterilir).
     // nextBetter: "Usta ile çözersen +100 XP daha" ya da bos (alinacak daha zor kademe kalmadiysa).
-    public void SetDone(bool hasNext, string xpLine, string nextBetter)
+    // outro: "program metni" (bitis); bos olabilir.
+    public void SetDone(bool hasNext, string xpLine, string nextBetter, string outro = "")
     {
-        chapter.text = "BÖLÜM " + levelNumber + (iceTotal > 0 ? "  ·  " + collected + "/" + iceTotal : "");
+        chapter.text = levelLabel + " " + levelNumber + (iceTotal > 0 ? "  ·  " + collected + "/" + iceTotal : "");
         title.text = "Tamamlandı!";
         title.style.scale = new Scale(new Vector3(1.12f, 1.12f, 1f));
         title.schedule.Execute(() => title.style.scale = new Scale(Vector3.one)).StartingIn(180);
         runText.text = hasNext ? "Sonraki bölüm" : "Tekrar";
         runBtn.style.opacity = 1f;
         stepBtn.style.display = DisplayStyle.None; // bolum bitti: adimlanacak bir sey yok
+        outroLabel.text = outro;
+        outroLabel.style.display = string.IsNullOrEmpty(outro) ? DisplayStyle.None : DisplayStyle.Flex;
         xpDoneLabel.text = xpLine;
         xpDoneLabel.style.display = string.IsNullOrEmpty(xpLine) ? DisplayStyle.None : DisplayStyle.Flex;
         xpNextLabel.text = nextBetter;
@@ -510,8 +567,24 @@ public class Hud : MonoBehaviour
 
     public void HideLevelSelect() => levelSelect.Hide();
 
+    // Acilis sahnesi (Bolum 1 oncesi, bir kez); atlanabilir, bitince onDone cagrilir.
+    public void ShowOpening(Action onDone) => opening.Show(onDone);
+
+    // Mini sinav (her 5 bolumden sonra, zorunlu); tum sorular dogru cevaplaninca onPassed cagrilir.
+    public void ShowQuiz(Quiz q, Action onPassed) => quiz.Show(q, onPassed);
+    public bool QuizOpen => quiz.Open;
+    public Vector2? QuizChoiceScreenPoint(int i) => quiz.ChoiceCenter(i) is Vector2 c ? PanelToScreen(c) : (Vector2?)null;
+    public Vector2? QuizContinueScreenPoint() => quiz.ContinueCenter() is Vector2 c ? PanelToScreen(c) : (Vector2?)null;
+
     // Ust basliktaki toplam XP sayaci; Oyun.cs bolum yuklendiginde ve XP kazanildiginda cagirir.
     public void SetTotalXp(int total) => xpTotalLabel.text = total + " XP";
+
+    // Bolum sonu ekranindaki program metnini degistirir (kapanis sahnesi gibi sonradan gelen bir satir icin).
+    public void SetOutro(string text)
+    {
+        outroLabel.text = text;
+        outroLabel.style.display = string.IsNullOrEmpty(text) ? DisplayStyle.None : DisplayStyle.Flex;
+    }
 
     public void ResetView()
     {
@@ -519,6 +592,7 @@ public class Hud : MonoBehaviour
         title.text = goal;
         xpDoneLabel.style.display = DisplayStyle.None;
         xpNextLabel.style.display = DisplayStyle.None;
+        outroLabel.style.display = DisplayStyle.None;
         SetCollected(0);
         SetActiveLine(-1);
         SetRunning(false);
@@ -529,6 +603,12 @@ public class Hud : MonoBehaviour
     {
         starsOn = on;
         starIcon.MarkDirtyRepaint();
+    }
+
+    public void SetSound(bool on)
+    {
+        soundOn = on;
+        soundIcon.MarkDirtyRepaint();
     }
 
     public bool HintOpen => hint.Open;
@@ -685,7 +765,7 @@ public class Hud : MonoBehaviour
         b.style.alignItems = Align.Center;
         b.style.justifyContent = Justify.Center;
         b.Add(icon);
-        Pressable(b, onClick);
+        Pressable(b, onClick == null ? (Action)null : () => { Sound.Tap(); onClick(); });
         return b;
     }
 
@@ -736,6 +816,47 @@ public class Hud : MonoBehaviour
         p.ClosePath();
         if (starsOn) { p.fillColor = new Color(1f, 0.97f, 0.9f, 0.95f); p.Fill(); }
         else { p.strokeColor = new Color(1f, 1f, 1f, 0.55f); p.lineWidth = 3f; p.lineJoin = LineJoin.Round; p.Stroke(); }
+    }
+
+    // Hoparlor: govde + huni; aciksa iki ses dalgasi, kapaliysa carpi isareti.
+    void DrawSpeaker(Painter2D p, Rect r)
+    {
+        float w = r.width, h = r.height;
+        var color = new Color(1f, 1f, 1f, soundOn ? 0.95f : 0.55f);
+        p.BeginPath();
+        p.MoveTo(new Vector2(w * 0.14f, h * 0.38f));
+        p.LineTo(new Vector2(w * 0.34f, h * 0.38f));
+        p.LineTo(new Vector2(w * 0.56f, h * 0.18f));
+        p.LineTo(new Vector2(w * 0.56f, h * 0.82f));
+        p.LineTo(new Vector2(w * 0.34f, h * 0.62f));
+        p.LineTo(new Vector2(w * 0.14f, h * 0.62f));
+        p.ClosePath();
+        p.fillColor = color;
+        p.Fill();
+        if (soundOn)
+        {
+            p.lineCap = LineCap.Round;
+            p.lineWidth = 3f;
+            p.strokeColor = color;
+            p.BeginPath();
+            p.Arc(new Vector2(w * 0.56f, h * 0.5f), w * 0.16f, Deg(-40), Deg(40));
+            p.Stroke();
+            p.BeginPath();
+            p.Arc(new Vector2(w * 0.56f, h * 0.5f), w * 0.3f, Deg(-40), Deg(40));
+            p.Stroke();
+        }
+        else
+        {
+            p.lineCap = LineCap.Round;
+            p.lineWidth = 3.5f;
+            p.strokeColor = color;
+            p.BeginPath();
+            p.MoveTo(new Vector2(w * 0.64f, h * 0.3f));
+            p.LineTo(new Vector2(w * 0.92f, h * 0.7f));
+            p.MoveTo(new Vector2(w * 0.92f, h * 0.3f));
+            p.LineTo(new Vector2(w * 0.64f, h * 0.7f));
+            p.Stroke();
+        }
     }
 
     static void DrawIceDot(Painter2D p, Rect r, bool filled)

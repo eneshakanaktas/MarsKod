@@ -1,0 +1,75 @@
+using UnityEngine;
+
+// Hikaye izleri: bazi bolumlerde alanin kenarinda duran kucuk sus nesneleri (docs/tasarim/senaryo-bolge-01.md).
+// Bulmacayi etkilemezler, yalnizca merak uyandirmak icin dururlar. Her bolum en fazla bir iz kullanir.
+public static class Traces
+{
+    // targetPos: bolumde hedef kare varsa dunya konumu (10. bolumdeki telsiz diregi icin).
+    public static void Build(int levelNumber, Transform parent, Vector2 areaHalf, Vector3? targetPos = null)
+    {
+        switch (levelNumber)
+        {
+            case 3: Helmet(parent, new Vector3(areaHalf.x + 0.26f, 0f, -areaHalf.y + 0.6f)); break;
+            case 4: WheelTracks(parent, areaHalf); break;
+            case 8: StormDebris(parent, new Vector3(-(areaHalf.x + 0.3f), 0f, areaHalf.y * 0.3f)); break;
+            case 10: if (targetPos.HasValue) RadioMast(parent, targetPos.Value); break;
+        }
+    }
+
+    // Bolum 10 (bolge finali): hedefteki telsiz diregi; tepesindeki isik yanip soner (kapanis sahnesinde anlam kazanir).
+    static void RadioMast(Transform parent, Vector3 p)
+    {
+        var metal = Mats.Lit(Mats.Hex("#5A5660"), 0.4f);
+        var mast = Parts.Empty("Telsiz", parent);
+        mast.localPosition = p;
+        Parts.Add("Direk", mast, MeshFactory.RoundedCylinder(0.025f, 0.5f, 0.008f, 10), metal, new Vector3(0f, 0.25f, 0f), outline: false);
+        Parts.Add("Kol", mast, MeshFactory.RoundedBox(new Vector3(0.18f, 0.015f, 0.015f), 0.006f), metal, new Vector3(0f, 0.46f, 0f), outline: false);
+        var lamp = Parts.Add("Isik", mast, MeshFactory.Sphere(0.028f, 8, 12), null, new Vector3(0f, 0.53f, 0f), outline: false, castShadow: false);
+        Blinker.Attach(lamp, Mats.Hex("#FF4A3A"), 0.8f, 0f);
+    }
+
+    // Bolum 3: devrik kask. Yarim kure govde (yana devrilmis) + onundeki koyu siperlik seridi.
+    static void Helmet(Transform parent, Vector3 p)
+    {
+        var shell = Mats.Lit(Mats.Hex("#C9C2B0"), 0.3f);
+        var visor = Mats.Lit(Mats.Hex("#23222A"), 0.15f);
+        var root = Parts.Empty("Iz-Kask", parent);
+        root.localPosition = p;
+        root.localRotation = Quaternion.Euler(78f, 35f, 0f); // yana devrilmis, acik agzi yana bakar
+        var dome = Parts.Add("Govde", root, MeshFactory.Sphere(0.15f, 10, 18), shell, Vector3.zero);
+        dome.localScale = new Vector3(1f, 1f, 0.78f);
+        Parts.Add("Siperlik", root, MeshFactory.RoundedBox(new Vector3(0.22f, 0.05f, 0.08f), 0.02f), visor, new Vector3(0f, 0.02f, 0.13f));
+    }
+
+    // Bolum 4: koloniden (kuzey, +z) dagların oldugu yone uzanan cift tekerlek izi; donen iz yok.
+    static void WheelTracks(Transform parent, Vector2 areaHalf)
+    {
+        var mat = Mats.Lit(Mats.Hex("#4A2A20"), 0.08f);
+        float x = areaHalf.x + 0.3f, length = areaHalf.y * 2f + 3f, z = 1f;
+        foreach (float ox in new[] { -0.09f, 0.09f })
+            Parts.Add("Iz-Tekerlek", parent, MeshFactory.RoundedBox(new Vector3(0.07f, 0.012f, length), 0.02f), mat,
+                new Vector3(x + ox, 0.006f, z), outline: false, castShadow: false);
+    }
+
+    // Bolum 8: firtinanin izi: devrilmis gunes paneli, kuma gomulu kablo, kayalarin yanina yigilmis kum.
+    static void StormDebris(Transform parent, Vector3 p)
+    {
+        var panelMat = Mats.Lit(Mats.Hex("#17232F"), 0.55f);
+        var frameMat = Mats.Lit(Mats.Hex("#8A8A92"), 0.3f);
+        var cableMat = Mats.Lit(Mats.Hex("#232323"), 0.2f);
+        var sandMat = Mats.Lit(Mats.Hex("#8B5A42"), 0.15f);
+
+        var panel = Parts.Empty("Iz-Panel", parent);
+        panel.localPosition = p;
+        panel.localRotation = Quaternion.Euler(58f, 20f, 8f); // devrilmis, yarisi kuma gommus
+        Parts.Add("Panel", panel, MeshFactory.RoundedBox(new Vector3(0.5f, 0.02f, 0.32f), 0.015f), panelMat, Vector3.zero);
+        Parts.Add("Cerceve", panel, MeshFactory.RoundedBox(new Vector3(0.52f, 0.015f, 0.04f), 0.01f), frameMat, new Vector3(0f, 0f, 0.15f));
+
+        var cable = Parts.Add("Iz-Kablo", parent, MeshFactory.RoundedCylinder(0.018f, 0.7f, 0.006f, 10), cableMat,
+            p + new Vector3(-0.1f, -0.008f, -0.35f), outline: false);
+        cable.localRotation = Quaternion.Euler(0f, 24f, 90f);
+
+        Parts.Add("Iz-Kum", parent, MeshFactory.RoundedBox(new Vector3(0.6f, 0.1f, 0.5f), 0.22f), sandMat,
+            p + new Vector3(-0.25f, 0.02f, 0.35f), outline: false);
+    }
+}

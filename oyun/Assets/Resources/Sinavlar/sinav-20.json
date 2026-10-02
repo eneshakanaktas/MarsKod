@@ -1,0 +1,38 @@
+{
+  "bolum": 20,
+  "sorular": [
+    {
+      "soru": "if/else birlikte kullanıldığında ne olur?",
+      "secenekler": [
+        "Her ikisinin altındaki satırlar da çalışır",
+        "Şart doğruysa if'in altı, yanlışsa else'in altı çalışır; yalnızca biri",
+        "Önce if, sonra her zaman else çalışır",
+        "else olmadan if çalışmaz"
+      ],
+      "dogru": 1,
+      "aciklama": "if ve else iki ayrı yoldur: şart doğruysa yalnızca if'in altı, yanlışsa yalnızca else'in altı çalışır."
+    },
+    {
+      "soru": "rock_ahead(East) neyi kontrol eder?",
+      "secenekler": [
+        "Doğuda bir adım atarsa robotun durup durmayacağını (kaya ya da alanın sınırı)",
+        "Doğuda buz olup olmadığını",
+        "Robotu doğuya yürütür",
+        "Doğudaki kareyi temizler"
+      ],
+      "dogru": 0,
+      "aciklama": "rock_ahead(yön) yalnızca bakar: o yönde bir adım ilerlerse robot dururdu mu (kaya ya da alanın sınırı), True/False döner."
+    },
+    {
+      "soru": "Bir for döngüsünün içinde hem if hem de o if'in içinde başka bir if olabilir mi?",
+      "secenekler": [
+        "Hayır, bir döngünün içine yalnızca bir if konabilir",
+        "Evet; her iç içe geçişte bir girinti daha eklenir",
+        "Evet ama girintiye gerek yok",
+        "Yalnızca else ile olabilir"
+      ],
+      "dogru": 1,
+      "aciklama": "if'ler iç içe geçebilir; her katman bir girinti daha içeri yazılır (Bölüm 19'daki gibi)."
+    }
+  ]
+}

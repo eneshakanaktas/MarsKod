@@ -1,0 +1,38 @@
+{
+  "bolum": 10,
+  "sorular": [
+    {
+      "soru": "Bir for döngüsünden sonra, girintisiz (döngünün dışında) yazılan bir satır ne zaman çalışır?",
+      "secenekler": [
+        "Döngü her turunda bir kez, diğerleriyle birlikte",
+        "Döngü tamamen bitince, yalnızca bir kez",
+        "Hiç çalışmaz",
+        "Döngüden önce çalışır"
+      ],
+      "dogru": 1,
+      "aciklama": "Girintisiz satır döngünün bir parçası değildir; döngü bütün turlarını bitirince, yalnızca bir kez çalışır."
+    },
+    {
+      "soru": "Aynı satırı (örn. iki move) bir turda tekrar tekrar yazmak yerine ne yapılır?",
+      "secenekler": [
+        "Döngünün içine iki satır birden yazılır, ikisi de her turda çalışır",
+        "Python buna izin vermez",
+        "İki ayrı dosya açılır",
+        "Satırlar yarıya bölünür"
+      ],
+      "dogru": 0,
+      "aciklama": "Bir döngünün (for'un) içine birden fazla komut yazılabilir; her turda hepsi sırayla çalışır."
+    },
+    {
+      "soru": "for i in range(4): ile for i in range(5): arasındaki fark nedir?",
+      "secenekler": [
+        "Hiç fark yok",
+        "range(5) bir tur daha fazla tekrarlar",
+        "range(4) daha hızlı çalışır",
+        "range(5) robotu daha hızlı yürütür"
+      ],
+      "dogru": 1,
+      "aciklama": "range(N) içindeki sayı tekrar sayısıdır: range(5), range(4)'ten bir tur daha fazla döner."
+    }
+  ]
+}

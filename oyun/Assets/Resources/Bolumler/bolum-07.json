@@ -1,7 +1,10 @@
 {
   "numara": 7,
   "baslik": "Gidiş dönüş",
+  "etiket": "ÖDEV",
   "gorev": "11 hücre topla",
+  "giris": "Uzun yol! Döngüleri art arda kullan.",
+  "bitis": "11 hücre! Sera yeniden enerji aldı.",
   "harita": [
     ". . . . . .",
     ". . K . . .",

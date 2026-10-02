@@ -26,8 +26,14 @@ namespace MarsKod.Dunya
     {
         public int Number;
         public string Title;
+        /// <summary>Üst başlıktaki önek ("BÖLÜM" varsayılan; hikâye gerektirirse "ÖDEV" gibi)</summary>
+        public string Label = "BÖLÜM";
         /// <summary>Tek cümle görev (ekranın üstünde görünür)</summary>
         public string Goal;
+        /// <summary>Bölüm başlarken başlığın altında kısa süre görünen program metni (boş olabilir)</summary>
+        public string Intro = "";
+        /// <summary>Bölüm sonu ekranında görünen program metni (boş olabilir)</summary>
+        public string Outro = "";
         public int Cols, Rows;
         public Cell Robot;
         /// <summary>Toplanacak nesnelerin kareleri (türü Item; tarihsel adı Ices)</summary>
@@ -62,7 +68,7 @@ namespace MarsKod.Dunya
         /// <summary>JSON metninden bölümü okur; yanlışta DataFormatError verir (Türkçe, satır numaralı).</summary>
         public static Level Parse(string json)
         {
-            var known = new HashSet<string> { "numara", "baslik", "gorev", "harita", "komutlar", "konular", "parcalar", "python_kelimeleri", "ipuclari", "tipik_hatalar", "baslangic_kodu", "cozum" };
+            var known = new HashSet<string> { "numara", "baslik", "etiket", "gorev", "giris", "bitis", "harita", "komutlar", "konular", "parcalar", "python_kelimeleri", "ipuclari", "tipik_hatalar", "baslangic_kodu", "cozum" };
             var d = DataFields.ParseObject(json, known);
 
             var level = new Level
@@ -76,6 +82,9 @@ namespace MarsKod.Dunya
                 Solution = Code(d, "cozum"),
                 StartCode = d.ContainsKey("baslangic_kodu") ? Code(d, "baslangic_kodu") : "",
             };
+            if (d.ContainsKey("etiket")) level.Label = Text(d, "etiket");
+            if (d.ContainsKey("giris")) level.Intro = Text(d, "giris");
+            if (d.ContainsKey("bitis")) level.Outro = Text(d, "bitis");
             if (level.Number < 1) throw new DataFormatError("\"numara\" 1 ya da daha büyük olmalı.");
             if (level.Hints.Count == 0) throw new DataFormatError("\"ipuclari\" boş olamaz; en az bir ipucu yaz.");
             foreach (var c in level.Commands)
@@ -95,6 +104,7 @@ namespace MarsKod.Dunya
             foreach (var c in commands)
             {
                 if (c == "move") pieces.AddRange(Enum.GetNames(typeof(Direction)).Select(dir => "move(" + dir + ")"));
+                else if (c == "rock_ahead") pieces.AddRange(Enum.GetNames(typeof(Direction)).Select(dir => "rock_ahead(" + dir + ")"));
                 else pieces.Add(c + "()");
             }
             return pieces;
@@ -221,7 +231,12 @@ namespace MarsKod.Dunya
                     problems.Add("\"parcalar\" içindeki \"" + piece + "\" tek satırlık kod olmalı.");
                     continue;
                 }
-                string source = piece.TrimEnd().EndsWith(":") ? piece + "\n    pass\n" : piece + "\n";
+                // "else:" (ve ileride "elif ...:") tek başına Python'a geçersiz (önünde if ister); gecerliligini
+                // sinamak icin onune sahte bir if eklenir, parcanin kendisi degismez.
+                string trimmed = piece.TrimEnd();
+                string source = trimmed == "else:" || trimmed.StartsWith("elif ")
+                    ? "if True:\n    pass\n" + piece + "\n    pass\n"
+                    : trimmed.EndsWith(":") ? piece + "\n    pass\n" : piece + "\n";
                 try
                 {
                     Parser.Parse(source);

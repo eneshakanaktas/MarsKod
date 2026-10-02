@@ -1,0 +1,48 @@
+{
+  "numara": 19,
+  "baslik": "İki duyu bir arada",
+  "gorev": "3 hücre topla",
+  "harita": [
+    ". . . . . .",
+    ". B . . . .",
+    ". T . . . .",
+    "K B . . . .",
+    "B . . . . .",
+    "R . . . . ."
+  ],
+  "komutlar": ["move", "collect", "ice_here", "rock_ahead"],
+  "parcalar": ["move(North)", "move(East)", "collect()", "for i in range(3):", "if rock_ahead(North):", "else:", "if ice_here():"],
+  "konular": ["for döngüsü", "if/else", "ice_here", "rock_ahead", "iki sensörü birlikte kullanma"],
+  "ipuclari": [
+    "Bu kolonda hem bir kaya hem kırmızı bir kristal var. Kayaya bakmadan yürümek seni durdurur; kristali toplamaya çalışmak da.",
+    "Her turda önce `rock_ahead(North)` ile önüne bak: varsa doğuya kay, yoksa kuzeye çık. Kuzeye çıktığın her karede de `ice_here()` ile bak, yalnızca buz varsa topla.",
+    "`for i in range(5):` içinde `if rock_ahead(North): move(East) else: move(North)` sonra (else'in içinde, bir girinti daha) `if ice_here(): collect()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(5):", "    if rock_ahead(North):", "        move(East)", "    else:", "        move(North)", "        collect()"],
+      "aciklama": "ice_here() ile bakmadan collect() çağrılmış: robot kristal karesinde durur."
+    },
+    {
+      "kod": ["for i in range(4):", "    if rock_ahead(North):", "        move(East)", "    else:", "        move(North)", "        if ice_here():", "            collect()"],
+      "aciklama": "range(4) bir tur eksik: en üstteki hücre toplanmadan kalır."
+    }
+  ],
+  "baslangic_kodu": [
+    "for i in range(5):",
+    "    if rock_ahead(North):",
+    "        move(East)",
+    "    else:",
+    "        move(North)",
+    "        if ice_here():"
+  ],
+  "cozum": [
+    "for i in range(5):",
+    "    if rock_ahead(North):",
+    "        move(East)",
+    "    else:",
+    "        move(North)",
+    "        if ice_here():",
+    "            collect()"
+  ]
+}

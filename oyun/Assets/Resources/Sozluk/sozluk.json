@@ -69,6 +69,28 @@
         "if ice_here():",
         "    collect()    # kristalde collect() çağrılmaz"
       ]
+    },
+    {
+      "baslik": "else",
+      "kelimeler": ["else"],
+      "aciklama": "if'in yanıtı: soru yanlışsa (False) altındaki girintili satırlar çalışır. if ve else'den yalnızca biri çalışır, ikisi birden değil. else'in de sonunda iki nokta (:) ve altında girinti şart.",
+      "ornek": [
+        "if rock_ahead(East):",
+        "    move(North)   # kaya varsa",
+        "else:",
+        "    move(East)    # kaya yoksa"
+      ]
+    },
+    {
+      "baslik": "rock_ahead",
+      "kelimeler": ["rock_ahead"],
+      "aciklama": "Robota bir yöne doğru bir adım atarsa durur mu diye sorar (kaya ya da alanın sınırı): varsa True, yoksa False verir. İlerletmez, yalnızca bakar. move gibi parantezin içine bir yön yazılır.",
+      "ornek": [
+        "if rock_ahead(East):",
+        "    move(North)",
+        "else:",
+        "    move(East)"
+      ]
     }
   ]
 }

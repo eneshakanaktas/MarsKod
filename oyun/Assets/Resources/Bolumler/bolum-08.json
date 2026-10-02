@@ -1,7 +1,10 @@
 {
   "numara": 8,
   "baslik": "Kayanın çevresi",
+  "etiket": "ÖDEV",
   "gorev": "11 hücre topla",
+  "giris": "Kayanın çevresini dolaş.",
+  "bitis": "Harika rota!",
   "harita": [
     ". . . . . .",
     ". E E E E .",

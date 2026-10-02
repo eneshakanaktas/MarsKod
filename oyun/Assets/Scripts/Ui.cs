@@ -40,4 +40,11 @@ public static class Ui
         var sa = Screen.safeArea;
         return Mathf.Max(0f, sa.yMin) * 1080f / Mathf.Max(1, Screen.width);
     }
+
+    // Telefonun ustteki guvenli payi (çentik vb.), arayuz biriminde
+    public static float SafeTop()
+    {
+        var sa = Screen.safeArea;
+        return Mathf.Max(0f, Screen.height - sa.yMax) * 1080f / Mathf.Max(1, Screen.width);
+    }
 }

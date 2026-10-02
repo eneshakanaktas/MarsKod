@@ -127,7 +127,7 @@ namespace MarsKod.Dunya
         public bool Complete => IceLeft == 0 && OnTarget;
 
         /// <summary>Oyunda olan tüm komutlar (bölüm dosyasındaki "komutlar" bunlardan seçilir)</summary>
-        public static readonly string[] AllCommands = { "move", "collect", "ice_here" };
+        public static readonly string[] AllCommands = { "move", "collect", "ice_here", "rock_ahead" };
 
         public World(int cols, int rows, Cell robot, IEnumerable<Cell> iceCells,
             IEnumerable<Cell> rockCells = null, Cell? target = null, IEnumerable<string> commands = null, IEnumerable<Cell> crystalCells = null)
@@ -203,6 +203,15 @@ namespace MarsKod.Dunya
             return found;
         }
 
+        /// <summary>O yönde bir adım ilerlerse robot durur mu (kaya ya da alanın sınırı)? İlerlemez, yalnızca bakar.</summary>
+        public bool RockAhead(Direction d)
+        {
+            var to = Robot.Step(d);
+            bool blocked = !Inside(to) || RockAt(to);
+            Events.Add(new Scanned { At = to, Found = blocked });
+            return blocked;
+        }
+
         // --- oyuncunun kullandığı komutlar ---
 
         /// <summary>Motora dışarıdan verilen isimler: move, collect, ice_here ve yönler (North, East, South, West).</summary>
@@ -231,6 +240,13 @@ namespace MarsKod.Dunya
                     NoKeywords("ice_here", kwargs);
                     if (args.Count != 0) throw Values.PyError("TypeError", "ice_here() takes no arguments (" + args.Count + " given)");
                     return IceHere();
+                }),
+                ["rock_ahead"] = new PyBuiltin("rock_ahead", (args, kwargs) =>
+                {
+                    Unlocked("rock_ahead");
+                    NoKeywords("rock_ahead", kwargs);
+                    if (args.Count != 1) throw Values.PyError("TypeError", "rock_ahead() takes exactly one argument (" + args.Count + " given)");
+                    return RockAhead(DirectionOf(args[0]));
                 }),
             };
             // Yönler şimdilik metin olarak tutulur: print(East) -> East

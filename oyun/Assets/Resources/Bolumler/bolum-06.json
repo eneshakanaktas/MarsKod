@@ -1,7 +1,10 @@
 {
   "numara": 6,
   "baslik": "Atlamalı",
+  "etiket": "ÖDEV",
   "gorev": "4 hücre topla",
+  "giris": "Döngünün içine birden çok komut koyabilirsin.",
+  "bitis": "Güzel iş!",
   "harita": [
     ". . . . . .",
     ". . . . E .",

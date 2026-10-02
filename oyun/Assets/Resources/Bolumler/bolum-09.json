@@ -1,7 +1,10 @@
 {
   "numara": 9,
   "baslik": "Bozuk rutin",
+  "etiket": "ÖDEV",
   "gorev": "Rutini onar",
+  "giris": "Bu rutin robotun belleğinden kurtarıldı. Bozuk görünüyor; onar.",
+  "bitis": "Rutin onarıldı! Belleğin geri kalanı okunamıyor.",
   "harita": [
     ". . . . . .",
     ". . . . . .",
@@ -32,7 +35,7 @@
       "aciklama": "range(5) bir tur fazla: robot sondaki kayaya çarpar."
     }
   ],
-  "baslangic_kodu": ["for i in range(3):", "    move(East)", "collect()"],
+  "baslangic_kodu": ["# sabah turu - D.A.", "for i in range(3):", "    move(East)", "collect()"],
   "cozum": [
     "for i in range(4):",
     "    move(East)",

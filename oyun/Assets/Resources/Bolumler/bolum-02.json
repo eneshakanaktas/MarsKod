@@ -1,7 +1,10 @@
 {
   "numara": 2,
   "baslik": "Kaya engeli",
+  "etiket": "ÖDEV",
   "gorev": "2 hücre topla",
+  "giris": "Koloni enerji hücresi istiyor. Etrafa saçılanları topla.",
+  "bitis": "2 hücre! Koloninin ışıkları yanıyor.",
   "harita": [
     ". . . . . .",
     ". . . . . .",

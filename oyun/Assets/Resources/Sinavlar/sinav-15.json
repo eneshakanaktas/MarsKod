@@ -1,0 +1,38 @@
+{
+  "bolum": 15,
+  "sorular": [
+    {
+      "soru": "ice_here() ne yapar?",
+      "secenekler": [
+        "Robotun durduğu karede buz var mı diye bakar, toplamaz",
+        "Buzu toplar",
+        "Robotu ileri yürütür",
+        "Haritayı gösterir"
+      ],
+      "dogru": 0,
+      "aciklama": "ice_here() yalnızca bakar (True ya da False döner); toplamak için ayrıca collect() çağırmak gerekir."
+    },
+    {
+      "soru": "if ice_here(): altındaki girintili satır ne zaman çalışır?",
+      "secenekler": [
+        "Her zaman çalışır",
+        "Yalnızca ice_here() True (doğru) dönerse çalışır",
+        "Yalnızca False dönerse çalışır",
+        "Hiçbir zaman çalışmaz"
+      ],
+      "dogru": 1,
+      "aciklama": "if bir şarttır: altındaki girintili satırlar yalnızca şart doğruysa (True) çalışır."
+    },
+    {
+      "soru": "Kırmızı kristalin üstünde collect() çağırırsan ne olur?",
+      "secenekler": [
+        "Kristal toplanır",
+        "Hiçbir şey olmaz, robot yoluna devam eder",
+        "Robot durur: bu bir oyun kuralı, kristal toplanamaz",
+        "Oyun yeniden başlar"
+      ],
+      "dogru": 2,
+      "aciklama": "Kristalin üstünden geçilebilir ama collect() onu toplamaya çalışır ve robot durur; önce ice_here() ile bakmak gerekir."
+    }
+  ]
+}

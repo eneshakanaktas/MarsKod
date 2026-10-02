@@ -1,7 +1,10 @@
 {
   "numara": 5,
   "baslik": "Küçük sınav",
+  "etiket": "ÖDEV",
   "gorev": "5 hücre ve hedef",
+  "giris": "Sınav zamanı! Öğrendiklerini birleştir.",
+  "bitis": "Sınavı geçtin! Bu ödevi alan öğrenci sayısı: 1.",
   "harita": [
     ". . . . . .",
     ". . . . . .",

@@ -1,0 +1,58 @@
+{
+  "numara": 17,
+  "baslik": "İki çatal",
+  "gorev": "2 hücre topla",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". B . . . .",
+    "B . K . . .",
+    "R K . . . ."
+  ],
+  "komutlar": ["move", "collect", "rock_ahead"],
+  "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "if rock_ahead(East):", "else:"],
+  "konular": ["if/else", "rock_ahead", "aynı kalıbı iki kez kullanma"],
+  "ipuclari": [
+    "Bu sefer yolda iki kaya var, art arda iki kez karar vermen gerekiyor.",
+    "Aynı `if rock_ahead(East): ... else: ...` kalıbını iki kez yaz: biri ilk kayada, biri ikinci kayada. Aralarında bir `move(East)` ile ikinci kayaya yaklaş.",
+    "İlk çatalda kuzeye çık ve topla; bir doğuya git; ikinci çatalda yine `rock_ahead(East)` ile bak, kuzeye çık ve topla."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": [
+        "if rock_ahead(East):", "    move(North)", "else:", "    move(East)",
+        "collect()", "move(East)", "move(East)"
+      ],
+      "aciklama": "İkinci kayaya hiç bakılmamış; robot ona çarpar."
+    },
+    {
+      "kod": [
+        "if rock_ahead(East):", "    move(North)", "else:", "    move(East)",
+        "collect()", "move(East)",
+        "if rock_ahead(East):", "    move(North)", "else:", "    move(East)"
+      ],
+      "aciklama": "İkinci çataldan sonra collect() unutulmuş; ikinci hücre toplanmaz."
+    }
+  ],
+  "baslangic_kodu": [
+    "if rock_ahead(East):",
+    "    move(North)",
+    "else:",
+    "    move(East)",
+    "collect()"
+  ],
+  "cozum": [
+    "if rock_ahead(East):",
+    "    move(North)",
+    "else:",
+    "    move(East)",
+    "collect()",
+    "move(East)",
+    "if rock_ahead(East):",
+    "    move(North)",
+    "else:",
+    "    move(East)",
+    "collect()"
+  ]
+}

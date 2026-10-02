@@ -25,7 +25,7 @@ public class FullScreenPanel : VisualElement
         top.style.alignItems = Align.Center;
         top.style.justifyContent = Justify.SpaceBetween;
         top.style.paddingLeft = 52; top.style.paddingRight = 44;
-        top.style.paddingTop = SafeTop() + 44; top.style.paddingBottom = 24;
+        top.style.paddingTop = Ui.SafeTop() + 44; top.style.paddingBottom = 24;
         top.Add(Ui.Text(heading, fBold, 64, ink));
         top.Add(CloseButton(buttonBg, hairline));
         Add(top);
@@ -74,11 +74,5 @@ public class FullScreenPanel : VisualElement
         p.MoveTo(new Vector2(w * 0.18f, h * 0.18f)); p.LineTo(new Vector2(w * 0.82f, h * 0.82f));
         p.MoveTo(new Vector2(w * 0.82f, h * 0.18f)); p.LineTo(new Vector2(w * 0.18f, h * 0.82f));
         p.Stroke();
-    }
-
-    static float SafeTop()
-    {
-        var sa = Screen.safeArea;
-        return Mathf.Max(0f, Screen.height - sa.yMax) * 1080f / Mathf.Max(1, Screen.width);
     }
 }

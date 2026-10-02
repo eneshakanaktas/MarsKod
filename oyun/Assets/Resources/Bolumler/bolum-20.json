@@ -1,0 +1,51 @@
+{
+  "numara": 20,
+  "baslik": "Bölge finali",
+  "gorev": "3 hücre ve hedef",
+  "harita": [
+    ". . H . . .",
+    ". K B . . .",
+    ". T . . . .",
+    "K B . . . .",
+    "B . . . . .",
+    "R . . . . ."
+  ],
+  "komutlar": ["move", "collect", "ice_here", "rock_ahead"],
+  "parcalar": ["move(North)", "move(East)", "collect()", "for i in range(3):", "if rock_ahead(North):", "else:", "if ice_here():"],
+  "konular": ["for döngüsü", "if/else", "ice_here", "rock_ahead", "hedef kare", "bölge finali"],
+  "ipuclari": [
+    "Yol dik değil: iki kez kayaya takılıp doğuya kaymak, bir yerde de kristali atlamak gerekiyor. Bölüm 18 ve 19'daki aynı döngü burada da çalışır.",
+    "Tek bir döngü yeter: her turda önce `rock_ahead(North)` ile önüne bak (kaya varsa doğuya kay), yoksa kuzeye çık ve `ice_here()` ile bakıp buz varsa topla. Kaç tur gerektiğini say: kaç kuzey adımı, kaç doğu kayması var?",
+    "`for i in range(7):` içinde `if rock_ahead(North): move(East) else: move(North)` ve altında (bir girinti daha) `if ice_here(): collect()`. Döngü robotu tam hedefte bırakır."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": [
+        "for i in range(5):", "    if rock_ahead(North):", "        move(East)",
+        "    else:", "        move(North)", "        if ice_here():", "            collect()"
+      ],
+      "aciklama": "range(5) yetmez: iki kez doğuya kaymak da birer tur harcıyor, robot hedefin gerisinde kalır."
+    },
+    {
+      "kod": [
+        "for i in range(7):", "    if rock_ahead(North):", "        move(East)",
+        "    else:", "        move(North)", "        collect()"
+      ],
+      "aciklama": "collect() ice_here() ile korunmamış: robot kristal karesinde durur."
+    }
+  ],
+  "baslangic_kodu": [
+    "for i in range(7):",
+    "    if rock_ahead(North):",
+    "        move(East)"
+  ],
+  "cozum": [
+    "for i in range(7):",
+    "    if rock_ahead(North):",
+    "        move(East)",
+    "    else:",
+    "        move(North)",
+    "        if ice_here():",
+    "            collect()"
+  ]
+}

@@ -1,7 +1,10 @@
 {
   "numara": 10,
   "baslik": "Telsiz",
+  "etiket": "ÖDEV",
   "gorev": "5 hücre ve hedef",
+  "giris": "Son ödev! Telsize enerji ver.",
+  "bitis": "Bölge 1 tamamlandı! Tebrikler!",
   "harita": [
     ". . K . H .",
     ". . . . . .",

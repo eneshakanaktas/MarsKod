@@ -1,0 +1,50 @@
+{
+  "numara": 18,
+  "baslik": "Köşeyi dön",
+  "gorev": "4 hücre topla",
+  "harita": [
+    ". . . . . .",
+    ". B . . . .",
+    ". B . . . .",
+    "K B . . . .",
+    "B . . . . .",
+    "R . . . . ."
+  ],
+  "komutlar": ["move", "collect", "rock_ahead"],
+  "parcalar": ["move(North)", "move(East)", "collect()", "for i in range(3):", "if rock_ahead(North):", "else:"],
+  "konular": ["for döngüsü", "if/else", "rock_ahead", "döngü içinde dallanma"],
+  "ipuclari": [
+    "Kolon kuzeye çıkıyor ama ortada bir kaya var; onu bir kare doğudan dolaşıp devam etmen gerekiyor.",
+    "Her turda önce önüne bak: `rock_ahead(North)` doğruysa bir adım doğuya kay, değilse kuzeye devam et. Dallanma `for`'un içinde olmalı, her turda tekrar sorulmalı.",
+    "`for i in range(5):` altına girintili `if rock_ahead(North):` / `    move(East)` / `else:` / `    move(North)`; en altta (if/else'in dışında, for'un içinde) girintisiz `collect()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(5):", "    move(North)", "    collect()"],
+      "aciklama": "Hiç bakmadan hep kuzeye yürümek: robot ikinci turda kayaya çarpar."
+    },
+    {
+      "kod": ["for i in range(5):", "    if rock_ahead(North):", "        move(East)", "    else:", "        move(South)", "    collect()"],
+      "aciklama": "else dalında yanlış yön yazılmış (move(South), move(North) olmalıydı): robot ilk turda alanın dışına çıkmaya çalışır."
+    },
+    {
+      "kod": ["for i in range(5):", "    if rock_ahead(North):", "        move(East)", "    else:", "        move(North)"],
+      "aciklama": "collect() unutulmuş; robot doğru yoldan gider ama hiçbir hücre toplamaz."
+    }
+  ],
+  "baslangic_kodu": [
+    "for i in range(5):",
+    "    if rock_ahead(North):",
+    "        move(East)",
+    "    else:",
+    "        move(North)"
+  ],
+  "cozum": [
+    "for i in range(5):",
+    "    if rock_ahead(North):",
+    "        move(East)",
+    "    else:",
+    "        move(North)",
+    "    collect()"
+  ]
+}

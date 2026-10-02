@@ -1,0 +1,28 @@
+{
+  "bolum": 5,
+  "sorular": [
+    {
+      "soru": "move(East) robotu hangi yöne götürür?",
+      "secenekler": ["Kuzeye (yukarı)", "Doğuya (sağa)", "Güneye (aşağı)", "Batıya (sola)"],
+      "dogru": 1,
+      "aciklama": "East doğu demektir; move(East) robotu bir kare doğuya (sağa) götürür."
+    },
+    {
+      "soru": "for i in range(3): altındaki girintili satırlar kaç kez çalışır?",
+      "secenekler": ["1 kez", "2 kez", "3 kez", "Sonsuz kez"],
+      "dogru": 2,
+      "aciklama": "range(3) üç tur demektir: i sırayla 0, 1, 2 olur, altındaki satırlar 3 kez çalışır."
+    },
+    {
+      "soru": "Python girintiyi (satır başındaki boşluğu) neden kullanır?",
+      "secenekler": [
+        "Yalnızca görünüm güzel olsun diye",
+        "Hangi satırların bir döngü ya da kararın içinde olduğunu ondan anlar",
+        "Kodu hızlandırmak için",
+        "Hiçbir işe yaramaz"
+      ],
+      "dogru": 1,
+      "aciklama": "Girinti, hangi satırların bir döngünün (ya da ileride bir kararın) içinde olduğunu gösterir; yanlış girinti yanlış sonuç verir."
+    }
+  ]
+}

@@ -1,7 +1,10 @@
 {
   "numara": 1,
   "baslik": "İlk adımlar",
+  "etiket": "ÖDEV",
   "gorev": "Hedef kareye git",
+  "giris": "Hoş geldin! Robotu hedef kareye götür.",
+  "bitis": "Harika! BKM-7 seni dinliyor.",
   "harita": [
     ". . . . . .",
     ". . . . . .",

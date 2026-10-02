@@ -1,7 +1,10 @@
 {
   "numara": 3,
   "baslik": "Tekrar tekrar",
+  "etiket": "ÖDEV",
   "gorev": "5 hücre topla",
+  "giris": "Aynı işi tekrar tekrar yazma: döngü kullan.",
+  "bitis": "Döngüleri kaptın!",
   "harita": [
     ". . . . . .",
     ". K . . . .",

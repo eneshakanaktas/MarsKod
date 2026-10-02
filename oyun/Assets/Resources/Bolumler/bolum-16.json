@@ -1,0 +1,47 @@
+{
+  "numara": 16,
+  "baslik": "Çatal yol",
+  "gorev": "2 hücre topla",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    "B . B . . .",
+    "R K . . . ."
+  ],
+  "komutlar": ["move", "collect", "rock_ahead"],
+  "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "if rock_ahead(East):", "else:"],
+  "python_kelimeleri": ["else"],
+  "konular": ["if/else", "rock_ahead", "girinti"],
+  "ipuclari": [
+    "Robotun hemen doğusunda bir kaya var. Önce ona bakman gerek; oraya kör yürürsen robot durur.",
+    "`rock_ahead(East)` \"doğuda bir adım ilerlersem dururum mu?\" diye sorar, True ya da False döner. `if` doğruysa bir şey yap, `else` yanlışsa başka bir şey yap: ikisinden yalnızca biri çalışır.",
+    "`if rock_ahead(East):` altına girintili `move(North)`; girintisiz `else:` altına girintili `move(East)`. Her iki dalın altına da (girintisiz) `collect()` ve yola devam et."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["move(East)", "collect()"],
+      "aciklama": "Önüne bakmadan doğuya yürümek: robot kayaya çarpar ve durur."
+    },
+    {
+      "kod": ["if rock_ahead(East):", "    move(East)", "else:", "    move(North)", "collect()"],
+      "aciklama": "if ve else'in içi ters: kaya varken (True) yine doğuya gidiyor, robot çarpar."
+    },
+    {
+      "kod": ["if rock_ahead(East):", "    move(North)", "else:", "    move(East)"],
+      "aciklama": "collect() unutulmuş; robot doğru kareye gelse de hücreyi toplamaz."
+    }
+  ],
+  "baslangic_kodu": ["if rock_ahead(East):", "    move(North)"],
+  "cozum": [
+    "if rock_ahead(East):",
+    "    move(North)",
+    "else:",
+    "    move(East)",
+    "collect()",
+    "move(East)",
+    "move(East)",
+    "collect()"
+  ]
+}

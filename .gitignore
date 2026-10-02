@@ -55,3 +55,9 @@ motor-test/**/obj/
 
 # Godot önbelleği (açılışta kendiliğinden üretilir)
 prototipler/**/.godot/
+
+# Unity derleme / -shots deneme günlükleri (kökte, Claude'un denetim koşularından)
+/build.log
+/build-android.log
+/oyun-shots.log
+/opening.log

@@ -24,6 +24,9 @@ public class Oyun : MonoBehaviour
     // Fotograf kuculurse bu mesafe de onunla birlikte kuculur.
     const float HorizonAboveArea = 0.106f;
     const float StartYaw = 125f;
+    // Bolge 1 finali: "Oyuna yapilacaklar" madde 5 (docs/tasarim/senaryo-bolge-01.md). Ses yok, bu yuzden sessiz hali.
+    const int Bolge1SonBolum = 10;
+    const string Bolge1KapanisSatiri = "Bilinmeyen sinyal algılandı (kutup bölgesi). Bu sinyal ödevin parçası değil.";
 
 
     Camera cam;
@@ -48,6 +51,9 @@ public class Oyun : MonoBehaviour
     string code = "";
     // Deneme goruntuleri alinirken oyuncunun kayitli kodu kullanilmaz ve ustune yazilmaz
     bool shotsMode;
+    // -shots'un genel bolum-bolum taramasinda sinavi atlamak icin (her bes bolumde durup beklemesin);
+    // QuizCheck kendi icinde gecici olarak kapatip sinavi gercekten dener.
+    bool suppressQuiz;
     Coroutine program;
     bool running, done, complete;
     // Adim adim modu: her satirdan sonra ⏭ basisini bekler (stepRequested: bir satir daha calissin)
@@ -60,6 +66,9 @@ public class Oyun : MonoBehaviour
     readonly HintView hintView = new HintView();
     // Kod sozlugu (Resources/Sozluk/sozluk.json); dosya okunamazsa bos
     Glossary glossary = new Glossary();
+    // Mini sinav (her 5 bolumden sonra, zorunlu): bolum numarasina gore sinav; hangi bolumlerin sinavi gecildigi kalicidir.
+    readonly Dictionary<int, Quiz> quizzes = new Dictionary<int, Quiz>();
+    readonly HashSet<int> quizzesPassed = new HashSet<int>();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Boot()
@@ -91,6 +100,33 @@ public class Oyun : MonoBehaviour
             }
         }
         levels.Sort((a, b) => a.Number.CompareTo(b.Number));
+    }
+
+    // Resources/Sinavlar icindeki tum sinav dosyalari; bozuk dosya atlanir (sebebi log'a yazilir).
+    void LoadQuizzes()
+    {
+        foreach (var file in Resources.LoadAll<TextAsset>("Sinavlar"))
+        {
+            try
+            {
+                var q = Quiz.Parse(file.text);
+                quizzes[q.AfterLevel] = q;
+            }
+            catch (DataFormatError e)
+            {
+                Debug.LogError("Sınav dosyası okunamadı: " + file.name + ": " + e.Message);
+            }
+        }
+        foreach (var s in PlayerPrefs.GetString("sinav", "").Split(','))
+            if (int.TryParse(s, out var n)) quizzesPassed.Add(n);
+    }
+
+    void MarkQuizPassed(int afterLevel)
+    {
+        quizzesPassed.Add(afterLevel);
+        if (shotsMode) return;
+        PlayerPrefs.SetString("sinav", string.Join(",", quizzesPassed));
+        PlayerPrefs.Save();
     }
 
     void LoadGlossary()
@@ -135,7 +171,7 @@ public class Oyun : MonoBehaviour
         {
             if (a[i] == "-kalite" && i + 1 < a.Length) QualitySettings.SetQualityLevel(int.Parse(a[i + 1]), true);
             if (a[i] == "-cizgisiz") Parts.NoOutline = true;
-            if (a[i] == "-shots") shotsMode = true;
+            if (a[i] == "-shots") shotsMode = suppressQuiz = true;
             if (a[i] == "-robot" && i + 1 < a.Length && a[i + 1] == "oyuncak") robotModel = RobotModel.Toy;
             if (a[i] == "-robot" && i + 1 < a.Length && a[i + 1] == "gezgin") robotModel = RobotModel.Rover;
         }
@@ -161,6 +197,10 @@ public class Oyun : MonoBehaviour
         hud.GlossaryPressed += () => hud.ShowGlossary(GlossaryEntries());
         hud.StarsToggled += () => { starsTarget = starsTarget > 0.5f ? 0f : 1f; hud.SetStars(starsTarget > 0.5f); };
 
+        Sound.Init(transform);
+        hud.SetSound(Sound.Enabled);
+        hud.SoundToggled += () => { Sound.SetEnabled(!Sound.Enabled); hud.SetSound(Sound.Enabled); };
+
         xp = Xp.Load(PlayerPrefs.GetString("xp", ""));
         hud.SetTotalXp(xp.Total);
         hud.TierEarned = t => level != null && xp.Has(level.Number, (LineKind)((int)t + 1));
@@ -177,10 +217,21 @@ public class Oyun : MonoBehaviour
 
         LoadLevels();
         LoadGlossary();
+        LoadQuizzes();
         int start = 1;
         for (int i = 0; i < a.Length - 1; i++)
             if (a[i] == "-bolum") int.TryParse(a[i + 1], out start);
         LoadLevel(Mathf.Clamp(levels.FindIndex(l => l.Number == start), 0, levels.Count - 1));
+
+        bool shotsArg = System.Array.IndexOf(a, "-shots") >= 0;
+        bool showOpening = start == 1 && !shotsArg && PlayerPrefs.GetInt("acilis_gorundu", 0) == 0;
+        if (System.Array.IndexOf(a, "-acilis") >= 0) showOpening = true; // test icin: her zaman goster
+        if (showOpening)
+        {
+            PlayerPrefs.SetInt("acilis_gorundu", 1);
+            PlayerPrefs.Save();
+            hud.ShowOpening(() => { });
+        }
 
         for (int i = 0; i < a.Length - 1; i++)
             if (a[i] == "-shots") { shotsMode = true; LoadLevel(levelIndex); StartCoroutine(Shots(a[i + 1])); }
@@ -357,6 +408,7 @@ public class Oyun : MonoBehaviour
         for (int i = 0; i < level.Rocks.Count; i++)
             Obstacles.Create(region, levelRoot, Pos(level.Rocks[i]), i);
         target = level.Target.HasValue ? Target.Create(levelRoot, Pos(level.Target.Value)) : null;
+        Traces.Build(level.Number, levelRoot, new Vector2(AreaHalfX, AreaHalfZ), level.Target.HasValue ? Pos(level.Target.Value) : (Vector3?)null);
 
         robot.ResetTo(Pos(level.Robot), StartYaw);
         string saved = SavedCode(level);
@@ -365,7 +417,7 @@ public class Oyun : MonoBehaviour
         code = hud.Code;
         hud.SetOpenWords(MarsKod.Dunya.Suggestions.OpenWords(levels, level.Number));
         hud.SetPieces(level.Pieces, Palette.NewPieces(levels, level.Number));
-        hud.SetLevel(level.Number, level.Title, level.Goal, level.Ices.Count, level.Item);
+        hud.SetLevel(level.Number, level.Label, level.Title, level.Goal, level.Ices.Count, level.Item, level.Intro);
         hintView.Close();
     }
 
@@ -464,7 +516,13 @@ public class Oyun : MonoBehaviour
         }
         if (done && complete && HasNext)
         {
-            LoadLevel(levelIndex + 1);
+            int justFinished = level.Number, nextIndex = levelIndex + 1;
+            if (!suppressQuiz && quizzes.TryGetValue(justFinished, out var q) && !quizzesPassed.Contains(justFinished))
+            {
+                hud.ShowQuiz(q, () => { MarkQuizPassed(justFinished); LoadLevel(nextIndex); });
+                return;
+            }
+            LoadLevel(nextIndex);
             return;
         }
         StartProgram(stepping: false);
@@ -488,16 +546,32 @@ public class Oyun : MonoBehaviour
     }
 
     // Bolum secme ekraninin satirlari: her bolumun adi, hedefi, kazanilan XP'si (XP > 0 = cozuldu)
-    List<LevelSelect.Entry> LevelEntries() => levels.Select(l => new LevelSelect.Entry
+    // Kilit kurali: bolum 1 her zaman acik; sonraki bir bolum, bir oncekinin XP'si olmadan (hic cozulmediyse) kilitli.
+    // Su an oynanan bolum kurala uymasa bile (orn. -bolum ile dogrudan acildiysa) kilitli gosterilmez.
+    List<LevelSelect.Entry> LevelEntries()
     {
-        Number = l.Number, Title = l.Title, Goal = l.Goal,
-        Xp = xp.LevelTotal(l.Number), Current = l == level,
-    }).ToList();
+        var entries = new List<LevelSelect.Entry>();
+        bool prevSolved = true;
+        foreach (var l in levels)
+        {
+            int here = xp.LevelTotal(l.Number);
+            entries.Add(new LevelSelect.Entry
+            {
+                Number = l.Number, Title = l.Title, Goal = l.Goal,
+                Xp = here, Current = l == level, Locked = !shotsMode && !prevSolved && l != level,
+            });
+            prevSolved = here > 0;
+        }
+        return entries;
+    }
 
     void PickLevel(int number)
     {
         int idx = levels.FindIndex(l => l.Number == number);
-        if (idx >= 0) LoadLevel(idx);
+        if (idx < 0) return;
+        // kilitli bolume doğrudan cagrilsa bile (orn. deneme) girilmez; onceki bolum bitmeli (shotsMode'da kilit yok)
+        if (!shotsMode && idx > 0 && xp.LevelTotal(levels[idx - 1].Number) == 0 && levels[idx] != level) return;
+        LoadLevel(idx);
     }
 
     // Ampul: 1. -> 2. -> 3. ipucu, bir daha basinca kapanir; tekrar acilinca yine 1.'den baslar.
@@ -601,9 +675,11 @@ public class Oyun : MonoBehaviour
                 xpLine = "+" + earned + " XP · " + Xp.Name(kind) + " ile çözdün";
             }
             else xpLine = Xp.Name(kind) + " ile çözdün · bu XP daha önce alındı";
-            hud.SetDone(HasNext, xpLine, xp.NextBetterText(level.Number, kind));
+            hud.SetDone(HasNext, xpLine, xp.NextBetterText(level.Number, kind), level.Outro);
             done = true;
+            Sound.Celebrate();
             yield return robot.Celebrate();
+            if (level.Number == Bolge1SonBolum) yield return ClosingSceneBolge1();
         }
         else
         {
@@ -624,6 +700,16 @@ public class Oyun : MonoBehaviour
         program = null;
     }
 
+    // Bolge 1 kapanisi (sessiz hali; ses eklenince hisirti + SOS bip burada calar): robot guneye doner,
+    // telsiz diregindeki isik (Traces.RadioMast) zaten yanip sonuyor; program metni ikinci, habersiz satira gecer.
+    IEnumerator ClosingSceneBolge1()
+    {
+        yield return Tween.Wait(0.9f);
+        yield return robot.TurnTo(180f, 0.5f);
+        yield return Tween.Wait(0.6f);
+        hud.SetOutro(Bolge1KapanisSatiri);
+    }
+
     static float Yaw(Direction d) => d == Direction.North ? 0f : d == Direction.East ? 90f : d == Direction.South ? 180f : 270f;
 
     IEnumerator Face(Direction d)
@@ -637,10 +723,12 @@ public class Oyun : MonoBehaviour
         switch (e)
         {
             case Moved m:
+                Sound.Move();
                 yield return Face(m.Direction);
                 yield return robot.MoveTo(Pos(m.To));
                 break;
             case Blocked b:
+                Sound.Bump();
                 yield return Face(b.Direction);
                 yield return robot.Bump();
                 break;
@@ -649,6 +737,7 @@ public class Oyun : MonoBehaviour
                 yield return Tween.Wait(0.12f);
                 if (c.IceIndex >= 0)
                 {
+                    Sound.Collect();
                     pickups[c.IceIndex].Pop();
                     colonyPower.Deliver(world.TransformPoint(Pos(level.Ices[c.IceIndex])));
                     hud.SetCollected(c.Total);
@@ -660,6 +749,7 @@ public class Oyun : MonoBehaviour
                 yield return Tween.Wait(0.45f);
                 break;
             case Rejected _:
+                Sound.Bump();
                 yield return robot.Collect();
                 yield return robot.Bump();
                 break;
@@ -669,6 +759,7 @@ public class Oyun : MonoBehaviour
     // Durma sebebini Turkce anlatir; Python hatasinda Python'un kendi mesaji da altta gorunur.
     void ShowStop(RunReport report)
     {
+        Sound.Error();
         if (report.Rule != null)
         {
             hud.ShowMessage("OYUN KURALI", report.Rule.Title, report.Rule.Text, null, error: true);
@@ -895,12 +986,70 @@ public class Oyun : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
     }
 
+    // ---- Sinav denetimi (-shots icinde): sinavli bir bolumu cozup "Sonraki bolum"e basar, sinavi dogru cevaplarla gecer ----
+    // Normalde -shots'un bolum-bolum taramasi sinavi atlar (suppressQuiz); burada gecici acilir. Log'da "SINAV DENETIMI:" satiri.
+    IEnumerator QuizCheck(string dir)
+    {
+        var mouse = UnityEngine.InputSystem.Mouse.current;
+        if (mouse == null) { Debug.Log("SINAV DENETIMI: fare yok, atlandi"); yield break; }
+        int idx = levels.FindIndex(l => quizzes.ContainsKey(l.Number));
+        if (idx < 0) { Debug.Log("SINAV DENETIMI: sinavli bolum yok, atlandi"); yield break; }
+        int quizLevel = levels[idx].Number;
+        quizzesPassed.Remove(quizLevel); // onceki denemeden kalmasin
+        suppressQuiz = false;
+        LoadLevel(idx);
+        SetCode(level.Solution);
+        yield return new WaitForSeconds(0.5f);
+        yield return MouseClick(mouse, hud.RunScreenPoint()); // Calistir
+        yield return new WaitForSeconds(0.15f);
+        if (!running) yield return MouseClick(mouse, hud.RunScreenPoint()); // ilk tiklama bazen pencere odagini kacirir
+        while (running) yield return null;
+        string problem = !complete ? "cozum bolumu bitirmedi" : null;
+        yield return new WaitForSeconds(0.3f);
+        yield return MouseClick(mouse, hud.RunScreenPoint()); // Sonraki bolum -> sinavi acar
+        yield return new WaitForSeconds(0.15f);
+        if (problem == null && !hud.QuizOpen) yield return MouseClick(mouse, hud.RunScreenPoint());
+        yield return new WaitForSeconds(0.3f);
+
+        if (problem == null && !hud.QuizOpen) problem = "sinav acilmadi";
+        var quiz = quizzes[quizLevel];
+        for (int i = 0; problem == null && i < quiz.Questions.Count; i++)
+        {
+            Cap(Path.Combine(dir, "sinav-" + (i + 1) + ".png"));
+            var at = hud.QuizChoiceScreenPoint(quiz.Questions[i].Correct);
+            if (!at.HasValue) { problem = (i + 1) + ". soru gorunmuyor"; break; }
+            yield return MouseClick(mouse, at.Value);
+            yield return new WaitForSeconds(0.2f);
+            var cont = hud.QuizContinueScreenPoint();
+            if (!cont.HasValue) { problem = (i + 1) + ". soruda Devam cikmadi"; break; }
+            yield return MouseClick(mouse, cont.Value);
+            yield return new WaitForSeconds(0.3f);
+        }
+        if (problem == null && hud.QuizOpen) problem = "sinav kapanmadi";
+        if (problem == null && !quizzesPassed.Contains(quizLevel)) problem = "gecilen sinav kaydedilmedi";
+        Debug.Log("SINAV DENETIMI: " + (problem ?? "TAMAM"));
+        suppressQuiz = true;
+        yield return new WaitForSeconds(0.3f);
+    }
+
     // ---- Bolum secme denetimi (-shots icinde): ekran acilir, 2. bolumun satirina fareyle tiklanir ----
     // Bolumler once cozuldugu icin satirlarda ✓ ve XP gorunur. Log'da "BOLUM SECME DENETIMI:" satiri; goruntu bolum-secme.png.
     IEnumerator LevelSelectCheck(string dir)
     {
         var mouse = UnityEngine.InputSystem.Mouse.current;
         LoadLevel(0);
+
+        // Kilit gorunumu (gercek ilerlemeden bagimsiz, yalnizca goruntu icin): sahte bos ilerlemeyle bir kez acar.
+        // shotsMode'da kilit normalde kapali (bolum-bolum tarama serbest gezsin diye); burada gecici acilir.
+        var xpBefore = xp;
+        shotsMode = false; xp = new Xp();
+        hud.ShowLevelSelect(LevelEntries());
+        yield return new WaitForSeconds(0.3f);
+        Cap(Path.Combine(dir, "bolum-secme-kilitli.png"));
+        yield return new WaitForSeconds(0.3f);
+        hud.HideLevelSelect();
+        shotsMode = true; xp = xpBefore;
+
         hud.ShowLevelSelect(LevelEntries());
         yield return new WaitForSeconds(0.5f);
         Cap(Path.Combine(dir, "bolum-secme.png"));
@@ -1041,6 +1190,16 @@ public class Oyun : MonoBehaviour
     {
         Directory.CreateDirectory(dir);
         yield return new WaitForSeconds(2.5f);
+
+        // Acilis sahnesi (gorsel kontrol icin; oyunun kendisi bunu yalnizca ilk acilista, bu bayraklar olmadan gosterir)
+        bool openingDone = false;
+        hud.ShowOpening(() => openingDone = true);
+        yield return new WaitForSeconds(0.5f);
+        Cap(Path.Combine(dir, "acilis-1.png"));
+        yield return new WaitForSeconds(1.5f);
+        Cap(Path.Combine(dir, "acilis-2.png"));
+        while (!openingDone) yield return null; // dokunmadan dogal akisin sonunu bekler
+
         // Her bolum: bekleme, yolun ortasi, bitis (dogru cozumle)
         for (int i = 0; i < levels.Count; i++)
         {
@@ -1164,6 +1323,7 @@ public class Oyun : MonoBehaviour
         hud.StopEditing();
         yield return KeyboardTapCheck(dir);
         yield return PaletteCheck(dir);
+        yield return QuizCheck(dir);
         hud.Tier = tierBefore;
 
         if (System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-klavyedenetimi") >= 0) yield return KeyboardCheck(dir);

@@ -1,7 +1,10 @@
 {
   "numara": 4,
   "baslik": "İki yönlü",
+  "etiket": "ÖDEV",
   "gorev": "7 hücre topla",
+  "giris": "İki döngü, iki yön.",
+  "bitis": "Mükemmel! Bir sonraki ödev bir sınav.",
   "harita": [
     "R E E E E .",
     ". . . . E .",

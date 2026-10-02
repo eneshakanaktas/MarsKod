@@ -4,8 +4,8 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 // Bolum secme ekrani: butun ekrani kaplayan koyu katman, bolumler alt alta sira sira.
-// Yalnizca gosterir ve secileni haber verir; hangi bolumun cozuldugu, kac XP getirdigi Oyun.cs'ten gelir (Entry).
-// Kilit yok: her bolume her an girilebilir (ekip ve ilk insan testi icin serbest; istenirse sonra kilit eklenir).
+// Yalnizca gosterir ve secileni haber verir; hangi bolumun cozuldugu, kac XP getirdigi, kilitli olup olmadigi
+// Oyun.cs'ten gelir (Entry). Kilit kurali: bir onceki bolum bitirilmeden sonraki acilmaz (Oyun.LevelEntries).
 public class LevelSelect : FullScreenPanel
 {
     public struct Entry
@@ -14,6 +14,7 @@ public class LevelSelect : FullScreenPanel
         public string Title, Goal;
         public int Xp;       // bu bolumden kazanilan toplam XP
         public bool Current; // su an oynanan bolum
+        public bool Locked;  // onceki bolum bitirilmedigi icin henuz girilemez
     }
 
     public event Action<int> Picked; // secilen bolumun numarasi
@@ -55,6 +56,7 @@ public class LevelSelect : FullScreenPanel
         row.style.backgroundColor = e.Current ? new Color(accent.r, accent.g, accent.b, 0.14f) : new Color(1f, 1f, 1f, 0.05f);
         Ui.Radius(row, 44);
         Ui.Border(row, 2, e.Current ? new Color(accent.r, accent.g, accent.b, 0.55f) : new Color(1f, 1f, 1f, 0.07f));
+        if (e.Locked) row.style.opacity = 0.4f;
 
         var badge = new VisualElement();
         badge.style.width = 96; badge.style.height = 96;
@@ -63,7 +65,8 @@ public class LevelSelect : FullScreenPanel
         badge.style.alignItems = Align.Center;
         badge.style.justifyContent = Justify.Center;
         badge.style.marginRight = 30;
-        if (e.Xp > 0) badge.Add(new Icon(46, (p, r) => TierMenu.DrawCheck(p, r, Color.white)));
+        if (e.Locked) badge.Add(new Icon(40, DrawLock));
+        else if (e.Xp > 0) badge.Add(new Icon(46, (p, r) => TierMenu.DrawCheck(p, r, Color.white)));
         else badge.Add(Ui.Text(e.Number.ToString(), fBold, 44, ink));
         row.Add(badge);
 
@@ -71,20 +74,44 @@ public class LevelSelect : FullScreenPanel
         texts.style.flexGrow = 1;
         texts.style.flexShrink = 1;
         texts.Add(Ui.Text("BÖLÜM " + e.Number, fSemi, 24, new Color(ink.r, ink.g, ink.b, 0.5f)));
-        var title = Ui.Text(e.Title, fSemi, 40, ink);
+        var title = Ui.Text(e.Locked ? "???" : e.Title, fSemi, 40, ink);
         title.style.whiteSpace = WhiteSpace.Normal;
         texts.Add(title);
-        var goal = Ui.Text(e.Goal, fMed, 28, new Color(ink.r, ink.g, ink.b, 0.6f));
-        goal.style.whiteSpace = WhiteSpace.Normal;
-        goal.style.marginTop = 4;
-        texts.Add(goal);
+        if (!e.Locked)
+        {
+            var goal = Ui.Text(e.Goal, fMed, 28, new Color(ink.r, ink.g, ink.b, 0.6f));
+            goal.style.whiteSpace = WhiteSpace.Normal;
+            goal.style.marginTop = 4;
+            texts.Add(goal);
+        }
         row.Add(texts);
 
         if (e.Xp > 0) row.Add(Ui.Text(e.Xp + " XP", fSemi, 32, accent));
 
         int number = e.Number;
         row.userData = number;
-        row.RegisterCallback<ClickEvent>(_ => { Hide(); Picked?.Invoke(number); });
+        if (!e.Locked) row.RegisterCallback<ClickEvent>(_ => { Hide(); Picked?.Invoke(number); });
         return row;
+    }
+
+    // Kilit: yuvarlak gövde + üstte kavisli kilit kolu.
+    static void DrawLock(Painter2D p, Rect r)
+    {
+        float w = r.width, h = r.height;
+        var c = new Color(1f, 1f, 1f, 0.55f);
+        p.strokeColor = c;
+        p.lineWidth = w * 0.11f;
+        p.lineCap = LineCap.Round;
+        p.BeginPath();
+        p.Arc(new Vector2(w * 0.5f, h * 0.42f), w * 0.2f, new Angle(200, AngleUnit.Degree), new Angle(-20, AngleUnit.Degree));
+        p.Stroke();
+        p.fillColor = c;
+        p.BeginPath();
+        p.MoveTo(new Vector2(w * 0.24f, h * 0.42f));
+        p.LineTo(new Vector2(w * 0.76f, h * 0.42f));
+        p.LineTo(new Vector2(w * 0.76f, h * 0.84f));
+        p.LineTo(new Vector2(w * 0.24f, h * 0.84f));
+        p.ClosePath();
+        p.Fill();
     }
 }

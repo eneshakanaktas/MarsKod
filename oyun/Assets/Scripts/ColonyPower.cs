@@ -71,6 +71,7 @@ public class ColonyPower : MonoBehaviour
         Destroy(spark.gameObject);
         lamps[lamp].z = Time.timeSinceLevelLoad;   // cizimdeki _Time.y ile ayni saat
         Apply();
+        Sound.Lamp();
     }
 
     static Vector3 Bezier(Vector3 a, Vector3 b, Vector3 c, float t)

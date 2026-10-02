@@ -58,6 +58,7 @@ Tam hikâye sonra yazılabilir; ama bölge, araç ve toplanan şeyler hikâyesiz
 Ton: tasarım belgesindeki gibi sıcak ve sade, çocuksu değil (13+). Yeni Python konusu hikâyeyle açılır (tasarım belgesi §3: "tarama sensörü geliştirildi" → `if`).
 
 **KARAR (Ragıp, 10-01): C — Sessiz koloni**, film kalitesinde anlatım. Taslak hikâye: `hikaye.md`.
+**KARAR (Ragıp, 10-02): Taslak 3** — oyuncu, Dünya'daki "Mars Kod Okulu" öğrencisi (ödev sandığı şeyin gerçek olduğunu Bölüm 50'de anlar); güneş kavuşumu gerilimi; Kor'un fedakârlığı ve yeniden kurulması. Ayrıntı `hikaye.md`.
 
 Konuşmaya başlamak için yazılan üç iskelet önerisi:
 

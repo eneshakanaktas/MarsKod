@@ -10,7 +10,7 @@ Bu klasördeki `.apk` dosyaları doğrudan Android telefona kurulur.
 ## Dosyalar
 | Dosya | Ne | Boyut |
 |---|---|---|
-| `marskod-oyun.apk` | **Oyunun güncel hâli** (27 Eylül): karttaki Python kodu gerçekten çalışıyor, robot buzları topluyor. Telefonda "MarsKod" adıyla kurulur | ~30 MB |
+| `marskod-oyun.apk` | **Oyunun güncel hâli** (2 Ekim): 15 bölüm, robot Kıvılcım, kutup buzulu, enerji hücresi. Telefonda "MarsKod" adıyla kurulur. Deneme için: ekrana üç parmakla dokununca kare hızı göstergesi açılır/kapanır | ~54 MB |
 | `marskod-godottaslak4.apk` | Godot'daki son taslak (Mars kanyonu, sinema görünümü, efekt anahtarı) | ~57 MB |
 | `marskod-unitytaslak1.apk` | Unity'deki ilk taslak (koyu tema, Mars zeminine gömülü alan, koloni) | ~29 MB |
 

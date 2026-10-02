@@ -150,6 +150,7 @@ public class Oyun : MonoBehaviour
 
         hud = gameObject.AddComponent<Hud>();
         hud.Build();
+        FrameRateMeter.Create(System.Array.IndexOf(a, "-fps") >= 0);
         hud.RunPressed += OnRun;
         hud.StepPressed += OnStep;
         hud.CodeChanged += OnCodeChanged;

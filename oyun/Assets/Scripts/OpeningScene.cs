@@ -3,10 +3,11 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 // Acilis sahnesi (Bolum 1 oncesi, atlanabilir, sozsuz): docs/tasarim/senaryo-bolge-01.md.
-// Ses sistemi henuz yok, bu yuzden yalnizca daktilo gibi beliren yazilar + kararma; ekrana dokununca hemen biter.
+// Yazilar sirayla belirir; robot bulundugunda tek kisik bip calar. Ekrana dokununca hemen biter.
 public class OpeningScene : VisualElement
 {
     static readonly string[] Lines = { "Mars Kod Okulu", "Bağlanılıyor…", "Robot bulundu: BKM-7", "Ödev 1 hazır" };
+    const int RobotLine = 2;
     const long LineMs = 1300;
 
     readonly Label label;
@@ -44,6 +45,7 @@ public class OpeningScene : VisualElement
         if (finished) return;
         if (i >= Lines.Length) { Finish(); return; }
         label.text = Lines[i];
+        if (i == RobotLine) Sound.Blip();
         schedule.Execute(() => ShowLine(i + 1)).StartingIn(LineMs);
     }
 

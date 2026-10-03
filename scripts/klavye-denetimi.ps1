@@ -27,8 +27,8 @@ $WM_KEYDOWN = 0x100; $WM_KEYUP = 0x101; $WM_CHAR = 0x102
 $oyun = Start-Process $exe -ArgumentList @("-screen-width", "450", "-screen-height", "975", "-screen-fullscreen", "0",
     "-logFile", "`"$log`"", "-shots", "`"$Klasor`"", "-klavyedenetimi") -PassThru
 
-# Oyun koda tiklayip hazir dosyasini yazana kadar bekle
-$son = (Get-Date).AddMinutes(4)
+# Oyun once butun bolumleri cozup goruntuler (bolum sayisiyla uzar), sonra koda tiklayip hazir dosyasini yazar
+$son = (Get-Date).AddMinutes(10)
 while (-not (Test-Path $hazir)) {
     if ((Get-Date) -gt $son -or $oyun.HasExited) { throw "Oyun klavye denetimine gelmedi" }
     Start-Sleep -Milliseconds 300

@@ -99,6 +99,11 @@ float4 rock(float2 sp, float2 c, float r, float seed, float pixel)
     return float4(col, m);
 }
 
+// Ana koloninin buyuk kubbesi (koloniye gore; y platforma eklenir). Hikaye izleri burada (colonyTraces).
+static const float2 BIG_DOME = float2(-0.128, 0.0);
+static const float BIG_DOME_R = 0.023;
+static const float TRACE_SCALE = BIG_DOME_R / 0.017;   // izler 0,017'lik kubbeye gore cizildi, kubbeyle birlikte buyur
+
 // Koloni silueti (mesafe)
 float colonyShape(float2 sp, float P)
 {
@@ -110,7 +115,7 @@ float colonyShape(float2 sp, float P)
     d = min(d, sdBox(sp - float2(-0.172, P + 0.0085), float2(0.008, 0.0011)));
     d = min(d, sdBox(sp - float2(-0.197, P + 0.023), float2(0.0005, 0.004)));
     // kubbeler + baglanti tupleri
-    d = min(d, max(sdCircle(sp - float2(-0.125, P), 0.017), P - y));
+    d = min(d, max(sdCircle(sp - float2(BIG_DOME.x, P), BIG_DOME_R), P - y));
     d = min(d, max(sdCircle(sp - float2(-0.092, P), 0.0105), P - y));
     d = min(d, max(sdCircle(sp - float2(-0.070, P), 0.0072), P - y));
     d = min(d, sdBox(sp - float2(-0.150, P + 0.0024), float2(0.012, 0.0024)));
@@ -600,6 +605,78 @@ float3 powerLamps(float2 sp, float t, float sc, float onePx, inout float3 halo)
     return c;
 }
 
+// ---- Koloni izleri (Traces.cs; docs/tasarim/senaryo-bolge-01.md) ----
+// Ikisi de ana koloninin buyuk kubbesinde: Bolum 6'da ardina kadar acik bir kapi (ici karanlik, kimse yok),
+// Bolum 7'de bolum bitince kubbe sera gibi icten yanar, camin ardinda tek bir kuru saksi bitkisi gorunur.
+float _TraceDoor;         // 1: kapi acik
+float _TraceGreenhouse;   // seranin isiginin yandigi an (_Time.y); 0 sonuk
+
+float greenhouseLight(float t)
+{
+    if (_TraceGreenhouse <= 0.0) return 0.0;
+    float a = t - _TraceGreenhouse;
+    float flicker = a < 0.6 ? step(0.5, frac(a * 7.0)) : 1.0;   // floresan gibi iki uc kez titreyip yanar
+    return saturate(a / 0.6) * flicker;
+}
+
+// Kuru saksi bitkisi: saksi + sarkik dallar (kubbe merkezine gore)
+float driedPlantShape(float2 q, float onePx)
+{
+    float w = max(0.0007, 1.0 * onePx);
+    float d = sdBox(q - float2(0.0, 0.0030), float2(0.0032 - q.y * 0.18, 0.0030));   // asagi dogru daralan saksi
+    d = min(d, sdBox(q - float2(0.0, 0.0062), float2(0.0038, 0.0006)));
+    d = min(d, sdSeg(q, float2(0.0, 0.0064), float2(0.0008, 0.0128), w));
+    d = min(d, sdSeg(q, float2(0.0004, 0.0100), float2(-0.0055, 0.0124), w));
+    d = min(d, sdSeg(q, float2(-0.0055, 0.0124), float2(-0.0085, 0.0082), w));
+    d = min(d, sdSeg(q, float2(0.0006, 0.0114), float2(0.0060, 0.0132), w));
+    d = min(d, sdSeg(q, float2(0.0060, 0.0132), float2(0.0090, 0.0092), w));
+    d = min(d, sdSeg(q, float2(0.0008, 0.0128), float2(0.0024, 0.0108), w));   // ucta tek bir boynu bukuk yaprak
+    return d;
+}
+
+void colonyTraces(float2 cs, float P, float t, float sc, float pixel, float onePx, inout float3 col)
+{
+    // q: 0,017'lik kubbeye gore koordinat; kenar yumusatma da ayni olcege cevrilir
+    float2 q = (cs - float2(BIG_DOME.x, P)) / TRACE_SCALE;
+    pixel /= TRACE_SCALE;
+    onePx /= TRACE_SCALE;
+    float R = 0.017;
+    float3 lampCol = float3(1.0, 0.80, 0.55);
+
+    float g = greenhouseLight(t);
+    if (g > 0.0)
+    {
+        float inside = 1.0 - smoothstep(-pixel, pixel, length(q) - (R - 1.2 * onePx));
+        inside *= step(0.0, q.y);
+        float3 glass = lerp(float3(0.62, 0.86, 0.55), float3(0.30, 0.48, 0.34), saturate(q.y / R));
+        // cam kubbenin iskeleti: iki meridyen + bir yatay halka
+        float ribs = abs(length(q / float2(0.0085, R)) - 1.0) * 0.0085;
+        ribs = min(ribs, abs(q.y - 0.0095));
+        glass *= 1.0 - 0.22 * (1.0 - smoothstep(0.4 * onePx, 1.0 * onePx, ribs));   // soluk: bitkiyle karismasin
+        col = lerp(col, glass, inside * g);
+        float plant = 1.0 - smoothstep(-pixel, pixel, driedPlantShape(q, onePx));
+        col = lerp(col, float3(0.055, 0.035, 0.025), plant * inside * g);
+        col += float3(0.45, 0.80, 0.40) * glowDot(cs, float2(BIG_DOME.x, P + 0.008 * TRACE_SCALE), 18.0 * sc) * 0.35 * g;
+    }
+
+    if (_TraceDoor > 0.5)
+    {
+        float2 lampPos = float2(BIG_DOME.x, P + 0.0122 * TRACE_SCALE);
+        float opening = sdBox(q - float2(0.0, 0.0050), float2(0.0030, 0.0050));
+        // kapi kanadi bize dogru acilmis: yandan ince gorunur, lambanin isigini alir
+        float panel = sdBox(q - float2(0.0047, 0.0049), float2(0.0015, 0.0047));
+        // lambanin onde kuma dusurdugu isik havuzu (kapinin onu bos)
+        float2 pool = (q - float2(0.0, -0.0035)) / float2(0.016, 0.0036);
+        float poolLight = exp(-dot(pool, pool)) * step(q.y, 0.0);
+
+        col += float3(0.60, 0.40, 0.22) * poolLight * 0.55;
+        col = lerp(col, float3(0.42, 0.33, 0.27), 1.0 - smoothstep(-pixel, pixel, panel));
+        col = lerp(col, lampCol, (1.0 - smoothstep(0.0, 1.2 * onePx, abs(opening))) * 0.85);   // aydinlik kasa
+        col = lerp(col, float3(0.006, 0.005, 0.009), 1.0 - smoothstep(-pixel, pixel, opening + 0.8 * onePx));   // ici kapkaranlik
+        col += lampCol * (glowDot(cs, lampPos, 1.8 * sc) + glowDot(cs, lampPos, 8.0 * sc) * 0.35);
+    }
+}
+
 // Sahne tek bir fotograf gibi davranir: arayuz (klavye, ipucu) alani daraltinca kamera yerinden oynamaz, yalnizca
 // gorus acisi genisler; bu, fotografi kucultup kaydirmakla ayni seydir (Oyun.FitCamera). Arka plan da ayni fotografin
 // parcasidir: ekran konumu fotograf konumuna cevrilir, boylece koloni ile zemin birlikte kuculur, birbirine gore kaymaz.
@@ -757,7 +834,9 @@ float3 PlainBackdrop(float2 suv)
     if (cs.x > -0.26 && cs.x < 0.08 && nearBand)
     {
         float lights = 0.0;
-        [unroll] for (int k = -2; k <= 2; k++) lights += glowDot(cs, float2(-0.125 + k * 0.0055, P + 0.0045), 1.2 * sc) * step(0.2, hash11(k + 3.0));
+        float traceHidesWindows = max(_TraceDoor, step(0.0001, _TraceGreenhouse));   // kapi ya da saksi ortadaki pencerelerin yerinde
+        [unroll] for (int k = -2; k <= 2; k++)
+            lights += glowDot(cs, float2(BIG_DOME.x + k * 0.0055 * TRACE_SCALE, P + 0.0045), 1.2 * sc) * step(0.2, hash11(k + 3.0)) * (abs(k) <= 1 ? 1.0 - traceHidesWindows : 1.0);
         lights += glowDot(cs, float2(-0.095, P + 0.004), 1.1 * sc) + glowDot(cs, float2(-0.089, P + 0.004), 1.1 * sc);
         lights += glowDot(cs, float2(-0.070, P + 0.003), 1.0 * sc);
         lights += glowDot(cs, float2(-0.197, P + 0.009), 1.0 * sc) * 0.8 + glowDot(cs, float2(-0.182, P + 0.007), 0.9 * sc) * 0.6;
@@ -768,7 +847,7 @@ float3 PlainBackdrop(float2 suv)
         cLights += float3(1.0, 0.74, 0.45) * saturate(lights);
 
         // sisin icinde dagilan hale
-        halo += glowDot(cs, float2(-0.125, P + 0.005), 9.0 * sc) * 0.9;
+        halo += glowDot(cs, float2(BIG_DOME.x, P + 0.005), 9.0 * sc) * 0.9;
         halo += glowDot(cs, float2(-0.092, P + 0.004), 6.0 * sc) * 0.6;
         halo += glowDot(cs, float2(-0.055, P + 0.0415), 8.0 * sc) * 0.8;
         halo += glowDot(cs, float2(-0.190, P + 0.008), 6.0 * sc) * 0.5;
@@ -818,6 +897,7 @@ float3 PlainBackdrop(float2 suv)
     col += siteLights * 1.6;
     col += siteHalo * (0.16 + 0.35 * haze);
     col += powerLights * 1.4 + powerHalo * 0.5;
+    if (abs(cs.x - BIG_DOME.x) < 0.035 && abs(uv.y - P) < 0.03) colonyTraces(cs, P, t, sc, pixel, onePx, col);
     return col * MARS_EXPOSURE;
 }
 

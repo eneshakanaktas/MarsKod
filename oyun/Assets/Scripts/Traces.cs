@@ -4,9 +4,15 @@ using UnityEngine;
 // Bulmacayi etkilemezler, yalnizca merak uyandirmak icin dururlar. Her bolum en fazla bir iz kullanir.
 public static class Traces
 {
+    // Arka plandaki izler (MarsSky.hlsl, colonyTraces): kolonide acik kapi (Bolum 6), sera kubbesinde kuru saksi (Bolum 7).
+    const int OpenDoorLevel = 6, GreenhouseLevel = 7;
+    static readonly int DoorId = Shader.PropertyToID("_TraceDoor");
+    static readonly int GreenhouseId = Shader.PropertyToID("_TraceGreenhouse");
+
     // targetPos: bolumde hedef kare varsa dunya konumu (10. bolumdeki telsiz diregi icin).
     public static void Build(int levelNumber, Transform parent, Vector2 areaHalf, Vector3? targetPos = null)
     {
+        ResetBackdrop(levelNumber);
         switch (levelNumber)
         {
             case 3: Helmet(parent, new Vector3(areaHalf.x + 0.26f, 0f, -areaHalf.y + 0.6f)); break;
@@ -14,6 +20,19 @@ public static class Traces
             case 8: StormDebris(parent, new Vector3(-(areaHalf.x + 0.3f), 0f, areaHalf.y * 0.3f)); break;
             case 10: if (targetPos.HasValue) RadioMast(parent, targetPos.Value); break;
         }
+    }
+
+    // Bolum basi ya da yeniden deneme: kapi yalnizca kendi bolumunde acik, seranin isigi sonuk.
+    public static void ResetBackdrop(int levelNumber)
+    {
+        Shader.SetGlobalFloat(DoorId, levelNumber == OpenDoorLevel ? 1f : 0f);
+        Shader.SetGlobalFloat(GreenhouseId, 0f);   // 0 = sonuk (cizim tanimsiz degeri de 0 okur)
+    }
+
+    // Bolum bitti: Bolum 7'de seraya enerji gelir, kubbenin isigi yanar ve camin ardinda kuru saksi gorunur.
+    public static void LevelDone(int levelNumber)
+    {
+        if (levelNumber == GreenhouseLevel) Shader.SetGlobalFloat(GreenhouseId, Time.timeSinceLevelLoad); // cizimdeki _Time.y ile ayni saat
     }
 
     // Bolum 10 (bolge finali): hedefteki telsiz diregi; tepesindeki isik yanip soner (kapanis sahnesinde anlam kazanir).

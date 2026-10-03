@@ -171,7 +171,7 @@ public class Oyun : MonoBehaviour
         {
             if (a[i] == "-kalite" && i + 1 < a.Length) QualitySettings.SetQualityLevel(int.Parse(a[i + 1]), true);
             if (a[i] == "-cizgisiz") Parts.NoOutline = true;
-            if (a[i] == "-shots") shotsMode = suppressQuiz = true;
+            if (a[i] == "-shots") { shotsMode = suppressQuiz = true; ListenWhileUnfocused(); }
             if (a[i] == "-robot" && i + 1 < a.Length && a[i + 1] == "oyuncak") robotModel = RobotModel.Toy;
             if (a[i] == "-robot" && i + 1 < a.Length && a[i + 1] == "gezgin") robotModel = RobotModel.Rover;
         }
@@ -607,6 +607,7 @@ public class Oyun : MonoBehaviour
         robot.ResetTo(Pos(level.Robot), StartYaw);
         foreach (var pickup in pickups) pickup.Restore();
         colonyPower.Begin(PowerLampCount);
+        Traces.ResetBackdrop(level.Number);
         if (target != null) target.Restore();
         hud.ResetView();
     }
@@ -678,6 +679,7 @@ public class Oyun : MonoBehaviour
             hud.SetDone(HasNext, xpLine, xp.NextBetterText(level.Number, kind), level.Outro);
             done = true;
             Sound.Celebrate();
+            Traces.LevelDone(level.Number);
             yield return robot.Celebrate();
             if (level.Number == Bolge1SonBolum) yield return ClosingSceneBolge1();
         }
@@ -700,11 +702,13 @@ public class Oyun : MonoBehaviour
         program = null;
     }
 
-    // Bolge 1 kapanisi (sessiz hali; ses eklenince hisirti + SOS bip burada calar): robot guneye doner,
-    // telsiz diregindeki isik (Traces.RadioMast) zaten yanip sonuyor; program metni ikinci, habersiz satira gecer.
+    // Bolge 1 kapanisi: hisirti basar, telsiz diregindeki isik (Traces.RadioMast) yanip sonerken SOS calar;
+    // robot guneye doner, program metni ikinci, habersiz satira gecer.
     IEnumerator ClosingSceneBolge1()
     {
+        Sound.Static();
         yield return Tween.Wait(0.9f);
+        Sound.Sos();
         yield return robot.TurnTo(180f, 0.5f);
         yield return Tween.Wait(0.6f);
         hud.SetOutro(Bolge1KapanisSatiri);
@@ -1065,6 +1069,13 @@ public class Oyun : MonoBehaviour
         }
         Debug.Log("BOLUM SECME DENETIMI: " + (problem ?? "TAMAM"));
         hud.HideLevelSelect();
+    }
+
+    // Denetimler sahte fare olaylari gonderir; girdi sistemi normalde pencere odakta degilken fareyi kapatir.
+    // Paket arka planda baslatilinca Windows pencereyi her zaman one almadigi icin denetimler rastgele basarisiz oluyordu.
+    static void ListenWhileUnfocused()
+    {
+        UnityEngine.InputSystem.InputSystem.settings.backgroundBehavior = UnityEngine.InputSystem.InputSettings.BackgroundBehavior.IgnoreFocus;
     }
 
     // Deneme icin: ekrandaki noktaya fareyle bir kez tiklar (bas, iki kare bekle, birak)

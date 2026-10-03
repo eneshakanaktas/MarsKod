@@ -11,6 +11,8 @@ public class OpeningScene : VisualElement
     const long LineMs = 1300;
 
     readonly Label label;
+    string[] lines = Lines;
+    int blipLine = RobotLine;
     Action onDone;
     bool finished;
 
@@ -31,8 +33,13 @@ public class OpeningScene : VisualElement
         RegisterCallback<ClickEvent>(_ => Finish());
     }
 
-    public void Show(Action done)
+    public void Show(Action done) => Show(Lines, RobotLine, done);
+
+    // Bolge gecisi gibi baska kisa yazi dizileri icin (bip yok: blipLine -1)
+    public void Show(string[] texts, int blipAt, Action done)
     {
+        lines = texts;
+        blipLine = blipAt;
         onDone = done;
         finished = false;
         label.text = "";
@@ -43,9 +50,9 @@ public class OpeningScene : VisualElement
     void ShowLine(int i)
     {
         if (finished) return;
-        if (i >= Lines.Length) { Finish(); return; }
-        label.text = Lines[i];
-        if (i == RobotLine) Sound.Blip();
+        if (i >= lines.Length) { Finish(); return; }
+        label.text = lines[i];
+        if (i == blipLine) Sound.Blip();
         schedule.Execute(() => ShowLine(i + 1)).StartingIn(LineMs);
     }
 

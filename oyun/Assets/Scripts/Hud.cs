@@ -569,6 +569,7 @@ public class Hud : MonoBehaviour
 
     // Acilis sahnesi (Bolum 1 oncesi, bir kez); atlanabilir, bitince onDone cagrilir.
     public void ShowOpening(Action onDone) => opening.Show(onDone);
+    public void ShowTransition(string[] texts, Action onDone) => opening.Show(texts, -1, onDone);
 
     // Mini sinav (her 5 bolumden sonra, zorunlu); tum sorular dogru cevaplaninca onPassed cagrilir.
     public void ShowQuiz(Quiz q, Action onPassed) => quiz.Show(q, onPassed);

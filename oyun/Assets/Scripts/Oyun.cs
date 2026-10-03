@@ -426,6 +426,7 @@ public class Oyun : MonoBehaviour
         hud.SetOpenWords(MarsKod.Dunya.Suggestions.OpenWords(levels, level.Number));
         hud.SetPieces(level.Pieces, Palette.NewPieces(levels, level.Number));
         hud.SetLevel(level.Number, level.Label, level.Title, level.Goal, level.Ices.Count, level.Item, level.Intro);
+        if (!shotsMode && level.Number == PolarTraces.FirstLevel) hud.ShowTransition(PolarTraces.TransitionLines, () => { });
         hintView.Close();
     }
 
@@ -735,6 +736,7 @@ public class Oyun : MonoBehaviour
         yield return robot.TurnTo(270f, 0.6f);   // robot aracin gidecegi yone (bati) doner
         yield return Traces.RoverDriveAway();
         hud.SetOutro(Bolge2KapanisSatirlari[2]);
+        Traces.SeraYapragiAcildi();
     }
 
     static float Yaw(Direction d) => d == Direction.North ? 0f : d == Direction.East ? 90f : d == Direction.South ? 180f : 270f;
@@ -768,6 +770,7 @@ public class Oyun : MonoBehaviour
                     pickups[c.IceIndex].Pop();
                     colonyPower.Deliver(world.TransformPoint(Pos(level.Ices[c.IceIndex])));
                     hud.SetCollected(c.Total);
+                    Traces.IceCollected(c.Total, level.Ices.Count);
                 }
                 yield return Tween.Wait(c.IceIndex >= 0 ? 0.4f : 0.3f);
                 break;

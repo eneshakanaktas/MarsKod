@@ -610,6 +610,7 @@ float3 powerLamps(float2 sp, float t, float sc, float onePx, inout float3 halo)
 // Bolum 7'de bolum bitince kubbe sera gibi icten yanar, camin ardinda tek bir kuru saksi bitkisi gorunur.
 float _TraceDoor;         // 1: kapi acik
 float _TraceGreenhouse;   // seranin isiginin yandigi an (_Time.y); 0 sonuk
+float _TraceLeaf;         // 1: Bolge 2 sonunda acilan yeni yaprak (kalici)
 
 float greenhouseLight(float t)
 {
@@ -656,6 +657,9 @@ void colonyTraces(float2 cs, float P, float t, float sc, float pixel, float oneP
         col = lerp(col, glass, inside * g);
         float plant = 1.0 - smoothstep(-pixel, pixel, driedPlantShape(q, onePx));
         col = lerp(col, float3(0.055, 0.035, 0.025), plant * inside * g);
+        // yeni yaprak: bitkinin tepesinde, kuru dallarin arasinda yesil bir tomurcuk
+        float leaf = 1.0 - smoothstep(-pixel, pixel, length((q - float2(0.0030, 0.0146)) * float2(1.0, 1.7)) - 0.0030);
+        col = lerp(col, float3(0.08, 0.42, 0.10), leaf * _TraceLeaf * inside * g);   // koyu yesil: camin acik yesiliyle karismasin
         col += float3(0.45, 0.80, 0.40) * glowDot(cs, float2(BIG_DOME.x, P + 0.008 * TRACE_SCALE), 18.0 * sc) * 0.35 * g;
     }
 

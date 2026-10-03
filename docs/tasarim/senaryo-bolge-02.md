@@ -115,7 +115,8 @@ Bölge 1'in "insanlar nereye gitti?" sorusu yarım cevaplanır: **alındılar, s
 ## Oyuna konanlar (Ragıp + Claude, 2026-10-03)
 
 - **Yapıldı:** Bölüm 11-20 dosyalarına `etiket`/`giris`/`bitis`; 16-20 görevleri "buz"; Bölüm 20 adı "Su yolu"; Bölüm 13 başlangıç koduna kutup ekibinin yorumu. İzler (`PolarTraces.cs`): 11 kar yığını + branda, 12 panel kapağı, 14 ayak izleri, 15 ayak izleri + biten yerde tekerlek izi, 16 buz kazması + turuncu bayrak, 18 termos. Araç KT-2 (`ResearchRover.cs`): 14-20 alanın arkasında; 18'den sonra kapısı açık; 19 sonunda doğrulur, farları yanar, kırmızı ışık söner; 20 kapanışında (`Oyun.ClosingSceneBolge2`) ekranda son kayıt → "OTOMATİK SÜRÜŞ: KOLONİ" → robot batıya döner, araç uzaklaşır → "Sera sulandı! Bitki sağlığı: %12."
-- **Ertelendi:** Bölüm 11 açılış geçişi (kara ekran yazıları), Bölüm 17 tank göstergesi, seradaki saksının ilk yaprağı (sera kubbesi kutup manzarasında görünmüyor; Bölge 3'ün ova manzarasında gösterilebilir), robotun izlere/bayrağa bakması, bayraktaki amblem.
+- **Sonradan eklendi (2026-10-03):** Bölüm 11 başında kara ekranda "Yeni bölge: Kutup buzulu / Hedef: su" (`PolarTraces.TransitionLines`, `OpeningScene` genelleştirildi). Bölüm 17'de su tankı (`WaterTank.cs`): toplanan buz kadar dolar; 17 ve 18'in bitiş metinleri tankın durumuna göre düzeltildi. Bölge 2 sonunda seradaki saksıya **ilk yeşil yaprak** açılır (`PlayerPrefs "sera_yaprak"`, kalıcı): Bölüm 7 bitince sera yanarken yaprak görünür.
+- **Ertelendi:** robotun izlere/bayrağa bakması, bayraktaki amblem. Telefonda kontrol edilmedi.
 
 ## Oyuna yapılacaklar (ilk liste)
 

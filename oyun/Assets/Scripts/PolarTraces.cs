@@ -5,7 +5,13 @@ using UnityEngine;
 public static class PolarTraces
 {
     // KT-2 araci Bolum 14'ten itibaren alanin arkasinda; o zamana kadar yalnizca ufukta (PolarSky.hlsl) gorunur.
-    public const int RoverFirstLevel = 14, RoverDoorLevel = 18, RoverStandLevel = 19, LastLevel = 20;
+    public const int FirstLevel = 11, TankLevel = 17, RoverFirstLevel = 14, RoverDoorLevel = 18, RoverStandLevel = 19, LastLevel = 20;
+
+    // Bolge 2 acilisi: kara ekranda iki satir (docs/tasarim/senaryo-bolge-02.md, Bolum 11 basi)
+    public static readonly string[] TransitionLines = { "Yeni bölge: Kutup buzulu", "Hedef: su" };
+
+    // Su tanki: alanin arkasinda, sol tarafta
+    public static Vector3 TankPosition(Vector2 areaHalf) => new Vector3(-1.0f, 0f, areaHalf.y + 0.7f);
 
     public static bool HasRover(int levelNumber) => levelNumber >= RoverFirstLevel && levelNumber <= LastLevel;
 

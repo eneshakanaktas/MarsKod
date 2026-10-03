@@ -12,12 +12,18 @@ public static class Traces
     // Bolge 2: KT-2 araci alanin arkasina gelince ufuktaki uzak hali (PolarSky.hlsl) gizlenir.
     static readonly int RoverHereId = Shader.PropertyToID("_PolarRoverHere");
 
+    // Bolge 2 sonunda seraya ilk yaprak acilir; kalici (PlayerPrefs). Sera ancak Bolum 7 bitince yandigi icin yaprak da orada gorunur.
+    const string LeafKey = "sera_yaprak";
+    static readonly int LeafId = Shader.PropertyToID("_TraceLeaf");
+
     static ResearchRover rover;
+    static WaterTank tank;
 
     // targetPos: bolumde hedef kare varsa dunya konumu (10. bolumdeki telsiz diregi icin).
     public static void Build(int levelNumber, Transform parent, Vector2 areaHalf, Vector3? targetPos = null)
     {
         rover = PolarTraces.Build(levelNumber, parent, areaHalf);
+        tank = levelNumber == PolarTraces.TankLevel ? WaterTank.Create(parent, PolarTraces.TankPosition(areaHalf)) : null;
         ResetBackdrop(levelNumber);
         switch (levelNumber)
         {
@@ -34,7 +40,22 @@ public static class Traces
         Shader.SetGlobalFloat(DoorId, levelNumber == OpenDoorLevel ? 1f : 0f);
         Shader.SetGlobalFloat(GreenhouseId, 0f);   // 0 = sonuk (cizim tanimsiz degeri de 0 okur)
         Shader.SetGlobalFloat(RoverHereId, PolarTraces.HasRover(levelNumber) ? 1f : 0f);
+        Shader.SetGlobalFloat(LeafId, PlayerPrefs.GetInt(LeafKey, 0));
         if (rover != null) rover.Restore();
+        if (tank != null) tank.Restore();
+    }
+
+    // Bolum 17: her toplanan buz tanki biraz daha doldurur
+    public static void IceCollected(int collected, int total)
+    {
+        if (tank != null && total > 0) tank.Fill((float)collected / total);
+    }
+
+    // Bolge 2 finali: yaprak kalici olur
+    public static void SeraYapragiAcildi()
+    {
+        PlayerPrefs.SetInt(LeafKey, 1);
+        PlayerPrefs.Save();
     }
 
     // Bolum bitti: Bolum 7'de seraya enerji gelir, kubbenin isigi yanar ve camin ardinda kuru saksi gorunur.

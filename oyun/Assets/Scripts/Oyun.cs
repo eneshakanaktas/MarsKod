@@ -27,6 +27,14 @@ public class Oyun : MonoBehaviour
     // Bolge 1 finali: "Oyuna yapilacaklar" madde 5 (docs/tasarim/senaryo-bolge-01.md). Ses yok, bu yuzden sessiz hali.
     const int Bolge1SonBolum = 10;
     const string Bolge1KapanisSatiri = "Bilinmeyen sinyal algılandı (kutup bölgesi). Bu sinyal ödevin parçası değil.";
+    // Bolge 2 finali: docs/tasarim/senaryo-bolge-02.md "Kapanis sahnesi". Aracin ekrani, uzaklasma, sera.
+    const int Bolge2SonBolum = PolarTraces.LastLevel;
+    static readonly string[] Bolge2KapanisSatirlari =
+    {
+        "SON KAYIT — ACİL ALIM — 2 KİŞİ — HEDEF: [VERİ BOZUK]",
+        "OTOMATİK SÜRÜŞ: KOLONİ",
+        "Sera sulandı! Bitki sağlığı: %12.",
+    };
 
 
     Camera cam;
@@ -682,6 +690,7 @@ public class Oyun : MonoBehaviour
             Traces.LevelDone(level.Number);
             yield return robot.Celebrate();
             if (level.Number == Bolge1SonBolum) yield return ClosingSceneBolge1();
+            if (level.Number == Bolge2SonBolum) yield return ClosingSceneBolge2();
         }
         else
         {
@@ -712,6 +721,20 @@ public class Oyun : MonoBehaviour
         yield return robot.TurnTo(180f, 0.5f);
         yield return Tween.Wait(0.6f);
         hud.SetOutro(Bolge1KapanisSatiri);
+    }
+
+    // Bolge 2 kapanisi: aracin ekrani son kaydi gosterir (hisirtiyla), arac otomatik suruse gecip koloniye uzaklasir,
+    // robot arkasindan bakar; en sonda program habersiz ve neseli: sera sulandi.
+    IEnumerator ClosingSceneBolge2()
+    {
+        yield return Tween.Wait(0.6f);
+        Sound.Static();
+        hud.SetOutro(Bolge2KapanisSatirlari[0]);
+        yield return Tween.Wait(2.8f);
+        hud.SetOutro(Bolge2KapanisSatirlari[1]);
+        yield return robot.TurnTo(270f, 0.6f);   // robot aracin gidecegi yone (bati) doner
+        yield return Traces.RoverDriveAway();
+        hud.SetOutro(Bolge2KapanisSatirlari[2]);
     }
 
     static float Yaw(Direction d) => d == Direction.North ? 0f : d == Direction.East ? 90f : d == Direction.South ? 180f : 270f;

@@ -1,7 +1,10 @@
 {
   "numara": 12,
   "baslik": "Tarayıcı",
+  "etiket": "ÖDEV",
   "gorev": "2 buz topla",
+  "giris": "Yeni modül takıldı: tarama sensörü! Artık if kullanabilirsin.",
+  "bitis": "Sensör çalışıyor. Modülün kaynağı: araştırma aracı KT-2.",
   "harita": [
     ". . . . . .",
     ". . . . . .",

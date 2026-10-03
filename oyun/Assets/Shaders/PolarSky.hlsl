@@ -8,6 +8,7 @@
 static const float3 POLAR_PLAIN = float3(0.25, 0.29, 0.39);   // ufuk dibindeki buz ovasinin rengi (zeminin pusu da bu renge solar)
 static const float  POLAR_SUN_X = 0.11;
 static const float2 POLAR_BEACON = float2(-0.12, -0.042);      // saplanan arac: ufka gore
+float _PolarRoverHere;   // 1: arac alanin arkasinda (Traces/PolarTraces, Bolum 14-20); ufuktaki uzak hali gizlenir
 
 float3 polarSkyColor(float t)   // t: 0 ufuk, 1 tepe
 {
@@ -112,7 +113,8 @@ float3 PolarBackdrop(float2 suv)
 
     // Saplanan arac + yardim isigi + sinyal halkalari
     float2 rv = float2(POLAR_BEACON.x, _Horizon + POLAR_BEACON.y);
-    float roverM = 1.0 - smoothstep(-pixel, pixel, polarRoverShape(sp - rv));
+    float roverFar = 1.0 - _PolarRoverHere;
+    float roverM = (1.0 - smoothstep(-pixel, pixel, polarRoverShape(sp - rv))) * roverFar;
     col = lerp(col, float3(0.07, 0.08, 0.12), roverM);
     float2 tip = rv + float2(0.0095, 0.0175);
     float phase = fmod(t, 3.0);                                     // uc kisa yanip sonme, sonra bekleme
@@ -122,6 +124,7 @@ float3 PolarBackdrop(float2 suv)
     float ringD = length((sp - tip) * float2(1.0, 1.6));
     float ring = exp(-pow((ringD - wave * 0.06) * picturePx / 1.3, 2.0)) * (1.0 - wave) * 0.55;
     beacon += float3(1.0, 0.45, 0.35) * ring;
+    beacon *= roverFar;
 
     // Savrulan kar: ufkun ustunden yavasca gecen ince beyaz pus
     float hb = (uv.y - (_Horizon - 0.025)) / 0.05;

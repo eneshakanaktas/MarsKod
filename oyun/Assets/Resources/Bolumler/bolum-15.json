@@ -1,7 +1,10 @@
 {
   "numara": 15,
   "baslik": "Karışık sıra",
+  "etiket": "ÖDEV",
   "gorev": "3 buz, 2 kristal",
+  "giris": "Sütunda buz ve kristal karışık. Her karede bak!",
+  "bitis": "Harika tarama! Sırada küçük bir sınav var.",
   "harita": [
     "T . . . . .",
     "B . . . . .",

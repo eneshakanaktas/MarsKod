@@ -1,7 +1,10 @@
 {
   "numara": 13,
   "baslik": "Kırmızı kristal",
+  "etiket": "ÖDEV",
   "gorev": "Kristale dokunma",
+  "giris": "Kırmızı kristaller numune değil. Yalnızca buz topla.",
+  "bitis": "Aferin, kristale dokunmadın!",
   "harita": [
     ". . . . . .",
     ". . . . . .",
@@ -28,7 +31,7 @@
       "aciklama": "Robot kristalin üstünde durdu; üçüncü karedeki buza hiç gitmedi."
     }
   ],
-  "baslangic_kodu": ["move(East)", "collect()", "move(East)", "collect()", "move(East)", "collect()"],
+  "baslangic_kodu": ["# kirmizi olana dokunma! - kutup ekibi", "move(East)", "collect()", "move(East)", "collect()", "move(East)", "collect()"],
   "cozum": [
     "move(East)",
     "if ice_here():",

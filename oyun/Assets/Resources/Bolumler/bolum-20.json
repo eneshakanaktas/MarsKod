@@ -1,7 +1,10 @@
 {
   "numara": 20,
-  "baslik": "Bölge finali",
-  "gorev": "3 hücre ve hedef",
+  "baslik": "Su yolu",
+  "etiket": "ÖDEV",
+  "gorev": "3 buz ve hedef",
+  "giris": "Son ödev! Aracı koloniye hazırla.",
+  "bitis": "Bölge 2 tamamlandı! Tebrikler!",
   "harita": [
     ". . H . . .",
     ". K B . . .",

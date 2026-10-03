@@ -1,7 +1,10 @@
 {
   "numara": 11,
   "baslik": "Merdiven",
+  "etiket": "ÖDEV",
   "gorev": "5 buz topla",
+  "giris": "Kutba hoş geldin! Koloninin suya ihtiyacı var: buz topla.",
+  "bitis": "5 buz! Su deposu doluyor.",
   "harita": [
     ". . . . . B",
     ". . . . B .",

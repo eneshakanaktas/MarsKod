@@ -1,7 +1,10 @@
 {
   "numara": 14,
   "baslik": "Önce yürü, sonra bak",
+  "etiket": "ÖDEV",
   "gorev": "1 buz ve hedef",
+  "giris": "Önce yürü, sonra bak. Araç çok yakında.",
+  "bitis": "Araca ulaştın!",
   "harita": [
     ". . . . . .",
     ". . . . . .",

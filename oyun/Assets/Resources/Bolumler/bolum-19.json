@@ -1,7 +1,10 @@
 {
   "numara": 19,
   "baslik": "İki duyu bir arada",
-  "gorev": "3 hücre topla",
+  "etiket": "ÖDEV",
+  "gorev": "3 buz topla",
+  "giris": "İki sensörü birlikte kullan!",
+  "bitis": "Araç doğrultuldu! Işıkları yanıyor.",
   "harita": [
     ". . . . . .",
     ". B . . . .",

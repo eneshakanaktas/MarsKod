@@ -1,7 +1,10 @@
 {
   "numara": 17,
   "baslik": "İki çatal",
-  "gorev": "2 hücre topla",
+  "etiket": "ÖDEV",
+  "gorev": "2 buz topla",
+  "giris": "Aracın su tankı bulundu! Buzları tanka taşı.",
+  "bitis": "Tank doluyor: %30.",
   "harita": [
     ". . . . . .",
     ". . . . . .",

@@ -1,7 +1,10 @@
 {
   "numara": 16,
   "baslik": "Çatal yol",
-  "gorev": "2 hücre topla",
+  "etiket": "ÖDEV",
+  "gorev": "2 buz topla",
+  "giris": "Bir modül daha: ön engel sensörü! Yeni kelime: else. Ya bu yol ya öteki.",
+  "bitis": "İki yoldan doğrusunu seçtin!",
   "harita": [
     ". . . . . .",
     ". . . . . .",

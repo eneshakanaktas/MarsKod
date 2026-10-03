@@ -1,7 +1,10 @@
 {
   "numara": 18,
   "baslik": "Köşeyi dön",
-  "gorev": "4 hücre topla",
+  "etiket": "ÖDEV",
+  "gorev": "4 buz topla",
+  "giris": "Kayayı dolaş, yoluna devam et.",
+  "bitis": "Tank doluyor: %60.",
   "harita": [
     ". . . . . .",
     ". B . . . .",

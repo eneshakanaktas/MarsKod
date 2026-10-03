@@ -572,6 +572,11 @@ public class Oyun : MonoBehaviour
     // Bolum secme ekraninin satirlari: her bolumun adi, hedefi, kazanilan XP'si (XP > 0 = cozuldu)
     // Kilit kurali: bolum 1 her zaman acik; sonraki bir bolum, bir oncekinin XP'si olmadan (hic cozulmediyse) kilitli.
     // Su an oynanan bolum kurala uymasa bile (orn. -bolum ile dogrudan acildiysa) kilitli gosterilmez.
+    // GECICI TEST ANAHTARI (Ragip, 2026-10-03): ekip denemesi icin butun bolumler acik.
+    // Play Store'a cikmadan once false yapilmali (ILERLEME.md'de not var).
+    const bool TestAllLevelsOpen = true;
+    bool LocksOn => !shotsMode && !TestAllLevelsOpen;   // -shots modunda da kilit yok
+
     List<LevelSelect.Entry> LevelEntries()
     {
         var entries = new List<LevelSelect.Entry>();
@@ -582,7 +587,7 @@ public class Oyun : MonoBehaviour
             entries.Add(new LevelSelect.Entry
             {
                 Number = l.Number, Title = l.Title, Goal = l.Goal,
-                Xp = here, Current = l == level, Locked = !shotsMode && !prevSolved && l != level,
+                Xp = here, Current = l == level, Locked = LocksOn && !prevSolved && l != level,
             });
             prevSolved = here > 0;
         }
@@ -594,7 +599,7 @@ public class Oyun : MonoBehaviour
         int idx = levels.FindIndex(l => l.Number == number);
         if (idx < 0) return;
         // kilitli bolume doğrudan cagrilsa bile (orn. deneme) girilmez; onceki bolum bitmeli (shotsMode'da kilit yok)
-        if (!shotsMode && idx > 0 && xp.LevelTotal(levels[idx - 1].Number) == 0 && levels[idx] != level) return;
+        if (LocksOn && idx > 0 && xp.LevelTotal(levels[idx - 1].Number) == 0 && levels[idx] != level) return;
         LoadLevel(idx);
     }
 

@@ -35,6 +35,14 @@ public class Oyun : MonoBehaviour
         "OTOMATİK SÜRÜŞ: KOLONİ",
         "Sera sulandı! Bitki sağlığı: %12.",
     };
+    // Bolge 3 finali: docs/tasarim/senaryo-bolge-03.md "Kapanis sahnesi". Gun dogumu, paneller, toz uyarisi.
+    const int Bolge3SonBolum = CraterTraces.LastLevel;
+    static readonly string[] Bolge3KapanisSatirlari =
+    {
+        "Gün doğumu. Tarla gücü: %100.",
+        "Koloni gündüz enerjisi: %40.",
+        "Hava uyarısı: toz. Sonraki ödev: kum tepeleri.",
+    };
 
 
     Camera cam;
@@ -43,6 +51,8 @@ public class Oyun : MonoBehaviour
     Robot robot;
     RobotModel robotModel = Robot.DefaultModel;
     readonly List<IPickup> pickups = new List<IPickup>();
+    // Calisan gunes panelleri (saglam/catlak; kirik olanlar toplanacak oldugu icin pickups'ta)
+    readonly Dictionary<Cell, SolarPanel> panels = new Dictionary<Cell, SolarPanel>();
     // Enerji hucresi bolumlerinde koloninin guc lambalari
     ColonyPower colonyPower;
     // Isiklar: renkleri bolgeye gore (RegionLook)
@@ -406,6 +416,10 @@ public class Oyun : MonoBehaviour
             pickups.Add(Pickups.Create(level.Item, levelRoot, Pos(level.Ices[i]), i + 1));
         for (int i = 0; i < level.Crystals.Count; i++)
             Ice.CreateHazard(levelRoot, Pos(level.Crystals[i]), 20 + i); // toplanmaz: pickups listesinde degil
+        panels.Clear();
+        int panelSeed = 0;
+        foreach (var p in level.Panels)
+            if (p.Value > 0) panels[p.Key] = SolarPanel.Create(levelRoot, Pos(p.Key), p.Value, 40 + panelSeed++);
         colonyPower.Begin(PowerLampCount);
         int frostCount = level.Item == Collectible.Ice ? level.Ices.Count : 0; // zemindeki buz izi yalnizca buzun altinda
         for (int i = 0; i < 6; i++)
@@ -426,7 +440,8 @@ public class Oyun : MonoBehaviour
         hud.SetOpenWords(MarsKod.Dunya.Suggestions.OpenWords(levels, level.Number));
         hud.SetPieces(level.Pieces, Palette.NewPieces(levels, level.Number));
         hud.SetLevel(level.Number, level.Label, level.Title, level.Goal, level.Ices.Count, level.Item, level.Intro);
-        if (!shotsMode && level.Number == PolarTraces.FirstLevel) hud.ShowTransition(PolarTraces.TransitionLines, () => { });
+        var transition = Traces.TransitionLines(level.Number);
+        if (!shotsMode && transition != null) hud.ShowTransition(transition, () => { });
         hintView.Close();
     }
 
@@ -615,8 +630,10 @@ public class Oyun : MonoBehaviour
         stepMode = false; stepRequested = false;
         robot.ResetTo(Pos(level.Robot), StartYaw);
         foreach (var pickup in pickups) pickup.Restore();
+        foreach (var panel in panels.Values) panel.Restore();
         colonyPower.Begin(PowerLampCount);
         Traces.ResetBackdrop(level.Number);
+        RegionLook.For(Regions.Of(level.Number)).Apply(skyLight, sunLight);   // Bolge 3 finalindeki gun dogumunu geri alir
         if (target != null) target.Restore();
         hud.ResetView();
     }
@@ -692,6 +709,7 @@ public class Oyun : MonoBehaviour
             yield return robot.Celebrate();
             if (level.Number == Bolge1SonBolum) yield return ClosingSceneBolge1();
             if (level.Number == Bolge2SonBolum) yield return ClosingSceneBolge2();
+            if (level.Number == Bolge3SonBolum) yield return ClosingSceneBolge3();
         }
         else
         {
@@ -699,6 +717,10 @@ public class Oyun : MonoBehaviour
             if (world.IceLeft > 0)
                 hud.ShowMessage("GÖREV", "Kod bitti, " + Collectibles.PluralName(level.Item) + " bitmedi",
                     "Kodun sonuna kadar çalıştı ama " + world.IceLeft + " " + Collectibles.Name(level.Item) + " daha toplanmayı bekliyor. Robot yalnızca kodda yazanı yapar: eksik adımı bul.",
+                    null, error: false);
+            else if (world.CrackedLeft > 0)
+                hud.ShowMessage("GÖREV", "Kod bitti, çatlak panel kaldı",
+                    "Kodun sonuna kadar çalıştı ama " + world.CrackedLeft + " çatlak panel daha onarılmayı bekliyor (turuncu ışıklı olanlar). Robot yalnızca kodda yazanı yapar: hangi paneli atladığını bul.",
                     null, error: false);
             else
                 hud.ShowMessage("GÖREV", "Kod bitti, robot hedefte değil",
@@ -739,6 +761,28 @@ public class Oyun : MonoBehaviour
         Traces.SeraYapragiAcildi();
     }
 
+    // Bolge 3 kapanisi: oyundaki ilk gun dogumu. Isik sicaklasir, panellerin isiklari birer birer parlar,
+    // robot dogudaki gunese doner; program habersiz: gunduz enerjisi, sonra toz uyarisi.
+    IEnumerator ClosingSceneBolge3()
+    {
+        yield return Tween.Wait(0.6f);
+        int order = 0;
+        foreach (var panel in panels.Values) panel.StartCoroutine(FlashAfter(panel, 0.4f + 0.18f * order++));   // panel.Restore durdurur
+        yield return RegionLook.For(Regions.Of(level.Number)).Sunrise(skyLight, sunLight, 3f);
+        hud.SetOutro(Bolge3KapanisSatirlari[0]);
+        yield return robot.TurnTo(90f, 0.8f);   // dogudaki gunese
+        yield return Tween.Wait(2.2f);
+        hud.SetOutro(Bolge3KapanisSatirlari[1]);
+        yield return Tween.Wait(2.8f);
+        hud.SetOutro(Bolge3KapanisSatirlari[2]);
+    }
+
+    static IEnumerator FlashAfter(SolarPanel panel, float delay)
+    {
+        yield return Tween.Wait(delay);
+        yield return panel.Flash();
+    }
+
     static float Yaw(Direction d) => d == Direction.North ? 0f : d == Direction.East ? 90f : d == Direction.South ? 180f : 270f;
 
     IEnumerator Face(Direction d)
@@ -777,6 +821,18 @@ public class Oyun : MonoBehaviour
             case Scanned sc:
                 StartCoroutine(ScanPulse.Play(levelRoot, Pos(sc.At), sc.Found));
                 yield return Tween.Wait(0.45f);
+                break;
+            case Measured me:
+                var tint = me.Power == 0 ? new Color(0.85f, 0.85f, 0.92f) : World.IsCracked(me.Power) ? Mats.Hex("#FFA53A") : Mats.Hex("#7CF07A");
+                StartCoroutine(PowerLabel.Show(levelRoot, Pos(me.At), me.Power, tint));
+                if (panels.TryGetValue(me.At, out var measured)) StartCoroutine(measured.Flash());
+                yield return Tween.Wait(0.5f);
+                break;
+            case Repaired rp:
+                StartCoroutine(robot.Collect());
+                Sound.Collect();
+                if (panels.TryGetValue(rp.At, out var repaired)) yield return repaired.Repair();
+                yield return Tween.Wait(0.15f);
                 break;
             case Rejected _:
                 Sound.Bump();

@@ -1,0 +1,54 @@
+{
+  "numara": 30,
+  "baslik": "Gün doğumu",
+  "etiket": "ÖDEV",
+  "gorev": "Onar, topla, hedef",
+  "giris": "Sol 1.072 · Son ödev! Tarlayı tamamla, hedefe ulaş.",
+  "bitis": "Bölge 3 tamamlandı! Tebrikler!",
+  "harita": [
+    ". . H . . 8",
+    ". K 0 . . .",
+    ". 1 2 . 7 .",
+    "K 8 . . . .",
+    "3 0 . . 9 .",
+    "R . . . . ."
+  ],
+  "komutlar": ["move", "collect", "rock_ahead", "panel_power", "repair"],
+  "parcalar": ["move(North)", "move(East)", "repair()", "collect()", "for i in range(3):", "if rock_ahead(North):", "else:", "if panel_power() == 0:", "elif panel_power() < 50:"],
+  "konular": ["elif", "rock_ahead", "if/else", "karşılaştırma", "panel_power", "repair", "hedef kare", "bölge finali"],
+  "ipuclari": [
+    "Yol iki kez kayaya takılıyor, her karede de bir panel var. Bölüm 28'deki döngü burada da çalışır; yalnızca tur sayısını bul.",
+    "Kaç tur gerektiğini say: kaç kuzey adımı, kaç doğu kayması var? Döngü bitince robot tam hedefte olmalı.",
+    "`for i in range(7):` içinde `if rock_ahead(North):` → `move(East)`, `else:` → `move(North)`; altında `if panel_power() == 0:` → `collect()`, `elif panel_power() < 50:` → `repair()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(6):", "    if rock_ahead(North):", "        move(East)", "    else:", "        move(North)", "    if panel_power() == 0:", "        collect()", "    elif panel_power() < 50:", "        repair()"],
+      "aciklama": "range(6) yetmez: iki doğu kayması da birer tur harcıyor, robot hedefin bir kare gerisinde kalır."
+    },
+    {
+      "kod": ["for i in range(7):", "    if rock_ahead(North):", "        move(East)", "    else:", "        move(North)", "    collect()"],
+      "aciklama": "Ölçmeden toplamak: ilk panel çatlak (gücü 30), sökülemez; robot durur."
+    },
+    {
+      "kod": ["for i in range(7):", "    if rock_ahead(North):", "        move(East)", "    else:", "        move(North)", "    if panel_power() < 50:", "        repair()", "    elif panel_power() == 0:", "        collect()"],
+      "aciklama": "Panel sorularının sırası ters: robot kırık paneli onarmaya çalışır ve durur."
+    }
+  ],
+  "baslangic_kodu": [
+    "for i in range(7):",
+    "    if rock_ahead(North):",
+    "        move(East)"
+  ],
+  "cozum": [
+    "for i in range(7):",
+    "    if rock_ahead(North):",
+    "        move(East)",
+    "    else:",
+    "        move(North)",
+    "    if panel_power() == 0:",
+    "        collect()",
+    "    elif panel_power() < 50:",
+    "        repair()"
+  ]
+}

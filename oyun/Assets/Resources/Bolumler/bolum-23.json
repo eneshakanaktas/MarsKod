@@ -1,0 +1,50 @@
+{
+  "numara": 23,
+  "baslik": "Ya onar ya topla",
+  "etiket": "ÖDEV",
+  "gorev": "3 onar, 2 topla",
+  "giris": "Sol 1.069 · Gücü varsa onar, yoksa parçasını topla.",
+  "bitis": "Tarla gücü: %18. Yakında bir bakım kulübesi var.",
+  "harita": [
+    ". . . . . .",
+    ". 7 . . 9 .",
+    ". . . . . .",
+    "R 2 0 3 0 1",
+    ". . . . . .",
+    ". . 8 . . 6"
+  ],
+  "komutlar": ["move", "collect", "rock_ahead", "panel_power", "repair"],
+  "parcalar": ["move(East)", "repair()", "collect()", "for i in range(3):", "if panel_power() > 0:", "else:"],
+  "konular": ["karşılaştırma", "büyüktür (>)", "if/else", "panel_power", "repair"],
+  "ipuclari": [
+    "Bu sıradaki panellerin hiçbiri sağlam değil: ya biraz gücü kalmış (çatlak), ya hiç gücü yok (kırık).",
+    "`>` \"büyüktür\" demek: `panel_power() > 0` panelin biraz da olsa gücü varsa True olur. Gücü varsa onar, yoksa (`else`) parçasını topla.",
+    "`for i in range(5):` altına `move(East)`; sonra `if panel_power() > 0:` altında `repair()`, `else:` altında `collect()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(5):", "    move(East)", "    if panel_power() > 0:", "        collect()", "    else:", "        repair()"],
+      "aciklama": "if ve else'in içi ters: gücü olan (çalışan) paneli sökmeye çalışır, robot durur."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(East)", "    if panel_power() < 0:", "        repair()", "    else:", "        collect()"],
+      "aciklama": "< ile > karışmış: hiçbir panelin gücü 0'dan küçük değil, robot her paneli sökmeye çalışır ve ilkinde durur."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(East)", "    if panel_power() > 0:", "        repair()"],
+      "aciklama": "else unutulmuş: çatlaklar onarılır ama kırık panellerin parçaları yerde kalır."
+    }
+  ],
+  "baslangic_kodu": [
+    "for i in range(5):",
+    "    move(East)"
+  ],
+  "cozum": [
+    "for i in range(5):",
+    "    move(East)",
+    "    if panel_power() > 0:",
+    "        repair()",
+    "    else:",
+    "        collect()"
+  ]
+}

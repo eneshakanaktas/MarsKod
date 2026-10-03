@@ -30,6 +30,7 @@ public class Hud : MonoBehaviour
     static readonly Color Hairline = new Color(1f, 1f, 1f, 0.07f);
     static readonly Color IceFill = Mats.Hex("#A9E6F5");
     static readonly Color CellFill = Mats.Hex("#C8F25A");
+    static readonly Color PanelFill = Mats.Hex("#FFB25E");
     static readonly Color NumColor = Mats.Hex("#4F4A5A");
     static readonly Color HeaderText = Mats.Hex("#F5F1F7");
     static readonly Color ErrorRed = Mats.Hex("#FF6B6B");
@@ -402,8 +403,8 @@ public class Hud : MonoBehaviour
         for (int i = 0; i < iceTotal; i++)
         {
             int idx = i;
-            var d = item == Collectible.EnergyCell
-                ? new Icon(36, (p, r) => DrawCellDot(p, r, idx < collected))
+            var d = item == Collectible.EnergyCell ? new Icon(36, (p, r) => DrawCellDot(p, r, idx < collected))
+                : item == Collectible.PanelPart ? new Icon(36, (p, r) => DrawPanelDot(p, r, idx < collected))
                 : new Icon(36, (p, r) => DrawIceDot(p, r, idx < collected));
             d.style.marginLeft = 10; d.style.marginRight = 10;
             Transition(d, "scale", 0.28f, EasingMode.EaseOutBack);
@@ -892,6 +893,29 @@ public class Hud : MonoBehaviour
         p.LineTo(new Vector2(w * 0.60f, h * 0.17f));
         p.fillColor = color;
         p.Fill();
+        p.Stroke();
+    }
+
+    // Panel parcasi: egik dortgen cam + ortasindan gecen hucre cizgisi
+    static void DrawPanelDot(Painter2D p, Rect r, bool filled)
+    {
+        float w = r.width, h = r.height;
+        var color = filled ? PanelFill : new Color(1f, 1f, 1f, 0.5f);
+        p.lineJoin = LineJoin.Round;
+        p.lineWidth = 3f;
+        p.strokeColor = color;
+        p.BeginPath();
+        p.MoveTo(new Vector2(w * 0.24f, h * 0.22f));
+        p.LineTo(new Vector2(w * 0.86f, h * 0.22f));
+        p.LineTo(new Vector2(w * 0.76f, h * 0.78f));
+        p.LineTo(new Vector2(w * 0.14f, h * 0.78f));
+        p.ClosePath();
+        if (filled) { p.fillColor = color; p.Fill(); }
+        p.Stroke();
+        p.strokeColor = filled ? new Color(0.13f, 0.25f, 0.48f) : color;
+        p.BeginPath();
+        p.MoveTo(new Vector2(w * 0.55f, h * 0.22f));
+        p.LineTo(new Vector2(w * 0.45f, h * 0.78f));
         p.Stroke();
     }
 

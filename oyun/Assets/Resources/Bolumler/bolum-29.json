@@ -1,0 +1,56 @@
+{
+  "numara": 29,
+  "baslik": "Geri dönüş",
+  "etiket": "ÖDEV",
+  "gorev": "3 onar, 2 topla",
+  "giris": "Sol 1.072 · Son paneller! Ufuk ağarıyor.",
+  "bitis": "Tarla gücü: %36. Gün doğumuna az kaldı.",
+  "harita": [
+    ". . . . . .",
+    ". . . . . 9",
+    ". . 7 . . .",
+    ". . . . . .",
+    "2 8 . 4 0 .",
+    "R 6 0 1 9 K"
+  ],
+  "komutlar": ["move", "collect", "rock_ahead", "panel_power", "repair"],
+  "parcalar": ["move(North)", "move(East)", "move(West)", "repair()", "collect()", "for i in range(3):", "if i > 3:", "elif i == 3:", "else:", "if panel_power() == 0:", "elif panel_power() < 50:"],
+  "konular": ["elif", "döngü sayacı (i)", "büyüktür (>)", "karşılaştırma", "panel_power", "repair"],
+  "ipuclari": [
+    "Yol Bölüm 26'daki gibi doğuya gidip geri dönüyor; bu sefer her karede panel var.",
+    "Bu kez sorular tersten: `if i > 4:` son turlarda (5, 6, 7, 8) doğrudur, o zaman batıya git. `elif i == 4:` kuzeye çık. Geriye kalan ilk turlarda (`else`) doğuya git. Yürüdükten sonra paneli ölç.",
+    "`for i in range(9):` içinde `if i > 4:` → `move(West)`, `elif i == 4:` → `move(North)`, `else:` → `move(East)`; altında Bölüm 27'deki panel kontrolü."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(9):", "    if i > 5:", "        move(West)", "    elif i == 4:", "        move(North)", "    else:", "        move(East)", "    if panel_power() == 0:", "        collect()", "    elif panel_power() < 50:", "        repair()"],
+      "aciklama": "i > 5 bir tur geç: 5. turda hiçbir soru doğru değil, else robotu bir kare daha doğuya götürür; yol kayar."
+    },
+    {
+      "kod": ["for i in range(8):", "    if i > 4:", "        move(West)", "    elif i == 4:", "        move(North)", "    else:", "        move(East)", "    if panel_power() == 0:", "        collect()", "    elif panel_power() < 50:", "        repair()"],
+      "aciklama": "range(8) bir tur eksik: en batıdaki çatlak panel onarılmaz."
+    },
+    {
+      "kod": ["for i in range(9):", "    if i > 4:", "        move(West)", "    elif i == 4:", "        move(North)", "    else:", "        move(East)", "    if panel_power() < 50:", "        repair()", "    elif panel_power() == 0:", "        collect()"],
+      "aciklama": "Panel sorularının sırası ters: robot kırık paneli onarmaya çalışır ve durur."
+    }
+  ],
+  "baslangic_kodu": [
+    "for i in range(9):",
+    "    if i > 4:",
+    "        move(West)"
+  ],
+  "cozum": [
+    "for i in range(9):",
+    "    if i > 4:",
+    "        move(West)",
+    "    elif i == 4:",
+    "        move(North)",
+    "    else:",
+    "        move(East)",
+    "    if panel_power() == 0:",
+    "        collect()",
+    "    elif panel_power() < 50:",
+    "        repair()"
+  ]
+}

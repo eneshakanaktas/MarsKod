@@ -91,6 +91,38 @@
         "else:",
         "    move(East)"
       ]
+    },
+    {
+      "baslik": "panel_power",
+      "kelimeler": ["panel_power"],
+      "aciklama": "Robotun durduğu karedeki güneş panelinin gücünü sayı olarak verir (0 ile 100 arası). Panel yoksa ya da tamamen kırıksa 0 verir. Sayıyı karşılaştırarak karar verirsin: < küçüktür, > büyüktür, == eşittir (iki tane =; tek = başka bir iş yapar). Gücü 0 olan panel kırıktır, 50'den az olan çatlaktır, gerisi sağlamdır.",
+      "ornek": [
+        "move(East)",
+        "if panel_power() < 50:",
+        "    repair()"
+      ]
+    },
+    {
+      "baslik": "repair",
+      "kelimeler": ["repair"],
+      "aciklama": "Robotun durduğu karedeki çatlak paneli (gücü 0'dan çok, 50'den az) onarır; panelin gücü 100 olur. Sağlam panelde, kırık panelde ya da boş karede robot durur: önce panel_power() ile ölç. Kırık panelin parçası collect() ile toplanır.",
+      "ornek": [
+        "if panel_power() > 0:",
+        "    repair()",
+        "else:",
+        "    collect()"
+      ]
+    },
+    {
+      "baslik": "elif",
+      "kelimeler": ["elif"],
+      "aciklama": "\"Değilse, şuna bak\" demek: if'in sorusu yanlışsa (False) yeni bir soru sorar. Python soruları yukarıdan aşağı sorar, doğru çıkan İLK dalı çalıştırır, gerisini atlar; bu yüzden sıra önemlidir. İstediğin kadar elif yazabilirsin, en sona else de eklenebilir. elif'in de sonunda iki nokta (:) ve altında girinti şart.",
+      "ornek": [
+        "if panel_power() == 0:",
+        "    collect()     # kırık",
+        "elif panel_power() < 50:",
+        "    repair()      # çatlak"
+      ]
     }
   ]
 }

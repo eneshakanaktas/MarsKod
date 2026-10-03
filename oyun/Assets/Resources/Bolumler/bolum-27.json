@@ -1,0 +1,56 @@
+{
+  "numara": 27,
+  "baslik": "Köşede ölç",
+  "etiket": "ÖDEV",
+  "gorev": "2 onar, 2 topla",
+  "giris": "Sol 1.071 · Önce yolu say, sonra paneli ölç.",
+  "bitis": "Kulübedeki takvim tarandı. Son işaretli gün: sol 861. Sonrası boş.",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". 9 . 0 . .",
+    ". . . 3 . 7",
+    ". . . . . .",
+    "R 8 2 0 . ."
+  ],
+  "komutlar": ["move", "collect", "rock_ahead", "panel_power", "repair"],
+  "parcalar": ["move(North)", "move(East)", "repair()", "collect()", "for i in range(3):", "if i < 3:", "else:", "if panel_power() == 0:", "elif panel_power() < 50:"],
+  "konular": ["elif", "döngü sayacı (i)", "karşılaştırma", "panel_power", "repair", "iki kararı birlikte kullanma"],
+  "ipuclari": [
+    "Yol Bölüm 25'teki gibi doğuya sonra kuzeye gidiyor, ama bu sefer yolda üç tür panel var.",
+    "Her turda iki karar var: önce sayaçla yönü seç (`if i < 3`), yürüdükten sonra paneli ölç (`== 0` ise topla, `< 50` ise onar). İkisi de döngünün içinde, alt alta.",
+    "Bölüm 25'in yürüyüşünden sonra, `collect()` yerine: `if panel_power() == 0:` → `collect()`, `elif panel_power() < 50:` → `repair()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(6):", "    if i < 3:", "        move(East)", "    else:", "        move(North)", "    collect()"],
+      "aciklama": "Bölüm 25'teki gibi her karede toplamak: ilk panel sağlam, sökülemez; robot durur."
+    },
+    {
+      "kod": ["for i in range(6):", "    if i < 3:", "        move(East)", "    else:", "        move(North)", "if panel_power() == 0:", "    collect()", "elif panel_power() < 50:", "    repair()"],
+      "aciklama": "Panel kontrolü girintisiz kalmış, döngünün dışında: yalnızca en sondaki kareye bakılır."
+    },
+    {
+      "kod": ["for i in range(6):", "    if i < 3:", "        move(East)", "    else:", "        move(North)", "    if panel_power() < 50:", "        repair()", "    elif panel_power() == 0:", "        collect()"],
+      "aciklama": "Sıra ters: kırık panelin gücü 0, 0 da 50'den küçük; robot kırık paneli onarmaya çalışır."
+    }
+  ],
+  "baslangic_kodu": [
+    "for i in range(6):",
+    "    if i < 3:",
+    "        move(East)",
+    "    else:",
+    "        move(North)"
+  ],
+  "cozum": [
+    "for i in range(6):",
+    "    if i < 3:",
+    "        move(East)",
+    "    else:",
+    "        move(North)",
+    "    if panel_power() == 0:",
+    "        collect()",
+    "    elif panel_power() < 50:",
+    "        repair()"
+  ]
+}

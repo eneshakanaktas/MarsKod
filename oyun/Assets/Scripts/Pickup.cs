@@ -17,6 +17,7 @@ public static class Pickups
         switch (kind)
         {
             case Collectible.EnergyCell: return EnergyCell.Create(parent, localPos, seed);
+            case Collectible.PanelPart: return SolarPanel.Create(parent, localPos, 0, seed);
             default: return Ice.Create(parent, localPos, seed);
         }
     }

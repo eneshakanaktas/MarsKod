@@ -59,7 +59,7 @@ public class BolumTests
     [Fact]
     public void Bolge_1_enerji_hucresi_bolge_2_buz_toplar()
     {
-        // Karar (Ragıp, 10-01; docs/tasarim/hikaye.md): Bölüm 1-10 iniş ovası (enerji hücresi), 11-20 kutup buzulu (buz)
+        // Karar (Ragıp, 10-01; docs/tasarim/hikaye.md): Bölüm 1-10 iniş ovası (enerji hücresi), 11-20 kutup buzulu (buz), 21-30 kraterli düzlük (kırık panelin parçası)
         foreach (var f in Files())
         {
             var level = Load((string)f[0]);
@@ -76,6 +76,9 @@ public class BolumTests
         Assert.Equal(Region.Plain, Regions.Of(10));
         Assert.Equal(Region.PolarIce, Regions.Of(11));
         Assert.Equal(Region.PolarIce, Regions.Of(20));
+        Assert.Equal(Region.CraterField, Regions.Of(21));
+        Assert.Equal(Region.CraterField, Regions.Of(30));
+        Assert.Equal(Collectible.PanelPart, Regions.Item(Region.CraterField));
         Assert.Equal(Collectible.EnergyCell, Regions.Item(Region.Plain));
         Assert.Equal(Collectible.Ice, Regions.Item(Region.PolarIce));
     }

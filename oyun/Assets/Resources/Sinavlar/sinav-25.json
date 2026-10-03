@@ -1,0 +1,38 @@
+{
+  "bolum": 25,
+  "sorular": [
+    {
+      "soru": "panel_power() == 0 ile panel_power() = 0 arasındaki fark ne?",
+      "secenekler": [
+        "Fark yok, ikisi de aynı şeyi sorar",
+        "== \"eşit mi?\" diye sorar; tek = karşılaştırma değildir, if'in içinde hata verir",
+        "Tek = daha hızlı çalışır",
+        "== yalnızca sayılar için, = yazılar içindir"
+      ],
+      "dogru": 1,
+      "aciklama": "Karşılaştırma için iki tane = yazılır (==). Tek = bir şeye değer vermek içindir; if'in sorusunda kullanılırsa Python hata verir."
+    },
+    {
+      "soru": "Bir panelin gücü 0, kod şöyle: if panel_power() < 50: repair() elif panel_power() == 0: collect(). Ne olur?",
+      "secenekler": [
+        "Robot parçayı toplar",
+        "Hiçbir şey olmaz",
+        "İlk soru doğru çıkar (0, 50'den küçük), robot kırık paneli onarmaya çalışır ve durur",
+        "İki dal da çalışır"
+      ],
+      "dogru": 2,
+      "aciklama": "Python soruları yukarıdan aşağı sorar ve doğru çıkan ilk dalı çalıştırır. 0 < 50 doğru olduğu için elif'e hiç bakılmaz; önce == 0 sorusu sorulmalı."
+    },
+    {
+      "soru": "for i in range(6): döngüsünde if i < 3: kaç turda doğru çıkar?",
+      "secenekler": [
+        "2 turda",
+        "3 turda (i = 0, 1, 2)",
+        "4 turda (i = 0, 1, 2, 3)",
+        "6 turun hepsinde"
+      ],
+      "dogru": 1,
+      "aciklama": "Sayaç 0'dan başlar: 0, 1, 2, 3, 4, 5. Bunlardan 3'ten küçük olanlar 0, 1 ve 2; yani üç tur."
+    }
+  ]
+}

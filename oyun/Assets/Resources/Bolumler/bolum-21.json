@@ -1,0 +1,48 @@
+{
+  "numara": 21,
+  "baslik": "Panel tarlası",
+  "etiket": "ÖDEV",
+  "gorev": "2 çatlak paneli onar",
+  "giris": "Sol 1.068 · Yeni modül: güç ölçer! Gücü 50'den az olan panel çatlaktır.",
+  "bitis": "2 panel onarıldı. Tarla gücü: %8.",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". 9 . 6 . 8",
+    ". . . . . .",
+    "R 8 3 7 2 9"
+  ],
+  "komutlar": ["move", "collect", "rock_ahead", "panel_power", "repair"],
+  "parcalar": ["move(North)", "move(East)", "repair()", "for i in range(3):", "if panel_power() < 50:"],
+  "konular": ["karşılaştırma", "küçüktür (<)", "panel_power", "repair", "for döngüsü", "if"],
+  "ipuclari": [
+    "Bu sırada beş panel var, bazıları çatlak. Her panelin üstüne gelince gücünü ölç; yalnızca çatlak olanı onar.",
+    "`panel_power()` robotun durduğu paneldeki gücü sayı olarak verir. `<` \"küçüktür\" demek: `panel_power() < 50` güç 50'den azsa True olur. Gücü 50'den az olan panel çatlaktır, `repair()` onu onarır.",
+    "`for i in range(5):` altına `move(East)`, sonra `if panel_power() < 50:` ve onun altına bir girinti daha `repair()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(5):", "    move(East)", "    repair()"],
+      "aciklama": "Ölçmeden her paneli onarmaya çalışmak: ilk panel sağlam (gücü 80), robot durur."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(East)", "    if panel_power() > 50:", "        repair()"],
+      "aciklama": "İşaret ters: > \"büyüktür\" demek. Bu kod sağlam paneli onarmaya çalışır, robot durur."
+    },
+    {
+      "kod": ["for i in range(5):", "    if panel_power() < 50:", "        repair()", "    move(East)"],
+      "aciklama": "Önce ölçüp sonra yürümek: robot ilk turda boş karede durur (panel yok, güç 0), orada onarmaya çalışır."
+    }
+  ],
+  "baslangic_kodu": [
+    "for i in range(5):",
+    "    move(East)"
+  ],
+  "cozum": [
+    "for i in range(5):",
+    "    move(East)",
+    "    if panel_power() < 50:",
+    "        repair()"
+  ]
+}

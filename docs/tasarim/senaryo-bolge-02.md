@@ -9,7 +9,7 @@ Bölüm 16-20 yapılırken bulmacalar değişti: `else` ve yeni duyu `rock_ahead
 
 - **Bölüm 18:** taslaktaki "kirli ve temiz buz karışık" olayı bulmacaya uymuyor (18'de buz taraması yok, kaya dolaşılıyor). Yerine: **aracın açık kapısı** (içeride iki boş koltuk, çözülmüş kemerler, bir termos). "İnsanlar sakince gitmiş" iz'ini güçlendirir.
 - **Sensör ikiye çıktı:** araçtan iki modül sökülür: 12'de tarama sensörü (`ice_here`), 16'da ön engel sensörü (`rock_ahead`). Program ikisinin de "araştırma aracı KT-2"den geldiğini söyler, nedenini sormaz.
-- **Bölge 3'e etkisi (sonra düzeltilecek):** `senaryo-perde-1.md` Bölge 3'ü "`else`, `elif`, karşılaştırma" diye anlatıyor; `else` artık burada öğretildiği için Bölge 3 = `elif` + karşılaştırma olur.
+- **Bölge 3'e etkisi (düzeltildi, 2026-10-03):** `senaryo-perde-1.md` Bölge 3'ü "`else`, `elif`, karşılaştırma" diye anlatıyor; `else` artık burada öğretildiği için Bölge 3 = `elif` + karşılaştırma olur.
 - **Toplanan şey buz:** Bölüm 16-20'nin görev yazıları "hücre topla" diyor; bölge buz bölgesi, metinler "buz" olmalı (oyuna koyarken düzeltilir).
 
 ## Bu bölgenin görevi

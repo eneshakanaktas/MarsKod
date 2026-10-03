@@ -1,0 +1,53 @@
+{
+  "numara": 24,
+  "baslik": "Üç yol",
+  "etiket": "ÖDEV",
+  "gorev": "2 onar, 1 topla",
+  "giris": "Sol 1.069 · Bazen iki değil üç yol vardır: elif!",
+  "bitis": "Üç yolu da doğru seçtin! Tarla gücü: %22.",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". 6 . . 8 .",
+    ". . . . . .",
+    ". . 9 . . 7",
+    "R 8 2 0 7 3"
+  ],
+  "komutlar": ["move", "collect", "rock_ahead", "panel_power", "repair"],
+  "parcalar": ["move(East)", "repair()", "collect()", "for i in range(3):", "if panel_power() == 0:", "elif panel_power() < 50:"],
+  "python_kelimeleri": ["elif"],
+  "konular": ["elif", "karşılaştırma", "sıra önemli", "panel_power", "repair"],
+  "ipuclari": [
+    "Bu sırada üç tür panel var: sağlam (dokunma), çatlak (onar), kırık (topla). İki yol yetmez, üç yol gerek.",
+    "Yeni kelime `elif`: \"değilse, şuna bak\". Python soruları yukarıdan aşağı sorar, doğru olan İLK dalı çalıştırır, gerisini atlar. 0 da 50'den küçüktür: o yüzden önce `== 0` sorusunu sor, sonra `< 50`.",
+    "Döngünün içinde `move(East)`, sonra `if panel_power() == 0:` altında `collect()`, sonra `elif panel_power() < 50:` altında `repair()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(5):", "    move(East)", "    if panel_power() < 50:", "        repair()", "    elif panel_power() == 0:", "        collect()"],
+      "aciklama": "Sıra ters: kırık panelin gücü 0, 0 da 50'den küçük. İlk soru doğru çıkar, robot kırık paneli onarmaya çalışır ve durur."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(East)", "    if panel_power() == 0:", "        collect()", "    if panel_power() < 50:", "        repair()"],
+      "aciklama": "elif yerine ikinci bir if: ikisi de sorulur. Parça toplanınca karede güç 0 kalır, ikinci if de doğru çıkar; robot boş karede onarmaya çalışır."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(East)", "    if panel_power() == 0:", "        collect()", "    else:", "        repair()"],
+      "aciklama": "else her şeyi kapsar: sağlam paneli de onarmaya çalışır, robot ilk panelde durur."
+    }
+  ],
+  "baslangic_kodu": [
+    "for i in range(5):",
+    "    move(East)",
+    "    if panel_power() == 0:",
+    "        collect()"
+  ],
+  "cozum": [
+    "for i in range(5):",
+    "    move(East)",
+    "    if panel_power() == 0:",
+    "        collect()",
+    "    elif panel_power() < 50:",
+    "        repair()"
+  ]
+}

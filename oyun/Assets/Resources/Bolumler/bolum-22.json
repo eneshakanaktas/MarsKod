@@ -1,0 +1,48 @@
+{
+  "numara": 22,
+  "baslik": "Kırık parçalar",
+  "etiket": "ÖDEV",
+  "gorev": "2 panel parçası topla",
+  "giris": "Sol 1.068 · Gücü tam 0 olan panel kırıktır: parçasını topla.",
+  "bitis": "Parçalar ayrıldı. Tarla gücü: %12.",
+  "harita": [
+    "6 . . . . .",
+    "0 . . 8 . .",
+    ". . . . . .",
+    "7 . 9 . . .",
+    "0 . . . 7 .",
+    "R . . . . ."
+  ],
+  "komutlar": ["move", "collect", "rock_ahead", "panel_power", "repair"],
+  "parcalar": ["move(North)", "move(East)", "collect()", "for i in range(3):", "if panel_power() == 0:"],
+  "konular": ["karşılaştırma", "eşittir (==)", "panel_power", "for döngüsü", "if"],
+  "ipuclari": [
+    "Kuzeye giden sırada iki panel tamamen kırık. Kırık panelin parçası toplanır, çalışan panele dokunulmaz.",
+    "Kırık panelin gücü tam 0'dır. \"Eşit mi?\" diye sormak için `==` yazılır (iki tane =). Tek `=` başka bir iş yapar, if'in içinde hata verir. Boş karede de güç 0'dır; orada `collect()` bir şey bulamaz ama robot durmaz.",
+    "`for i in range(5):` altına `move(North)`, sonra `if panel_power() == 0:` ve onun altına bir girinti daha `collect()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(5):", "    move(North)", "    if panel_power() = 0:", "        collect()"],
+      "aciklama": "Tek = yazılmış: Python bunu \"eşit mi?\" diye okumaz, kod hiç çalışmaz. Karşılaştırma için == yaz."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(North)", "    collect()"],
+      "aciklama": "Ölçmeden toplamak: ikinci panel çalışıyor (gücü 70), sökülemez; robot durur."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(North)", "    if panel_power() == 0:", "        repair()"],
+      "aciklama": "Kırık panel onarılmaz, parçası toplanır: repair() yerine collect() olmalı."
+    }
+  ],
+  "baslangic_kodu": [
+    "for i in range(5):",
+    "    move(North)"
+  ],
+  "cozum": [
+    "for i in range(5):",
+    "    move(North)",
+    "    if panel_power() == 0:",
+    "        collect()"
+  ]
+}

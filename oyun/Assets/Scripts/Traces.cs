@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 
 // Hikaye izleri: bazi bolumlerde alanin kenarinda duran kucuk sus nesneleri (docs/tasarim/senaryo-bolge-01.md, -02.md).
-// Bulmacayi etkilemezler, yalnizca merak uyandirmak icin dururlar. Bolge 2'ninkiler PolarTraces'te.
+// Bulmacayi etkilemezler, yalnizca merak uyandirmak icin dururlar. Bolge 2'ninkiler PolarTraces'te, Bolge 3'unkuler CraterTraces'te.
 public static class Traces
 {
     // Arka plandaki izler (MarsSky.hlsl, colonyTraces): kolonide acik kapi (Bolum 6), sera kubbesinde kuru saksi (Bolum 7).
@@ -23,6 +23,7 @@ public static class Traces
     public static void Build(int levelNumber, Transform parent, Vector2 areaHalf, Vector3? targetPos = null)
     {
         rover = PolarTraces.Build(levelNumber, parent, areaHalf);
+        CraterTraces.Build(levelNumber, parent, areaHalf);
         tank = levelNumber == PolarTraces.TankLevel ? WaterTank.Create(parent, PolarTraces.TankPosition(areaHalf)) : null;
         ResetBackdrop(levelNumber);
         switch (levelNumber)
@@ -106,8 +107,13 @@ public static class Traces
                 new Vector3(x + ox, 0.006f, z), outline: false, castShadow: false);
     }
 
-    // Bolum 8: firtinanin izi: devrilmis gunes paneli, kuma gomulu kablo, kayalarin yanina yigilmis kum.
-    static void StormDebris(Transform parent, Vector3 p)
+    // Bolge acilisi: kara ekranda gosterilecek satirlar (bolgenin ilk bolumu degilse null)
+    public static string[] TransitionLines(int levelNumber) =>
+        levelNumber == PolarTraces.FirstLevel ? PolarTraces.TransitionLines :
+        levelNumber == CraterTraces.FirstLevel ? CraterTraces.TransitionLines : null;
+
+    // Bolum 8 (ve Bolum 21-22): firtinanin izi: devrilmis gunes paneli, kuma gomulu kablo, kayalarin yanina yigilmis kum.
+    public static void StormDebris(Transform parent, Vector3 p)
     {
         var panelMat = Mats.Lit(Mats.Hex("#17232F"), 0.55f);
         var frameMat = Mats.Lit(Mats.Hex("#8A8A92"), 0.3f);

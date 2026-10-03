@@ -4,6 +4,7 @@
 //
 // Harita "resim gibi" yazılır: her satır bir sıra, en üstteki satır kuzey (alanın arkası).
 //   R robot   B buz   E enerji hücresi   K kaya   T tehlikeli kristal   H hedef kare   . boş     (aradaki boşluklar önemsizdir)
+//   0-9 güneş paneli: rakam gücün onda biri (7 → gücü 70). 0 kırık panel (parçası toplanır), 1-4 çatlak (onarılır), 5-9 sağlam.
 //   Toplanacak işaretleri (B, E...) Collectible.cs'te; bir bölümde tek tür toplanır.
 
 using System;
@@ -43,6 +44,8 @@ namespace MarsKod.Dunya
         public List<Cell> Rocks = new List<Cell>();
         /// <summary>Tehlikeli kırmızı kristaller (üstünden geçilir, toplanmaz)</summary>
         public List<Cell> Crystals = new List<Cell>();
+        /// <summary>Güneş panelleri ve güçleri (kırık olanlar gücü 0 ile burada, parçaları Ices'ta)</summary>
+        public Dictionary<Cell, int> Panels = new Dictionary<Cell, int>();
         public Cell? Target;
         /// <summary>Bu bölümde açık oyun komutları (move, collect...)</summary>
         public List<string> Commands = new List<string>();
@@ -59,9 +62,11 @@ namespace MarsKod.Dunya
         public string StartCode = "";
         public string Solution;
 
-        public World CreateWorld() => new World(Cols, Rows, Robot, Ices, Rocks, Target, Commands, Crystals);
+        public World CreateWorld() => new World(Cols, Rows, Robot, Ices, Rocks, Target, Commands, Crystals, Panels);
 
         public const char RobotMark = 'R', RockMark = 'K', CrystalMark = 'T', TargetMark = 'H', EmptyMark = '.';
+        /// <summary>Haritada panelin rakamı gücün onda biri (7 → 70)</summary>
+        public const int PanelPowerPerDigit = 10;
 
         // ---- dosyadan okuma ----
 
@@ -148,6 +153,15 @@ namespace MarsKod.Dunya
                             level.Target = cell;
                             break;
                         case EmptyMark: break;
+                        case char digit when digit >= '0' && digit <= '9':
+                            int power = (digit - '0') * PanelPowerPerDigit;
+                            level.Panels[cell] = power;
+                            if (power == 0)
+                            {
+                                kinds.Add(Collectible.PanelPart);
+                                level.Ices.Add(cell);
+                            }
+                            break;
                         default:
                             if (Collectibles.Marks.TryGetValue(lines[i][col], out var kind))
                             {
@@ -156,7 +170,7 @@ namespace MarsKod.Dunya
                                 break;
                             }
                             throw new DataFormatError("Haritanın " + (i + 1) + ". satırında bilinmeyen işaret: '" + lines[i][col] + "'. Kullanılabilenler: "
-                                + RobotMark + " robot, " + MarkList() + ", " + RockMark + " kaya, " + CrystalMark + " kristal, " + TargetMark + " hedef, " + EmptyMark + " boş.");
+                                + RobotMark + " robot, " + MarkList() + ", 0-9 güneş paneli, " + RockMark + " kaya, " + CrystalMark + " kristal, " + TargetMark + " hedef, " + EmptyMark + " boş.");
                     }
                 }
             }
@@ -164,8 +178,8 @@ namespace MarsKod.Dunya
             if (kinds.Count > 1)
                 throw new DataFormatError("Haritada iki tür toplanacak var (" + string.Join(", ", kinds.Select(Collectibles.Name)) + "); bir bölümde tek tür olmalı.");
             if (kinds.Count == 1) level.Item = kinds.First();
-            if (level.Ices.Count == 0 && level.Target == null)
-                throw new DataFormatError("Haritada görev yok: toplanacak bir şey (" + MarkList() + ") ya da bir hedef (" + TargetMark + ") olmalı.");
+            if (level.Ices.Count == 0 && level.Target == null && !level.Panels.Values.Any(World.IsCracked))
+                throw new DataFormatError("Haritada görev yok: toplanacak bir şey (" + MarkList() + ", 0 kırık panel), onarılacak çatlak panel (1-4) ya da bir hedef (" + TargetMark + ") olmalı.");
             if (level.Ices.Count > 0 && !level.Commands.Contains("collect"))
                 throw new DataFormatError("Haritada toplanacak " + Collectibles.Name(level.Item) + " var ama \"komutlar\" içinde \"collect\" yok; toplanamaz.");
             if (level.Commands.Contains("ice_here") && level.Item != Collectible.Ice)

@@ -1,3 +1,4 @@
+using System.Collections;
 using MarsKod.Dunya;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -35,27 +36,47 @@ public class RegionLook
         probeBase = "#4A5470", probeTop = "#46557C",
     };
 
+    // Bolge 3 finali: oyundaki ilk gun dogumu (docs/tasarim/senaryo-bolge-03.md, kapanis). Ova safaginin aydinlanmis hali.
+    static readonly RegionLook SunriseLook = new RegionLook
+    {
+        shaderRegion = 0f,
+        skyLight = "#FFE6C8", skyIntensity = 0.95f,
+        sunLight = "#FFC27A", sunIntensity = 1.0f,
+        ambientSky = "#8C7E8E", ambientEquator = "#7A5E58", ambientGround = "#3A2A26",
+        probeBase = "#7A6464", probeTop = "#8A7A86",
+    };
+
     public static RegionLook For(Region r) => r == Region.PolarIce ? Polar : Plain;
 
-    public void Apply(Light sky, Light sun)
+    public void Apply(Light sky, Light sun) => Blend(this, this, 0f, sky, sun);
+
+    // Bu bolgenin isigindan gun dogumu isigina yavasca gecer
+    public IEnumerator Sunrise(Light sky, Light sun, float duration)
     {
-        sky.color = Mats.Hex(skyLight);
-        sky.intensity = skyIntensity;
-        sun.color = Mats.Hex(sunLight);
-        sun.intensity = sunIntensity;
+        yield return Tween.Run(duration, t => Blend(this, SunriseLook, Tween.InOutCubic(t), sky, sun));
+    }
+
+    static Color Mix(string a, string b, float t) => Color.Lerp(Mats.Hex(a), Mats.Hex(b), t);
+
+    static void Blend(RegionLook a, RegionLook b, float t, Light sky, Light sun)
+    {
+        sky.color = Mix(a.skyLight, b.skyLight, t);
+        sky.intensity = Mathf.Lerp(a.skyIntensity, b.skyIntensity, t);
+        sun.color = Mix(a.sunLight, b.sunLight, t);
+        sun.intensity = Mathf.Lerp(a.sunIntensity, b.sunIntensity, t);
         // zemin cizimi (Ground.shader) gunes isigini buradan okur
         Shader.SetGlobalVector("_DawnDir", sun.transform.forward);
         Shader.SetGlobalVector("_DawnColor", sun.color.linear * sun.intensity);
-        Shader.SetGlobalFloat("_Region", shaderRegion);
+        Shader.SetGlobalFloat("_Region", a.shaderRegion);
 
         // Yumusak ortam isigi: ustten serin gokyuzu, yanlardan bolgenin rengi
         RenderSettings.ambientMode = AmbientMode.Trilight;
-        RenderSettings.ambientSkyColor = Mats.Hex(ambientSky);
-        RenderSettings.ambientEquatorColor = Mats.Hex(ambientEquator);
-        RenderSettings.ambientGroundColor = Mats.Hex(ambientGround);
+        RenderSettings.ambientSkyColor = Mix(a.ambientSky, b.ambientSky, t);
+        RenderSettings.ambientEquatorColor = Mix(a.ambientEquator, b.ambientEquator, t);
+        RenderSettings.ambientGroundColor = Mix(a.ambientGround, b.ambientGround, t);
         var sh = new SphericalHarmonicsL2();
-        sh.AddAmbientLight(Mats.Hex(probeBase).linear * AmbientLift);
-        sh.AddDirectionalLight(Vector3.up, Mats.Hex(probeTop).linear * AmbientLift, 0.9f);
+        sh.AddAmbientLight(Mix(a.probeBase, b.probeBase, t).linear * AmbientLift);
+        sh.AddDirectionalLight(Vector3.up, Mix(a.probeTop, b.probeTop, t).linear * AmbientLift, 0.9f);
         RenderSettings.ambientProbe = sh;
     }
 }

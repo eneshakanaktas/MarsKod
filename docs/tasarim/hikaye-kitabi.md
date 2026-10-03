@@ -48,10 +48,10 @@ Oyuncu bunu parça parça öğrenir; bu bölüm yazarlar içindir.
 | ~3 yıl önce | Koloni kurulur (24 kişi). Kor koloninin ilk maden robotu. |
 | ~1 yıl önce | Kıvılcım koloniye gelir (küçük bakım robotu). Kor eskir, bacağı arızalanır; hizmet dışı bırakılıp eski hangara kaldırılır. Ece sık sık Kıvılcım'la oynar; göğsüne çizimini yapar. |
 | ~7 ay + 10 gün önce | Gözlemevi dev bir güneş fırtınası görür: 10 gün sonra varacak. Defne karar verir: volkanın altındaki lav tüneli sığınağına inilecek, herkes uyku kapsüllerine girecek. |
-| Sonraki 10 gün | Hazırlık. Kutuptaki iki kişilik ekip son anda alınır, araçları orada kalır. Defne kayıtlarını hazırlar, Mars Kod Okulu'na isteği bırakır, yol boyunca işaretler (boya oklar) yaptırır. Ece, Kıvılcım'a veda eder. Sığınak kapısı dışarıdan kilitlenir; Kıvılcım dışarıda kalır. |
+| Sonraki 10 gün | Hazırlık. Son gün (koloni takvimiyle **sol 861**, aynı zamanda Ece'nin 9. doğum günü) herkes sığınağa iner; O sabah Defne panel tarlasındaki bakım kulübesinde panelleri sabitlerken, her doğum gününde olduğu gibi aceleyle de olsa kızının boyunu kapı pervazına işaretler (Bölge 3 izleri). Kutuptaki iki kişilik ekip son anda alınır, araçları orada kalır. Defne kayıtlarını hazırlar, Mars Kod Okulu'na isteği bırakır, yol boyunca işaretler (boya oklar) yaptırır. Ece, Kıvılcım'a veda eder. Sığınak kapısı dışarıdan kilitlenir; Kıvılcım dışarıda kalır. |
 | ~7 ay önce | Fırtına çarpar. Koloninin enerjisi çöker, enerji hücreleri ovaya saçılır, güneş panelleri kırılır, anten devrilir. Kıvılcım'ın belleği silinir, kapanır. Dünya ile bağlantı kopar. |
 | ~7 ay önce → oyun başı | Dünya'da ajans koloniyi "büyük olasılıkla kayıp" ilan eder. Mars Kod Okulu kendi kendine açık kalır. Sığınakta kapsüllerin enerjisi beklenenden hızlı azalır (fırtına bir kısmını tüketmiş). |
-| Oyun başı (Bölüm 1) | Program, Defne'nin isteğini ilk uygun öğrenciye verir: Yıldız. Kıvılcım uyanır. |
+| Oyun başı (Bölüm 1) | *(Bölge 3'te program bugünü sol 1.068 diye gösterir: koloni kuruluşundan bu yana ~3 yıl, inişten bu yana 207 sol ≈ 7 ay.)*  Program, Defne'nin isteğini ilk uygun öğrenciye verir: Yıldız. Kıvılcım uyanır. |
 | Bölüm 100 | Kapsüllerin enerji uyarısı ve güneş kavuşumunun tarihi ortaya çıkar. |
 | Bölüm 150 | Kapı açılır; Kor paramparça olur. |
 | Bölüm 151 | Defne uyanır. |
@@ -128,7 +128,7 @@ Bölge 16-20 için kayıt yerine **canlı konuşma** (Defne uyanık); dakikalarc
 | İki kez yanan ışık | Bölüm sonu kutlaması | Final: Kıvılcım Dünya'ya iki kez yakar. |
 | Saksı bitkisi | Bölüm 1 kuru | Bölge 2 yeşerir, final çiçek açmış. |
 | Koloni ışıkları | Bölge 1 tek tek yanar | Final: hepsi yanık. |
-| "Ece" yazısı | Bölge 3 kapı | Saksı, duvarlar; final: çizime "öğretmen" yazan da o. |
+| "Ece" yazısı (turkuaz) | Bölge 3 kulübe kapısı; Bölge 4 kurdele aynı renk | Saksı, duvarlar; final: çizime "öğretmen" yazan da o. |
 | Sinyal | Bölüm 10 telsiz | Bölüm 100'den sonra zayıflayan gösterge; Bölüm 200 kopar; final geri gelir. |
 | Mavi yıldız (Dünya) | Bölge 10 (Mars'tan Dünya parlak bir yıldız gibi görünür) | Final: Ece'nin çizdiği yıldız = Dünya = öğretmen = Yıldız (üç anlam). |
 | Kıvılcım'ın çantası | Bölge 4 kurdele; sonra boya kalemi (7), katlanmış çizim (8), oyuncak astronot (9) | Final: Ece eşyalarını tanır; katlanmış çizim açılır. |

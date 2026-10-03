@@ -1,8 +1,10 @@
-// Mars dünyasının kuralları: ızgara, robotun yeri, buzlar, kayalar, hedef kare ve oyuncunun kullandığı komutlar (move, collect...).
+// Mars dünyasının kuralları: ızgara, robotun yeri, buzlar, kayalar, güneş panelleri, hedef kare ve oyuncunun kullandığı komutlar (move, collect...).
 // Saf mantıktır (Unity'den habersiz); sahne yalnızca olanları (WorldEvent) okuyup canlandırır.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
 using MarsKod.Motor;
 
 namespace MarsKod.Dunya
@@ -80,8 +82,21 @@ namespace MarsKod.Dunya
         public bool Found;
     }
 
-    /// <summary>Robot tehlikeli kristali toplamaya çalıştı; kural gereği durur.</summary>
+    /// <summary>Robot yapılamayacak bir işi denedi (kristali ya da çalışan paneli toplamak, yanlış paneli onarmak); kural gereği durur.</summary>
     public sealed class Rejected : WorldEvent
+    {
+        public Cell At;
+    }
+
+    /// <summary>Robot panel_power() ile bulunduğu karedeki panelin gücünü ölçtü (panel yoksa 0).</summary>
+    public sealed class Measured : WorldEvent
+    {
+        public Cell At;
+        public int Power;
+    }
+
+    /// <summary>Robot çatlak paneli onardı; panelin gücü artık World.RepairedPower.</summary>
+    public sealed class Repaired : WorldEvent
     {
         public Cell At;
     }
@@ -113,8 +128,15 @@ namespace MarsKod.Dunya
         readonly HashSet<Cell> rocks;
         /// <summary>Tehlikeli kristaller: üstünden geçilir ama toplanamaz</summary>
         readonly HashSet<Cell> crystals;
+        /// <summary>Güneş panelleri ve güçleri (0-100): 0 kırık (parçası toplanır), CrackedBelow'dan az çatlak (onarılır), gerisi sağlam</summary>
+        readonly Dictionary<Cell, int> panels;
         /// <summary>Bu bölümde açık olan komutlar; null ise hepsi açık</summary>
         readonly HashSet<string> allowed;
+
+        /// <summary>Gücü bundan az (ama 0'dan çok) olan panel çatlaktır</summary>
+        public const int CrackedBelow = 50;
+        /// <summary>Onarılan panelin yeni gücü</summary>
+        public const int RepairedPower = 100;
 
         /// <summary>Son okunduğundan beri olanlar; okuyan temizler.</summary>
         public readonly List<WorldEvent> Events = new List<WorldEvent>();
@@ -123,14 +145,20 @@ namespace MarsKod.Dunya
         public int CollectedCount { get; private set; }
         public int IceLeft => ices.Count - CollectedCount;
         public bool OnTarget => Target == null || Robot.Equals(Target.Value);
-        /// <summary>Görev tamam mı: tüm buzlar toplandı ve (hedef varsa) robot hedef karede</summary>
-        public bool Complete => IceLeft == 0 && OnTarget;
+        /// <summary>Henüz onarılmamış çatlak panel sayısı</summary>
+        public int CrackedLeft => panels.Values.Count(IsCracked);
+        /// <summary>Görev tamam mı: tüm buzlar toplandı, çatlak panel kalmadı ve (hedef varsa) robot hedef karede</summary>
+        public bool Complete => IceLeft == 0 && CrackedLeft == 0 && OnTarget;
 
         /// <summary>Oyunda olan tüm komutlar (bölüm dosyasındaki "komutlar" bunlardan seçilir)</summary>
-        public static readonly string[] AllCommands = { "move", "collect", "ice_here", "rock_ahead" };
+        public static readonly string[] AllCommands = { "move", "collect", "ice_here", "rock_ahead", "panel_power", "repair" };
+
+        /// <summary>Panel çatlak mı (gücü 0'dan çok, CrackedBelow'dan az)</summary>
+        public static bool IsCracked(int power) => power > 0 && power < CrackedBelow;
 
         public World(int cols, int rows, Cell robot, IEnumerable<Cell> iceCells,
-            IEnumerable<Cell> rockCells = null, Cell? target = null, IEnumerable<string> commands = null, IEnumerable<Cell> crystalCells = null)
+            IEnumerable<Cell> rockCells = null, Cell? target = null, IEnumerable<string> commands = null, IEnumerable<Cell> crystalCells = null,
+            IDictionary<Cell, int> panelCells = null)
         {
             Cols = cols;
             Rows = rows;
@@ -139,6 +167,7 @@ namespace MarsKod.Dunya
             taken = new bool[ices.Count];
             rocks = new HashSet<Cell>(rockCells ?? Array.Empty<Cell>());
             crystals = new HashSet<Cell>(crystalCells ?? Array.Empty<Cell>());
+            panels = panelCells == null ? new Dictionary<Cell, int>() : new Dictionary<Cell, int>(panelCells);
             Target = target;
             allowed = commands == null ? null : new HashSet<string>(commands);
         }
@@ -148,6 +177,9 @@ namespace MarsKod.Dunya
         public bool RockAt(Cell c) => rocks.Contains(c);
 
         public bool CrystalAt(Cell c) => crystals.Contains(c);
+
+        /// <summary>Karedeki panelin gücü; panel yoksa (ya da kırık panelin parçası toplandıysa) 0</summary>
+        public int PanelPowerAt(Cell c) => panels.TryGetValue(c, out int power) ? power : 0;
 
         /// <summary>Bu karede henüz toplanmamış buzun sırası; yoksa -1</summary>
         public int IceAt(Cell c)
@@ -185,11 +217,19 @@ namespace MarsKod.Dunya
                 throw new GameRuleStop("Tehlikeli kristal",
                     "Kırmızı kristal toplanmaz, robot bu yüzden durdu. Bu bir oyun kuralı, Python hatası değil: kristalin üstünden geçebilirsin ama collect() onu toplamaya çalışır. Önce ice_here() ile bak: buz varsa topla.");
             }
+            int power = PanelPowerAt(Robot);
+            if (power > 0)
+            {
+                Events.Add(new Rejected { At = Robot });
+                throw new GameRuleStop("Çalışan panel sökülmez",
+                    "Bu panelin gücü " + power + ", yani çalışıyor; collect() yalnızca kırık panelin (gücü 0) parçasını toplar. Bu bir oyun kuralı, Python hatası değil. Önce panel_power() ile ölç: 0 ise topla.");
+            }
             int i = IceAt(Robot);
             if (i >= 0)
             {
                 taken[i] = true;
                 CollectedCount++;
+                panels.Remove(Robot); // kırık panelin parçası toplandıysa karede artık panel yok
             }
             Events.Add(new Collected { At = Robot, IceIndex = i, Total = CollectedCount });
             return i >= 0;
@@ -212,9 +252,38 @@ namespace MarsKod.Dunya
             return blocked;
         }
 
+        /// <summary>Bulunduğu karedeki panelin gücü (0-100; panel yoksa 0). Değiştirmez, yalnızca ölçer.</summary>
+        public int PanelPower()
+        {
+            int power = PanelPowerAt(Robot);
+            Events.Add(new Measured { At = Robot, Power = power });
+            return power;
+        }
+
+        /// <summary>Bulunduğu karedeki çatlak paneli onarır. Kırık, sağlam ya da hiç panel yoksa robot durur (oyun kuralı).</summary>
+        public void Repair()
+        {
+            bool hasPanel = panels.TryGetValue(Robot, out int power);
+            if (hasPanel && IsCracked(power))
+            {
+                panels[Robot] = RepairedPower;
+                Events.Add(new Repaired { At = Robot });
+                return;
+            }
+            Events.Add(new Rejected { At = Robot });
+            if (!hasPanel)
+                throw new GameRuleStop("Burada panel yok",
+                    "Robotun durduğu karede onarılacak bir panel yok, o yüzden durdu. Bu bir oyun kuralı, Python hatası değil: repair() yalnızca çatlak panelin üstünde çalışır.");
+            if (power == 0)
+                throw new GameRuleStop("Kırık panel onarılmaz",
+                    "Bu panelin gücü 0, yani tamamen kırık; onarılamaz, robot bu yüzden durdu. Bu bir oyun kuralı, Python hatası değil: kırık panelin parçası collect() ile toplanır.");
+            throw new GameRuleStop("Panel zaten sağlam",
+                "Bu panelin gücü " + power + "; " + CrackedBelow + " ya da daha fazlası sağlam demek, onarılacak bir şey yok. Robot bu yüzden durdu. Bu bir oyun kuralı, Python hatası değil: önce panel_power() ile ölç, yalnızca gücü " + CrackedBelow + "'den az olanı onar.");
+        }
+
         // --- oyuncunun kullandığı komutlar ---
 
-        /// <summary>Motora dışarıdan verilen isimler: move, collect, ice_here ve yönler (North, East, South, West).</summary>
+        /// <summary>Motora dışarıdan verilen isimler: oyun komutları (AllCommands) ve yönler (North, East, South, West).</summary>
         public Dictionary<string, object> Commands()
         {
             var commands = new Dictionary<string, object>
@@ -247,6 +316,21 @@ namespace MarsKod.Dunya
                     NoKeywords("rock_ahead", kwargs);
                     if (args.Count != 1) throw Values.PyError("TypeError", "rock_ahead() takes exactly one argument (" + args.Count + " given)");
                     return RockAhead(DirectionOf(args[0]));
+                }),
+                ["panel_power"] = new PyBuiltin("panel_power", (args, kwargs) =>
+                {
+                    Unlocked("panel_power");
+                    NoKeywords("panel_power", kwargs);
+                    if (args.Count != 0) throw Values.PyError("TypeError", "panel_power() takes no arguments (" + args.Count + " given)");
+                    return new BigInteger(PanelPower());
+                }),
+                ["repair"] = new PyBuiltin("repair", (args, kwargs) =>
+                {
+                    Unlocked("repair");
+                    NoKeywords("repair", kwargs);
+                    if (args.Count != 0) throw Values.PyError("TypeError", "repair() takes no arguments (" + args.Count + " given)");
+                    Repair();
+                    return null;
                 }),
             };
             // Yönler şimdilik metin olarak tutulur: print(East) -> East

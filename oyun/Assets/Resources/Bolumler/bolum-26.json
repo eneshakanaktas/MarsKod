@@ -1,0 +1,56 @@
+{
+  "numara": 26,
+  "baslik": "Dönüş",
+  "etiket": "ÖDEV",
+  "gorev": "3 panel parçası topla",
+  "giris": "Sol 1.070 · Doğuya git, köşede dön, batıya gel.",
+  "bitis": "Kulübe tarandı. Kapı pervazında 3 işaret: ECE 7 · sol 150 — ECE 8 · sol 506 — ECE 9 · sol 861.",
+  "harita": [
+    ". . . . . .",
+    ". . . . . 8",
+    ". 7 . 9 . .",
+    ". . . . . .",
+    "0 . . . 0 .",
+    "R . 0 . . ."
+  ],
+  "komutlar": ["move", "collect", "rock_ahead", "panel_power", "repair"],
+  "parcalar": ["move(North)", "move(East)", "move(West)", "collect()", "for i in range(3):", "if i < 3:", "elif i == 3:", "else:"],
+  "konular": ["elif", "döngü sayacı (i)", "eşittir (==)", "karşılaştırma", "for döngüsü"],
+  "ipuclari": [
+    "Yol doğuya gidiyor, bir kare kuzeye çıkıyor, sonra batıya geri dönüyor: üç ayrı yön, üç yol.",
+    "Sayaç ilk dört turda (0, 1, 2, 3) doğuya götürsün, tam `i == 4` olduğunda kuzeye çıksın, sonra batıya. `elif` ile if ve else arasına üçüncü bir yol eklenir.",
+    "`for i in range(9):` içinde `if i < 4:` → `move(East)`, `elif i == 4:` → `move(North)`, `else:` → `move(West)`; en altta `collect()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(9):", "    if i < 4:", "        move(East)", "    if i == 4:", "        move(North)", "    else:", "        move(West)", "    collect()"],
+      "aciklama": "elif yerine ikinci bir if: else artık yalnızca ikinci if'e bağlı. İlk turlarda robot hem doğuya hem batıya gider, yerinde sayar; sonunda alanın dışına çıkmaya çalışır."
+    },
+    {
+      "kod": ["for i in range(9):", "    if i < 4:", "        move(East)", "    elif i == 5:", "        move(North)", "    else:", "        move(West)", "    collect()"],
+      "aciklama": "Dönüş turu yanlış: i == 5 bir tur geç. Robot köşeden önce bir kare geri gider, yol kayar."
+    },
+    {
+      "kod": ["for i in range(8):", "    if i < 4:", "        move(East)", "    elif i == 4:", "        move(North)", "    else:", "        move(West)", "    collect()"],
+      "aciklama": "range(8) bir tur eksik: en batıdaki parça toplanmaz."
+    }
+  ],
+  "baslangic_kodu": [
+    "for i in range(9):",
+    "    if i < 4:",
+    "        move(East)",
+    "    else:",
+    "        move(West)",
+    "    collect()"
+  ],
+  "cozum": [
+    "for i in range(9):",
+    "    if i < 4:",
+    "        move(East)",
+    "    elif i == 4:",
+    "        move(North)",
+    "    else:",
+    "        move(West)",
+    "    collect()"
+  ]
+}

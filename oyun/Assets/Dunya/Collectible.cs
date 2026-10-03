@@ -6,11 +6,11 @@ using System.Collections.Generic;
 
 namespace MarsKod.Dunya
 {
-    public enum Collectible { Ice, EnergyCell }
+    public enum Collectible { Ice, EnergyCell, PanelPart }
 
     public static class Collectibles
     {
-        /// <summary>Bölüm haritasındaki işaretler</summary>
+        /// <summary>Bölüm haritasındaki işaretler (panel parçası burada değil: haritada gücü 0 olan panel, "0" yazılır; Level.cs)</summary>
         public static readonly Dictionary<char, Collectible> Marks = new Dictionary<char, Collectible>
         {
             ['B'] = Collectible.Ice,
@@ -21,6 +21,7 @@ namespace MarsKod.Dunya
         {
             [Collectible.Ice] = ("buz", "buzlar"),
             [Collectible.EnergyCell] = ("enerji hücresi", "enerji hücreleri"),
+            [Collectible.PanelPart] = ("panel parçası", "panel parçaları"),
         };
 
         /// <summary>Tekil Türkçe ad ("3 enerji hücresi daha")</summary>

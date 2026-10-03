@@ -78,7 +78,7 @@ Python konu sırası kolaydan zora genel bir taslaktır; motorun destekledikleri
 |---|---|---|---|---|---|
 | 1 | 1-10 | İniş ovası | "Ödev 1": robot uyanır; enerji hücreleri toplandıkça koloninin ışıkları tek tek yanar. Koloni boş. Bölüm 10: telsiz çalışır, kutuptan zayıf bir sinyal. | Enerji hücresi | `move`, `collect`, `for` |
 | 2 | 11-20 | Kutup buzulu | Sinyal, terk edilmiş bir aracın yardım çağrısı. Sera için su toplanır; bitki ilk kez yeşerir. | Buz (temiz / kirli = kırmızı kristal) | `if` (tarama sensörü) |
-| 3 | 21-30 | Kraterli düzlük (güneş paneli tarlası) | Kırık paneller onarılır, koloni gündüz enerjisine kavuşur. Bir kapıda çocuk eliyle "Ece". | Panel parçası | `else`, `elif`, karşılaştırma |
+| 3 | 21-30 | Kraterli düzlük (güneş paneli tarlası) | Kırık paneller onarılır, koloni gündüz enerjisine kavuşur. Bir kapıda çocuk eliyle "Ece". | Panel parçası | karşılaştırma, `elif`, döngü sayacı (`else` Bölge 2'de) |
 | 4 | 31-40 | Kum tepeleri | Toz bulutları gelip geçer; robot "fırtına dinene kadar" bekler, "yol bitene kadar" ilerler. Tuhaflıklar birikir. | Pusula parçaları | `while` |
 | 5 | 41-50 | Anten tepesi | Büyük anten onarılır. **Perde sonu (Bölüm 50):** ödevde olmaması gereken kayıt: "Bu bir ödev değil. Adım Defne Aras. Bunu duyan sensin, onu yeniden öğretecek kişi. Fırtına geliyor; biz yeraltına iniyoruz. Robotun belleği silinecek. Lütfen... ona öğret." | Kablo makarası | Değişkenler (sayaç, toplam) |
 

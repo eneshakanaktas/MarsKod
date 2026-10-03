@@ -1,0 +1,38 @@
+{
+  "bolum": 30,
+  "sorular": [
+    {
+      "soru": "if, elif ve else birlikte yazıldığında kaç dal çalışır?",
+      "secenekler": [
+        "Doğru çıkan bütün dallar",
+        "Yalnızca bir dal: doğru çıkan ilk soru; hiçbiri doğru değilse else",
+        "Her zaman else de çalışır",
+        "Hiçbiri, elif yazınca if çalışmaz"
+      ],
+      "dogru": 1,
+      "aciklama": "if/elif/else tek bir karar zinciridir: yukarıdan aşağı bakılır, doğru çıkan ilk dal çalışır, gerisi atlanır. Hiçbiri doğru değilse else çalışır."
+    },
+    {
+      "soru": "elif yerine ikinci bir if yazınca ne değişir?",
+      "secenekler": [
+        "Hiçbir şey değişmez",
+        "İkinci soru da her seferinde ayrıca sorulur; ilk dal çalıştıktan sonra ikincisi de çalışabilir",
+        "Kod hata verir",
+        "İkinci if hiç çalışmaz"
+      ],
+      "dogru": 1,
+      "aciklama": "Ayrı if'ler birbirinden habersizdir; her biri ayrı sorulur. elif ise yalnızca önceki sorular yanlışsa sorulur."
+    },
+    {
+      "soru": "Gücü 50 olan bir panel için panel_power() > 50 ne verir?",
+      "secenekler": [
+        "True, çünkü 50 büyük bir sayı",
+        "False, çünkü 50, 50'den büyük değil (eşit)",
+        "Hata verir",
+        "50 verir"
+      ],
+      "dogru": 1,
+      "aciklama": "> \"büyüktür\" demek; eşit olan sayı büyük sayılmaz. 50 > 50 yanlıştır (False), 50 == 50 doğrudur (True)."
+    }
+  ]
+}

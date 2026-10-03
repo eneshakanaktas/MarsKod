@@ -19,7 +19,7 @@ Oyuncunun şüphesi bölge bölge büyür; her bölge bir öncekinden biraz daha
 |---|---|
 | 1 | Koloni boş; bir şey ovayı savurmuş; ödevi yalnızca ben alıyorum; "D.A." diye biri var; kutuptan yardım çağrısı. |
 | 2 | İnsanlar **kurtarılmış** ("Ekip alındı. 2 kişi."), yani bir yere gitmişler; ölüm yok. |
-| 3 | Kolonide bir **çocuk** var: Ece. Son boy çizgisinin tarihi bir şeyin olduğu gün. |
+| 3 | Kolonide bir **çocuk** var: Ece. Son boy çizgisinin tarihi, herkesin gittiği gün (ve Ece'nin doğum günü). |
 | 4 | Biri bu yolu **benim için hazırlamış** (işaret direkleri, D.A.'nın ikinci notu); ödevler okuldan değil kolonidan geliyor. |
 | 5 | D.A. = **D. Aras**. Ödev 50 kilitli, gönderen: D. Aras. → Kayıt. |
 
@@ -53,31 +53,34 @@ Oyuncunun şüphesi bölge bölge büyür; her bölge bir öncekinden biraz daha
 
 ---
 
-## Bölge 3 — Kraterli düzlük, güneş paneli tarlası (Bölüm 21-30) · `else`, `elif`, karşılaştırma
+## Bölge 3 — Kraterli düzlük, güneş paneli tarlası (Bölüm 21-30) · karşılaştırma (`<`, `==`, `>`), `elif`, döngü sayacı
 
-**Olay:** Fırtına güneş paneli tarlasını darmadağın etmiş. Kıvılcım panelleri tek tek tarar: sağlam olanı bağlar, çatlak olanı onarır, kırık olanın parçasını toplar (üç yol = `if / elif / else`). Tarla çalışınca koloni ilk kez gündüz enerjisine kavuşur. Bölgede ilk kez **gün doğumu** olur.
+> 2026-10-03 düzeltmesi: `else` artık Bölge 2'de (Bölüm 16) öğretiliyor; bu bölge karşılaştırma + `elif` + döngü sayacı `i`. Ayrıntılı senaryo: `senaryo-bolge-03.md`.
 
-**Program:** "Bazen iki değil üç yol vardır: `elif`!" · "Koloni gündüz enerjisi: %40."
+**Olay:** Fırtına güneş paneli tarlasını darmadağın etmiş. Robota bir modül daha takılır: **güç ölçer** (`panel_power()`) ve onarım kolu (`repair()`). Kıvılcım panelleri tek tek ölçer: gücü düşük (çatlak) olanı onarır, gücü sıfır (kırık) olanın parçasını toplar, sağlam olanı bırakır (üç yol = `if / elif`). Tarlanın kenarında bir **bakım kulübesi** var. Tarla çalışınca koloni ilk kez gündüz enerjisine kavuşur; bölgenin sonunda oyundaki ilk **gün doğumu**.
+
+**Program:** "Sayıları karşılaştır: `<` küçüktür, `>` büyüktür, `==` eşittir." · "Bazen iki değil üç yol vardır: `elif`!" · Her bölümün girişinde küçük, sıkıcı bir bilgi: `Sol 1.068` (Mars günü).
 
 **İzler ve gizli ayrıntılar:**
-- **Bakım kulübesinin kapısında çocuk eliyle yazılmış "ECE".** (Tuhaflık basamağı: kolonide bir çocuk var.)
-- **Kapı pervazında boy çizgileri**, yanlarında tarih: "Ece 7", "Ece 8", "Ece 9". Son çizginin tarihi, kulübedeki takvimde işaretlenmiş son günle aynı. O günden sonra takvimde hiçbir gün işaretlenmemiş.
-- Program her bölümün altında küçük, sıkıcı bir bilgi verir: `Mars günü (sol): 1.247`. Oyuncu takvimdeki son günle karşılaştırırsa fırtınanın üstünden ~200 sol (~7 ay) geçtiğini hesaplayabilir (dikkatli oyuncuya ödül; karşılaştırma dersine de uyar).
+- **Bakım kulübesinin kapısında çocuk eliyle yazılmış "ECE"** (turkuaz boya). Tuhaflık basamağı: kolonide bir çocuk var.
+- **Kapı pervazında boy çizgileri:** `ECE 7 · sol 150`, `ECE 8 · sol 506`, `ECE 9 · sol 861`. Program bunları kulübe taramasında sıradan bir liste gibi okur.
+- **Kulübedeki takvim:** son işaretli gün `sol 861`; sonrası boş. Son boy çizgisi ile aynı gün: Ece'nin 9. doğum günü, aynı zamanda herkesin gittiği gün.
+- **Sol sayacı:** oyuncu `1.068 − 861 = 207` hesabını yaparsa fırtınanın üstünden ~7 ay geçtiğini bulur (dikkatli oyuncuya ödül; karşılaştırma dersine de uyar).
 - Kulübenin rafında kırık bir oyuncak robot: küçük, el yapımı; göğsünde Kıvılcım'ınkine benzer bir çizim.
 
 **Bölümler:**
-- 21 — Tarla darmadağın; paneller ters dönmüş, kuma gömülmüş.
-- 22 — Sağlam / kırık ayrımı (`else`).
-- 23 — Sağlam / çatlak / kırık (`elif`).
-- 24 — Panel gücü karşılaştırılır (`>`, `<`); zayıf olanlar ayrılır.
-- 25 — Bakım kulübesi; kapıda "ECE".
-- 26 — Kapı pervazında boy çizgileri.
-- 27 — Kulübede takvim; son işaretli gün.
-- 28 — Rafta el yapımı oyuncak robot; Kıvılcım ona uzun uzun bakar.
-- 29 — Son paneller; ufukta gün ağarıyor.
-- 30 · Bölge finali — Gün doğumu; tarla ışıl ışıl, koloninin kubbeleri ilk kez gündüz ışığında.
+- 21 · Panel tarlası — Güç ölçer takılır; `<` ile çatlak paneller bulunur. Tarla darmadağın.
+- 22 · Kırık parçalar — `==`: gücü tam 0 olan kırık panellerin parçaları toplanır.
+- 23 · Ya onar ya topla — `>` + `else`; ufukta bakım kulübesi görünür.
+- 24 · Üç yol — `elif` tanışma; kulübe yaklaşır.
+- 25 · Sayaç — Döngü sayacı `i`; kulübenin kapısında "ECE". (Ardından mini sınav.)
+- 26 · Dönüş — Kapı pervazında boy çizgileri.
+- 27 · Köşede ölç — Kapı aralık; içeride takvim, son işaretli gün `sol 861`.
+- 28 · Kayayı dolaş — Rafta el yapımı oyuncak robot; Kıvılcım ona bakar.
+- 29 · Geri dönüş — Son paneller; ufukta gün ağarıyor.
+- 30 · Gün doğumu (bölge finali) — Tarla tamamlanır.
 
-**Kapanış sahnesi:** Güneş ufuktan yükselir (oyundaki ilk gün doğumu). Panellerin yüzeyi birer birer parlar, koloniye doğru akan bir enerji çizgisi. Kıvılcım güneşe döner; gözleri bir an kısılır. Sonra rüzgâr çıkar: uzakta kum tepeleri tozlanmaya başlar. Program: "Hava uyarısı: toz. Sonraki ödev: kum tepeleri."
+**Kapanış sahnesi:** Güneş ufuktan yükselir (oyundaki ilk gün doğumu). Panellerin güç ışıkları birer birer yeşil dolar. Kıvılcım güneşe döner. Program: "Koloni gündüz enerjisi: %40." Sonra rüzgâr çıkar: "Hava uyarısı: toz. Sonraki ödev: kum tepeleri."
 
 ---
 
@@ -88,7 +91,7 @@ Oyuncunun şüphesi bölge bölge büyür; her bölge bir öncekinden biraz daha
 **Program:** "Ne zaman duracağını bilmiyorsan: `while`." · İlk kez programda **tuhaf bir satır:** `Görev kaynağı: KOLONİ (öncelikli)` (oyuncu: "ödevler okuldan değil mi?").
 
 **İzler ve gizli ayrıntılar:**
-- İşaret direklerinin birinde **bir saç kurdelesi** bağlı (Ece'nin; renk: Bölge 3'teki "ECE" yazısının rengiyle aynı).
+- İşaret direklerinin birinde **bir saç kurdelesi** bağlı (Ece'nin; **turkuaz** `#2FC4B8`, Bölge 3'teki "ECE" yazısıyla aynı renk; karar: Ragıp, 10-03).
 - **Koda gizlenmiş, ikinci D.A. notu:** bir `while` bölümünün başlangıç kodunda: `# toz gecene kadar bekle. acele etme. - D.A.` ("acele etme": D.A.'nın oyuncuya ilk "sesi").
 - Program sıkıcı bilgi: `Bu ödevi alan öğrenci sayısı: 1. Sınıf ortalaması: sen.`
 - Kum tepesinin arkasında kuma yarı gömülü bir **koloni aracı**: içi boş, kapısı açık, koltukta bir battaniye.

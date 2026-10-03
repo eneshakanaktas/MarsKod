@@ -1,0 +1,56 @@
+{
+  "numara": 28,
+  "baslik": "Kayayı dolaş",
+  "etiket": "ÖDEV",
+  "gorev": "2 onar, 2 topla",
+  "giris": "Sol 1.071 · Önüne bak, sonra paneli ölç.",
+  "bitis": "Rafta bir nesne: oyuncak robot (el yapımı). Ödevle ilgisi yok.",
+  "harita": [
+    ". 2 . . . .",
+    ". . . . 6 .",
+    "K 0 . K . .",
+    "3 7 . . . .",
+    "0 . . 8 . .",
+    "R . . . . ."
+  ],
+  "komutlar": ["move", "collect", "rock_ahead", "panel_power", "repair"],
+  "parcalar": ["move(North)", "move(East)", "repair()", "collect()", "for i in range(3):", "if rock_ahead(North):", "else:", "if panel_power() == 0:", "elif panel_power() < 50:"],
+  "konular": ["elif", "rock_ahead", "if/else", "karşılaştırma", "panel_power", "repair", "iki kararı birlikte kullanma"],
+  "ipuclari": [
+    "Sıra kuzeye çıkıyor ama ortada bir kaya var. Bölüm 18'deki gibi kayayı bir kare doğudan dolaş; her karede paneli de ölç.",
+    "Her turda önce `rock_ahead(North)` ile önüne bak: kaya varsa doğuya kay, yoksa kuzeye çık. Sonra (aynı turda) paneli ölç: `== 0` ise topla, `< 50` ise onar.",
+    "`for i in range(6):` içinde `if rock_ahead(North):` → `move(East)`, `else:` → `move(North)`; altında `if panel_power() == 0:` → `collect()`, `elif panel_power() < 50:` → `repair()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(6):", "    move(North)", "    if panel_power() == 0:", "        collect()", "    elif panel_power() < 50:", "        repair()"],
+      "aciklama": "Önüne bakmadan hep kuzeye yürümek: robot üçüncü turda kayaya çarpar."
+    },
+    {
+      "kod": ["for i in range(5):", "    if rock_ahead(North):", "        move(East)", "    else:", "        move(North)", "    if panel_power() == 0:", "        collect()", "    elif panel_power() < 50:", "        repair()"],
+      "aciklama": "range(5) bir tur eksik: en kuzeydeki çatlak panel onarılmadan kalır."
+    },
+    {
+      "kod": ["for i in range(6):", "    if rock_ahead(North):", "        move(East)", "    else:", "        move(North)", "    if panel_power() == 0:", "        collect()", "    if panel_power() < 50:", "        repair()"],
+      "aciklama": "elif yerine ikinci bir if: parça toplanınca karede güç 0 kalır, ikinci if de doğru çıkar; robot boş karede onarmaya çalışır."
+    }
+  ],
+  "baslangic_kodu": [
+    "for i in range(6):",
+    "    if rock_ahead(North):",
+    "        move(East)",
+    "    else:",
+    "        move(North)"
+  ],
+  "cozum": [
+    "for i in range(6):",
+    "    if rock_ahead(North):",
+    "        move(East)",
+    "    else:",
+    "        move(North)",
+    "    if panel_power() == 0:",
+    "        collect()",
+    "    elif panel_power() < 50:",
+    "        repair()"
+  ]
+}

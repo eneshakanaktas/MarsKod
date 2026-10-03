@@ -49,6 +49,7 @@ Shader "MarsKod/Ground"
             float4 _RobotPos;   // C#'tan: robotun konumu
             float4 _RobotFwd;   // C#'tan: robotun baktigi yon
             float4 _RobotBeam;  // C#'tan: robotun onune dusen isigin rengi
+            float _GroundSimple; // C#'tan (GraphicsOptions, "-zemin sade"): 1 = ayrintisiz zemin (telefon denemesi)
 
             struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; };
             struct Varyings
@@ -92,6 +93,7 @@ Shader "MarsKod/Ground"
             float3 regolith(float3 p, float far, float inArea)
             {
                 float2 q = p.xz;
+                if (_GroundSimple > 0.5) return lerp(float3(0.42, 0.25, 0.20), float3(0.52, 0.32, 0.25), vnoise2(q * 2.2));
                 float detail = 1.0 - far * 0.5;
                 float3 a = lerp(float3(0.42, 0.25, 0.20), float3(0.52, 0.32, 0.25), fbm(q * 2.2));
                 a *= 0.88 + 0.24 * fbm(q * 0.35 + 4.0);                        // genis lekeler
@@ -142,6 +144,7 @@ Shader "MarsKod/Ground"
             float3 iceSheet(float3 p, float far, float inArea)
             {
                 float2 q = p.xz;
+                if (_GroundSimple > 0.5) return lerp(float3(0.70, 0.76, 0.85), float3(0.80, 0.85, 0.92), vnoise2(q * 2.2));
                 float detail = 1.0 - far * 0.5;
                 float3 a = lerp(float3(0.70, 0.76, 0.85), float3(0.80, 0.85, 0.92), fbm(q * 2.2));
                 a *= 0.92 + 0.12 * fbm(q * 0.35 + 4.0);

@@ -60,14 +60,14 @@ float polarRoverShape(float2 q)
 float3 PolarBackdrop(float2 suv)
 {
     float2 uv = MarsPictureUV(suv);
-    float aspect = _ScreenParams.x / _ScreenParams.y;
+    float aspect = _SkyScreen.x / _SkyScreen.y;
     float x = (uv.x - 0.5) * aspect;
-    float picturePx = _ScreenParams.y * max(_Picture.x, 1e-3);
+    float picturePx = _SkyScreen.y * max(_Picture.x, 1e-3);
     float pixel = 1.5 / picturePx;
     float onePx = 1.0 / picturePx;
     float2 sp = float2(x, uv.y);
-    float t = _Time.y;
-    float sc = _ScreenParams.y / 1170.0;
+    float t = _SkyTime;
+    float sc = _SkyScreen.y / 1170.0;
 
     // Gunes: uzak ucurumun kenarina yarisi gomulu
     float2 sunPos = float2(POLAR_SUN_X, polarFarTop(POLAR_SUN_X) + 0.002);

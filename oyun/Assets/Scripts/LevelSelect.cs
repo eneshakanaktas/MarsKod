@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-// Bolum secme ekrani: butun ekrani kaplayan koyu katman, bolumler alt alta sira sira.
-// Yalnizca gosterir ve secileni haber verir; hangi bolumun cozuldugu, kac XP getirdigi, kilitli olup olmadigi
+// Bolum secme ekrani: butun ekrani kaplayan koyu katman, ustte ayar satiri (arka plan animasyonlari), altinda bolumler
+// alt alta sira sira. Yalnizca gosterir ve secileni/degisen ayari haber verir; hangi bolumun cozuldugu, kac XP getirdigi, kilitli olup olmadigi
 // Oyun.cs'ten gelir (Entry). Kilit kurali: bir onceki bolum bitirilmeden sonraki acilmaz (Oyun.LevelEntries).
 public class LevelSelect : FullScreenPanel
 {
@@ -18,9 +18,12 @@ public class LevelSelect : FullScreenPanel
     }
 
     public event Action<int> Picked; // secilen bolumun numarasi
+    public event Action AnimationsToggled;
 
     readonly Font fMed, fSemi, fBold;
     readonly Color ink, accent;
+    bool animationsOn = true;
+    VisualElement animSwitch, animKnob;
 
     public LevelSelect(Font fMed, Font fSemi, Font fBold, Color ink, Color accent, Color buttonBg, Color hairline)
         : base("Bölümler", fBold, ink, buttonBg, hairline)
@@ -32,8 +35,62 @@ public class LevelSelect : FullScreenPanel
     public void Show(IReadOnlyList<Entry> entries)
     {
         Content.Clear();
+        Content.Add(AnimationsRow());
         foreach (var e in entries) Content.Add(Row(e));
         ShowPanel();
+    }
+
+    public void SetAnimations(bool on)
+    {
+        animationsOn = on;
+        PaintSwitch();
+    }
+
+    // Ayar: arka plandaki suregiden hareketler (yildizlar, dronlar, yanip sonen isiklar). Kapaliyken telefon daha az yorulur.
+    VisualElement AnimationsRow()
+    {
+        var row = new VisualElement();
+        row.style.flexDirection = FlexDirection.Row;
+        row.style.alignItems = Align.Center;
+        row.style.marginBottom = 34;
+        row.style.paddingTop = 22; row.style.paddingBottom = 22;
+        row.style.paddingLeft = 36; row.style.paddingRight = 32;
+        Ui.Radius(row, 36);
+        Ui.Border(row, 2, new Color(1f, 1f, 1f, 0.07f));
+
+        var texts = new VisualElement();
+        texts.style.flexGrow = 1;
+        texts.style.flexShrink = 1;
+        texts.Add(Ui.Text("Arka plan animasyonları", fSemi, 34, ink));
+        var note = Ui.Text("Kapalıyken telefon daha az yorulur", fMed, 26, new Color(ink.r, ink.g, ink.b, 0.55f));
+        note.style.marginTop = 4;
+        note.style.whiteSpace = WhiteSpace.Normal;
+        texts.Add(note);
+        row.Add(texts);
+
+        animSwitch = new VisualElement();
+        animSwitch.style.width = 120; animSwitch.style.height = 68;
+        animSwitch.style.flexShrink = 0;
+        animSwitch.style.marginLeft = 24;
+        Ui.Radius(animSwitch, 34);
+        animSwitch.style.justifyContent = Justify.Center;
+        animKnob = new VisualElement();
+        animKnob.style.width = 52; animKnob.style.height = 52;
+        Ui.Radius(animKnob, 26);
+        animKnob.style.backgroundColor = Color.white;
+        animSwitch.Add(animKnob);
+        row.Add(animSwitch);
+        PaintSwitch();
+
+        row.RegisterCallback<ClickEvent>(_ => { Sound.Tap(); AnimationsToggled?.Invoke(); });
+        return row;
+    }
+
+    void PaintSwitch()
+    {
+        if (animSwitch == null) return;
+        animSwitch.style.backgroundColor = animationsOn ? accent : new Color(1f, 1f, 1f, 0.16f);
+        animKnob.style.marginLeft = animationsOn ? 60 : 8;
     }
 
     // Bolum satirinin ortasi (panel koordinati); ekran kapaliysa ya da satir yoksa null. Deneme icin.

@@ -47,6 +47,7 @@ public class Oyun : MonoBehaviour
 
     Camera cam;
     Material backdrop;
+    BackdropCache backdropCache;
     Transform world;
     Robot robot;
     RobotModel robotModel = Robot.DefaultModel;
@@ -183,12 +184,10 @@ public class Oyun : MonoBehaviour
         Shader.SetGlobalVector("_Sun", new Vector4(0.02f, -0.068f, 0f, 0f));
         Shader.SetGlobalVector("_Focus", new Vector4(0.5f, 0.56f, 0f, 0f));
         Shader.SetGlobalFloat("_StarsOn", 1f);
-        // Deneme secenekleri (telefonda: adb ... -e unity "-kalite 1 -cizgisiz")
+        GraphicsOptions.Apply();   // cizim deneme secenekleri (-kalite, -arkaplan yok ...)
         var a = System.Environment.GetCommandLineArgs();
         for (int i = 0; i < a.Length; i++)
         {
-            if (a[i] == "-kalite" && i + 1 < a.Length) QualitySettings.SetQualityLevel(int.Parse(a[i + 1]), true);
-            if (a[i] == "-cizgisiz") Parts.NoOutline = true;
             if (a[i] == "-shots") { shotsMode = suppressQuiz = true; ListenWhileUnfocused(); }
             if (a[i] == "-robot" && i + 1 < a.Length && a[i + 1] == "oyuncak") robotModel = RobotModel.Toy;
             if (a[i] == "-robot" && i + 1 < a.Length && a[i + 1] == "gezgin") robotModel = RobotModel.Rover;
@@ -218,6 +217,14 @@ public class Oyun : MonoBehaviour
         Sound.Init(transform);
         hud.SetSound(Sound.Enabled);
         hud.SoundToggled += () => { Sound.SetEnabled(!Sound.Enabled); hud.SetSound(Sound.Enabled); };
+
+        SetAnimations(!GraphicsOptions.NoAnimations && PlayerPrefs.GetInt(AnimationsKey, 1) != 0);
+        hud.AnimationsToggled += () =>
+        {
+            SetAnimations(!backdropCache.Animated);
+            PlayerPrefs.SetInt(AnimationsKey, backdropCache.Animated ? 1 : 0);
+            PlayerPrefs.Save();
+        };
 
         xp = Xp.Load(PlayerPrefs.GetString("xp", ""));
         hud.SetTotalXp(xp.Total);
@@ -255,6 +262,15 @@ public class Oyun : MonoBehaviour
             if (a[i] == "-shots") { shotsMode = true; LoadLevel(levelIndex); StartCoroutine(Shots(a[i + 1])); }
     }
 
+    // Arka plan animasyonlari (ayar, bolum secme ekraninda): kapaliyken gokyuzu duraganlasir, telefon daha az yorulur
+    const string AnimationsKey = "animasyon";
+
+    void SetAnimations(bool on)
+    {
+        backdropCache.Animated = on;
+        hud.SetAnimations(on);
+    }
+
     void SetupCamera()
     {
         cam = new GameObject("Camera").AddComponent<Camera>();
@@ -279,6 +295,8 @@ public class Oyun : MonoBehaviour
         mr.sharedMaterial = backdrop;
         mr.shadowCastingMode = ShadowCastingMode.Off;
         mr.receiveShadows = false;
+        // pahali gokyuzu cizimi her karede degil, gerektikce bir dokuya cizilir; ekrandaki kare o dokuyu gosterir
+        backdropCache = BackdropCache.Create(backdrop, mesh, GraphicsOptions.BackdropScale, GraphicsOptions.BackdropFlat);
     }
 
     // Isiklarin yonu ve golgesi; renkleri ve ortam isigi bolgeye gore (RegionLook, bolum yuklenince)
@@ -287,7 +305,7 @@ public class Oyun : MonoBehaviour
         // los gok isigi (robot okunabilsin diye yumusak golge verir)
         skyLight = new GameObject("Sun").AddComponent<Light>();
         skyLight.type = LightType.Directional;
-        skyLight.shadows = LightShadows.Soft;
+        skyLight.shadows = GraphicsOptions.NoShadows ? LightShadows.None : LightShadows.Soft;
         skyLight.shadowStrength = 0.6f;
         skyLight.transform.rotation = Quaternion.Euler(52f, -35f, 0f);
 

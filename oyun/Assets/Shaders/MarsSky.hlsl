@@ -12,6 +12,14 @@ float _Horizon;   // ufuk: fotograf koordinatinda (asagida)
 float4 _Picture;  // x: fotografin olcegi (1 = tam boy), y: dikey kayma (ekranin -1..1 biriminde)
 float4 _Focus;
 float4 _Sun;
+// Arka plan bir dokuya cizilip saklanir (BackdropCache.cs); cizim kameranin disinda yapildigi icin ekran boyu ve saat
+// C#'tan gelir. _SkyScreen: dokunun piksel boyu. _SkyTime: suregiden animasyonlarin saati (animasyonlar kapaliyken durur).
+// _SkyNow: olaylarin saati (lamba yanmasi, sera isigi; hep isler, Time.timeSinceLevelLoad).
+float4 _SkyScreen;
+float _SkyTime;
+float _SkyNow;
+TEXTURE2D(_BackdropTex);
+SAMPLER(sampler_BackdropTex);
 
 // ---------- gurultu ----------
 float hash11(float p) { p = frac(p * 0.1031); p *= p + 33.33; p *= p + p; return frac(p); }
@@ -44,7 +52,7 @@ float sdSeg(float2 p, float2 a, float2 b, float r)
     float h = saturate(dot(pa, ba) / dot(ba, ba));
     return length(pa - ba * h) - r;
 }
-float glowDot(float2 sp, float2 c, float px) { float d = length(sp - c) * _ScreenParams.y; return exp(-d * d / (px * px)); }
+float glowDot(float2 sp, float2 c, float px) { float d = length(sp - c) * _SkyScreen.y; return exp(-d * d / (px * px)); }
 
 // ---------- gokyuzu ----------
 float3 skyColor(float t)
@@ -58,9 +66,9 @@ float3 skyColor(float t)
 
 float stars(float2 uv, float density, float cellPx, float seed, float sizeMul)
 {
-    float scale = _ScreenParams.y / 1170.0;
+    float scale = _SkyScreen.y / 1170.0;
     float cell = cellPx * scale;
-    float2 g = uv * _ScreenParams.xy / cell;
+    float2 g = uv * _SkyScreen.xy / cell;
     float2 id0 = floor(g);
     float2 f0 = frac(g);
     float sum = 0.0;
@@ -78,8 +86,8 @@ float stars(float2 uv, float density, float cellPx, float seed, float sizeMul)
         float glow = big * exp(-(d * d) / (gr * gr)) * 0.5;
         float h2 = hash21(id + 17.0);
         float h3 = hash21(id + 29.0);
-        float tw = 0.5 + 0.5 * sin(_Time.y * (0.6 + 1.9 * h2) + h3 * 6.2831);
-        float flare = pow(saturate(sin(_Time.y * (0.25 + 0.35 * h3) + h2 * 40.0)), 24.0) * step(0.65, h2);
+        float tw = 0.5 + 0.5 * sin(_SkyTime * (0.6 + 1.9 * h2) + h3 * 6.2831);
+        float flare = pow(saturate(sin(_SkyTime * (0.25 + 0.35 * h3) + h2 * 40.0)), 24.0) * step(0.65, h2);
         float bright = lerp(0.45, 1.25, hash21(id + 41.0));
         sum += (core + glow) * bright * (0.4 + 0.6 * tw * tw + flare * 1.4);
     }
@@ -573,7 +581,7 @@ void drawDrone(float2 sp, float t, float seed, float legTime, float H, float sc,
 // Ana koloninin onundeki ovada bir sira lamba: bolumdeki her hucre icin bir tane. Sonukken soluk bir yuva,
 // hucre koloniye ulasinca yesil-sari yanar; yandigi an buyuk bir parlama yayilip soner.
 #define MAX_POWER_LAMPS 12
-float4 _PowerLamps[MAX_POWER_LAMPS];   // xy: fotograftaki konum (y ufka gore), z: yandigi an (_Time.y; < 0 sonuk)
+float4 _PowerLamps[MAX_POWER_LAMPS];   // xy: fotograftaki konum (y ufka gore), z: yandigi an (_SkyNow; < 0 sonuk)
 float _PowerLampCount;
 
 float3 powerLamps(float2 sp, float t, float sc, float onePx, inout float3 halo)
@@ -609,7 +617,7 @@ float3 powerLamps(float2 sp, float t, float sc, float onePx, inout float3 halo)
 // Ikisi de ana koloninin buyuk kubbesinde: Bolum 6'da ardina kadar acik bir kapi (ici karanlik, kimse yok),
 // Bolum 7'de bolum bitince kubbe sera gibi icten yanar, camin ardinda tek bir kuru saksi bitkisi gorunur.
 float _TraceDoor;         // 1: kapi acik
-float _TraceGreenhouse;   // seranin isiginin yandigi an (_Time.y); 0 sonuk
+float _TraceGreenhouse;   // seranin isiginin yandigi an (_SkyNow); 0 sonuk
 float _TraceLeaf;         // 1: Bolge 2 sonunda acilan yeni yaprak (kalici)
 
 float greenhouseLight(float t)
@@ -695,13 +703,13 @@ float2 MarsPictureUV(float2 suv)
 float3 PlainBackdrop(float2 suv)
 {
     float2 uv = MarsPictureUV(suv);
-    float aspect = _ScreenParams.x / _ScreenParams.y;
+    float aspect = _SkyScreen.x / _SkyScreen.y;
     float x = (uv.x - 0.5) * aspect;       // fotograf yuksekligi biriminde
-    float picturePx = _ScreenParams.y * max(_Picture.x, 1e-3); // ekrandaki bir pikselin fotograftaki karsiligi (kenar yumusatma)
+    float picturePx = _SkyScreen.y * max(_Picture.x, 1e-3); // ekrandaki bir pikselin fotograftaki karsiligi (kenar yumusatma)
     float pixel = 1.5 / picturePx;
     float onePx = 1.0 / picturePx;
     float2 sp = float2(x, uv.y);
-    float t = _Time.y;
+    float t = _SkyTime;
 
     // Gunes: ufkun altinda, gorunmez; isigi tepelerin ardindan tasar
     float2 sunPos = float2(_Sun.x, _Horizon + _Sun.y);
@@ -724,14 +732,14 @@ float3 PlainBackdrop(float2 suv)
     // Yavasca gecen uydu
     float sat = frac(t / 70.0);
     float2 satPos = float2(lerp(-0.30, 0.30, sat), lerp(0.97, 0.88, sat));
-    col += float3(0.9, 0.92, 1.0) * glowDot(sp, satPos, 1.3 * _ScreenParams.y / 1170.0) * 0.8 * starMask * _StarsOn;
+    col += float3(0.9, 0.92, 1.0) * glowDot(sp, satPos, 1.3 * _SkyScreen.y / 1170.0) * 0.8 * starMask * _StarsOn;
 
     // Gunes isiltisi (sicak, genis)
     col += (float3(0.66, 0.31, 0.13) * exp(-dSun * 6.5) * 1.0 + float3(0.32, 0.13, 0.10) * exp(-dSun * 2.4) * 0.65) * breath;
 
     // Mars'in iki uydusu: Phobos (yakin, kraterli kucuk yumru) ve Deimos (uzak; Mars'tan parlak bir yildiz gibi gorunur)
     float4 phobos = rock(sp, float2(0.14, 0.935), 0.0105, 1.0, pixel); col = lerp(col, phobos.rgb, phobos.a);
-    col += float3(0.95, 0.92, 0.86) * glowDot(sp, float2(-0.17, 0.885), 1.6 * _ScreenParams.y / 1170.0) * 0.9 * starMask;
+    col += float3(0.95, 0.92, 0.86) * glowDot(sp, float2(-0.17, 0.885), 1.6 * _SkyScreen.y / 1170.0) * 0.9 * starMask;
 
     // Tepeler (arkadan aydinlanan siluetler)
     float3 warm = float3(0.95, 0.55, 0.28);
@@ -763,7 +771,7 @@ float3 PlainBackdrop(float2 suv)
     // Uzak yapilar: orta tepelerin onunde, kucuk ve puslu
     float3 siteLights = 0.0;
     float3 siteHalo = 0.0;
-    float sc = _ScreenParams.y / 1170.0;
+    float sc = _SkyScreen.y / 1170.0;
     if (abs(x) > 0.28 && uv.y > _Horizon + FAR_BASE - 0.005 && uv.y < _Horizon + FAR_BASE + 0.04)
     {
         float farD = farSitesShape(sp, _Horizon);
@@ -877,7 +885,7 @@ float3 PlainBackdrop(float2 suv)
     // Enerji hucresi lambalari (yalnizca enerji bolumlerinde; ufkun hemen altindaki serit)
     float3 powerLights = 0.0;
     float3 powerHalo = 0.0;
-    if (_PowerLampCount > 0.5 && abs(uv.y - (_Horizon - 0.05)) < 0.03) powerLights = powerLamps(sp, t, sc, onePx, powerHalo);
+    if (_PowerLampCount > 0.5 && abs(uv.y - (_Horizon - 0.05)) < 0.03) powerLights = powerLamps(sp, _SkyNow, sc, onePx, powerHalo);
 
     // Koloniler arasinda yuk tasiyan dronelar
     [unroll] for (int dr = 0; dr < DRONE_COUNT; dr++)
@@ -901,19 +909,26 @@ float3 PlainBackdrop(float2 suv)
     col += siteLights * 1.6;
     col += siteHalo * (0.16 + 0.35 * haze);
     col += powerLights * 1.4 + powerHalo * 0.5;
-    if (abs(cs.x - BIG_DOME.x) < 0.035 && abs(uv.y - P) < 0.03) colonyTraces(cs, P, t, sc, pixel, onePx, col);
+    if (abs(cs.x - BIG_DOME.x) < 0.035 && abs(uv.y - P) < 0.03) colonyTraces(cs, P, _SkyNow, sc, pixel, onePx, col);
     return col * MARS_EXPOSURE;
 }
 
 #include "PolarSky.hlsl"
 
-// Ekran konumuna (suv, alttan 0) gore arka plan rengi (sRGB): bolgenin kendi manzarasi
+// Ekran konumuna (suv, alttan 0) gore arka plan rengi (sRGB): bolgenin kendi manzarasi. Pahali: yalnizca dokuya
+// cizerken kullanilir (Backdrop.shader "Bake"); ekrandakiler saklanan dokuyu okur (MarsBackdropCached).
 float3 MarsBackdrop(float2 suv)
 {
     float3 col;
     [branch] if (MarsPolar()) col = PolarBackdrop(suv);
     else col = PlainBackdrop(suv);
     return col;
+}
+
+// Saklanan arka plan dokusundan okur (sRGB). Dallarin icinde de guvenli (LOD 0).
+float3 MarsBackdropCached(float2 suv)
+{
+    return SAMPLE_TEXTURE2D_LOD(_BackdropTex, sampler_BackdropTex, suv, 0).rgb;
 }
 
 float MarsVignette(float2 uv)
@@ -948,7 +963,7 @@ float3 MarsFadeToBackdrop(float3 col, float3 posWS, float2 suv, float2 fogRange,
     float fog = max(distFog, scrFog);
     if (fog > 0.001)
     {
-        float3 bd = SRGBToLinear(saturate(MarsBackdrop(suv) * MarsVignette(suv)));
+        float3 bd = SRGBToLinear(saturate(MarsBackdropCached(suv) * MarsVignette(suv)));
         col = lerp(col, bd, fog);
     }
     return col;

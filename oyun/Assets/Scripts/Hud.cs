@@ -8,7 +8,7 @@ using UnityEngine.UIElements;
 // Olculer 1080 genislikli telefon ekranina gore (piksel).
 public class Hud : MonoBehaviour
 {
-    public event Action RunPressed, ResetPressed, StarsToggled, MenuPressed, SoundToggled;
+    public event Action RunPressed, ResetPressed, StarsToggled, MenuPressed, SoundToggled, AnimationsToggled;
     // Calistir'in sag ucundaki ⏭: kodu bir satir ilerletir (adim adim modu)
     public event Action StepPressed;
     // Sol ustteki kitap: kod sozlugu
@@ -112,6 +112,7 @@ public class Hud : MonoBehaviour
         // Bolum secme ekrani en ustte: butun ekrani kaplar (sol ustteki dugmeyle acilir)
         levelSelect = new LevelSelect(fMed, fSemi, fBold, Ink, Accent, ButtonBg, Hairline);
         levelSelect.Picked += n => LevelPicked?.Invoke(n);
+        levelSelect.AnimationsToggled += () => AnimationsToggled?.Invoke();
         overlay.Add(levelSelect);
         glossary = new GlossaryView(fMed, fSemi, fBold, fMono, Ink, Accent, ButtonBg, Hairline);
         overlay.Add(glossary);
@@ -612,6 +613,8 @@ public class Hud : MonoBehaviour
         soundOn = on;
         soundIcon.MarkDirtyRepaint();
     }
+
+    public void SetAnimations(bool on) => levelSelect.SetAnimations(on);
 
     public bool HintOpen => hint.Open;
 

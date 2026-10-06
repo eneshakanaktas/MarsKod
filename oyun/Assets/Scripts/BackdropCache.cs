@@ -8,12 +8,11 @@ using UnityEngine.Rendering;
 // Doku yalnizca gerektiginde yenilenir:
 //  - cizimin dayandigi degerlerden biri degisince (kamera fotografi, bolge, yildizlar, izler, lambalar) ve ardindan kisa bir
 //    sure (lamba parlamasi, sera isiginin titremesi bu surede oynar);
-//  - animasyonlar aciksa saniyede AnimatedRate kez (yildiz parlamasi, dronlar, yanip sonen isiklar, toz).
+//  - animasyonlar aciksa saniyede animatedRate kez (yildiz parlamasi, dronlar, yanip sonen isiklar, toz).
 // Animasyonlar kapaliyken suregiden hareketler durur, arka plan neredeyse hic cizilmez.
 [DefaultExecutionOrder(1000)]   // Oyun.LateUpdate kamerayi ve degerleri ayarladiktan sonra
 public class BackdropCache : MonoBehaviour
 {
-    const float AnimatedRate = 20f;
     const float SettleSeconds = 2.5f;
 
     static readonly int TexId = Shader.PropertyToID("_BackdropTex");
@@ -31,6 +30,7 @@ public class BackdropCache : MonoBehaviour
     CommandBuffer cmd;
     readonly BackdropInputs inputs = new BackdropInputs();
     float skyTime, settleUntil, nextAnimatedBake;
+    float animatedRate = 20f;   // animasyon acikken saniyede kac kez yeniden cizilir (GraphicsQuality.BackdropRate)
     bool animated = true;
 
     // scale: dokunun ekrana gore boyu (0,5 = yari genislik, yari yukseklik). flat: arka plani hic cizmez, duz renk (deneme).
@@ -58,6 +58,14 @@ public class BackdropCache : MonoBehaviour
         }
     }
 
+    // Grafik ayari degisince: dokunun boyu (ekrana gore) ve animasyonda saniyede kac kez yenilenecegi
+    public void SetQuality(float newScale, float rate)
+    {
+        scale = Mathf.Clamp(newScale, 0.1f, 1f);
+        animatedRate = rate;
+        settleUntil = 0f;   // EnsureTarget yeni boyu gorur, doku hemen yeniden cizilir
+    }
+
     void LateUpdate()
     {
         bool resized = EnsureTarget();
@@ -68,7 +76,7 @@ public class BackdropCache : MonoBehaviour
         if (changed) settleUntil = now + SettleSeconds;
         bool due = changed || now < settleUntil || (animated && now >= nextAnimatedBake);
         if (!due) return;
-        nextAnimatedBake = now + 1f / AnimatedRate;
+        nextAnimatedBake = now + 1f / animatedRate;
         Bake(now);
     }
 

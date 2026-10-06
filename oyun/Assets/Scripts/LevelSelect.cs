@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-// Bolum secme ekrani: butun ekrani kaplayan koyu katman, ustte ayar satiri (arka plan animasyonlari), altinda bolumler
+// Bolum secme ekrani: butun ekrani kaplayan koyu katman, ustte ayar satirlari (arka plan animasyonlari, performans modu), altinda bolumler
 // alt alta sira sira. Yalnizca gosterir ve secileni/degisen ayari haber verir; hangi bolumun cozuldugu, kac XP getirdigi, kilitli olup olmadigi
 // Oyun.cs'ten gelir (Entry). Kilit kurali: bir onceki bolum bitirilmeden sonraki acilmaz (Oyun.LevelEntries).
 public class LevelSelect : FullScreenPanel
@@ -18,12 +18,11 @@ public class LevelSelect : FullScreenPanel
     }
 
     public event Action<int> Picked; // secilen bolumun numarasi
-    public event Action AnimationsToggled;
+    public event Action AnimationsToggled, PerformanceToggled;
 
     readonly Font fMed, fSemi, fBold;
     readonly Color ink, accent;
-    bool animationsOn = true;
-    VisualElement animSwitch, animKnob;
+    readonly SwitchRow animations = new SwitchRow(true), performance = new SwitchRow(false);
 
     public LevelSelect(Font fMed, Font fSemi, Font fBold, Color ink, Color accent, Color buttonBg, Color hairline)
         : base("Bölümler", fBold, ink, buttonBg, hairline)
@@ -35,62 +34,75 @@ public class LevelSelect : FullScreenPanel
     public void Show(IReadOnlyList<Entry> entries)
     {
         Content.Clear();
-        Content.Add(AnimationsRow());
+        // Ayarlar: arka plandaki suregiden hareketler (yildizlar, dronlar, yanip sonen isiklar) + performans modu
+        Content.Add(animations.Build("Arka plan animasyonları", "Kapalıyken telefon daha az yorulur", fMed, fSemi, ink, accent,
+                                     () => AnimationsToggled?.Invoke()));
+        Content.Add(performance.Build("Performans modu", "Açıkken oyun daha akıcı, görüntü biraz sadeleşir", fMed, fSemi, ink, accent,
+                                      () => PerformanceToggled?.Invoke()));
         foreach (var e in entries) Content.Add(Row(e));
         ShowPanel();
     }
 
-    public void SetAnimations(bool on)
+    public void SetAnimations(bool on) => animations.Set(on);
+    public void SetPerformance(bool on) => performance.Set(on);
+
+    // Ayar satiri: baslik + kucuk not + sagda ac/kapa anahtari. Satira dokununca haber verir; durumu disaridan Set ile gelir.
+    class SwitchRow
     {
-        animationsOn = on;
-        PaintSwitch();
-    }
+        bool on;
+        Color accent;
+        VisualElement track, knob;
 
-    // Ayar: arka plandaki suregiden hareketler (yildizlar, dronlar, yanip sonen isiklar). Kapaliyken telefon daha az yorulur.
-    VisualElement AnimationsRow()
-    {
-        var row = new VisualElement();
-        row.style.flexDirection = FlexDirection.Row;
-        row.style.alignItems = Align.Center;
-        row.style.marginBottom = 34;
-        row.style.paddingTop = 22; row.style.paddingBottom = 22;
-        row.style.paddingLeft = 36; row.style.paddingRight = 32;
-        Ui.Radius(row, 36);
-        Ui.Border(row, 2, new Color(1f, 1f, 1f, 0.07f));
+        public SwitchRow(bool on) { this.on = on; }
 
-        var texts = new VisualElement();
-        texts.style.flexGrow = 1;
-        texts.style.flexShrink = 1;
-        texts.Add(Ui.Text("Arka plan animasyonları", fSemi, 34, ink));
-        var note = Ui.Text("Kapalıyken telefon daha az yorulur", fMed, 26, new Color(ink.r, ink.g, ink.b, 0.55f));
-        note.style.marginTop = 4;
-        note.style.whiteSpace = WhiteSpace.Normal;
-        texts.Add(note);
-        row.Add(texts);
+        public VisualElement Build(string title, string note, Font fMed, Font fSemi, Color ink, Color accent, Action clicked)
+        {
+            this.accent = accent;
+            var row = new VisualElement();
+            row.style.flexDirection = FlexDirection.Row;
+            row.style.alignItems = Align.Center;
+            row.style.marginBottom = 34;
+            row.style.paddingTop = 22; row.style.paddingBottom = 22;
+            row.style.paddingLeft = 36; row.style.paddingRight = 32;
+            Ui.Radius(row, 36);
+            Ui.Border(row, 2, new Color(1f, 1f, 1f, 0.07f));
 
-        animSwitch = new VisualElement();
-        animSwitch.style.width = 120; animSwitch.style.height = 68;
-        animSwitch.style.flexShrink = 0;
-        animSwitch.style.marginLeft = 24;
-        Ui.Radius(animSwitch, 34);
-        animSwitch.style.justifyContent = Justify.Center;
-        animKnob = new VisualElement();
-        animKnob.style.width = 52; animKnob.style.height = 52;
-        Ui.Radius(animKnob, 26);
-        animKnob.style.backgroundColor = Color.white;
-        animSwitch.Add(animKnob);
-        row.Add(animSwitch);
-        PaintSwitch();
+            var texts = new VisualElement();
+            texts.style.flexGrow = 1;
+            texts.style.flexShrink = 1;
+            texts.Add(Ui.Text(title, fSemi, 34, ink));
+            var noteText = Ui.Text(note, fMed, 26, new Color(ink.r, ink.g, ink.b, 0.55f));
+            noteText.style.marginTop = 4;
+            noteText.style.whiteSpace = WhiteSpace.Normal;
+            texts.Add(noteText);
+            row.Add(texts);
 
-        row.RegisterCallback<ClickEvent>(_ => { Sound.Tap(); AnimationsToggled?.Invoke(); });
-        return row;
-    }
+            track = new VisualElement();
+            track.style.width = 120; track.style.height = 68;
+            track.style.flexShrink = 0;
+            track.style.marginLeft = 24;
+            Ui.Radius(track, 34);
+            track.style.justifyContent = Justify.Center;
+            knob = new VisualElement();
+            knob.style.width = 52; knob.style.height = 52;
+            Ui.Radius(knob, 26);
+            knob.style.backgroundColor = Color.white;
+            track.Add(knob);
+            row.Add(track);
+            Paint();
 
-    void PaintSwitch()
-    {
-        if (animSwitch == null) return;
-        animSwitch.style.backgroundColor = animationsOn ? accent : new Color(1f, 1f, 1f, 0.16f);
-        animKnob.style.marginLeft = animationsOn ? 60 : 8;
+            row.RegisterCallback<ClickEvent>(_ => { Sound.Tap(); clicked(); });
+            return row;
+        }
+
+        public void Set(bool value) { on = value; Paint(); }
+
+        void Paint()
+        {
+            if (track == null) return;
+            track.style.backgroundColor = on ? accent : new Color(1f, 1f, 1f, 0.16f);
+            knob.style.marginLeft = on ? 60 : 8;
+        }
     }
 
     // Bolum satirinin ortasi (panel koordinati); ekran kapaliysa ya da satir yoksa null. Deneme icin.

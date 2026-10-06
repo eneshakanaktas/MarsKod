@@ -40,6 +40,7 @@ Shader "MarsKod/Ground"
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
             #pragma multi_compile_fragment _ _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
+            #pragma multi_compile_fragment _ MARSKOD_SADE   // performans modu (GraphicsQuality): hafif zemin
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
             #include "MarsSky.hlsl"
@@ -49,7 +50,6 @@ Shader "MarsKod/Ground"
             float4 _RobotPos;   // C#'tan: robotun konumu
             float4 _RobotFwd;   // C#'tan: robotun baktigi yon
             float4 _RobotBeam;  // C#'tan: robotun onune dusen isigin rengi
-            float _GroundSimple; // C#'tan (GraphicsOptions, "-zemin sade"): 1 = ayrintisiz zemin (telefon denemesi)
 
             struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; };
             struct Varyings
@@ -70,6 +70,39 @@ Shader "MarsKod/Ground"
                 return o;
             }
 
+#if defined(MARSKOD_SADE)
+            // Performans modu (telefon): pahali gurultuler yok. Ana renk + genis lekeler + alandaki krater + yuvarlak buz lekeleri.
+            float frostAt(float2 xz, float4 f)
+            {
+                if (f.w < 0.5) return 0.0;
+                return 0.8 * (1.0 - smoothstep(f.z * 0.3, f.z, length(xz - f.xy)));
+            }
+
+            float3 regolith(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float3 a = lerp(float3(0.42, 0.25, 0.20), float3(0.52, 0.32, 0.25), vnoise2(q * 2.2));
+                a *= 0.9 + 0.2 * vnoise2(q * 0.35 + 4.0);   // genis lekeler
+                a *= 1.0 + 0.16 * (vnoise2(q * 38.0) - 0.5);  // ince taneler (lekeler bulanik/kirli gorunmesin)
+                if (_Crater.z > 0.0)
+                {
+                    float dc = length(q - _Crater.xy) / _Crater.z;
+                    a *= lerp(0.72 + 0.2 * dc * dc, 1.0, smoothstep(0.85, 1.0, dc));
+                    a *= 1.0 + 0.16 * exp(-pow((dc - 1.0) / 0.12, 2.0));
+                }
+                float fr = max(max(frostAt(q, _Frost0), frostAt(q, _Frost1)), max(frostAt(q, _Frost2), frostAt(q, _Frost3)));
+                fr = max(fr, max(frostAt(q, _Frost4), frostAt(q, _Frost5)));
+                return lerp(a, float3(0.66, 0.72, 0.78), fr * 0.7);
+            }
+
+            float3 iceSheet(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float3 a = lerp(float3(0.70, 0.76, 0.85), float3(0.80, 0.85, 0.92), vnoise2(q * 2.2));
+                a *= 1.0 + 0.08 * (vnoise2(q * 38.0) - 0.5);  // ince taneler
+                return a * (0.94 + 0.1 * vnoise2(q * 0.35 + 4.0));
+            }
+#else
             // Krater: icte koyu (gunes arkadan, alcaktan: uzak ic duvar golgede), kenari hafif kabarik ve aydinlik,
             // cevresinde soluk bir firlatma halkasi. d: merkezden uzaklik / yaricap, dir: merkezden yon.
             float craterShade(float d, float2 dir, float strength)
@@ -93,7 +126,6 @@ Shader "MarsKod/Ground"
             float3 regolith(float3 p, float far, float inArea)
             {
                 float2 q = p.xz;
-                if (_GroundSimple > 0.5) return lerp(float3(0.42, 0.25, 0.20), float3(0.52, 0.32, 0.25), vnoise2(q * 2.2));
                 float detail = 1.0 - far * 0.5;
                 float3 a = lerp(float3(0.42, 0.25, 0.20), float3(0.52, 0.32, 0.25), fbm(q * 2.2));
                 a *= 0.88 + 0.24 * fbm(q * 0.35 + 4.0);                        // genis lekeler
@@ -144,7 +176,6 @@ Shader "MarsKod/Ground"
             float3 iceSheet(float3 p, float far, float inArea)
             {
                 float2 q = p.xz;
-                if (_GroundSimple > 0.5) return lerp(float3(0.70, 0.76, 0.85), float3(0.80, 0.85, 0.92), vnoise2(q * 2.2));
                 float detail = 1.0 - far * 0.5;
                 float3 a = lerp(float3(0.70, 0.76, 0.85), float3(0.80, 0.85, 0.92), fbm(q * 2.2));
                 a *= 0.92 + 0.12 * fbm(q * 0.35 + 4.0);
@@ -167,6 +198,8 @@ Shader "MarsKod/Ground"
                 a *= 1.0 + duneMask * 0.05 * ripple;
                 return a;
             }
+
+#endif
 
             half4 frag (Varyings i) : SV_Target
             {

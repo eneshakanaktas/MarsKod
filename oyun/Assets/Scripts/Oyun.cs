@@ -6,6 +6,7 @@ using MarsKod.Dunya;
 using MarsKod.Motor;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 // MarsKod oyun sahnesi (unitytaslak1'den geldi): sahneyi kodla kurar (kamera, isik, arka plan, oyun alani,
 // robot, buzlar, arayuz). Bolumler dosyadan gelir (Resources/Bolumler/*.json): harita, gorev, ipucu, dogru cozum.
@@ -184,7 +185,8 @@ public class Oyun : MonoBehaviour
         Shader.SetGlobalVector("_Sun", new Vector4(0.02f, -0.068f, 0f, 0f));
         Shader.SetGlobalVector("_Focus", new Vector4(0.5f, 0.56f, 0f, 0f));
         Shader.SetGlobalFloat("_StarsOn", 1f);
-        GraphicsOptions.Apply();   // cizim deneme secenekleri (-kalite, -arkaplan yok ...)
+        GraphicsOptions.Parse();   // cizim deneme secenekleri (-performans, -arkaplan yok ...)
+        GraphicsQuality.Init();    // oyuncunun grafik ayari (performans modu)
         var a = System.Environment.GetCommandLineArgs();
         for (int i = 0; i < a.Length; i++)
         {
@@ -196,6 +198,8 @@ public class Oyun : MonoBehaviour
 
         SetupCamera();
         SetupLight();
+        ApplyGraphics();
+        GraphicsQuality.Changed += ApplyGraphics;
         BuildBoard();
 
         robot = Robot.Create(world, robotModel);
@@ -203,6 +207,7 @@ public class Oyun : MonoBehaviour
 
         hud = gameObject.AddComponent<Hud>();
         hud.Build();
+        if (GraphicsOptions.NoHud) hud.HideForMeasurement();
         FrameRateMeter.Create(System.Array.IndexOf(a, "-fps") >= 0);
         hud.RunPressed += OnRun;
         hud.StepPressed += OnStep;
@@ -225,6 +230,9 @@ public class Oyun : MonoBehaviour
             PlayerPrefs.SetInt(AnimationsKey, backdropCache.Animated ? 1 : 0);
             PlayerPrefs.Save();
         };
+        hud.PerformanceToggled += () =>
+            GraphicsQuality.Set(GraphicsQuality.Performance ? GraphicsMode.Full : GraphicsMode.Performance);
+        hud.SetPerformance(GraphicsQuality.Performance);
 
         xp = Xp.Load(PlayerPrefs.GetString("xp", ""));
         hud.SetTotalXp(xp.Total);
@@ -271,6 +279,16 @@ public class Oyun : MonoBehaviour
         hud.SetAnimations(on);
     }
 
+    // Grafik ayari (performans modu) uygulaninca: gunes golgesi, gokyuzu dokusu
+    void ApplyGraphics()
+    {
+        skyLight.shadows = GraphicsQuality.Shadows;
+        backdropCache.SetQuality(GraphicsQuality.BackdropScale, GraphicsQuality.BackdropRate);
+        if (hud != null) hud.SetPerformance(GraphicsQuality.Performance);
+    }
+
+    void OnDestroy() => GraphicsQuality.Changed -= ApplyGraphics;
+
     void SetupCamera()
     {
         cam = new GameObject("Camera").AddComponent<Camera>();
@@ -296,7 +314,7 @@ public class Oyun : MonoBehaviour
         mr.shadowCastingMode = ShadowCastingMode.Off;
         mr.receiveShadows = false;
         // pahali gokyuzu cizimi her karede degil, gerektikce bir dokuya cizilir; ekrandaki kare o dokuyu gosterir
-        backdropCache = BackdropCache.Create(backdrop, mesh, GraphicsOptions.BackdropScale, GraphicsOptions.BackdropFlat);
+        backdropCache = BackdropCache.Create(backdrop, mesh, GraphicsQuality.BackdropScale, GraphicsOptions.BackdropFlat);
     }
 
     // Isiklarin yonu ve golgesi; renkleri ve ortam isigi bolgeye gore (RegionLook, bolum yuklenince)
@@ -305,7 +323,6 @@ public class Oyun : MonoBehaviour
         // los gok isigi (robot okunabilsin diye yumusak golge verir)
         skyLight = new GameObject("Sun").AddComponent<Light>();
         skyLight.type = LightType.Directional;
-        skyLight.shadows = GraphicsOptions.NoShadows ? LightShadows.None : LightShadows.Soft;
         skyLight.shadowStrength = 0.6f;
         skyLight.transform.rotation = Quaternion.Euler(52f, -35f, 0f);
 
@@ -391,7 +408,7 @@ public class Oyun : MonoBehaviour
 
         // Kayalar, kaya kumeleri, olcum istasyonlari, sandiklar (Scenery.cs). Alanin icindeki kayalar bolumden gelir (engel).
         // Zeminle birlikte arka plana karisirlar: zemin ufukta gokyuzune donustugu yerde havada asili kalmazlar.
-        Scenery.Build(board, TerrainHeight, new Vector2(AreaHalfX, AreaHalfZ), FarRockMat);
+        if (!GraphicsOptions.NoScenery) Scenery.Build(board, TerrainHeight, new Vector2(AreaHalfX, AreaHalfZ), FarRockMat);
     }
 
     // inner0..inner1 arasi fine adimla; disinda outer'a kadar coarse adimla (outer = 0: disari uzanmaz)

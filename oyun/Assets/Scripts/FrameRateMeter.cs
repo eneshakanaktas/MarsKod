@@ -4,16 +4,23 @@ using UnityEngine.UIElements;
 
 // Deneme icin kare hizi gostergesi (oyuncu gormez; kapali baslar).
 // Acmak: telefonda uc parmakla ekrana dokunmak (ac/kapa, secim kalici) ya da "-fps" secenegi.
-// Gosterir: son bir saniyedeki ortalama kare hizi ve en uzun karenin suresi (takilmalari yakalar).
+// Gosterir: son bir saniyedeki ortalama kare hizi, en uzun karenin suresi (takilmalari yakalar), islemci ve ekran karti
+// suresi (hangisi buyukse yavaslik oradan). Gosterge kapaliyken de 5 sn'de bir log'a KARE satiri yazar
+// (telefonda: adb logcat -d -s Unity | findstr KARE).
 public class FrameRateMeter : MonoBehaviour
 {
     const string SaveKey = "fps-gostergesi";
     const int Fingers = 3;
+    const float LogEvery = 5f;
 
     Label label;
     float windowTime, slowest;
     int frames;
     bool wasTouching;
+    float logTime;
+    readonly FrameTiming[] timing = new FrameTiming[1];
+    double cpuSum, gpuSum;
+    int cpuCount, gpuCount;
 
     // Kendi bagimsiz nesnesinde durur: Hud'un arayuz belgesinin altina girerse onun panelini kullanmak zorunda kalir
     public static void Create(bool forceOn)
@@ -60,18 +67,39 @@ public class FrameRateMeter : MonoBehaviour
     void Update()
     {
         WatchToggleGesture();
-        if (!Visible) return;
+        CollectTiming();
 
         float dt = Time.unscaledDeltaTime;
         windowTime += dt;
+        logTime += dt;
         frames++;
         if (dt > slowest) slowest = dt;
         if (windowTime < 1f) return;
 
         float fps = frames / windowTime;
-        label.text = $"{fps:0} kare/sn  · en uzun {slowest * 1000f:0} ms";
-        label.style.color = fps >= 50f ? new Color(0.6f, 1f, 0.6f) : fps >= 30f ? new Color(1f, 0.85f, 0.4f) : new Color(1f, 0.45f, 0.45f);
+        string cpu = cpuCount > 0 ? $"{cpuSum / cpuCount:0}" : "—";
+        string gpu = gpuCount > 0 ? $"{gpuSum / gpuCount:0}" : "—";
+        if (Visible)
+        {
+            label.text = $"{fps:0} kare/sn  · en uzun {slowest * 1000f:0} ms\nişlemci {cpu} ms  · ekran kartı {gpu} ms";
+            label.style.color = fps >= 50f ? new Color(0.6f, 1f, 0.6f) : fps >= 30f ? new Color(1f, 0.85f, 0.4f) : new Color(1f, 0.45f, 0.45f);
+        }
+        if (logTime >= LogEvery)
+        {
+            Debug.Log($"KARE: {fps:0} kare/sn | en uzun {slowest * 1000f:0} ms | islemci {cpu} ms | ekran karti {gpu} ms | performans {(GraphicsQuality.Performance ? "ac" : "kapali")}");
+            logTime = 0f;
+        }
         windowTime = 0f; frames = 0; slowest = 0f;
+        cpuSum = gpuSum = 0; cpuCount = gpuCount = 0;
+    }
+
+    // Isletim sisteminden son karenin islemci ve ekran karti suresi (Player ayari: Frame Timing Stats). Desteklenmiyorsa 0 gelir, sayilmaz.
+    void CollectTiming()
+    {
+        FrameTimingManager.CaptureFrameTimings();
+        if (FrameTimingManager.GetLatestTimings(1, timing) < 1) return;
+        if (timing[0].cpuFrameTime > 0) { cpuSum += timing[0].cpuFrameTime; cpuCount++; }
+        if (timing[0].gpuFrameTime > 0) { gpuSum += timing[0].gpuFrameTime; gpuCount++; }
     }
 
     // Uc parmak ayni anda ekrana degince gostergeyi acip kapatir

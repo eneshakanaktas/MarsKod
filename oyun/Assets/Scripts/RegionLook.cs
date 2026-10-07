@@ -73,7 +73,8 @@ public class RegionLook
         {
             case Region.PolarIce: return Polar;
             case Region.CraterField: return Crater;
-            case Region.Dunes: return Dunes;
+            case Region.Dunes:
+            case Region.AntennaHill: return Dunes; // anten tepesinin kendi gorunusu gelene kadar kum tepeleri
             default: return Plain;
         }
     }

@@ -6,6 +6,7 @@
 //   R robot   B buz   E enerji hücresi   K kaya   T tehlikeli kristal   H hedef kare   . boş     (aradaki boşluklar önemsizdir)
 //   0-9 güneş paneli: rakam gücün onda biri (7 → gücü 70). 0 kırık panel (parçası toplanır), 1-4 çatlak (onarılır), 5-9 sağlam.
 //   Z toz bulutu: kaç beklemede dağılacağı "toz_suresi" listesinde, haritadaki okuma sırasıyla (üst satırdan, soldan sağa).
+//   M kablo makarası: uzunlukları (metre) "makara_uzunlugu" listesinde, aynı okuma sırasıyla. "rapor": antenin report() ile beklediği sayı.
 //   Toplanacak işaretleri (B, E...) Collectible.cs'te; bir bölümde tek tür toplanır.
 
 using System;
@@ -49,6 +50,10 @@ namespace MarsKod.Dunya
         public Dictionary<Cell, int> Panels = new Dictionary<Cell, int>();
         /// <summary>Toz bulutları ve kaç beklemede dağılacakları</summary>
         public Dictionary<Cell, int> Dust = new Dictionary<Cell, int>();
+        /// <summary>Kablo makaraları ve uzunlukları (metre); makaralar Ices'ta da var (toplanırlar)</summary>
+        public Dictionary<Cell, int> Reels = new Dictionary<Cell, int>();
+        /// <summary>Antenin report() ile beklediği sayı; null ise rapor istenmez</summary>
+        public int? ExpectedReport;
         public Cell? Target;
         /// <summary>Bu bölümde açık oyun komutları (move, collect...)</summary>
         public List<string> Commands = new List<string>();
@@ -65,7 +70,7 @@ namespace MarsKod.Dunya
         public string StartCode = "";
         public string Solution;
 
-        public World CreateWorld() => new World(Cols, Rows, Robot, Ices, Rocks, Target, Commands, Crystals, Panels, Dust);
+        public World CreateWorld() => new World(Cols, Rows, Robot, Ices, Rocks, Target, Commands, Crystals, Panels, Dust, Reels, ExpectedReport);
 
         public const char RobotMark = 'R', RockMark = 'K', CrystalMark = 'T', TargetMark = 'H', DustMark = 'Z', EmptyMark = '.';
         /// <summary>Haritada panelin rakamı gücün onda biri (7 → 70)</summary>
@@ -76,7 +81,7 @@ namespace MarsKod.Dunya
         /// <summary>JSON metninden bölümü okur; yanlışta DataFormatError verir (Türkçe, satır numaralı).</summary>
         public static Level Parse(string json)
         {
-            var known = new HashSet<string> { "numara", "baslik", "etiket", "gorev", "giris", "bitis", "harita", "komutlar", "konular", "parcalar", "python_kelimeleri", "ipuclari", "tipik_hatalar", "baslangic_kodu", "cozum", "toz_suresi" };
+            var known = new HashSet<string> { "numara", "baslik", "etiket", "gorev", "giris", "bitis", "harita", "komutlar", "konular", "parcalar", "python_kelimeleri", "ipuclari", "tipik_hatalar", "baslangic_kodu", "cozum", "toz_suresi", "makara_uzunlugu", "rapor" };
             var d = DataFields.ParseObject(json, known);
 
             var level = new Level
@@ -100,6 +105,8 @@ namespace MarsKod.Dunya
                     throw new DataFormatError("\"komutlar\" içinde bilinmeyen komut: \"" + c + "\". Oyundaki komutlar: " + string.Join(", ", World.AllCommands) + ".");
             var dustCells = ReadMap(level, TextList(d, "harita"));
             ReadDust(level, dustCells, d.ContainsKey("toz_suresi") ? IntList(d, "toz_suresi") : new List<int>());
+            ReadReels(level, d.ContainsKey("makara_uzunlugu") ? IntList(d, "makara_uzunlugu") : new List<int>());
+            ReadReport(level, d);
             level.Pieces = d.ContainsKey("parcalar") ? NonEmptyList(d, "parcalar") : DerivePieces(level.Commands);
             if (d.ContainsKey("python_kelimeleri")) level.PythonWords = TextList(d, "python_kelimeleri");
             if (d.ContainsKey("tipik_hatalar")) level.Mistakes = ReadMistakes(d["tipik_hatalar"]);
@@ -205,6 +212,31 @@ namespace MarsKod.Dunya
                 if (durations[i] < 1) throw new DataFormatError("\"toz_suresi\" içindeki sayılar 1 ya da daha büyük olmalı (" + (i + 1) + ". sayı " + durations[i] + ").");
                 level.Dust[cells[i]] = durations[i];
             }
+        }
+
+        /// <summary>Her kablo makarasına (okuma sırasıyla) "makara_uzunlugu" listesindeki uzunluğu bağlar.</summary>
+        static void ReadReels(Level level, List<int> lengths)
+        {
+            var cells = level.Item == Collectible.CableReel ? level.Ices : new List<Cell>();
+            if (lengths.Count != cells.Count)
+                throw new DataFormatError("Haritada " + cells.Count + " kablo makarası (M) var ama \"makara_uzunlugu\" listesinde " + lengths.Count
+                    + " sayı var. Her makara için bir uzunluk (metre) yaz, haritadaki sırayla: üst satırdan başla, soldan sağa.");
+            for (int i = 0; i < cells.Count; i++)
+            {
+                if (lengths[i] < 1) throw new DataFormatError("\"makara_uzunlugu\" içindeki sayılar 1 ya da daha büyük olmalı (" + (i + 1) + ". sayı " + lengths[i] + ").");
+                level.Reels[cells[i]] = lengths[i];
+            }
+        }
+
+        /// <summary>"rapor": antenin beklediği sayı. report komutu açıksa zorunlu, kapalıysa yazılmaz.</summary>
+        static void ReadReport(Level level, Dictionary<string, object> d)
+        {
+            bool open = level.Commands.Contains("report");
+            if (d.ContainsKey("rapor") != open)
+                throw new DataFormatError(open
+                    ? "\"komutlar\" içinde \"report\" var ama \"rapor\" yok; antenin beklediği sayıyı yaz (örn. \"rapor\": 3)."
+                    : "\"rapor\" yazılmış ama \"komutlar\" içinde \"report\" yok; rapor gönderilemez.");
+            if (open) level.ExpectedReport = Int(d, "rapor");
         }
 
         /// <summary>"B buz, E enerji hücresi" (hata mesajları için)</summary>

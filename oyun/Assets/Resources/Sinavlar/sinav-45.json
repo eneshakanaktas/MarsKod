@@ -1,0 +1,38 @@
+{
+  "bolum": 45,
+  "sorular": [
+    {
+      "soru": "sayac = 0 satırından sonra sayac += 1 iki kez çalışırsa sayac kaç olur?",
+      "secenekler": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "dogru": 2,
+      "aciklama": "sayac 0 ile başlar; her sayac += 1 bir ekler: önce 1, sonra 2."
+    },
+    {
+      "soru": "toplam = 50 iken toplam = 30 çalışırsa toplam kaç olur?",
+      "secenekler": [
+        "80",
+        "30",
+        "50",
+        "20"
+      ],
+      "dogru": 1,
+      "aciklama": "= kutudakini atıp yeni değeri koyar; toplam artık 30. Eklemek isteseydin toplam += 30 yazardın (80)."
+    },
+    {
+      "soru": "Döngünün İÇİNE sayac = 0 yazılırsa ne olur?",
+      "secenekler": [
+        "Sayaç her turda yeniden sıfırlanır",
+        "Sayaç iki kat hızlı artar",
+        "Kod hata verir",
+        "Hiçbir fark olmaz"
+      ],
+      "dogru": 0,
+      "aciklama": "Döngünün içindeki her satır her turda çalışır; sayac = 0 da her turda kutuyu sıfırlar. Sıfırlama döngüden önce bir kez yapılır."
+    }
+  ]
+}

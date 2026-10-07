@@ -784,6 +784,10 @@ public class Oyun : MonoBehaviour
                 hud.ShowMessage("GÖREV", "Kod bitti, çatlak panel kaldı",
                     "Kodun sonuna kadar çalıştı ama " + world.CrackedLeft + " çatlak panel daha onarılmayı bekliyor (turuncu ışıklı olanlar). Robot yalnızca kodda yazanı yapar: hangi paneli atladığını bul.",
                     null, error: false);
+            else if (!world.ReportDone)
+                hud.ShowMessage("GÖREV", "Kod bitti, rapor gönderilmedi",
+                    "Kodun sonuna kadar çalıştı ama anten hâlâ sayıyı bekliyor. Sonunda report() ile istenen sayıyı gönder; sayıyı bir değişkende tut.",
+                    null, error: false);
             else
                 hud.ShowMessage("GÖREV", "Kod bitti, robot hedefte değil",
                     "Kodun sonuna kadar çalıştı ama robot işaretli kareye varmadı. Kod bittiğinde robot hedef karede durmalı: yolu adım adım say.",
@@ -917,6 +921,15 @@ public class Oyun : MonoBehaviour
                 StartCoroutine(PowerLabel.Show(levelRoot, Pos(me.At), me.Power, tint));
                 if (panels.TryGetValue(me.At, out var measured)) StartCoroutine(measured.Flash());
                 yield return Tween.Wait(0.5f);
+                break;
+            case CableMeasured cm:
+                StartCoroutine(PowerLabel.Show(levelRoot, Pos(cm.At), cm.Length + " m", cm.Length == 0 ? new Color(0.85f, 0.85f, 0.92f) : Mats.Hex("#FFB070")));
+                yield return Tween.Wait(0.5f);
+                break;
+            case ReportSent rs:
+                if (rs.Correct) Sound.Collect();
+                StartCoroutine(PowerLabel.Show(levelRoot, Pos(rs.At), "RAPOR " + rs.Value, rs.Correct ? Mats.Hex("#7CF07A") : Mats.Hex("#FF6B5A")));
+                yield return Tween.Wait(0.7f);
                 break;
             case Repaired rp:
                 StartCoroutine(robot.Collect());

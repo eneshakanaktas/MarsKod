@@ -112,6 +112,22 @@ namespace MarsKod.Dunya
         public int Total;
     }
 
+    /// <summary>Robot cable_length() ile bulunduğu karedeki kablo makarasının uzunluğunu ölçtü (makara yoksa 0).</summary>
+    public sealed class CableMeasured : WorldEvent
+    {
+        public Cell At;
+        /// <summary>Metre</summary>
+        public int Length;
+    }
+
+    /// <summary>Robot report() ile antene bir sayı gönderdi; Correct, antenin beklediği sayı mı.</summary>
+    public sealed class ReportSent : WorldEvent
+    {
+        public Cell At;
+        public BigInteger Value;
+        public bool Correct;
+    }
+
     /// <summary>
     /// Oyun kuralı yüzünden durma (Python hatası değil): örn. robot alanın dışına çıkmak istedi.
     /// Oyuncunun kodu bunu yakalayamaz; çalıştırma olduğu yerde biter.
@@ -144,6 +160,10 @@ namespace MarsKod.Dunya
         /// <summary>Toz bulutları: dağılması için kalan bekleme sayısı (0 = dağıldı). Robot bulutun içindeyken yürüyemez.</summary>
         readonly Dictionary<Cell, int> dust;
         readonly Dictionary<Cell, int> dustTotal;
+        /// <summary>Kablo makaralarının uzunlukları (metre); makaralar toplanacaklar arasındadır (Ices)</summary>
+        readonly Dictionary<Cell, int> reels;
+        /// <summary>Antenin report() ile beklediği sayı; null ise bu bölümde rapor istenmez</summary>
+        public readonly BigInteger? ExpectedReport;
         /// <summary>Bu bölümde açık olan komutlar; null ise hepsi açık</summary>
         readonly HashSet<string> allowed;
 
@@ -161,18 +181,22 @@ namespace MarsKod.Dunya
         public bool OnTarget => Target == null || Robot.Equals(Target.Value);
         /// <summary>Henüz onarılmamış çatlak panel sayısı</summary>
         public int CrackedLeft => panels.Values.Count(IsCracked);
-        /// <summary>Görev tamam mı: tüm buzlar toplandı, çatlak panel kalmadı ve (hedef varsa) robot hedef karede</summary>
-        public bool Complete => IceLeft == 0 && CrackedLeft == 0 && OnTarget;
+        /// <summary>Doğru sayı antene gönderildi mi (rapor istenmeyen bölümde hep true)</summary>
+        public bool ReportDone => ExpectedReport == null || reported;
+        bool reported;
+        /// <summary>Görev tamam mı: tüm buzlar toplandı, çatlak panel kalmadı, (istendiyse) doğru rapor gönderildi ve (hedef varsa) robot hedef karede</summary>
+        public bool Complete => IceLeft == 0 && CrackedLeft == 0 && ReportDone && OnTarget;
 
         /// <summary>Oyunda olan tüm komutlar (bölüm dosyasındaki "komutlar" bunlardan seçilir)</summary>
-        public static readonly string[] AllCommands = { "move", "collect", "ice_here", "rock_ahead", "panel_power", "repair", "dust_here", "wait" };
+        public static readonly string[] AllCommands = { "move", "collect", "ice_here", "rock_ahead", "panel_power", "repair", "dust_here", "wait", "cable_length", "report" };
 
         /// <summary>Panel çatlak mı (gücü 0'dan çok, CrackedBelow'dan az)</summary>
         public static bool IsCracked(int power) => power > 0 && power < CrackedBelow;
 
         public World(int cols, int rows, Cell robot, IEnumerable<Cell> iceCells,
             IEnumerable<Cell> rockCells = null, Cell? target = null, IEnumerable<string> commands = null, IEnumerable<Cell> crystalCells = null,
-            IDictionary<Cell, int> panelCells = null, IDictionary<Cell, int> dustCells = null)
+            IDictionary<Cell, int> panelCells = null, IDictionary<Cell, int> dustCells = null,
+            IDictionary<Cell, int> reelCells = null, BigInteger? expectedReport = null)
         {
             Cols = cols;
             Rows = rows;
@@ -184,6 +208,8 @@ namespace MarsKod.Dunya
             panels = panelCells == null ? new Dictionary<Cell, int>() : new Dictionary<Cell, int>(panelCells);
             dust = dustCells == null ? new Dictionary<Cell, int>() : new Dictionary<Cell, int>(dustCells);
             dustTotal = new Dictionary<Cell, int>(dust);
+            reels = reelCells == null ? new Dictionary<Cell, int>() : new Dictionary<Cell, int>(reelCells);
+            ExpectedReport = expectedReport;
             Target = target;
             allowed = commands == null ? null : new HashSet<string>(commands);
         }
@@ -299,6 +325,29 @@ namespace MarsKod.Dunya
             Events.Add(new Waited { At = Robot, Left = left, Total = dustTotal[Robot] });
         }
 
+        /// <summary>Bulunduğu karedeki (toplanmamış) kablo makarasının uzunluğu, metre; makara yoksa 0. Yalnızca ölçer.</summary>
+        public int CableLength()
+        {
+            int length = IceAt(Robot) >= 0 && reels.TryGetValue(Robot, out int l) ? l : 0;
+            Events.Add(new CableMeasured { At = Robot, Length = length });
+            return length;
+        }
+
+        /// <summary>Sayıyı antene gönderir. Antenin beklediği sayı değilse (ya da bu bölümde rapor istenmiyorsa) robot durur (oyun kuralı).</summary>
+        public void Report(BigInteger value)
+        {
+            bool correct = ExpectedReport != null && ExpectedReport.Value == value;
+            Events.Add(new ReportSent { At = Robot, Value = value, Correct = correct });
+            if (ExpectedReport == null)
+                throw new GameRuleStop("Rapor istenmiyor",
+                    "Bu ödevde antene bir sayı göndermen istenmiyor, robot bu yüzden durdu. Bu bir oyun kuralı, Python hatası değil.");
+            if (!correct)
+                throw new GameRuleStop("Anten bu sayıyı beklemiyordu",
+                    "Robot antene " + value + " gönderdi ama anten başka bir sayı bekliyordu; robot bu yüzden durdu. Bu bir oyun kuralı, Python hatası değil. "
+                    + "Sayıyı tahmin etme, robota saydır: bir değişken kur (sayac = 0), her seferinde büyüt (sayac += 1), sonunda onu gönder: report(sayac).");
+            reported = true;
+        }
+
         /// <summary>Bulunduğu karedeki panelin gücü (0-100; panel yoksa 0). Değiştirmez, yalnızca ölçer.</summary>
         public int PanelPower()
         {
@@ -394,6 +443,21 @@ namespace MarsKod.Dunya
                     Wait();
                     return null;
                 }),
+                ["cable_length"] = new PyBuiltin("cable_length", (args, kwargs) =>
+                {
+                    Unlocked("cable_length");
+                    NoKeywords("cable_length", kwargs);
+                    if (args.Count != 0) throw Values.PyError("TypeError", "cable_length() takes no arguments (" + args.Count + " given)");
+                    return new BigInteger(CableLength());
+                }),
+                ["report"] = new PyBuiltin("report", (args, kwargs) =>
+                {
+                    Unlocked("report");
+                    NoKeywords("report", kwargs);
+                    if (args.Count != 1) throw Values.PyError("TypeError", "report() takes exactly one argument (" + args.Count + " given)");
+                    Report(NumberOf(args[0]));
+                    return null;
+                }),
             };
             // Yönler şimdilik metin olarak tutulur: print(East) -> East
             foreach (Direction d in Enum.GetValues(typeof(Direction))) commands[d.ToString()] = d.ToString();
@@ -415,6 +479,14 @@ namespace MarsKod.Dunya
         static void NoKeywords(string name, Dictionary<string, object> kwargs)
         {
             if (kwargs.Count > 0) throw Values.PyError("TypeError", name + "() takes no keyword arguments");
+        }
+
+        // report() yalnızca tam sayı gönderir (True/False ve ondalıklı sayı da kabul edilmez: anten metre ya da adet sayar)
+        static BigInteger NumberOf(object value)
+        {
+            if (value is BigInteger n) return n;
+            throw new GameRuleStop("Antene yalnızca sayı gönderilir",
+                "report() bir tam sayı ister, örn. report(3) ya da report(toplam). Gönderdiğin değer (" + Values.Repr(value) + ") bir tam sayı değil. Bu bir oyun kuralı, Python hatası değil.");
         }
 
         static Direction DirectionOf(object value)

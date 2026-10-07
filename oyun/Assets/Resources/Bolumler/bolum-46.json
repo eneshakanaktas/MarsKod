@@ -1,0 +1,102 @@
+{
+  "numara": 46,
+  "baslik": "Kalan",
+  "gorev": "Eksiği bildir",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . M . M .",
+    ". . . . . .",
+    "R . M . . .",
+    ". . . . . ."
+  ],
+  "makara_uzunlugu": [
+    90,
+    80,
+    70
+  ],
+  "rapor": 60,
+  "komutlar": [
+    "move",
+    "collect",
+    "cable_length",
+    "report"
+  ],
+  "parcalar": [
+    "kalan = 300",
+    "kalan -= cable_length()",
+    "move(East)",
+    "move(North)",
+    "collect()",
+    "for i in range(2):",
+    "report(kalan)"
+  ],
+  "konular": [
+    "değişken",
+    "çıkarma",
+    "-="
+  ],
+  "ipuclari": [
+    "Antenin 300 metre kabloya ihtiyacı var. Üç makarayı topla ve 300'den ne kadar eksik kaldığını bildir.",
+    "Değişken bir sayıyla da başlayabilir: `kalan = 300`. `-=` kutudaki sayıdan çıkarır: `kalan -= cable_length()`.",
+    "Yol: doğuya 2, kuzeye 2, doğuya 2. Her makarada önce `kalan -= cable_length()`, sonra `collect()`. En sonda `report(kalan)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": [
+        "kalan = 300",
+        "for i in range(2):",
+        "    move(East)",
+        "kalan -= cable_length()",
+        "collect()",
+        "for i in range(2):",
+        "    move(North)",
+        "kalan -= cable_length()",
+        "collect()",
+        "for i in range(2):",
+        "    move(East)",
+        "collect()",
+        "report(kalan)"
+      ],
+      "aciklama": "Son makara ölçülmeden toplandı: kalan 60 yerine 140 çıkar."
+    },
+    {
+      "kod": [
+        "kalan = 300",
+        "for i in range(2):",
+        "    move(East)",
+        "kalan += cable_length()",
+        "collect()",
+        "for i in range(2):",
+        "    move(North)",
+        "kalan += cable_length()",
+        "collect()",
+        "for i in range(2):",
+        "    move(East)",
+        "kalan += cable_length()",
+        "collect()",
+        "report(kalan)"
+      ],
+      "aciklama": "+= ekler: kalan küçülmek yerine büyür. Çıkarmak için -=."
+    }
+  ],
+  "baslangic_kodu": [
+    "kalan = 300"
+  ],
+  "cozum": [
+    "kalan = 300",
+    "for i in range(2):",
+    "    move(East)",
+    "kalan -= cable_length()",
+    "collect()",
+    "for i in range(2):",
+    "    move(North)",
+    "kalan -= cable_length()",
+    "collect()",
+    "for i in range(2):",
+    "    move(East)",
+    "kalan -= cable_length()",
+    "collect()",
+    "report(kalan)"
+  ]
+}

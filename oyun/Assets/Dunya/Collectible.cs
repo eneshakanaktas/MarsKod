@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace MarsKod.Dunya
 {
-    public enum Collectible { Ice, EnergyCell, PanelPart, CompassPart }
+    public enum Collectible { Ice, EnergyCell, PanelPart, CompassPart, CableReel }
 
     public static class Collectibles
     {
@@ -16,6 +16,7 @@ namespace MarsKod.Dunya
             ['B'] = Collectible.Ice,
             ['E'] = Collectible.EnergyCell,
             ['P'] = Collectible.CompassPart,
+            ['M'] = Collectible.CableReel,
         };
 
         static readonly Dictionary<Collectible, (string one, string many)> Names = new Dictionary<Collectible, (string, string)>
@@ -24,6 +25,7 @@ namespace MarsKod.Dunya
             [Collectible.EnergyCell] = ("enerji hücresi", "enerji hücreleri"),
             [Collectible.PanelPart] = ("panel parçası", "panel parçaları"),
             [Collectible.CompassPart] = ("pusula parçası", "pusula parçaları"),
+            [Collectible.CableReel] = ("kablo makarası", "kablo makaraları"),
         };
 
         /// <summary>Tekil Türkçe ad ("3 enerji hücresi daha")</summary>

@@ -1,0 +1,93 @@
+{
+  "numara": 42,
+  "baslik": "Toplam",
+  "gorev": "Toplamı bildir",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . M . .",
+    ". . . M . .",
+    "R M M M . .",
+    ". . . . . ."
+  ],
+  "makara_uzunlugu": [
+    25,
+    65,
+    60,
+    90,
+    45
+  ],
+  "rapor": 285,
+  "komutlar": [
+    "move",
+    "collect",
+    "cable_length",
+    "report"
+  ],
+  "parcalar": [
+    "toplam = 0",
+    "move(East)",
+    "move(North)",
+    "toplam += cable_length()",
+    "collect()",
+    "for i in range(2):",
+    "report(toplam)"
+  ],
+  "konular": [
+    "değişken",
+    "toplam",
+    "cable_length"
+  ],
+  "ipuclari": [
+    "Beş makara var ama uzunluklarını bilmiyorsun. cable_length() robotun durduğu karedeki makaranın uzunluğunu metre olarak verir.",
+    "Bir toplam değişkeni kur (`toplam = 0`) ve her makarada uzunluğu ona ekle: `toplam += cable_length()`. Dikkat: toplanan makara artık yerde değildir; önce ölç, sonra topla.",
+    "İki döngü: doğuya üç kez, sonra kuzeye iki kez. Her turda `move(...)`, `toplam += cable_length()`, `collect()`. En sonda `report(toplam)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": [
+        "toplam = 0",
+        "for i in range(3):",
+        "    move(East)",
+        "    collect()",
+        "    toplam += cable_length()",
+        "for i in range(2):",
+        "    move(North)",
+        "    collect()",
+        "    toplam += cable_length()",
+        "report(toplam)"
+      ],
+      "aciklama": "Önce toplayıp sonra ölçmek: makara artık yerde değil, cable_length() 0 verir. Önce ölç, sonra topla."
+    },
+    {
+      "kod": [
+        "toplam = 0",
+        "for i in range(3):",
+        "    move(East)",
+        "    toplam = cable_length()",
+        "    collect()",
+        "for i in range(2):",
+        "    move(North)",
+        "    toplam = cable_length()",
+        "    collect()",
+        "report(toplam)"
+      ],
+      "aciklama": "toplam = cable_length() kutudakini atıp yerine son makarayı koyar; eklemek için += gerekir."
+    }
+  ],
+  "baslangic_kodu": [
+    "toplam = 0"
+  ],
+  "cozum": [
+    "toplam = 0",
+    "for i in range(3):",
+    "    move(East)",
+    "    toplam += cable_length()",
+    "    collect()",
+    "for i in range(2):",
+    "    move(North)",
+    "    toplam += cable_length()",
+    "    collect()",
+    "report(toplam)"
+  ]
+}

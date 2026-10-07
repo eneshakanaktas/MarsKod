@@ -1,0 +1,91 @@
+{
+  "numara": 49,
+  "baslik": "Tozlu yol",
+  "gorev": "Tozlu yolda topla",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    "R M Z M Z M",
+    ". . . . . ."
+  ],
+  "toz_suresi": [
+    2,
+    4
+  ],
+  "makara_uzunlugu": [
+    70,
+    100,
+    45
+  ],
+  "rapor": 215,
+  "komutlar": [
+    "move",
+    "collect",
+    "rock_ahead",
+    "dust_here",
+    "wait",
+    "cable_length",
+    "report"
+  ],
+  "parcalar": [
+    "toplam = 0",
+    "while not rock_ahead(East):",
+    "move(East)",
+    "while dust_here():",
+    "wait()",
+    "toplam += cable_length()",
+    "collect()",
+    "report(toplam)"
+  ],
+  "konular": [
+    "toplam",
+    "while döngüsü",
+    "değişken"
+  ],
+  "ipuclari": [
+    "Makaraların arasında toz bulutları var. Her karede: toz varsa bekle, makara varsa ölç ve topla.",
+    "Tozlu karede cable_length() 0 verir, collect() da boşa gider ama zararı yok; toplam değişmez. Böylece her kareye aynı kalıp uygulanabilir.",
+    "`while not rock_ahead(East):` içinde `move(East)`, sonra iç döngü `while dust_here():` / `wait()`, sonra `toplam += cable_length()` ve `collect()`. En sonda `report(toplam)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": [
+        "toplam = 0",
+        "while not rock_ahead(East):",
+        "    move(East)",
+        "    toplam += cable_length()",
+        "    collect()",
+        "report(toplam)"
+      ],
+      "aciklama": "Toz beklenmeden yürünmez: robot ilk bulutta durur."
+    },
+    {
+      "kod": [
+        "toplam = 0",
+        "while not rock_ahead(East):",
+        "    move(East)",
+        "    while dust_here():",
+        "        wait()",
+        "    toplam += cable_length()",
+        "    collect()",
+        "    report(toplam)"
+      ],
+      "aciklama": "report döngünün içinde: ilk makaradan sonra antene 70 gider, anten durdurur. Rapor, toplama bitince bir kez gönderilir."
+    }
+  ],
+  "baslangic_kodu": [
+    "toplam = 0"
+  ],
+  "cozum": [
+    "toplam = 0",
+    "while not rock_ahead(East):",
+    "    move(East)",
+    "    while dust_here():",
+    "        wait()",
+    "    toplam += cable_length()",
+    "    collect()",
+    "report(toplam)"
+  ]
+}

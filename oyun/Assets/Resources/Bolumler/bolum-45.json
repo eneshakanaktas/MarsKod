@@ -1,0 +1,99 @@
+{
+  "numara": 45,
+  "baslik": "Uzun makaralar",
+  "gorev": "Uzunları say",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    "R M M M M M",
+    ". . . . . .",
+    ". . . . . ."
+  ],
+  "makara_uzunlugu": [
+    30,
+    80,
+    50,
+    20,
+    65
+  ],
+  "rapor": 3,
+  "komutlar": [
+    "move",
+    "collect",
+    "rock_ahead",
+    "cable_length",
+    "report"
+  ],
+  "parcalar": [
+    "sayac = 0",
+    "while not rock_ahead(East):",
+    "move(East)",
+    "if cable_length() >= 50:",
+    "sayac += 1",
+    "collect()",
+    "report(sayac)"
+  ],
+  "konular": [
+    "sayaç",
+    "karşılaştırma",
+    "if",
+    "değişken"
+  ],
+  "ipuclari": [
+    "Antene yalnızca uzun makaralar (50 metre ya da daha uzun) gerekiyor. Hepsini topla ama yalnızca uzunları say.",
+    "`>=` \"büyük ya da eşit\" demek: `cable_length() >= 50`, tam 50 metrelik makarada da True verir. Sayacı yalnızca bu soru True ise artır; ölçüm toplamadan önce yapılmalı.",
+    "`while not rock_ahead(East):` içinde `move(East)`, `if cable_length() >= 50:` altında `sayac += 1`, sonra (if'in dışında) `collect()`. Sonunda `report(sayac)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": [
+        "sayac = 0",
+        "while not rock_ahead(East):",
+        "    move(East)",
+        "    if cable_length() > 50:",
+        "        sayac += 1",
+        "    collect()",
+        "report(sayac)"
+      ],
+      "aciklama": "> 50, tam 50 metrelik makarayı saymaz; \"50 ve üstü\" için >= gerekir."
+    },
+    {
+      "kod": [
+        "sayac = 0",
+        "while not rock_ahead(East):",
+        "    move(East)",
+        "    collect()",
+        "    if cable_length() >= 50:",
+        "        sayac += 1",
+        "report(sayac)"
+      ],
+      "aciklama": "Önce toplanınca ölçülecek makara kalmaz: cable_length() hep 0, sayaç 0."
+    },
+    {
+      "kod": [
+        "sayac = 0",
+        "while not rock_ahead(East):",
+        "    move(East)",
+        "    sayac += 1",
+        "    collect()",
+        "report(sayac)"
+      ],
+      "aciklama": "Hepsini saymak: antene 5 gider, ama yalnızca uzunlar isteniyor."
+    }
+  ],
+  "baslangic_kodu": [
+    "sayac = 0",
+    "while not rock_ahead(East):",
+    "    move(East)"
+  ],
+  "cozum": [
+    "sayac = 0",
+    "while not rock_ahead(East):",
+    "    move(East)",
+    "    if cable_length() >= 50:",
+    "        sayac += 1",
+    "    collect()",
+    "report(sayac)"
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "numara": 43,
+  "baslik": "Bekleme sayacı",
+  "gorev": "Beklemeleri say",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    "R Z . Z . H"
+  ],
+  "toz_suresi": [
+    3,
+    4
+  ],
+  "rapor": 7,
+  "komutlar": [
+    "move",
+    "rock_ahead",
+    "dust_here",
+    "wait",
+    "report"
+  ],
+  "parcalar": [
+    "bekleme = 0",
+    "move(East)",
+    "while dust_here():",
+    "wait()",
+    "bekleme += 1",
+    "for i in range(2):",
+    "report(bekleme)"
+  ],
+  "konular": [
+    "sayaç",
+    "while döngüsü",
+    "değişken"
+  ],
+  "ipuclari": [
+    "Yolda iki toz bulutu var; ne kadar süreceklerini bilmiyorsun. Anten, toplam kaç kez beklediğini öğrenmek istiyor.",
+    "Her wait() yaptığında sayacı bir artır. Sayaç while'ın içinde olmalı, yoksa her bulut yalnızca bir kez sayılır.",
+    "`while dust_here():` altında hem `wait()` hem `bekleme += 1`. İki bulut aynı kalıpla geçilir: `for i in range(2):` içinde `move(East)`, bekleme döngüsü, `move(East)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": [
+        "bekleme = 0",
+        "for i in range(2):",
+        "    move(East)",
+        "    while dust_here():",
+        "        wait()",
+        "    bekleme += 1",
+        "    move(East)",
+        "move(East)",
+        "report(bekleme)"
+      ],
+      "aciklama": "bekleme += 1 while'ın dışında: her bulut yalnızca bir kez sayılır, antene 2 gider."
+    },
+    {
+      "kod": [
+        "for i in range(2):",
+        "    bekleme = 0",
+        "    move(East)",
+        "    while dust_here():",
+        "        wait()",
+        "        bekleme += 1",
+        "    move(East)",
+        "move(East)",
+        "report(bekleme)"
+      ],
+      "aciklama": "Sayaç her bulutta sıfırlanıyor: yalnızca ikinci bulutun beklemeleri kalır."
+    }
+  ],
+  "baslangic_kodu": [
+    "bekleme = 0",
+    "move(East)"
+  ],
+  "cozum": [
+    "bekleme = 0",
+    "for i in range(2):",
+    "    move(East)",
+    "    while dust_here():",
+    "        wait()",
+    "        bekleme += 1",
+    "    move(East)",
+    "move(East)",
+    "report(bekleme)"
+  ]
+}

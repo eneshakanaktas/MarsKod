@@ -1,0 +1,87 @@
+{
+  "numara": 48,
+  "baslik": "En uzun",
+  "gorev": "En uzunu bildir",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    "R M M M M M",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . ."
+  ],
+  "makara_uzunlugu": [
+    45,
+    80,
+    30,
+    95,
+    60
+  ],
+  "rapor": 95,
+  "komutlar": [
+    "move",
+    "collect",
+    "rock_ahead",
+    "cable_length",
+    "report"
+  ],
+  "parcalar": [
+    "en_uzun = 0",
+    "while not rock_ahead(East):",
+    "move(East)",
+    "u = cable_length()",
+    "if u > en_uzun:",
+    "en_uzun = u",
+    "collect()",
+    "report(en_uzun)"
+  ],
+  "konular": [
+    "değişken",
+    "karşılaştırma",
+    "en büyük"
+  ],
+  "ipuclari": [
+    "Antenin ana kablosu tek parça olmalı: en uzun makaranın uzunluğunu bildir.",
+    "İki değişken: `u` o anki makarayı, `en_uzun` şimdiye kadarki en uzunu tutar. Yeni makara daha uzunsa `en_uzun = u` ile yenisini aklında tut.",
+    "Her karede `u = cable_length()`, sonra `if u > en_uzun:` altında `en_uzun = u`, sonra `collect()`. Sonunda `report(en_uzun)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": [
+        "en_uzun = 0",
+        "while not rock_ahead(East):",
+        "    move(East)",
+        "    en_uzun = cable_length()",
+        "    collect()",
+        "report(en_uzun)"
+      ],
+      "aciklama": "Her makarada en_uzun değişir: sonunda en uzun değil, son makara (60) kalır."
+    },
+    {
+      "kod": [
+        "en_uzun = 0",
+        "while not rock_ahead(East):",
+        "    move(East)",
+        "    u = cable_length()",
+        "    if u < en_uzun:",
+        "        en_uzun = u",
+        "    collect()",
+        "report(en_uzun)"
+      ],
+      "aciklama": "< ile hiçbir makara 0'dan küçük değildir; en_uzun 0 kalır."
+    }
+  ],
+  "baslangic_kodu": [
+    "en_uzun = 0"
+  ],
+  "cozum": [
+    "en_uzun = 0",
+    "while not rock_ahead(East):",
+    "    move(East)",
+    "    u = cable_length()",
+    "    if u > en_uzun:",
+    "        en_uzun = u",
+    "    collect()",
+    "report(en_uzun)"
+  ]
+}

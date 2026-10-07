@@ -1,0 +1,81 @@
+{
+  "numara": 47,
+  "baslik": "Geri sayım",
+  "gorev": "3 makara bul",
+  "harita": [
+    ". M H . . .",
+    ". M . . . .",
+    ". . . . . .",
+    ". M . . . .",
+    ". . . . . .",
+    ". R . . . ."
+  ],
+  "makara_uzunlugu": [
+    40,
+    55,
+    35
+  ],
+  "komutlar": [
+    "move",
+    "collect",
+    "rock_ahead",
+    "cable_length"
+  ],
+  "parcalar": [
+    "kalan = 3",
+    "while kalan > 0:",
+    "move(North)",
+    "if cable_length() > 0:",
+    "collect()",
+    "kalan -= 1",
+    "move(East)"
+  ],
+  "konular": [
+    "sayaç",
+    "while döngüsü",
+    "değişken"
+  ],
+  "ipuclari": [
+    "Kuzeyde üç makara var, aralarındaki boşluklar eşit değil. Üçünü de bulunca doğudaki hedefe geç.",
+    "Sayaç geri de sayabilir: `kalan = 3` ile başla, her makara bulunca `kalan -= 1`. `while kalan > 0:` makara kaldıkça yürütür; sıfıra inince döngü biter.",
+    "`while kalan > 0:` içinde `move(North)`, sonra `if cable_length() > 0:` altında `collect()` ve `kalan -= 1`. Döngüden sonra `move(East)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": [
+        "kalan = 3",
+        "while kalan > 0:",
+        "    move(North)",
+        "    if cable_length() > 0:",
+        "        collect()",
+        "    kalan -= 1",
+        "move(East)"
+      ],
+      "aciklama": "kalan -= 1 if'in dışında: her adımda azalır, robot üç adım sonra durur, makaralar yerde kalır."
+    },
+    {
+      "kod": [
+        "kalan = 3",
+        "while kalan >= 0:",
+        "    move(North)",
+        "    if cable_length() > 0:",
+        "        collect()",
+        "        kalan -= 1",
+        "move(East)"
+      ],
+      "aciklama": "kalan >= 0: sayaç sıfıra inince de döngü sürer, robot alanın dışına yürür."
+    }
+  ],
+  "baslangic_kodu": [
+    "kalan = 3"
+  ],
+  "cozum": [
+    "kalan = 3",
+    "while kalan > 0:",
+    "    move(North)",
+    "    if cable_length() > 0:",
+    "        collect()",
+    "        kalan -= 1",
+    "move(East)"
+  ]
+}

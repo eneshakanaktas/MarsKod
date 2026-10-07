@@ -159,6 +159,33 @@
         "if dust_here():",
         "    wait()       # yalnızca bir tur bekler"
       ]
+    },
+    {
+      "baslik": "Değişken",
+      "kelimeler": ["report"],
+      "aciklama": "Bir şeyi aklında tutmak için adı olan bir kutu. = kutuya değer koyar (eskisini atar), += üstüne ekler, -= çıkarır. Adı sen seçersin: sayac, toplam, kalan... Türkçe harf (ç, ş, ğ) ve boşluk kullanma.",
+      "ornek": [
+        "sayac = 0       # kutuyu aç, içine 0 koy",
+        "sayac += 1      # bir artır: artık 1",
+        "report(sayac)   # kutudakini antene gönder"
+      ]
+    },
+    {
+      "baslik": "cable_length",
+      "kelimeler": ["cable_length"],
+      "aciklama": "Robotun durduğu karedeki kablo makarasının uzunluğunu metre olarak verir; makara yoksa 0. Toplanan makara artık yerde değildir: önce ölç, sonra topla.",
+      "ornek": [
+        "toplam += cable_length()",
+        "collect()"
+      ]
+    },
+    {
+      "baslik": "report",
+      "kelimeler": ["report"],
+      "aciklama": "Parantezin içindeki sayıyı antene gönderir. Anten doğru sayıyı bekler; yanlışsa robot durur. Sayıyı tahmin etme: bir değişkende sayıp onu gönder.",
+      "ornek": [
+        "report(toplam)"
+      ]
     }
   ]
 }

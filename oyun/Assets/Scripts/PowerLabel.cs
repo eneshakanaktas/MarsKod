@@ -7,14 +7,16 @@ public static class PowerLabel
 {
     static Font font;
 
-    public static IEnumerator Show(Transform parent, Vector3 localPos, int power, Color color)
+    public static IEnumerator Show(Transform parent, Vector3 localPos, int power, Color color) => Show(parent, localPos, power.ToString(), color);
+
+    public static IEnumerator Show(Transform parent, Vector3 localPos, string label, Color color)
     {
         if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         var go = new GameObject("PowerLabel");
         go.transform.SetParent(parent, false);
         var text = go.AddComponent<TextMesh>();
         text.font = font;
-        text.text = power.ToString();
+        text.text = label;
         text.fontSize = 96;
         text.characterSize = 0.055f;
         text.fontStyle = FontStyle.Bold;

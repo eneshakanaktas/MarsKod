@@ -1,0 +1,120 @@
+{
+  "numara": 50,
+  "baslik": "Anten",
+  "gorev": "Topla, bildir, git",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    "H . . . . .",
+    "M . M Z . .",
+    "R M . Z M .",
+    ". . . . . ."
+  ],
+  "toz_suresi": [
+    3,
+    2
+  ],
+  "makara_uzunlugu": [
+    55,
+    90,
+    120,
+    75
+  ],
+  "rapor": 340,
+  "komutlar": [
+    "move",
+    "collect",
+    "rock_ahead",
+    "dust_here",
+    "wait",
+    "cable_length",
+    "report"
+  ],
+  "parcalar": [
+    "toplam = 0",
+    "while not rock_ahead(East):",
+    "while not rock_ahead(West):",
+    "move(East)",
+    "move(West)",
+    "move(North)",
+    "while dust_here():",
+    "wait()",
+    "toplam += cable_length()",
+    "collect()",
+    "report(toplam)"
+  ],
+  "konular": [
+    "toplam",
+    "while döngüsü",
+    "değişken"
+  ],
+  "ipuclari": [
+    "Yol bir U: doğuya alanın sonuna kadar, bir kuzeye, sonra batıya alanın sonuna kadar. Hedef, en batıda bir kuzeyde.",
+    "Değişken iki döngü boyunca değerini korur: ikinci döngüde `toplam`ı sıfırlama, eklemeye devam et. Rapor her şey toplanınca bir kez gönderilir.",
+    "Doğu döngüsü: `move(East)`, toz beklemesi, `toplam += cable_length()`, `collect()`. Sonra `move(North)`. Batı döngüsü aynısı (`move(West)`). Sonra `report(toplam)` ve `move(North)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": [
+        "toplam = 0",
+        "while not rock_ahead(East):",
+        "    move(East)",
+        "    while dust_here():",
+        "        wait()",
+        "    toplam += cable_length()",
+        "    collect()",
+        "move(North)",
+        "toplam = 0",
+        "while not rock_ahead(West):",
+        "    move(West)",
+        "    while dust_here():",
+        "        wait()",
+        "    toplam += cable_length()",
+        "    collect()",
+        "report(toplam)",
+        "move(North)"
+      ],
+      "aciklama": "İkinci döngüden önce toplam = 0: alt sıranın kabloları unutulur, antene yalnızca üst sıra gider."
+    },
+    {
+      "kod": [
+        "toplam = 0",
+        "while not rock_ahead(East):",
+        "    move(East)",
+        "    while dust_here():",
+        "        wait()",
+        "    toplam += cable_length()",
+        "    collect()",
+        "move(North)",
+        "while not rock_ahead(West):",
+        "    move(West)",
+        "    toplam += cable_length()",
+        "    collect()",
+        "report(toplam)",
+        "move(North)"
+      ],
+      "aciklama": "Dönüş yolunda da toz var: ikinci döngüde de beklemek gerekir."
+    }
+  ],
+  "baslangic_kodu": [
+    "toplam = 0"
+  ],
+  "cozum": [
+    "toplam = 0",
+    "while not rock_ahead(East):",
+    "    move(East)",
+    "    while dust_here():",
+    "        wait()",
+    "    toplam += cable_length()",
+    "    collect()",
+    "move(North)",
+    "while not rock_ahead(West):",
+    "    move(West)",
+    "    while dust_here():",
+    "        wait()",
+    "    toplam += cable_length()",
+    "    collect()",
+    "report(toplam)",
+    "move(North)"
+  ]
+}

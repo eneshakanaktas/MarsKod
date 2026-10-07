@@ -11,7 +11,8 @@ public static class Obstacles
         {
             case Region.PolarIce: IceBlock(parent, pos, index); break;
             case Region.CraterField: Rock(parent, pos, index, "#5C4C50", "#463A3F"); break;   // koyu bazalt
-            case Region.Dunes: Rock(parent, pos, index, "#8A5440", "#6E4232"); SandDrift(parent, pos, index); break;
+            case Region.Dunes:
+            case Region.AntennaHill: Rock(parent, pos, index, "#8A5440", "#6E4232"); SandDrift(parent, pos, index); break;
             default: Rock(parent, pos, index, "#7A4A3B", "#5E3A2F"); break;
         }
     }

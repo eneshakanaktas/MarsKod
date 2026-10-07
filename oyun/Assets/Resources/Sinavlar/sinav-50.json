@@ -1,0 +1,38 @@
+{
+  "bolum": 50,
+  "sorular": [
+    {
+      "soru": "kalan = 300 iken kalan -= 70 çalışırsa kalan kaç olur?",
+      "secenekler": [
+        "370",
+        "70",
+        "230",
+        "300"
+      ],
+      "dogru": 2,
+      "aciklama": "-= kutudaki sayıdan çıkarır: 300 - 70 = 230."
+    },
+    {
+      "soru": "Makarayı önce collect() ile toplayıp sonra cable_length() ile ölçersen ne olur?",
+      "secenekler": [
+        "Doğru uzunluğu verir",
+        "0 verir, çünkü makara artık yerde değil",
+        "Kod hata verir",
+        "Makara geri yere düşer"
+      ],
+      "dogru": 1,
+      "aciklama": "cable_length() robotun durduğu karedeki makarayı ölçer; toplanmış makara orada değildir. Önce ölç, sonra topla."
+    },
+    {
+      "soru": "en_uzun = 0 ile başlayıp her makarada \"if u > en_uzun: en_uzun = u\" yazarsan sonunda en_uzun ne olur?",
+      "secenekler": [
+        "Son makaranın uzunluğu",
+        "İlk makaranın uzunluğu",
+        "En uzun makaranın uzunluğu",
+        "Makaraların toplamı"
+      ],
+      "dogru": 2,
+      "aciklama": "en_uzun yalnızca daha uzun bir makara gelince değişir; böylece sonunda gördüğün en uzun makara kalır."
+    }
+  ]
+}

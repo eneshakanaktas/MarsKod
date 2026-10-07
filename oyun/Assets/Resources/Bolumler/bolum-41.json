@@ -1,0 +1,78 @@
+{
+  "numara": 41,
+  "baslik": "Sayaç",
+  "gorev": "Topla ve say",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    "R M M M M ."
+  ],
+  "makara_uzunlugu": [
+    30,
+    50,
+    20,
+    40
+  ],
+  "rapor": 4,
+  "komutlar": [
+    "move",
+    "collect",
+    "cable_length",
+    "report"
+  ],
+  "parcalar": [
+    "sayac = 0",
+    "move(East)",
+    "collect()",
+    "sayac += 1",
+    "for i in range(3):",
+    "report(sayac)"
+  ],
+  "konular": [
+    "değişken",
+    "sayaç",
+    "report"
+  ],
+  "ipuclari": [
+    "Doğuda dört kablo makarası var. Hepsini topla, sonra kaç tane topladığını report() ile antene gönder.",
+    "Bir şeyi aklında tutmak için değişken kurulur: `sayac = 0` \"sayac adında bir kutu aç, içine 0 koy\" demek. `sayac += 1` kutudaki sayıyı bir artırır.",
+    "Döngüden önce `sayac = 0`; döngünün içinde `move(East)`, `collect()` ve `sayac += 1`; döngü bitince `report(sayac)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": [
+        "sayac = 0",
+        "for i in range(4):",
+        "    move(East)",
+        "    collect()",
+        "report(sayac)"
+      ],
+      "aciklama": "Sayaç hiç artmadı: antene 0 gider. Her makarada sayac += 1 yazılmalı."
+    },
+    {
+      "kod": [
+        "for i in range(4):",
+        "    sayac = 0",
+        "    move(East)",
+        "    collect()",
+        "    sayac += 1",
+        "report(sayac)"
+      ],
+      "aciklama": "sayac = 0 döngünün içinde: her turda kutu yeniden sıfırlanır, sonunda 1 kalır. Sıfırlama döngüden önce, bir kez yapılır."
+    }
+  ],
+  "baslangic_kodu": [
+    "sayac = 0"
+  ],
+  "cozum": [
+    "sayac = 0",
+    "for i in range(4):",
+    "    move(East)",
+    "    collect()",
+    "    sayac += 1",
+    "report(sayac)"
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "numara": 44,
+  "baslik": "Geri dönüş",
+  "gorev": "Makarayı al, dön",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    "R . . . M K",
+    "H . . . . .",
+    ". . . . . .",
+    ". . . . . ."
+  ],
+  "makara_uzunlugu": [
+    80
+  ],
+  "komutlar": [
+    "move",
+    "collect",
+    "rock_ahead",
+    "cable_length"
+  ],
+  "parcalar": [
+    "adim = 0",
+    "while not rock_ahead(East):",
+    "move(East)",
+    "adim += 1",
+    "collect()",
+    "move(South)",
+    "for i in range(adim):",
+    "move(West)"
+  ],
+  "konular": [
+    "değişken",
+    "sayaç",
+    "range"
+  ],
+  "ipuclari": [
+    "Makara doğuda, kayanın hemen önünde. Onu alınca başladığın yerin bir altına, hedef kareye dönmelisin.",
+    "Giderken attığın adımları say (`adim += 1`). Dönüşte aynı sayı kadar batıya yürü: değişken range'in içine de yazılabilir, `range(adim)`.",
+    "`while not rock_ahead(East):` altında `move(East)` ve `adim += 1`. Sonra `collect()`, `move(South)` ve `for i in range(adim):` altında `move(West)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": [
+        "adim = 0",
+        "while not rock_ahead(East):",
+        "    move(East)",
+        "adim += 1",
+        "collect()",
+        "move(South)",
+        "for i in range(adim):",
+        "    move(West)"
+      ],
+      "aciklama": "adim += 1 döngünün dışında: yalnızca bir kez sayılır, robot bir adım dönüp kalır."
+    },
+    {
+      "kod": [
+        "adim = 0",
+        "while not rock_ahead(East):",
+        "    move(East)",
+        "    adim += 1",
+        "collect()",
+        "move(South)",
+        "for i in range(adim + 1):",
+        "    move(West)"
+      ],
+      "aciklama": "Bir adım fazla: robot alanın dışına çıkmak ister."
+    }
+  ],
+  "baslangic_kodu": [
+    "adim = 0"
+  ],
+  "cozum": [
+    "adim = 0",
+    "while not rock_ahead(East):",
+    "    move(East)",
+    "    adim += 1",
+    "collect()",
+    "move(South)",
+    "for i in range(adim):",
+    "    move(West)"
+  ]
+}

@@ -32,6 +32,7 @@ public class Hud : MonoBehaviour
     static readonly Color CellFill = Mats.Hex("#C8F25A");
     static readonly Color PanelFill = Mats.Hex("#FFB25E");
     static readonly Color CompassFill = Mats.Hex("#E2B65C");
+    static readonly Color ReelFill = Mats.Hex("#E8742E");
     static readonly Color NumColor = Mats.Hex("#4F4A5A");
     static readonly Color HeaderText = Mats.Hex("#F5F1F7");
     static readonly Color ErrorRed = Mats.Hex("#FF6B6B");
@@ -409,6 +410,7 @@ public class Hud : MonoBehaviour
             var d = item == Collectible.EnergyCell ? new Icon(36, (p, r) => DrawCellDot(p, r, idx < collected))
                 : item == Collectible.PanelPart ? new Icon(36, (p, r) => DrawPanelDot(p, r, idx < collected))
                 : item == Collectible.CompassPart ? new Icon(36, (p, r) => DrawCompassDot(p, r, idx < collected))
+                : item == Collectible.CableReel ? new Icon(36, (p, r) => DrawReelDot(p, r, idx < collected))
                 : new Icon(36, (p, r) => DrawIceDot(p, r, idx < collected));
             d.style.marginLeft = 10; d.style.marginRight = 10;
             Transition(d, "scale", 0.28f, EasingMode.EaseOutBack);
@@ -949,6 +951,25 @@ public class Hud : MonoBehaviour
         p.LineTo(new Vector2(w * 0.4f, h * 0.5f));
         p.ClosePath();
         p.Fill();
+    }
+
+    // Kablo makarasi: yandan gorunen makara (iki kenar cizgisi arasinda sarili kablo)
+    static void DrawReelDot(Painter2D p, Rect r, bool filled)
+    {
+        float w = r.width, h = r.height;
+        var color = filled ? ReelFill : new Color(1f, 1f, 1f, 0.5f);
+        p.lineCap = LineCap.Round;
+        p.lineWidth = 3f;
+        p.strokeColor = color;
+        var drum = new Rect(w * 0.3f, h * 0.3f, w * 0.4f, h * 0.4f);
+        RoundedRect(p, drum, w * 0.05f);
+        if (filled) { p.fillColor = color; p.Fill(); }
+        p.Stroke();
+        p.strokeColor = filled ? new Color(0.78f, 0.8f, 0.84f) : color;
+        p.BeginPath();
+        p.MoveTo(new Vector2(w * 0.24f, h * 0.18f)); p.LineTo(new Vector2(w * 0.24f, h * 0.82f));
+        p.MoveTo(new Vector2(w * 0.76f, h * 0.18f)); p.LineTo(new Vector2(w * 0.76f, h * 0.82f));
+        p.Stroke();
     }
 
     // Kosesi c yaricapla yuvarlanmis dikdortgen yolu (cizmez; ardindan Fill/Stroke)

@@ -113,7 +113,7 @@ namespace MarsKod.Dunya
             return level;
         }
 
-        /// <summary>"parcalar" yazılmamışsa açık komutlardan düğme satırları: move → dört yön, collect → collect().</summary>
+        /// <summary>"parcalar" yazılmamışsa açık komutlardan düğme satırları: move → dört yön, collect → collect(), report → report(sayac).</summary>
         public static List<string> DerivePieces(IEnumerable<string> commands)
         {
             var pieces = new List<string>();
@@ -121,6 +121,7 @@ namespace MarsKod.Dunya
             {
                 if (c == "move") pieces.AddRange(Enum.GetNames(typeof(Direction)).Select(dir => "move(" + dir + ")"));
                 else if (c == "rock_ahead") pieces.AddRange(Enum.GetNames(typeof(Direction)).Select(dir => "rock_ahead(" + dir + ")"));
+                else if (c == "report") pieces.Add("report(sayac)"); // report bir sayı ister; boş parantez çalışınca hata verir
                 else pieces.Add(c + "()");
             }
             return pieces;

@@ -10,8 +10,8 @@ public static class CraterTraces
     // Bolge 3 acilisi: kara ekranda iki satir
     public static readonly string[] TransitionLines = { "Yeni bölge: Kraterli düzlük", "Hedef: güneş enerjisi" };
 
-    // Ece'nin boyasi; Bolge 4'teki kurdele de bu renk olacak (senaryo-perde-1.md)
-    static readonly Color EceColor = Mats.Hex("#2FC4B8");
+    // Ece'nin boyasi; Bolge 4'teki turkuaz direk numarasi ve kurdele de bu renk (senaryo-bolge-04.md)
+    public static readonly Color EceColor = Mats.Hex("#2FC4B8");
 
     public static void Build(int levelNumber, Transform parent, Vector2 areaHalf)
     {

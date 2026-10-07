@@ -1,0 +1,46 @@
+{
+  "numara": 37,
+  "baslik": "Merdiven",
+  "etiket": "ÖDEV",
+  "gorev": "Hedef kareye git",
+  "giris": "Sol 1.076 · while'ın sorusu her turun başında bir kez sorulur.",
+  "bitis": "Kumda bir araç: direk arabası. Kasası boş. Sürücü yerinde bir battaniye.",
+  "harita": [
+    ". . . . . H",
+    ". . . Z . K",
+    ". . . . K .",
+    ". Z . K . .",
+    ". . K . . .",
+    "R K . . . ."
+  ],
+  "toz_suresi": [3, 2],
+  "komutlar": ["move", "collect", "rock_ahead", "dust_here", "wait"],
+  "parcalar": ["move(North)", "move(East)", "wait()", "while not rock_ahead(North):", "while dust_here():"],
+  "konular": ["while döngüsü", "döngü sorusu turun başında", "iç içe while", "rock_ahead"],
+  "ipuclari": [
+    "Yol bir merdiven: kuzey, doğu, kuzey, doğu… Merdiven kuzeyde alanın sonuna kadar çıkıyor.",
+    "`while`'ın sorusu her turun başında bir kez sorulur, turun ortasında değil. Bir turda iki adım atabilirsin: önce kuzey, sonra doğu.",
+    "`while not rock_ahead(North):` içinde `move(North)`, tozu bekleyen `while dust_here():`, sonra `move(East)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["while not rock_ahead(North):", "    move(North)", "    move(East)", "    while dust_here():", "        wait()"],
+      "aciklama": "Toz kuzeye çıkınca giriliyor; bekleme doğu adımından sonra kalınca robot tozun içinde yürümeye çalışır."
+    },
+    {
+      "kod": ["while not rock_ahead(East):", "    move(East)", "    move(North)"],
+      "aciklama": "Yanlış soru: doğuda hemen kaya var, döngü hiç başlamaz."
+    }
+  ],
+  "baslangic_kodu": [
+    "while not rock_ahead(North):",
+    "    move(North)"
+  ],
+  "cozum": [
+    "while not rock_ahead(North):",
+    "    move(North)",
+    "    while dust_here():",
+    "        wait()",
+    "    move(East)"
+  ]
+}

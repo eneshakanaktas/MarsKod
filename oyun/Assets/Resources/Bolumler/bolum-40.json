@@ -1,0 +1,55 @@
+{
+  "numara": 40,
+  "baslik": "Son tepe",
+  "etiket": "ÖDEV",
+  "gorev": "Topla ve hedefe git",
+  "giris": "Sol 1.077 · Son ödev! Parçaları topla, tepeye çık.",
+  "bitis": "Bölge 4 tamamlandı! Tebrikler!",
+  "harita": [
+    ". Z P H K .",
+    "P . . . . .",
+    "Z . . K . .",
+    "P . . . . .",
+    ". . K . . .",
+    "R . . . . ."
+  ],
+  "toz_suresi": [5, 3],
+  "komutlar": ["move", "collect", "rock_ahead", "dust_here", "wait"],
+  "parcalar": ["move(North)", "move(East)", "collect()", "wait()", "while not rock_ahead(North):", "while not rock_ahead(East):", "while dust_here():"],
+  "konular": ["while döngüsü", "iç içe while", "art arda iki döngü", "collect", "hedef kare", "bölge finali"],
+  "ipuclari": [
+    "Önce kuzeye alanın sonuna kadar, sonra doğuya kayaya kadar. İki yolda da toz ve parça var; hedef kayanın hemen önünde.",
+    "Bölüm 38'in döngüsünü iki kez yaz: biri kuzey, biri doğu için. Her birinde yürü, tozu bekle, topla.",
+    "`while not rock_ahead(North):` → `move(North)`, `while dust_here():` → `wait()`, `collect()`; altına aynısını `East` ile."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["while not rock_ahead(North):", "    move(North)", "    while dust_here():", "        wait()", "    collect()", "while not rock_ahead(East):", "    move(East)", "    collect()"],
+      "aciklama": "İkinci döngüde bekleme unutulmuş: robot doğudaki bulutta durur."
+    },
+    {
+      "kod": ["while not rock_ahead(East):", "    move(East)", "    while dust_here():", "        wait()", "    collect()", "while not rock_ahead(North):", "    move(North)", "    while dust_here():", "        wait()", "    collect()"],
+      "aciklama": "Sıra ters: robot önce doğuya gider; parçalara da hedefe de uğramaz."
+    },
+    {
+      "kod": ["while not rock_ahead(North):", "    move(North)", "    while dust_here():", "        wait()", "while not rock_ahead(East):", "    move(East)", "    while dust_here():", "        wait()", "collect()"],
+      "aciklama": "collect() döngülerin dışında: parçalar toplanmaz."
+    }
+  ],
+  "baslangic_kodu": [
+    "while not rock_ahead(North):",
+    "    move(North)"
+  ],
+  "cozum": [
+    "while not rock_ahead(North):",
+    "    move(North)",
+    "    while dust_here():",
+    "        wait()",
+    "    collect()",
+    "while not rock_ahead(East):",
+    "    move(East)",
+    "    while dust_here():",
+    "        wait()",
+    "    collect()"
+  ]
+}

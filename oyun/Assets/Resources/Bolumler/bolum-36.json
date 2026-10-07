@@ -1,0 +1,51 @@
+{
+  "numara": 36,
+  "baslik": "Köşe",
+  "etiket": "ÖDEV",
+  "gorev": "Hedef kareye git",
+  "giris": "Sol 1.075 · Doğu bitince kuzey. İki yolda da tozu bekle.",
+  "bitis": "Görev kaynağı: KOLONİ (öncelikli). Ödev listesi güncellendi.",
+  "harita": [
+    ". . . . . H",
+    ". . . . . Z",
+    "K . . . . .",
+    ". . . K . Z",
+    ". . . . . .",
+    "R . Z . . ."
+  ],
+  "toz_suresi": [2, 4, 3],
+  "komutlar": ["move", "collect", "rock_ahead", "dust_here", "wait"],
+  "parcalar": ["move(North)", "move(East)", "wait()", "while not rock_ahead(East):", "while not rock_ahead(North):", "while dust_here():"],
+  "konular": ["while döngüsü", "iç içe while", "art arda iki döngü", "dust_here"],
+  "ipuclari": [
+    "Önce doğuya alanın sonuna kadar, sonra kuzeye. İki yolda da toz bulutları var.",
+    "Bölüm 35'teki döngüyü iki kez yaz: biri doğu, biri kuzey için. Her birinin içinde tozu bekleyen kendi `while`'ı olmalı.",
+    "`while not rock_ahead(East):` → `move(East)` → `while dust_here():` → `wait()`; altına aynı kalıbı `North` ile."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["while not rock_ahead(East):", "    move(East)", "    while dust_here():", "        wait()", "while not rock_ahead(North):", "    move(North)"],
+      "aciklama": "İkinci döngüde bekleme unutulmuş: robot kuzeydeki ilk bulutta durur."
+    },
+    {
+      "kod": ["while not rock_ahead(North):", "    move(North)", "    while dust_here():", "        wait()", "while not rock_ahead(East):", "    move(East)", "    while dust_here():", "        wait()"],
+      "aciklama": "Sıra ters: kuzeyde kaya var, robot yanlış satırdan doğuya döner."
+    }
+  ],
+  "baslangic_kodu": [
+    "while not rock_ahead(East):",
+    "    move(East)",
+    "    while dust_here():",
+    "        wait()"
+  ],
+  "cozum": [
+    "while not rock_ahead(East):",
+    "    move(East)",
+    "    while dust_here():",
+    "        wait()",
+    "while not rock_ahead(North):",
+    "    move(North)",
+    "    while dust_here():",
+    "        wait()"
+  ]
+}

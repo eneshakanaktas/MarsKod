@@ -2,7 +2,8 @@ using System.Collections;
 using UnityEngine;
 
 // Hikaye izleri: bazi bolumlerde alanin kenarinda duran kucuk sus nesneleri (docs/tasarim/senaryo-bolge-01.md, -02.md).
-// Bulmacayi etkilemezler, yalnizca merak uyandirmak icin dururlar. Bolge 2'ninkiler PolarTraces'te, Bolge 3'unkuler CraterTraces'te.
+// Bulmacayi etkilemezler, yalnizca merak uyandirmak icin dururlar. Bolge 2'ninkiler PolarTraces'te, Bolge 3'unkuler CraterTraces'te,
+// Bolge 4'unkuler DuneTraces'te.
 public static class Traces
 {
     // Arka plandaki izler (MarsSky.hlsl, colonyTraces): kolonide acik kapi (Bolum 6), sera kubbesinde kuru saksi (Bolum 7).
@@ -19,11 +20,15 @@ public static class Traces
     static ResearchRover rover;
     static WaterTank tank;
 
-    // targetPos: bolumde hedef kare varsa dunya konumu (10. bolumdeki telsiz diregi icin).
+    // Bolum 40 kapanisinin nesneleri (yon bulma diregi, kurdele, anten); baska bolumlerde null
+    public static DuneFinale Dune { get; private set; }
+
+    // targetPos: bolumde hedef kare varsa dunya konumu (10. bolumdeki telsiz diregi, 40. bolumdeki son isaret diregi icin).
     public static void Build(int levelNumber, Transform parent, Vector2 areaHalf, Vector3? targetPos = null)
     {
         rover = PolarTraces.Build(levelNumber, parent, areaHalf);
         CraterTraces.Build(levelNumber, parent, areaHalf);
+        Dune = DuneTraces.Build(levelNumber, parent, areaHalf, targetPos);
         tank = levelNumber == PolarTraces.TankLevel ? WaterTank.Create(parent, PolarTraces.TankPosition(areaHalf)) : null;
         ResetBackdrop(levelNumber);
         switch (levelNumber)
@@ -44,6 +49,7 @@ public static class Traces
         Shader.SetGlobalFloat(LeafId, PlayerPrefs.GetInt(LeafKey, 0));
         if (rover != null) rover.Restore();
         if (tank != null) tank.Restore();
+        if (Dune != null) Dune.Restore();
     }
 
     // Bolum 17: her toplanan buz tanki biraz daha doldurur
@@ -110,7 +116,8 @@ public static class Traces
     // Bolge acilisi: kara ekranda gosterilecek satirlar (bolgenin ilk bolumu degilse null)
     public static string[] TransitionLines(int levelNumber) =>
         levelNumber == PolarTraces.FirstLevel ? PolarTraces.TransitionLines :
-        levelNumber == CraterTraces.FirstLevel ? CraterTraces.TransitionLines : null;
+        levelNumber == CraterTraces.FirstLevel ? CraterTraces.TransitionLines :
+        levelNumber == DuneTraces.FirstLevel ? DuneTraces.TransitionLines : null;
 
     // Bolum 8 (ve Bolum 21-22): firtinanin izi: devrilmis gunes paneli, kuma gomulu kablo, kayalarin yanina yigilmis kum.
     public static void StormDebris(Transform parent, Vector3 p)

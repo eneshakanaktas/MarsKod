@@ -1,0 +1,47 @@
+{
+  "numara": 38,
+  "baslik": "Pusula parçaları",
+  "etiket": "ÖDEV",
+  "gorev": "3 pusula parçası topla",
+  "giris": "Sol 1.076 · Fırtına yön bulma direğini dağıtmış. Parçalarını topla!",
+  "bitis": "3/10 parça. Direğin ayağı bulundu.",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    "R P Z P . P",
+    ". . . . . .",
+    ". . . . . ."
+  ],
+  "toz_suresi": [4],
+  "komutlar": ["move", "collect", "rock_ahead", "dust_here", "wait"],
+  "parcalar": ["move(East)", "collect()", "wait()", "while not rock_ahead(East):", "while dust_here():"],
+  "konular": ["while döngüsü", "iç içe while", "collect", "dust_here"],
+  "ipuclari": [
+    "Parçalar sıranın üstüne dağılmış, arada bir toz bulutu var. Alanın sonuna kadar yürü, her karede topla.",
+    "Boş karede `collect()` bir şey yapmaz, güvenle her adımda çağrılabilir. Ama tozun içinde önce beklemek gerek.",
+    "`while not rock_ahead(East):` → `move(East)`, `while dust_here():` → `wait()`, en altta `collect()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["while not rock_ahead(East):", "    move(East)", "    collect()"],
+      "aciklama": "Toz unutulmuş: robot bulutun içinde yürümeye çalışır ve durur."
+    },
+    {
+      "kod": ["while not rock_ahead(East):", "    move(East)", "    while dust_here():", "        wait()", "collect()"],
+      "aciklama": "collect() döngünün dışında: yalnızca en sondaki parça toplanır."
+    }
+  ],
+  "baslangic_kodu": [
+    "while not rock_ahead(East):",
+    "    move(East)",
+    "    collect()"
+  ],
+  "cozum": [
+    "while not rock_ahead(East):",
+    "    move(East)",
+    "    while dust_here():",
+    "        wait()",
+    "    collect()"
+  ]
+}

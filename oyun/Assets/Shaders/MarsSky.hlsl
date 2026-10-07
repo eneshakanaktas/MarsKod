@@ -4,8 +4,10 @@
 #define MARSKOD_SKY_INCLUDED
 
 float _StarsOn;
-float _Region;    // bolge (RegionLook.cs): 0 inis ovasi, 1 kutup buzulu
-bool MarsPolar() { return _Region > 0.5; }
+float _Region;    // bolge (RegionLook.cs): 0 inis ovasi, 1 kutup buzulu, 2 kraterli duzluk, 3 kum tepeleri
+bool MarsPolar() { return abs(_Region - 1.0) < 0.5; }
+bool MarsCrater() { return abs(_Region - 2.0) < 0.5; }
+bool MarsDunes() { return _Region > 2.5; }
 // Cok hafif genel aydinlatma: arka plan ve zeminin karistigi ova rengi ayni oranda (yoksa yeni renk siniri olusur)
 static const float MARS_EXPOSURE = 1.06;
 float _Horizon;   // ufuk: fotograf koordinatinda (asagida)
@@ -914,6 +916,8 @@ float3 PlainBackdrop(float2 suv)
 }
 
 #include "PolarSky.hlsl"
+#include "CraterSky.hlsl"
+#include "DuneSky.hlsl"
 
 // Ekran konumuna (suv, alttan 0) gore arka plan rengi (sRGB): bolgenin kendi manzarasi. Pahali: yalnizca dokuya
 // cizerken kullanilir (Backdrop.shader "Bake"); ekrandakiler saklanan dokuyu okur (MarsBackdropCached).
@@ -921,6 +925,8 @@ float3 MarsBackdrop(float2 suv)
 {
     float3 col;
     [branch] if (MarsPolar()) col = PolarBackdrop(suv);
+    else if (MarsCrater()) col = CraterBackdrop(suv);
+    else if (MarsDunes()) col = DuneBackdrop(suv);
     else col = PlainBackdrop(suv);
     return col;
 }
@@ -938,6 +944,24 @@ float MarsVignette(float2 uv)
     return 1.0 - 0.35 * smoothstep(0.3, 0.85, length(vd * float2(1.4, 1.0)));
 }
 
+// Ufuk dibindeki ovanin rengi (sRGB): zemin uzaklastikca bu renge solar. Her bolgenin kendi cizim dosyasinda.
+float3 MarsHorizonPlain()
+{
+    if (MarsPolar()) return POLAR_PLAIN;
+    if (MarsCrater()) return CRATER_PLAIN;
+    if (MarsDunes()) return DUNE_PLAIN;
+    return float3(0.176, 0.110, 0.106) * MARS_EXPOSURE;   // ova: ekrandan olculdu
+}
+
+// Gunese dogru (uzakta) zeminin hafif isinmasinin rengi (dogrusala yakin)
+float3 MarsGroundWarmth()
+{
+    if (MarsPolar()) return float3(0.06, 0.11, 0.24);
+    if (MarsCrater()) return float3(0.32, 0.12, 0.11);
+    if (MarsDunes()) return float3(0.26, 0.17, 0.09);
+    return float3(0.30, 0.13, 0.06);
+}
+
 // Toz pusu: oyun alanindan (area: yari boyut x, z) uzaklastikca zemin solar ve ufuktaki ovanin rengine yaklasir;
 // en cok koloniye dogru, yanlarda daha az, kameraya dogru cok az. Gercek uzakliga bagli oldugu icin fotograf
 // kuculse de (klavye acik) gecis yumusak kalir; zemin ufka vardiginda arka planla zaten ayni renktedir.
@@ -947,9 +971,7 @@ float3 MarsDustHaze(float3 col, float3 posWS, float2 area)
     if (posWS.z < 0.0) o.y *= 0.4;
     float dist = length(o * float2(0.8, 1.0));
     float haze = smoothstep(0.4, 7.0, dist) * 0.8;
-    // ufuk dibindeki ovanin rengi (ova: ekrandan olculdu; kutup: PolarSky.hlsl)
-    float3 plainCol = SRGBToLinear(MarsPolar() ? POLAR_PLAIN : float3(0.176, 0.110, 0.106) * MARS_EXPOSURE);
-    return lerp(col, plainCol, haze);
+    return lerp(col, SRGBToLinear(MarsHorizonPlain()), haze);
 }
 
 // Zemindeki her sey (zemin, uzaktaki kayalar) ayni kuralla arka plana karisir: once toz pusu, sonra uzaklastikca
@@ -969,12 +991,18 @@ float3 MarsFadeToBackdrop(float3 col, float3 posWS, float2 suv, float2 fogRange,
     return col;
 }
 
-// Kutup buzulunda cevredeki kaya ve esyalarin ustune kar yagmistir; yanlari soguk, mavimsi. Renkler dogrusal.
+// Cevredeki kayalarin bolgeye gore yuzu. Renkler dogrusal.
+//  kutup: ustune kar yagmis, yanlari soguk mavimsi; krater: koyu bazalt; kum tepeleri: ustlerine kum yigilmis.
 float3 MarsRegionSurface(float3 albedo, float3 n)
 {
-    if (!MarsPolar()) return albedo;
-    float3 cold = dot(albedo, float3(0.3, 0.5, 0.2)) * float3(0.85, 0.95, 1.2);
-    return lerp(cold, float3(0.55, 0.62, 0.74), smoothstep(0.45, 0.75, n.y));
+    if (MarsPolar())
+    {
+        float3 cold = dot(albedo, float3(0.3, 0.5, 0.2)) * float3(0.85, 0.95, 1.2);
+        return lerp(cold, float3(0.55, 0.62, 0.74), smoothstep(0.45, 0.75, n.y));
+    }
+    if (MarsCrater()) return dot(albedo, float3(0.3, 0.5, 0.2)) * float3(0.62, 0.55, 0.60);
+    if (MarsDunes()) return lerp(albedo, float3(0.48, 0.24, 0.12), smoothstep(0.5, 0.8, n.y));
+    return albedo;
 }
 
 #endif

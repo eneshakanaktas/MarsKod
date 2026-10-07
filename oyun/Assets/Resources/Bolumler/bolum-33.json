@@ -1,0 +1,48 @@
+{
+  "numara": 33,
+  "baslik": "İki duvar",
+  "etiket": "ÖDEV",
+  "gorev": "Hedef kareye git",
+  "giris": "Sol 1.074 · İki while art arda: biri bitince öteki başlar.",
+  "bitis": "Direkler tarandı: 8, 7, 6. Sayılar geri sayıyor.",
+  "harita": [
+    ". . . . H K",
+    ". . . . . .",
+    ". . K . . .",
+    ". . . . . .",
+    ". . . K . .",
+    "R . . . . ."
+  ],
+  "komutlar": ["move", "collect", "rock_ahead", "dust_here", "wait"],
+  "parcalar": ["move(North)", "move(East)", "while not rock_ahead(North):", "while not rock_ahead(East):"],
+  "konular": ["while döngüsü", "art arda iki döngü", "not", "rock_ahead"],
+  "ipuclari": [
+    "Robot önce kuzeye, alanın sonuna kadar; sonra doğuya, kayaya kadar gitmeli.",
+    "İki `while` art arda yazılabilir: ilki bitince (sorusu False olunca) ikincisi başlar. İkinci döngü girintisiz, ilkinin altına yazılır.",
+    "`while not rock_ahead(North):` → `move(North)`; altına girintisiz `while not rock_ahead(East):` → `move(East)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["while not rock_ahead(East):", "    move(East)", "while not rock_ahead(North):", "    move(North)"],
+      "aciklama": "Sıra ters: robot önce doğuya gider, sonra kuzeyde kayaya takılır; hedefe varamaz."
+    },
+    {
+      "kod": ["while not rock_ahead(North):", "    move(North)", "    move(East)"],
+      "aciklama": "İki hareket aynı döngünün içinde: robot çapraz gider ve kayaya çarpar. İkinci döngüyü ayrı yaz."
+    },
+    {
+      "kod": ["while not rock_ahead(North):", "    move(North)"],
+      "aciklama": "Yalnızca ilk yarısı: robot kuzeyin sonunda kalır."
+    }
+  ],
+  "baslangic_kodu": [
+    "while not rock_ahead(North):",
+    "    move(North)"
+  ],
+  "cozum": [
+    "while not rock_ahead(North):",
+    "    move(North)",
+    "while not rock_ahead(East):",
+    "    move(East)"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "bolum": 40,
+  "sorular": [
+    {
+      "soru": "not rock_ahead(East) ne zaman True olur?",
+      "secenekler": [
+        "Doğuda kaya ya da alanın sınırı varsa",
+        "Doğu açıksa (engel yoksa)",
+        "Her zaman",
+        "Hiçbir zaman"
+      ],
+      "dogru": 1,
+      "aciklama": "rock_ahead(East) doğuda engel varsa True verir; not bunu tersine çevirir. Yani not rock_ahead(East), doğu açıkken True olur."
+    },
+    {
+      "soru": "while not rock_ahead(East): yerine while rock_ahead(East): yazarsan (doğu açıkken) ne olur?",
+      "secenekler": [
+        "Robot yine doğuya yürür",
+        "Soru ilk turda False çıkar, döngü hiç çalışmaz",
+        "Kod hata verir",
+        "Robot batıya gider"
+      ],
+      "dogru": 1,
+      "aciklama": "Doğu açıkken rock_ahead(East) False'tur; while sorusu False olunca döngü hiç başlamaz, robot yerinden kıpırdamaz."
+    },
+    {
+      "soru": "while döngüsünün sorusu ne zaman sorulur?",
+      "secenekler": [
+        "Yalnızca bir kez, en başta",
+        "Her turun başında, altındaki satırlar çalışmadan önce",
+        "Her satırdan sonra",
+        "Yalnızca döngü bitince"
+      ],
+      "dogru": 1,
+      "aciklama": "Soru her turun başında sorulur. Turun ortasında durum değişse bile tur sonuna kadar çalışır; soru bir sonraki turun başında yeniden sorulur."
+    }
+  ]
+}

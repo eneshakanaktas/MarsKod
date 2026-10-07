@@ -18,6 +18,7 @@ public static class Pickups
         {
             case Collectible.EnergyCell: return EnergyCell.Create(parent, localPos, seed);
             case Collectible.PanelPart: return SolarPanel.Create(parent, localPos, 0, seed);
+            case Collectible.CompassPart: return CompassPart.Create(parent, localPos, seed);
             default: return Ice.Create(parent, localPos, seed);
         }
     }

@@ -1,0 +1,38 @@
+{
+  "bolum": 35,
+  "sorular": [
+    {
+      "soru": "for ile while arasındaki fark nedir?",
+      "secenekler": [
+        "İkisi tamamen aynıdır",
+        "for belli bir sayıda döner; while sorusu True olduğu sürece döner",
+        "while yalnızca bir kez çalışır",
+        "for'un sorusu her turda yeniden sorulur"
+      ],
+      "dogru": 1,
+      "aciklama": "for kaç tur döneceğini baştan bilir (range(5) → 5 tur). while ise her turdan önce soruyu yeniden sorar; kaç tur süreceğini bilmediğin işler için uygundur."
+    },
+    {
+      "soru": "Toz 3 tur sürüyorsa while dust_here(): altındaki wait() kaç kez çalışır?",
+      "secenekler": [
+        "1 kez",
+        "3 kez",
+        "Hiç",
+        "Sonsuza kadar"
+      ],
+      "dogru": 1,
+      "aciklama": "Her turdan önce \"toz var mı?\" diye sorulur: 3 beklemeden sonra toz geçer, soru False olur ve döngü biter."
+    },
+    {
+      "soru": "if dust_here(): ile while dust_here(): arasındaki fark nedir?",
+      "secenekler": [
+        "Fark yok",
+        "if soruyu bir kez sorar, while cevap False olana kadar tekrar tekrar sorar",
+        "while yalnızca bir kez sorar",
+        "if hiç sormaz"
+      ],
+      "dogru": 1,
+      "aciklama": "if, doğruysa altındakini bir kez çalıştırır ve geçer. while ise soruyu tekrarlar; toz birden fazla tur sürüyorsa beklemeyi sürdürür."
+    }
+  ]
+}

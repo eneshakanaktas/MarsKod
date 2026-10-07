@@ -1,0 +1,47 @@
+{
+  "numara": 35,
+  "baslik": "Acele etme",
+  "etiket": "ÖDEV",
+  "gorev": "Hedef kareye git",
+  "giris": "Sol 1.075 · Bir while başka bir while'ın içine yazılabilir.",
+  "bitis": "Acele etmedin, aferin! Sırada küçük bir sınav var.",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    "R . Z Z . H",
+    ". . K . . .",
+    ". . . . . .",
+    ". . . . . ."
+  ],
+  "toz_suresi": [3, 5],
+  "komutlar": ["move", "collect", "rock_ahead", "dust_here", "wait"],
+  "parcalar": ["move(East)", "wait()", "while not rock_ahead(East):", "while dust_here():"],
+  "konular": ["while döngüsü", "iç içe while", "not", "rock_ahead", "dust_here"],
+  "ipuclari": [
+    "Yol alanın sonuna kadar gidiyor, arada iki toz bulutu var. Ne yolun uzunluğunu ne tozun süresini saymana gerek var.",
+    "Bir `while`, başka bir `while`'ın içine yazılabilir: dıştaki yolu yürür, içteki her adımdan sonra tozu bekler. İçteki daha çok girintilidir.",
+    "`while not rock_ahead(East):` → `move(East)`; `move` ile aynı hizada `while dust_here():`, onun altında daha içeriden `wait()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["while not rock_ahead(East):", "    move(East)", "while dust_here():", "    wait()"],
+      "aciklama": "Bekleme döngünün dışında: robot ilk bulutun içinde yürümeye devam etmeye çalışır ve durur."
+    },
+    {
+      "kod": ["while not rock_ahead(East):", "    move(East)", "    if dust_here():", "        wait()"],
+      "aciklama": "if tek bir kez bekler; bu bulutlar birden fazla tur sürüyor."
+    }
+  ],
+  "baslangic_kodu": [
+    "# toz gecene kadar bekle.",
+    "# acele etme. - D.A.",
+    "while not rock_ahead(East):",
+    "    move(East)"
+  ],
+  "cozum": [
+    "while not rock_ahead(East):",
+    "    move(East)",
+    "    while dust_here():",
+    "        wait()"
+  ]
+}

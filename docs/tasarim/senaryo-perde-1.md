@@ -1,7 +1,7 @@
 # Senaryo — Perde 1: Ödev (Bölüm 1-50)
 
 > Taslak 1 — 2026-10-02 (Ragıp + Claude). Dayandığı belgeler: `hikaye.md`, `hikaye-kitabi.md`.
-> Bölge 1 (Bölüm 1-10) ayrıntılı senaryo: `senaryo-bolge-01.md`. Bu belge Bölge 2-5'i anlatır.
+> Bölge 1 (Bölüm 1-10) ayrıntılı senaryo: `senaryo-bolge-01.md`. Bu belge Bölge 2-5'i anlatır; Bölge 2-4'ün ayrıntılı senaryoları `senaryo-bolge-02.md`, `-03.md`, `-04.md`.
 > Ayrıntı düzeyi: her bölge için olay, izler, program metinleri, kapanış; her bölüm için bir satır. Bölüm bulmacaları yapıldıkça satırlar ayrıntılanır (bulmacaya göre değişebilir).
 
 ## Perde 1'in kuralları
@@ -84,31 +84,34 @@ Oyuncunun şüphesi bölge bölge büyür; her bölge bir öncekinden biraz daha
 
 ---
 
-## Bölge 4 — Kum tepeleri (Bölüm 31-40) · `while`
+## Bölge 4 — Kum tepeleri (Bölüm 31-40) · `while`, `not`
 
-**Olay:** Rüzgârlı kum tepeleri. Toz bulutları gelip geçer: robot "toz geçene kadar bekle", "yol bitene kadar ilerle" der (`while`). Kum tepelerinin arasında **yarı gömülü işaret direkleri** dizisi var: biri bu yolu önceden işaretlemiş. Kıvılcım fırtınada dağılmış bir **yön bulma direğinin** (pusula) parçalarını toplar; direk çalışınca yolu, tepedeki anteni gösterir.
+> 2026-10-07 düzeltmesi: bulmacalara uyduruldu (pusula parçaları 38-40'a yayıldı, direk 40 kapanışında çalışır; gömülü araç yerine direk arabası; kurdele son direkte; direkler 9'dan 1'e geri sayar). Ayrıntılı senaryo: `senaryo-bolge-04.md`.
+
+**Olay:** Rüzgârlı kum tepeleri. Toz bulutları gelip geçer: robot "toz geçene kadar bekle", "yol bitene kadar ilerle" der (`while`). Robota **toz algılayıcı** takılır (`dust_here()`, `wait()`). Kum tepelerinin arasında **yarı gömülü, geri sayan işaret direkleri** (9 → 1) var: biri bu yolu önceden işaretlemiş. Kıvılcım fırtınada dağılmış bir **yön bulma direğinin** (pusula) parçalarını toplar; direk çalışınca ibresi tepedeki anteni gösterir.
 
 **Program:** "Ne zaman duracağını bilmiyorsan: `while`." · İlk kez programda **tuhaf bir satır:** `Görev kaynağı: KOLONİ (öncelikli)` (oyuncu: "ödevler okuldan değil mi?").
 
 **İzler ve gizli ayrıntılar:**
-- İşaret direklerinin birinde **bir saç kurdelesi** bağlı (Ece'nin; **turkuaz** `#2FC4B8`, Bölge 3'teki "ECE" yazısıyla aynı renk; karar: Ragıp, 10-03).
-- **Koda gizlenmiş, ikinci D.A. notu:** bir `while` bölümünün başlangıç kodunda: `# toz gecene kadar bekle. acele etme. - D.A.` ("acele etme": D.A.'nın oyuncuya ilk "sesi").
+- Direk 5'in numarası çocuk eliyle, **turkuaz** (`#2FC4B8`, Bölge 3'teki "ECE" ile aynı renk).
+- Son direkte (1, tepede) **bir saç kurdelesi** bağlı (Ece'nin, turkuaz).
+- **Koda gizlenmiş, ikinci D.A. notu:** Bölüm 35'in (adı "Acele etme") başlangıç kodunda: `# toz gecene kadar bekle.` + `# acele etme. - D.A.` (iki satır) ("acele etme": D.A.'nın oyuncuya ilk "sesi").
 - Program sıkıcı bilgi: `Bu ödevi alan öğrenci sayısı: 1. Sınıf ortalaması: sen.`
-- Kum tepesinin arkasında kuma yarı gömülü bir **koloni aracı**: içi boş, kapısı açık, koltukta bir battaniye.
+- Kuma yarı gömülü bir **direk arabası**: kasası boş (direkler dikilmiş), sürücü yerinde bir battaniye.
 
 **Bölümler:**
-- 31 — İlk toz bulutu; robot bekler (`while` tanışma).
-- 32 — Kum tepeleri arasında ilk işaret direği.
-- 33 — Direk dizisi; biri yolu işaretlemiş.
-- 34 — Direkte saç kurdelesi.
-- 35 — Başlangıç kodunda `# toz gecene kadar bekle. acele etme. - D.A.`
-- 36 — Programda `Görev kaynağı: KOLONİ (öncelikli)`.
-- 37 — Kuma gömülü boş araç; koltukta battaniye.
-- 38 — Yön bulma direğinin parçaları toplanır.
-- 39 — Direk çalışır; ok tepeyi gösterir.
-- 40 · Bölge finali — Son kum tepesinin üstü: uzakta bir tepede devrik dev anten.
+- 31 · İlk toz — İlk toz bulutu; robot bekler (`while` tanışma).
+- 32 · Yol bitene kadar — İlk işaret direği: 9.
+- 33 · İki duvar — Direk dizisi 8, 7, 6; biri yolu işaretlemiş.
+- 34 · Bulut dizisi — Direk 5: numara turkuaz, çocuk eliyle.
+- 35 · Acele etme — Başlangıç kodunda `# toz gecene kadar bekle.` + `# acele etme. - D.A.` (iki satır) (Ardından mini sınav.)
+- 36 · Köşe — Programda `Görev kaynağı: KOLONİ (öncelikli)`.
+- 37 · Merdiven — Direk arabası; sürücü yerinde battaniye.
+- 38 · Pusula parçaları — Yön bulma direğinin parçaları; direğin boş ayağı.
+- 39 · Basamaklar — Parçalar toplanmaya devam; "son parçalar tepede".
+- 40 · Son tepe (bölge finali) — Son direk (1) ve kurdele; uzakta devrik dev anten.
 
-**Kapanış sahnesi:** Toz dağılır. Kıvılcım son tepenin üstünde; aşağıda geniş bir vadi ve karşı tepede yere yatmış dev bir anten. Rüzgâr kurdeleyi direkten koparır, Kıvılcım havada yakalar, sırt çantasına takar (kurdele bundan sonra robotun üstünde görünür; finalde Ece onu tanır).
+**Kapanış sahnesi:** Parçalar direğin ayağına oturur, ibre döner ve anteni gösterir. Kıvılcım antene bakar. Rüzgâr kurdeleyi direkten koparır, Kıvılcım uzanıp yakalar, sırtındaki pil çantasına takılı kalır (kurdele bundan sonra robotun üstünde görünür; finalde Ece onu tanır). Program: "Sonraki ödev: anten tepesi."
 
 ---
 

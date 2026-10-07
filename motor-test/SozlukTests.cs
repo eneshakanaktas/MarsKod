@@ -44,7 +44,7 @@ public class SozlukTests
     [Fact]
     public void Hicbir_bolumde_acilmayan_sayfa_bulunur()
     {
-        var glossary = Glossary.Parse("{ \"sayfalar\": [" + Page.Replace("[\"move\"]", "[\"while\"]") + "] }");
+        var glossary = Glossary.Parse("{ \"sayfalar\": [" + Page.Replace("[\"move\"]", "[\"lambda\"]") + "] }");
         Assert.Contains(GlossaryCheck.Problems(glossary, Levels()), p => p.Contains("hiçbir bölümde açılmıyor"));
     }
 

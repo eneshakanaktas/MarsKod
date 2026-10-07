@@ -31,6 +31,7 @@ public class Hud : MonoBehaviour
     static readonly Color IceFill = Mats.Hex("#A9E6F5");
     static readonly Color CellFill = Mats.Hex("#C8F25A");
     static readonly Color PanelFill = Mats.Hex("#FFB25E");
+    static readonly Color CompassFill = Mats.Hex("#E2B65C");
     static readonly Color NumColor = Mats.Hex("#4F4A5A");
     static readonly Color HeaderText = Mats.Hex("#F5F1F7");
     static readonly Color ErrorRed = Mats.Hex("#FF6B6B");
@@ -407,6 +408,7 @@ public class Hud : MonoBehaviour
             int idx = i;
             var d = item == Collectible.EnergyCell ? new Icon(36, (p, r) => DrawCellDot(p, r, idx < collected))
                 : item == Collectible.PanelPart ? new Icon(36, (p, r) => DrawPanelDot(p, r, idx < collected))
+                : item == Collectible.CompassPart ? new Icon(36, (p, r) => DrawCompassDot(p, r, idx < collected))
                 : new Icon(36, (p, r) => DrawIceDot(p, r, idx < collected));
             d.style.marginLeft = 10; d.style.marginRight = 10;
             Transition(d, "scale", 0.28f, EasingMode.EaseOutBack);
@@ -925,6 +927,28 @@ public class Hud : MonoBehaviour
         p.MoveTo(new Vector2(w * 0.55f, h * 0.22f));
         p.LineTo(new Vector2(w * 0.45f, h * 0.78f));
         p.Stroke();
+    }
+
+    // Pusula parcasi: yuvarlak kadran + ortasindan gecen ince ibre (dolu iken kadran pirinc, ibre koyu)
+    static void DrawCompassDot(Painter2D p, Rect r, bool filled)
+    {
+        float w = r.width, h = r.height;
+        var color = filled ? CompassFill : new Color(1f, 1f, 1f, 0.5f);
+        p.lineJoin = LineJoin.Round;
+        p.lineWidth = 3f;
+        p.strokeColor = color;
+        p.BeginPath();
+        p.Arc(new Vector2(w * 0.5f, h * 0.5f), w * 0.36f, Deg(0), Deg(360));
+        if (filled) { p.fillColor = color; p.Fill(); }
+        p.Stroke();
+        p.fillColor = filled ? new Color(0.17f, 0.16f, 0.19f) : color;
+        p.BeginPath();
+        p.MoveTo(new Vector2(w * 0.5f, h * 0.2f));
+        p.LineTo(new Vector2(w * 0.6f, h * 0.5f));
+        p.LineTo(new Vector2(w * 0.5f, h * 0.8f));
+        p.LineTo(new Vector2(w * 0.4f, h * 0.5f));
+        p.ClosePath();
+        p.Fill();
     }
 
     // Kosesi c yaricapla yuvarlanmis dikdortgen yolu (cizmez; ardindan Fill/Stroke)

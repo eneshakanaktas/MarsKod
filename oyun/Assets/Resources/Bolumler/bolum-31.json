@@ -1,0 +1,51 @@
+{
+  "numara": 31,
+  "baslik": "İlk toz",
+  "etiket": "ÖDEV",
+  "gorev": "Hedef kareye git",
+  "giris": "Sol 1.073 · Yeni modül: toz algılayıcı! Ne zaman duracağını bilmiyorsan: while.",
+  "bitis": "Toz geçti! Bu ödevi alan öğrenci sayısı: 1. Sınıf ortalaması: sen.",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    "R Z . . . H"
+  ],
+  "toz_suresi": [3],
+  "komutlar": ["move", "collect", "rock_ahead", "dust_here", "wait"],
+  "parcalar": ["move(East)", "wait()", "for i in range(3):", "while dust_here():"],
+  "python_kelimeleri": ["while"],
+  "konular": ["while döngüsü", "dust_here", "wait", "koşul"],
+  "ipuclari": [
+    "Bir kare doğuda toz bulutu var. Robot tozun içindeyken yürüyemez, ama tozun kaç tur süreceğini bilmiyorsun.",
+    "`while` bir soruyu her turdan önce yeniden sorar; cevap True olduğu sürece altındaki satırları tekrarlar. `while dust_here():` \"toz varken\" demek.",
+    "Önce `move(East)`, sonra `while dust_here():` ve altında girintili `wait()`. Toz geçince `for i in range(4):` ile doğuya devam."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["move(East)", "move(East)", "move(East)", "move(East)", "move(East)"],
+      "aciklama": "Robot tozun içinde yürümeye çalışır ve durur: önce toz geçmeli."
+    },
+    {
+      "kod": ["move(East)", "wait()", "wait()", "for i in range(4):", "    move(East)"],
+      "aciklama": "Bekleme sayısını tahmin etmek: toz iki beklemeden uzun sürüyor, robot hâlâ tozun içinde."
+    },
+    {
+      "kod": ["move(East)", "for i in range(5):", "    wait()", "for i in range(4):", "    move(East)"],
+      "aciklama": "Fazla beklemek de olmaz: toz geçince wait() boşuna bekler, robot durur. Sayma, sor: while dust_here()."
+    }
+  ],
+  "baslangic_kodu": [
+    "move(East)",
+    "wait()"
+  ],
+  "cozum": [
+    "move(East)",
+    "while dust_here():",
+    "    wait()",
+    "for i in range(4):",
+    "    move(East)"
+  ]
+}

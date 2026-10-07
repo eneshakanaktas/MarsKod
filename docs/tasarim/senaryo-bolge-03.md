@@ -119,7 +119,8 @@ Biçim: **Başlık** · görev · **Program (giriş / bitiş)** · **Sahnede**. 
 ## Oyuna konanlar (Ragıp + Claude, 2026-10-03)
 
 - **Yapıldı:** 1-4 hepsi. Bölüm 21-30 `giris`/`bitis`; Bölüm 21 açılış geçişi (`Traces.TransitionLines`); izler `CraterTraces.cs` (kulübe 25-30'da alanın sağ arkasında, kapıda turkuaz "ECE" telefonda okunuyor; 27'den sonra kapı aralık, içeride takvim; 28'den sonra rafta oyuncak robot, bir kolu kopuk); Bölüm 30 kapanışı `Oyun.ClosingSceneBolge3` (ışık 3 sn'de gün doğumuna geçer: `RegionLook.Sunrise`; yeniden denemede eski ışık geri gelir).
-- **Eksik / sonra:** gökyüzünün kendisi gün doğumunda değişmiyor (yalnızca sahnenin ışığı sıcaklaşıyor; ufukta güneş diski için `MarsSky.hlsl`'e iş gerekir). Boy çizgileri ve takvim küçük; ayrıntıyı program metni taşıyor. Kraterli düzlüğün kendi görünüşü yok (ova). Telefonda denenmedi.
+- **Eksik / sonra:** Boy çizgileri ve takvim küçük; ayrıntıyı program metni taşıyor. Telefonda denenmedi.
+- **Kendi görünüşü (2026-10-07 gece):** `CraterSky.hlsl` (krater duvarı + ortada katmanlı dağ, buz bulutları, panel sıraları, elektrik direkleri) ve `Ground.shader` `craterPlain` (bazalt, kraterler, kırağı). Bölüm 30 kapanışında güneş artık gerçekten duvarın üstünden doğuyor (`_Sunrise`).
 
 ## Oyuna yapılacaklar (ilk liste)
 

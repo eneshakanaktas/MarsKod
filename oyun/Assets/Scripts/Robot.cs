@@ -109,6 +109,11 @@ public abstract class Robot : MonoBehaviour
     public abstract void GlanceAtCamera(bool on);
     public abstract IEnumerator Celebrate();
 
+    // Bolum 40 kapanisinda yakalanan kurdele (Ece'nin) sirtta durur; gorunus desteklemiyorsa bir sey yapmaz.
+    public virtual void SetRibbon(bool on) { }
+    // Kurdelenin ucup gelecegi nokta (dunya konumu): varsayilan robotun ustu
+    public virtual Vector3 RibbonPoint => transform.position + Vector3.up * 0.5f;
+
     // Kod hatayla durdu ya da gorev bitmedi: kisa bir saskinlik tepkisi (gorunum isterse; varsayilan yok)
     protected virtual IEnumerator Puzzled() { yield break; }
 

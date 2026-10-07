@@ -128,11 +128,12 @@ Bölge 16-20 için kayıt yerine **canlı konuşma** (Defne uyanık); dakikalarc
 | İki kez yanan ışık | Bölüm sonu kutlaması | Final: Kıvılcım Dünya'ya iki kez yakar. |
 | Saksı bitkisi | Bölüm 1 kuru | Bölge 2 yeşerir, final çiçek açmış. |
 | Koloni ışıkları | Bölge 1 tek tek yanar | Final: hepsi yanık. |
-| "Ece" yazısı (turkuaz) | Bölge 3 kulübe kapısı; Bölge 4 kurdele aynı renk | Saksı, duvarlar; final: çizime "öğretmen" yazan da o. |
+| "Ece" yazısı (turkuaz) | Bölge 3 kulübe kapısı; Bölge 4 direk 5'in numarası ve son direkteki kurdele aynı renk | Saksı, duvarlar; final: çizime "öğretmen" yazan da o. |
 | Sinyal | Bölüm 10 telsiz | Bölüm 100'den sonra zayıflayan gösterge; Bölüm 200 kopar; final geri gelir. |
 | Mavi yıldız (Dünya) | Bölge 10 (Mars'tan Dünya parlak bir yıldız gibi görünür) | Final: Ece'nin çizdiği yıldız = Dünya = öğretmen = Yıldız (üç anlam). |
-| Kıvılcım'ın çantası | Bölge 4 kurdele; sonra boya kalemi (7), katlanmış çizim (8), oyuncak astronot (9) | Final: Ece eşyalarını tanır; katlanmış çizim açılır. |
-| D.A. notları (koddaki yorumlar) | Bölüm 9 `# sabah turu - D.A.`, Bölge 4 `# ... acele etme. - D.A.` | Bölge 5 "D. ARAS" çantası; Bölüm 50 kayıt; Bölge 6 `sabah_turu()`. |
+| Kıvılcım'ın çantası | Bölge 4 kurdele (Bölüm 40, son direkten; pil çantasına bağlı); sonra boya kalemi (7), katlanmış çizim (8), oyuncak astronot (9) | Final: Ece eşyalarını tanır; katlanmış çizim açılır. |
+| Geri sayan direkler | Bölge 4: işaret direkleri 9 → 1, son direk tepede anteni görür | Bölüm 50: "Yolu işaretledik. Okları takip et." |
+| D.A. notları (koddaki yorumlar) | Bölüm 9 `# sabah turu - D.A.`, Bölüm 35 (adı "Acele etme") `# toz gecene kadar bekle.` + `# acele etme. - D.A.` (iki satır) | Bölge 5 "D. ARAS" çantası; Bölüm 50 kayıt; Bölge 6 `sabah_turu()`. |
 
 ## Yan karakterler ve adlar
 

@@ -1,0 +1,42 @@
+{
+  "numara": 32,
+  "baslik": "Yol bitene kadar",
+  "etiket": "ÖDEV",
+  "gorev": "Hedef kareye git",
+  "giris": "Sol 1.073 · not cevabı tersine çevirir: yol açıkken yürü.",
+  "bitis": "Yolun sonunda bir nesne: işaret direği. Üstünde sayı: 9.",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    "R . . . H K",
+    ". . . . . .",
+    ". . . . . ."
+  ],
+  "komutlar": ["move", "collect", "rock_ahead", "dust_here", "wait"],
+  "parcalar": ["move(East)", "move(North)", "while not rock_ahead(East):"],
+  "python_kelimeleri": ["not"],
+  "konular": ["while döngüsü", "not", "rock_ahead"],
+  "ipuclari": [
+    "Robot kayaya varana kadar doğuya yürümeli. Kareleri saymadan yapabilir misin?",
+    "`not` cevabı tersine çevirir: `not True` False olur. `while not rock_ahead(East):` \"doğuda engel yokken\" demek; soru her adımdan önce yeniden sorulur.",
+    "`while not rock_ahead(East):` ve altında girintili `move(East)`. Hepsi bu kadar!"
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["while rock_ahead(East):", "    move(East)"],
+      "aciklama": "not unutulmuş: doğu açık olduğu için soru ilk turda False çıkar, döngü hiç çalışmaz, robot yerinden kıpırdamaz."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(East)"],
+      "aciklama": "Bir kare fazla: robot kayaya çarpar. while ile saymaya gerek kalmaz."
+    }
+  ],
+  "baslangic_kodu": [
+    "move(East)"
+  ],
+  "cozum": [
+    "while not rock_ahead(East):",
+    "    move(East)"
+  ]
+}

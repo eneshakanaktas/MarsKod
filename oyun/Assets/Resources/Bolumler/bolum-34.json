@@ -1,0 +1,49 @@
+{
+  "numara": 34,
+  "baslik": "Bulut dizisi",
+  "etiket": "ÖDEV",
+  "gorev": "Hedef kareye git",
+  "giris": "Sol 1.074 · if bir kez sorar, while cevap değişene kadar sorar.",
+  "bitis": "Direk 5 tarandı. Numara başka renk: turkuaz. Ödevle ilgisi yok.",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    "R Z . Z Z H"
+  ],
+  "toz_suresi": [2, 4, 1],
+  "komutlar": ["move", "collect", "rock_ahead", "dust_here", "wait"],
+  "parcalar": ["move(East)", "wait()", "for i in range(3):", "while dust_here():", "if dust_here():"],
+  "konular": ["while döngüsü", "if ile while farkı", "for döngüsü", "dust_here", "wait"],
+  "ipuclari": [
+    "Yolda üç toz bulutu var ve her biri farklı süre sürüyor. Her adımdan sonra toz varsa geçmesini bekle.",
+    "`if` soruyu bir kez sorar, `while` cevap değişene kadar tekrar tekrar sorar. Toz birden fazla tur sürebilir: burada `while` gerekir.",
+    "`for i in range(5):` içinde `move(East)`, altında `while dust_here():` → `wait()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(5):", "    move(East)", "    if dust_here():", "        wait()"],
+      "aciklama": "if yalnızca bir kez bekler: ilk bulut iki tur sürüyor, robot hâlâ tozdayken yürümeye çalışır."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(East)", "    wait()"],
+      "aciklama": "Her adımdan sonra sormadan beklemek: tozsuz karede wait() boşuna bekler, robot durur."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(East)", "while dust_here():", "    wait()"],
+      "aciklama": "while döngünün dışında: bekleme yalnızca en sonda yapılır, robot ilk bulutta durur."
+    }
+  ],
+  "baslangic_kodu": [
+    "for i in range(5):",
+    "    move(East)"
+  ],
+  "cozum": [
+    "for i in range(5):",
+    "    move(East)",
+    "    while dust_here():",
+    "        wait()"
+  ]
+}

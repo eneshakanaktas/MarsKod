@@ -4,14 +4,14 @@
 
 namespace MarsKod.Dunya
 {
-    public enum Region { Plain, PolarIce, CraterField }
+    public enum Region { Plain, PolarIce, CraterField, Dunes }
 
     public static class Regions
     {
         public const int LevelsPerRegion = 10;
 
         // Bölge sırasıyla: 1. bölge Bölüm 1-10, 2. bölge Bölüm 11-20...
-        static readonly Region[] Order = { Region.Plain, Region.PolarIce, Region.CraterField };
+        static readonly Region[] Order = { Region.Plain, Region.PolarIce, Region.CraterField, Region.Dunes };
 
         /// <summary>Bölümün geçtiği bölge (henüz yazılmamış bölgelerin bölümleri son bölgede kalır)</summary>
         public static Region Of(int levelNumber)
@@ -22,13 +22,14 @@ namespace MarsKod.Dunya
             return Order[index];
         }
 
-        /// <summary>Bölgede toplanan şey (iniş ovası: enerji hücresi, kutup buzulu: buz, kraterli düzlük: kırık panelin parçası)</summary>
+        /// <summary>Bölgede toplanan şey (iniş ovası: enerji hücresi, kutup buzulu: buz, kraterli düzlük: kırık panelin parçası, kum tepeleri: yön bulma direğinin parçası)</summary>
         public static Collectible Item(Region r)
         {
             switch (r)
             {
                 case Region.PolarIce: return Collectible.Ice;
                 case Region.CraterField: return Collectible.PanelPart;
+                case Region.Dunes: return Collectible.CompassPart;
                 default: return Collectible.EnergyCell;
             }
         }

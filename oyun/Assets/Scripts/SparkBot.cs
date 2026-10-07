@@ -22,7 +22,8 @@ public class SparkBot : Robot
     static readonly Color EyeHappy = Mats.Hex("#6CF59A") * 1.6f;
     static readonly Color EyeUnsure = Mats.Hex("#FFA040") * 1.6f;
 
-    Transform body, head, eyeL, eyeR;
+    Transform body, head, eyeL, eyeR, ribbon;
+    readonly Transform[] ribbonTails = new Transform[2];
     readonly Transform[] shoulders = new Transform[2], elbows = new Transform[2];
     Material eyeMat, thrusterMat, beaconMat;
     Color eyeColor;
@@ -79,8 +80,33 @@ public class SparkBot : Robot
         for (int k = -1; k <= 1; k++)
             Parts.Add("Led", body, MeshFactory.RoundedBox(new Vector3(0.025f, 0.012f, 0.008f), 0.003f), led, new Vector3(k * 0.04f, 0.25f, -0.152f), outline: false, castShadow: false);
 
+        BuildRibbon();
+
         Parts.Add("Neck", body, MeshFactory.RoundedCylinder(0.03f, 0.04f, 0.01f, 16), dark, new Vector3(0, 0.325f, 0));
     }
+
+    // Ece'nin kurdelesi (Bolum 40'tan sonra): pil cantasinin ustunde dugum, arkaya sarkan iki uc. Baslangicta gizli.
+    static readonly Vector3 RibbonKnot = new Vector3(0.06f, 0.305f, -0.15f);
+
+    void BuildRibbon()
+    {
+        var cloth = Mats.Lit(CraterTraces.EceColor, 0.25f);
+        ribbon = Parts.Empty("Ribbon", body);
+        ribbon.localPosition = RibbonKnot;
+        Parts.Add("Knot", ribbon, MeshFactory.RoundedBox(new Vector3(0.045f, 0.035f, 0.03f), 0.012f), cloth, Vector3.zero, outline: false, castShadow: false);
+        for (int k = 0; k < 2; k++)
+        {
+            var tail = Parts.Empty("Tail", ribbon);
+            tail.localPosition = new Vector3(k == 0 ? -0.012f : 0.012f, 0f, -0.008f);
+            float length = k == 0 ? 0.13f : 0.11f;
+            Parts.Add("Cloth", tail, MeshFactory.RoundedBox(new Vector3(0.024f, length, 0.005f), 0.002f), cloth, new Vector3(0f, -length * 0.5f, 0f), outline: false, castShadow: false);
+            ribbonTails[k] = tail;
+        }
+        ribbon.gameObject.SetActive(false);
+    }
+
+    public override void SetRibbon(bool on) => ribbon.gameObject.SetActive(on);
+    public override Vector3 RibbonPoint => transform.TransformPoint(RibbonKnot + Vector3.up * 0.03f);
 
     void BuildHead(Material hull, Material dark, Material visor)
     {
@@ -155,6 +181,10 @@ public class SparkBot : Robot
 
         float blink = Mathf.Pow(0.5f + 0.5f * Mathf.Sin(t * 4f), 8f);
         beaconMat.SetColor("_EmissionColor", Mats.Hex("#FFA733") * (0.3f + 1.2f * Mathf.Max(blink, beaconBoost)));
+
+        // kurdelenin uclari suzulmeyle hafifce savrulur (biri digerinden biraz geride)
+        for (int k = 0; k < 2; k++)
+            ribbonTails[k].localRotation = Quaternion.Euler(25f + 10f * Mathf.Sin(t * 3.1f + k), 0f, (k == 0 ? 18f : -14f) + 8f * Mathf.Sin(t * 2.3f + k * 1.7f));
 
         // gozler arada bir kirpar
         float wink = Mathf.Repeat(t, 4.3f) < 0.12f && !posing ? 0.15f : 1f;

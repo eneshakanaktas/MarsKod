@@ -102,6 +102,24 @@ Shader "MarsKod/Ground"
                 a *= 1.0 + 0.08 * (vnoise2(q * 38.0) - 0.5);  // ince taneler
                 return a * (0.94 + 0.1 * vnoise2(q * 0.35 + 4.0));
             }
+
+            float3 craterPlain(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float3 a = lerp(float3(0.34, 0.24, 0.22), float3(0.43, 0.30, 0.27), vnoise2(q * 2.0));
+                a *= 1.0 + 0.16 * (vnoise2(q * 40.0) - 0.5);
+                a = lerp(a, float3(0.18, 0.14, 0.15), smoothstep(0.8, 0.9, vnoise2(q * 22.0 + 3.0)) * 0.5 * (1.0 - 0.6 * inArea));   // bazalt cakillari
+                return a;
+            }
+
+            float3 duneSand(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float3 a = lerp(float3(0.70, 0.45, 0.30), float3(0.80, 0.54, 0.36), vnoise2(q * 0.8 + 2.0));
+                float rip = sin(dot(q, float2(0.92, 0.38)) * 24.0 + vnoise2(q * 0.9 + 13.0) * 7.0);
+                a *= 1.0 + (1.0 - 0.7 * inArea) * (1.0 - far) * 0.07 * rip;   // ruzgar dalgaciklari
+                return a * (1.0 + 0.08 * (vnoise2(q * 45.0) - 0.5));
+            }
 #else
             // Krater: icte koyu (gunes arkadan, alcaktan: uzak ic duvar golgede), kenari hafif kabarik ve aydinlik,
             // cevresinde soluk bir firlatma halkasi. d: merkezden uzaklik / yaricap, dir: merkezden yon.
@@ -199,6 +217,64 @@ Shader "MarsKod/Ground"
                 return a;
             }
 
+            // Kraterli duzluk (Bolge 3): koyu, kulrengine calan bazalt kumu; sik bazalt cakillari; sik kucuk ve orta kraterler.
+            // Gunes arkadan (uzaktan) ve alcaktan: kraterin uzak ic duvari golgede kalir, ustunde sabah kiragisi var. sRGB.
+            float craterFrost(float d, float2 dir) { return (1.0 - smoothstep(0.8, 1.0, d)) * saturate(dir.y) * smoothstep(0.35, 0.95, d); }
+
+            float3 craterField(float2 q, float cellSize, float rMin, float rRange, float chance, float salt, float strength, float3 a)
+            {
+                float2 cell = floor(q / cellSize);
+                float2 center = (cell + 0.2 + 0.6 * hash22(cell + salt)) * cellSize;
+                float cr = rMin + rRange * hash21(cell + salt + 9.0);
+                float has = step(hash21(cell + salt + 2.0), chance) * strength;
+                float d = length(q - center) / cr;
+                float2 dir = normalize(q - center + 1e-4);
+                a *= craterShade(d, dir, has);
+                return lerp(a, float3(0.70, 0.71, 0.80), craterFrost(d, dir) * has * 0.55);
+            }
+
+            float3 craterPlain(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float detail = 1.0 - far * 0.5;
+                float3 a = lerp(float3(0.34, 0.24, 0.22), float3(0.43, 0.30, 0.27), fbm(q * 2.0));
+                a *= 0.88 + 0.24 * fbm(q * 0.4 + 9.0);                          // genis lekeler
+                a *= 1.0 + detail * 0.14 * (vnoise2(q * 40.0) - 0.5);          // ince taneler
+                float speck = smoothstep(0.8, 0.9, vnoise2(q * 22.0 + 3.0)) * detail * (1.0 - 0.6 * inArea);
+                a = lerp(a, float3(0.18, 0.14, 0.15), speck * 0.5);             // bazalt cakillari (alanda seyrek: kareler okunsun)
+                float around = (1.0 - inArea) * (1.0 - far * 0.6);
+                a = craterField(q, 1.6, 0.15, 0.30, 0.6, 41.0, around, a);         // sik kucuk kraterler
+                float2 midCell = floor(q / 4.5);
+                float2 midCenter = (midCell + 0.5) * 4.5;
+                float awayFromArea = step(1.6, length(max(abs(midCenter) - _Area.xy, 0.0)));   // orta kraterler alana yakin olmaz
+                a = craterField(q, 4.5, 0.6, 0.7, 0.5, 63.0, around * awayFromArea, a);
+                if (_Crater.z > 0.0)
+                {
+                    float dc = length(q - _Crater.xy) / _Crater.z;
+                    a *= lerp(0.72 + 0.2 * dc * dc, 1.0, smoothstep(0.85, 1.0, dc));
+                    a *= 1.0 + 0.16 * exp(-pow((dc - 1.0) / 0.12, 2.0));
+                }
+                return a;
+            }
+
+            // Kum tepeleri (Bolge 4): acik turuncu kum; her yerde ruzgarin diktigi dalgaciklar (sirtlari parlak), genis kum
+            // tepelerinin aydinlik/golge seritleri. Alanin icinde dalgaciklar soluk: kareler okunsun. sRGB.
+            float3 duneSand(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float detail = 1.0 - far * 0.5;
+                float3 a = lerp(float3(0.70, 0.45, 0.30), float3(0.80, 0.54, 0.36), fbm(q * 0.8 + 2.0));
+                float big = fbm(float2(q.x * 0.18 + q.y * 0.05, q.y * 0.12) + 5.0);
+                a *= 1.0 + 0.12 * sin(big * 12.0) * (1.0 - inArea) * (1.0 - far * 0.5);   // buyuk tepelerin yamaclari
+                float ph = dot(q, float2(0.92, 0.38)) * 24.0 + fbm(q * 0.9 + 13.0) * 7.0;
+                float rip = sin(ph);
+                float crest = pow(saturate(rip), 6.0);
+                a *= 1.0 + (1.0 - 0.7 * inArea) * (1.0 - far) * (0.06 * rip + 0.08 * crest);
+                a *= 1.0 + detail * 0.08 * (vnoise2(q * 45.0) - 0.5);
+                float speck = smoothstep(0.88, 0.95, vnoise2(q * 18.0 + 5.0)) * detail * (1.0 - 0.5 * inArea);
+                return lerp(a, float3(0.35, 0.22, 0.17), speck * 0.4);           // seyrek koyu cakil
+            }
+
 #endif
 
             half4 frag (Varyings i) : SV_Target
@@ -212,7 +288,11 @@ Shader "MarsKod/Ground"
                 float inArea = 1.0 - smoothstep(0.0, 0.03, outside);
                 float far = smoothstep(8.0, 20.0, outside);   // koloniye dogru cok gec ve yavas sadelesir
 
-                float3 a = MarsPolar() ? iceSheet(p, far, inArea) : regolith(p, far, inArea);
+                float3 a;
+                [branch] if (MarsPolar()) a = iceSheet(p, far, inArea);
+                else if (MarsCrater()) a = craterPlain(p, far, inArea);
+                else if (MarsDunes()) a = duneSand(p, far, inArea);
+                else a = regolith(p, far, inArea);
 
                 // oyun alani: ayni zemin, biraz daha duzgun; kare sinirlari ince ve soluk
                 // sinirlar alanin kenarindan (-_Area) birer birim arayla; tek/cift kare sayisinda da dogru
@@ -235,7 +315,7 @@ Shader "MarsKod/Ground"
                 float3 amb = SampleSH(n);
                 float3 dawn = _DawnColor.rgb * saturate(dot(n, -_DawnDir.xyz) + 0.15);
                 // gunese dogru (uzakta) zemin hafifce isinir
-                float3 warmth = (MarsPolar() ? float3(0.06, 0.11, 0.24) : float3(0.30, 0.13, 0.06)) * exp(-length((p.xz - float2(0.8, 16.0)) * float2(0.16, 0.09)));
+                float3 warmth = MarsGroundWarmth() * exp(-length((p.xz - float2(0.8, 16.0)) * float2(0.16, 0.09)));
                 // alani sadece kose direklerindeki kucuk lambalar hafifce aydinlatir
                 float lamps = 0.0;
                 [unroll] for (int k = 0; k < 4; k++)

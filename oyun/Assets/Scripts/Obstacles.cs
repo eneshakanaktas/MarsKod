@@ -7,16 +7,29 @@ public static class Obstacles
 {
     public static void Create(Region region, Transform parent, Vector3 pos, int index)
     {
-        if (region == Region.PolarIce) IceBlock(parent, pos, index);
-        else Rock(parent, pos, index);
+        switch (region)
+        {
+            case Region.PolarIce: IceBlock(parent, pos, index); break;
+            case Region.CraterField: Rock(parent, pos, index, "#5C4C50", "#463A3F"); break;   // koyu bazalt
+            case Region.Dunes: Rock(parent, pos, index, "#8A5440", "#6E4232"); SandDrift(parent, pos, index); break;
+            default: Rock(parent, pos, index, "#7A4A3B", "#5E3A2F"); break;
+        }
     }
 
-    static void Rock(Transform parent, Vector3 p, int i)
+    static void Rock(Transform parent, Vector3 p, int i, string bigColor, string smallColor)
     {
-        var big = Parts.Add("Obstacle", parent, MeshFactory.Rock(0.34f, 200 + i), Mats.Lit(Mats.Hex("#7A4A3B"), 0.15f), p + new Vector3(0f, 0.05f, 0f));
+        var big = Parts.Add("Obstacle", parent, MeshFactory.Rock(0.34f, 200 + i), Mats.Lit(Mats.Hex(bigColor), 0.15f), p + new Vector3(0f, 0.05f, 0f));
         big.localRotation = Quaternion.Euler(0, i * 71f + 20f, 0);
-        var small = Parts.Add("Obstacle", parent, MeshFactory.Rock(0.13f, 300 + i), Mats.Lit(Mats.Hex("#5E3A2F"), 0.12f), p + new Vector3(0.28f, 0.02f, -0.22f));
+        var small = Parts.Add("Obstacle", parent, MeshFactory.Rock(0.13f, 300 + i), Mats.Lit(Mats.Hex(smallColor), 0.12f), p + new Vector3(0.28f, 0.02f, -0.22f));
         small.localRotation = Quaternion.Euler(0, i * 37f, 0);
+    }
+
+    // Kum tepelerinde ruzgar (batidan) kumu kayanin dibine yigar: kayanin bati yaninda yassi, yuvarlak bir kum yigini
+    static void SandDrift(Transform parent, Vector3 p, int i)
+    {
+        var drift = Parts.Add("Obstacle-Kum", parent, MeshFactory.Sphere(0.5f, 10, 16), Mats.Lit(DuneTraces.Sand, 0.1f),
+            p + new Vector3(-0.22f, -0.01f, 0.05f * Mathf.Sin(i * 1.3f)), outline: false);
+        drift.localScale = new Vector3(0.5f, 0.16f, 0.58f);
     }
 
     // Koseli buz blogu: soluk mavi, ustunde kar; yaninda kucuk bir blok. Parlamaz (toplanan parlak buz kristalleriyle karismasin).

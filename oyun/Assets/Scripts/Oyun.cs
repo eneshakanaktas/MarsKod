@@ -44,6 +44,14 @@ public class Oyun : MonoBehaviour
         "Koloni gündüz enerjisi: %40.",
         "Hava uyarısı: toz. Sonraki ödev: kum tepeleri.",
     };
+    // Bolge 4 finali: docs/tasarim/senaryo-bolge-04.md "Kapanis sahnesi". Yon bulma diregi, anten, kurdele.
+    const int Bolge4SonBolum = DuneTraces.LastLevel;
+    static readonly string[] Bolge4KapanisSatirlari =
+    {
+        "Yön bulma direği: çalışıyor. İbre bir yapıyı gösteriyor.",
+        "Yapı tarandı: anten (devrik).",
+        "Sonraki ödev: anten tepesi.",
+    };
 
 
     Camera cam;
@@ -55,6 +63,7 @@ public class Oyun : MonoBehaviour
     readonly List<IPickup> pickups = new List<IPickup>();
     // Calisan gunes panelleri (saglam/catlak; kirik olanlar toplanacak oldugu icin pickups'ta)
     readonly Dictionary<Cell, SolarPanel> panels = new Dictionary<Cell, SolarPanel>();
+    readonly Dictionary<Cell, DustCloud> dustClouds = new Dictionary<Cell, DustCloud>();
     // Enerji hucresi bolumlerinde koloninin guc lambalari
     ColonyPower colonyPower;
     // Isiklar: renkleri bolgeye gore (RegionLook)
@@ -455,6 +464,10 @@ public class Oyun : MonoBehaviour
         int panelSeed = 0;
         foreach (var p in level.Panels)
             if (p.Value > 0) panels[p.Key] = SolarPanel.Create(levelRoot, Pos(p.Key), p.Value, 40 + panelSeed++);
+        dustClouds.Clear();
+        int dustSeed = 0;
+        foreach (var d in level.Dust)
+            dustClouds[d.Key] = DustCloud.Create(levelRoot, Pos(d.Key), 60 + dustSeed++);
         colonyPower.Begin(PowerLampCount);
         int frostCount = level.Item == Collectible.Ice ? level.Ices.Count : 0; // zemindeki buz izi yalnizca buzun altinda
         for (int i = 0; i < 6; i++)
@@ -467,7 +480,7 @@ public class Oyun : MonoBehaviour
         target = level.Target.HasValue ? Target.Create(levelRoot, Pos(level.Target.Value)) : null;
         Traces.Build(level.Number, levelRoot, new Vector2(AreaHalfX, AreaHalfZ), level.Target.HasValue ? Pos(level.Target.Value) : (Vector3?)null);
 
-        robot.ResetTo(Pos(level.Robot), StartYaw);
+        ResetRobot();
         string saved = SavedCode(level);
         if (saved != null) hud.LoadCode(saved, SavedKinds(level));
         else hud.LoadStartCode(level.StartCode);
@@ -662,15 +675,23 @@ public class Oyun : MonoBehaviour
     // Enerji hucresi bolumunde her hucre icin kolonide bir lamba; diger bolumlerde lamba yok
     int PowerLampCount => level.Item == Collectible.EnergyCell ? level.Ices.Count : 0;
 
+    // Robot baslangic karesine doner; Bolge 4 finalinden sonraki bolumlerde sirtinda Ece'nin kurdelesi var
+    void ResetRobot()
+    {
+        robot.ResetTo(Pos(level.Robot), StartYaw);
+        robot.SetRibbon(level.Number > DuneTraces.LastLevel);
+    }
+
     void ResetLevel()
     {
         if (program != null) StopCoroutine(program);
         program = null;
         running = false; done = false; complete = false;
         stepMode = false; stepRequested = false;
-        robot.ResetTo(Pos(level.Robot), StartYaw);
+        ResetRobot();
         foreach (var pickup in pickups) pickup.Restore();
         foreach (var panel in panels.Values) panel.Restore();
+        foreach (var cloud in dustClouds.Values) cloud.Restore();
         colonyPower.Begin(PowerLampCount);
         Traces.ResetBackdrop(level.Number);
         RegionLook.For(Regions.Of(level.Number)).Apply(skyLight, sunLight);   // Bolge 3 finalindeki gun dogumunu geri alir
@@ -750,6 +771,7 @@ public class Oyun : MonoBehaviour
             if (level.Number == Bolge1SonBolum) yield return ClosingSceneBolge1();
             if (level.Number == Bolge2SonBolum) yield return ClosingSceneBolge2();
             if (level.Number == Bolge3SonBolum) yield return ClosingSceneBolge3();
+            if (level.Number == Bolge4SonBolum) yield return ClosingSceneBolge4();
         }
         else
         {
@@ -817,6 +839,34 @@ public class Oyun : MonoBehaviour
         hud.SetOutro(Bolge3KapanisSatirlari[2]);
     }
 
+    // Bolge 4 kapanisi: toplanan parcalar yon bulma diregine oturur, ibre donup uzaktaki devrik anteni gosterir;
+    // robot antene bakar. Sonra ruzgar son direkteki kurdeleyi cozer, robot ona donup uzanir, kurdele sirtina takilir;
+    // robot yeniden antene doner (sirti, kurdelesiyle kameraya). Program kurdeleyi fark etmez.
+    IEnumerator ClosingSceneBolge4()
+    {
+        var dune = Traces.Dune;
+        if (dune == null) yield break;
+        yield return Tween.Wait(0.6f);
+        yield return dune.PointTheWay();
+        hud.SetOutro(Bolge4KapanisSatirlari[0]);
+        float toAntenna = dune.YawToAntenna(robot.transform.position);
+        yield return robot.TurnTo(toAntenna, 0.7f);
+        yield return Tween.Wait(1.4f);
+        hud.SetOutro(Bolge4KapanisSatirlari[1]);
+        yield return Tween.Wait(1.8f);
+
+        var flight = dune.StartRibbonFlight(() => robot.RibbonPoint);
+        yield return robot.TurnTo(DuneFinale.YawTowards(robot.transform.position, dune.RibbonPosition), 0.45f);
+        yield return robot.Collect();
+        yield return flight;
+        robot.SetRibbon(true);
+        Sound.Collect();
+        yield return Tween.Wait(0.5f);
+        yield return robot.TurnTo(toAntenna, 0.8f);
+        yield return Tween.Wait(0.6f);
+        hud.SetOutro(Bolge4KapanisSatirlari[2]);
+    }
+
     static IEnumerator FlashAfter(SolarPanel panel, float delay)
     {
         yield return Tween.Wait(delay);
@@ -873,6 +923,10 @@ public class Oyun : MonoBehaviour
                 Sound.Collect();
                 if (panels.TryGetValue(rp.At, out var repaired)) yield return repaired.Repair();
                 yield return Tween.Wait(0.15f);
+                break;
+            case Waited w:
+                if (dustClouds.TryGetValue(w.At, out var cloud)) StartCoroutine(cloud.Thin(w.Left, w.Total));
+                yield return Tween.Wait(0.45f);
                 break;
             case Rejected _:
                 Sound.Bump();
@@ -1322,6 +1376,7 @@ public class Oyun : MonoBehaviour
     IEnumerator Shots(string dir)
     {
         Directory.CreateDirectory(dir);
+        int firstLevel = levelIndex;   // -bolum N verildiyse bolum goruntuleri N'den baslar (tumu uzun suruyor)
         yield return new WaitForSeconds(2.5f);
 
         // Acilis sahnesi (gorsel kontrol icin; oyunun kendisi bunu yalnizca ilk acilista, bu bayraklar olmadan gosterir)
@@ -1334,7 +1389,7 @@ public class Oyun : MonoBehaviour
         while (!openingDone) yield return null; // dokunmadan dogal akisin sonunu bekler
 
         // Her bolum: bekleme, yolun ortasi, bitis (dogru cozumle)
-        for (int i = 0; i < levels.Count; i++)
+        for (int i = firstLevel; i < levels.Count; i++)
         {
             string b = "b" + levels[i].Number + "-";
             LoadLevel(i);

@@ -1,4 +1,4 @@
-// Mars dünyasının kuralları: ızgara, robotun yeri, buzlar, kayalar, güneş panelleri, hedef kare ve oyuncunun kullandığı komutlar (move, collect...).
+// Mars dünyasının kuralları: ızgara, robotun yeri, buzlar, kayalar, güneş panelleri, toz bulutları, hedef kare ve oyuncunun kullandığı komutlar (move, collect...).
 // Saf mantıktır (Unity'den habersiz); sahne yalnızca olanları (WorldEvent) okuyup canlandırır.
 
 using System;
@@ -58,12 +58,13 @@ namespace MarsKod.Dunya
         public Direction Direction;
     }
 
-    /// <summary>Robot ilerleyemedi: alanın dışına çıkacaktı ya da önünde kaya vardı.</summary>
+    /// <summary>Robot ilerleyemedi: alanın dışına çıkacaktı, önünde kaya vardı ya da toz bulutunun içindeydi.</summary>
     public sealed class Blocked : WorldEvent
     {
         public Cell At;
         public Direction Direction;
         public bool ByRock;
+        public bool ByDust;
     }
 
     /// <summary>Robot toplamayı denedi. Buz yoksa IceIndex -1.</summary>
@@ -101,6 +102,16 @@ namespace MarsKod.Dunya
         public Cell At;
     }
 
+    /// <summary>Robot toz bulutunun içinde bir tur bekledi; bulut inceldi (Left 0 ise dağıldı).</summary>
+    public sealed class Waited : WorldEvent
+    {
+        public Cell At;
+        /// <summary>Bulutun dağılması için kalan bekleme sayısı</summary>
+        public int Left;
+        /// <summary>Bulutun başlangıçtaki bekleme sayısı (sahne bulutu buna göre inceltir)</summary>
+        public int Total;
+    }
+
     /// <summary>
     /// Oyun kuralı yüzünden durma (Python hatası değil): örn. robot alanın dışına çıkmak istedi.
     /// Oyuncunun kodu bunu yakalayamaz; çalıştırma olduğu yerde biter.
@@ -130,6 +141,9 @@ namespace MarsKod.Dunya
         readonly HashSet<Cell> crystals;
         /// <summary>Güneş panelleri ve güçleri (0-100): 0 kırık (parçası toplanır), CrackedBelow'dan az çatlak (onarılır), gerisi sağlam</summary>
         readonly Dictionary<Cell, int> panels;
+        /// <summary>Toz bulutları: dağılması için kalan bekleme sayısı (0 = dağıldı). Robot bulutun içindeyken yürüyemez.</summary>
+        readonly Dictionary<Cell, int> dust;
+        readonly Dictionary<Cell, int> dustTotal;
         /// <summary>Bu bölümde açık olan komutlar; null ise hepsi açık</summary>
         readonly HashSet<string> allowed;
 
@@ -151,14 +165,14 @@ namespace MarsKod.Dunya
         public bool Complete => IceLeft == 0 && CrackedLeft == 0 && OnTarget;
 
         /// <summary>Oyunda olan tüm komutlar (bölüm dosyasındaki "komutlar" bunlardan seçilir)</summary>
-        public static readonly string[] AllCommands = { "move", "collect", "ice_here", "rock_ahead", "panel_power", "repair" };
+        public static readonly string[] AllCommands = { "move", "collect", "ice_here", "rock_ahead", "panel_power", "repair", "dust_here", "wait" };
 
         /// <summary>Panel çatlak mı (gücü 0'dan çok, CrackedBelow'dan az)</summary>
         public static bool IsCracked(int power) => power > 0 && power < CrackedBelow;
 
         public World(int cols, int rows, Cell robot, IEnumerable<Cell> iceCells,
             IEnumerable<Cell> rockCells = null, Cell? target = null, IEnumerable<string> commands = null, IEnumerable<Cell> crystalCells = null,
-            IDictionary<Cell, int> panelCells = null)
+            IDictionary<Cell, int> panelCells = null, IDictionary<Cell, int> dustCells = null)
         {
             Cols = cols;
             Rows = rows;
@@ -168,6 +182,8 @@ namespace MarsKod.Dunya
             rocks = new HashSet<Cell>(rockCells ?? Array.Empty<Cell>());
             crystals = new HashSet<Cell>(crystalCells ?? Array.Empty<Cell>());
             panels = panelCells == null ? new Dictionary<Cell, int>() : new Dictionary<Cell, int>(panelCells);
+            dust = dustCells == null ? new Dictionary<Cell, int>() : new Dictionary<Cell, int>(dustCells);
+            dustTotal = new Dictionary<Cell, int>(dust);
             Target = target;
             allowed = commands == null ? null : new HashSet<string>(commands);
         }
@@ -177,6 +193,9 @@ namespace MarsKod.Dunya
         public bool RockAt(Cell c) => rocks.Contains(c);
 
         public bool CrystalAt(Cell c) => crystals.Contains(c);
+
+        /// <summary>Karede henüz dağılmamış toz bulutu var mı</summary>
+        public bool DustAt(Cell c) => dust.TryGetValue(c, out int left) && left > 0;
 
         /// <summary>Karedeki panelin gücü; panel yoksa (ya da kırık panelin parçası toplandıysa) 0</summary>
         public int PanelPowerAt(Cell c) => panels.TryGetValue(c, out int power) ? power : 0;
@@ -191,6 +210,12 @@ namespace MarsKod.Dunya
 
         public void Move(Direction d)
         {
+            if (DustAt(Robot))
+            {
+                Events.Add(new Blocked { At = Robot, Direction = d, ByDust = true });
+                throw new GameRuleStop("Tozda yol görünmüyor",
+                    "Robot toz bulutunun içinde, önünü göremediği için yürümedi. Bu bir oyun kuralı, Python hatası değil: toz geçene kadar beklemelisin. Tozun ne kadar süreceğini bilemezsin; while dust_here(): ile toz varken wait() de.");
+            }
             var to = Robot.Step(d);
             if (!Inside(to))
             {
@@ -250,6 +275,28 @@ namespace MarsKod.Dunya
             bool blocked = !Inside(to) || RockAt(to);
             Events.Add(new Scanned { At = to, Found = blocked });
             return blocked;
+        }
+
+        /// <summary>Bulunduğu karede toz bulutu var mı? Yalnızca bakar.</summary>
+        public bool DustHere()
+        {
+            bool found = DustAt(Robot);
+            Events.Add(new Scanned { At = Robot, Found = found });
+            return found;
+        }
+
+        /// <summary>Toz bulutunun içinde bir tur bekler; bulut incelir. Toz yoksa robot durur (oyun kuralı: boşuna beklenmez).</summary>
+        public void Wait()
+        {
+            if (!DustAt(Robot))
+            {
+                Events.Add(new Rejected { At = Robot });
+                throw new GameRuleStop("Beklenecek toz yok",
+                    "Robotun durduğu karede toz yok, beklemek pili boşa harcar; robot bu yüzden durdu. Bu bir oyun kuralı, Python hatası değil: tozun ne kadar süreceğini bilemezsin, o yüzden sayarak değil sorarak bekle: while dust_here(): altında wait().");
+            }
+            int left = dust[Robot] - 1;
+            dust[Robot] = left;
+            Events.Add(new Waited { At = Robot, Left = left, Total = dustTotal[Robot] });
         }
 
         /// <summary>Bulunduğu karedeki panelin gücü (0-100; panel yoksa 0). Değiştirmez, yalnızca ölçer.</summary>
@@ -330,6 +377,21 @@ namespace MarsKod.Dunya
                     NoKeywords("repair", kwargs);
                     if (args.Count != 0) throw Values.PyError("TypeError", "repair() takes no arguments (" + args.Count + " given)");
                     Repair();
+                    return null;
+                }),
+                ["dust_here"] = new PyBuiltin("dust_here", (args, kwargs) =>
+                {
+                    Unlocked("dust_here");
+                    NoKeywords("dust_here", kwargs);
+                    if (args.Count != 0) throw Values.PyError("TypeError", "dust_here() takes no arguments (" + args.Count + " given)");
+                    return DustHere();
+                }),
+                ["wait"] = new PyBuiltin("wait", (args, kwargs) =>
+                {
+                    Unlocked("wait");
+                    NoKeywords("wait", kwargs);
+                    if (args.Count != 0) throw Values.PyError("TypeError", "wait() takes no arguments (" + args.Count + " given)");
+                    Wait();
                     return null;
                 }),
             };

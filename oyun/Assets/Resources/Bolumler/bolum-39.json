@@ -1,0 +1,53 @@
+{
+  "numara": 39,
+  "baslik": "Basamaklar",
+  "etiket": "ÖDEV",
+  "gorev": "4 pusula parçası topla",
+  "giris": "Sol 1.077 · Basamak basamak: her turda iki adım.",
+  "bitis": "7/10 parça. Son parçalar tepede.",
+  "harita": [
+    ". . . . K P",
+    ". . . K . .",
+    ". . K Z P .",
+    ". K P . . .",
+    "K . . . . .",
+    "R P . . . ."
+  ],
+  "toz_suresi": [2],
+  "komutlar": ["move", "collect", "rock_ahead", "dust_here", "wait"],
+  "parcalar": ["move(North)", "move(East)", "collect()", "wait()", "while not rock_ahead(East):", "while dust_here():"],
+  "konular": ["while döngüsü", "döngü sorusu turun başında", "iç içe while", "collect"],
+  "ipuclari": [
+    "Bu merdiven doğuya doğru çıkıyor: doğu, kuzey, doğu, kuzey… Parçalar basamakların ikisinde de olabilir.",
+    "Her turda iki adım at ve iki kez topla. Toz kuzey adımında giriliyor: beklemeyi oraya koy.",
+    "`while not rock_ahead(East):` içinde `move(East)`, `collect()`, `move(North)`, `while dust_here():` → `wait()`, `collect()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["while not rock_ahead(East):", "    move(East)", "    collect()", "    move(North)", "    collect()"],
+      "aciklama": "Toz unutulmuş: robot bulutun içinde yürümeye çalışır ve durur."
+    },
+    {
+      "kod": ["while not rock_ahead(East):", "    move(East)", "    move(North)", "    while dust_here():", "        wait()", "    collect()"],
+      "aciklama": "Yalnızca kuzey basamaklarında topluyor: doğu basamağındaki parçalar kalır."
+    },
+    {
+      "kod": ["while not rock_ahead(North):", "    move(North)", "    move(East)"],
+      "aciklama": "Yanlış soru: kuzeyde hemen kaya var, döngü hiç başlamaz."
+    }
+  ],
+  "baslangic_kodu": [
+    "while not rock_ahead(East):",
+    "    move(East)",
+    "    move(North)"
+  ],
+  "cozum": [
+    "while not rock_ahead(East):",
+    "    move(East)",
+    "    collect()",
+    "    move(North)",
+    "    while dust_here():",
+    "        wait()",
+    "    collect()"
+  ]
+}

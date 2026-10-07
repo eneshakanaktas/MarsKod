@@ -123,6 +123,42 @@
         "elif panel_power() < 50:",
         "    repair()      # çatlak"
       ]
+    },
+    {
+      "baslik": "while",
+      "kelimeler": ["while"],
+      "aciklama": "\"... olduğu sürece tekrarla\" demek. Her turdan önce soruyu yeniden sorar: cevap True ise altındaki girintili satırları bir kez daha çalıştırır, False olunca döngü biter. Kaç tur süreceğini bilmediğin işler için: toz geçene kadar bekle, yol bitene kadar yürü. for gibi sonunda iki nokta (:) ve altında girinti şart.",
+      "ornek": [
+        "while dust_here():",
+        "    wait()       # toz varken bekle"
+      ]
+    },
+    {
+      "baslik": "not",
+      "kelimeler": ["not"],
+      "aciklama": "Cevabı tersine çevirir: not True → False, not False → True. while ya da if'in sorusunu \"değilse\" diye sormak için kullanılır.",
+      "ornek": [
+        "while not rock_ahead(East):",
+        "    move(East)   # doğu açıkken yürü"
+      ]
+    },
+    {
+      "baslik": "dust_here",
+      "kelimeler": ["dust_here"],
+      "aciklama": "Robotun durduğu karede toz bulutu var mı diye bakar: varsa True, yoksa False. Robot tozun içindeyken yürüyemez; tozun ne kadar süreceğini bilemezsin, bu yüzden while ile sorulur.",
+      "ornek": [
+        "while dust_here():",
+        "    wait()"
+      ]
+    },
+    {
+      "baslik": "wait",
+      "kelimeler": ["wait"],
+      "aciklama": "Robot toz bulutunun içinde bir tur bekler, bulut biraz incelir. Toz yokken beklemek pili boşa harcar, robot durur: önce dust_here() ile sor.",
+      "ornek": [
+        "if dust_here():",
+        "    wait()       # yalnızca bir tur bekler"
+      ]
     }
   ]
 }

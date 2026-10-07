@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 // Bolgenin havasi: isik renkleri, ortam isigi ve cizimlere (zemin, arka plan, kayalar) "hangi bolgedeyiz" bilgisi.
-// Manzaranin kendisini cizimler secer (MarsSky.hlsl: PlainBackdrop / PolarSky.hlsl, Ground.shader: regolith / iceSheet).
+// Manzaranin kendisini cizimler secer (MarsSky.hlsl: PlainBackdrop / PolarSky.hlsl / CraterSky.hlsl / DuneSky.hlsl,
+// Ground.shader: regolith / iceSheet / craterPlain / duneSand).
 // Yeni bolge: buraya bir tablo + cizimlerde _Region'a gore bir dal.
 public class RegionLook
 {
@@ -36,6 +37,26 @@ public class RegionLook
         probeBase = "#4A5470", probeTop = "#46557C",
     };
 
+    // Kraterli duzluk: safak cok yakin; gok isigi lavanta, gunes duvarin ardinda pembe-turuncu, ovadakinden biraz aydinlik
+    static readonly RegionLook Crater = new RegionLook
+    {
+        shaderRegion = 2f,
+        skyLight = "#B6B2DC", skyIntensity = 0.62f,
+        sunLight = "#FF8C74", sunIntensity = 0.62f,
+        ambientSky = "#605A84", ambientEquator = "#58465A", ambientGround = "#261C26",
+        probeBase = "#584E66", probeTop = "#504C74",
+    };
+
+    // Kum tepeleri: oyundaki ilk gunduz (Bolge 3 gun dogumuyla bitti); tozlu, sicak, aydinlik
+    static readonly RegionLook Dunes = new RegionLook
+    {
+        shaderRegion = 3f,
+        skyLight = "#FFE4C6", skyIntensity = 0.92f,
+        sunLight = "#FFC48E", sunIntensity = 0.55f,
+        ambientSky = "#9C7C6E", ambientEquator = "#8A6652", ambientGround = "#3A281F",
+        probeBase = "#7A5E50", probeTop = "#8E7266",
+    };
+
     // Bolge 3 finali: oyundaki ilk gun dogumu (docs/tasarim/senaryo-bolge-03.md, kapanis). Ova safaginin aydinlanmis hali.
     static readonly RegionLook SunriseLook = new RegionLook
     {
@@ -46,7 +67,16 @@ public class RegionLook
         probeBase = "#7A6464", probeTop = "#8A7A86",
     };
 
-    public static RegionLook For(Region r) => r == Region.PolarIce ? Polar : Plain;
+    public static RegionLook For(Region r)
+    {
+        switch (r)
+        {
+            case Region.PolarIce: return Polar;
+            case Region.CraterField: return Crater;
+            case Region.Dunes: return Dunes;
+            default: return Plain;
+        }
+    }
 
     public void Apply(Light sky, Light sun) => Blend(this, this, 0f, sky, sun);
 
@@ -68,6 +98,8 @@ public class RegionLook
         Shader.SetGlobalVector("_DawnDir", sun.transform.forward);
         Shader.SetGlobalVector("_DawnColor", sun.color.linear * sun.intensity);
         Shader.SetGlobalFloat("_Region", a.shaderRegion);
+        // kraterli duzlukte gunes duvarin ustunden yukselir (CraterSky.hlsl); baska gecislerde 0
+        Shader.SetGlobalFloat("_Sunrise", b == SunriseLook ? t : 0f);
 
         // Yumusak ortam isigi: ustten serin gokyuzu, yanlardan bolgenin rengi
         RenderSettings.ambientMode = AmbientMode.Trilight;

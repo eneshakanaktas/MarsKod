@@ -1,7 +1,10 @@
 {
   "numara": 42,
   "baslik": "Toplam",
+  "etiket": "ÖDEV",
   "gorev": "Toplamı bildir",
+  "giris": "Sol 1.078 · Her makarayı toplama ekle: toplam += ...",
+  "bitis": "Toplam kablo: 285 m. Anten için yetmez.",
   "harita": [
     ". . . . . .",
     ". . . . . .",

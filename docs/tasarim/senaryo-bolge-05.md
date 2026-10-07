@@ -1,9 +1,9 @@
 # Senaryo — Bölge 5: Anten tepesi (Bölüm 41-50)
 
-> **Taslak 0 — 2026-10-07 gece yarısı (Claude, Ragıp'ın onayı bekleniyor).** Dayandığı belgeler: `senaryo-perde-1.md` (Bölge 5 + Bölüm 50 finali), `hikaye-kitabi.md`, `senaryo-bolge-04.md` (biçim, sol sayıları).
-> Bulmacalar bugün yapıldı ve değişmez (`bolum-41..50.json`); bu belge yalnızca hikâye katmanını anlatır. **Henüz oyuna hiçbir şey konmadı.** Aşağıdaki "Öneriler" Ragıp'ın kararını bekliyor; onaylanınca plan 2. parçası (oyuna koyma + Bölüm 50 kapanışı) yapılır.
+> **Taslak 1 — 2026-10-08 (Ragıp onayladı; Taslak 0: 2026-10-07 gece yarısı, Claude).** Dayandığı belgeler: `senaryo-perde-1.md` (Bölge 5 + Bölüm 50 finali), `hikaye-kitabi.md`, `senaryo-bolge-04.md` (biçim, sol sayıları).
+> Bulmacalar 2026-10-07'de yapıldı ve değişmez (`bolum-41..50.json`; yalnızca Bölüm 47'nin makara uzunlukları öneri 3 için değişti); bu belge yalnızca hikâye katmanını anlatır.
 
-## Öneriler (Ragıp karar verecek)
+## Öneriler — Ragıp'ın kararları (2026-10-08): yedisi de onaylandı
 
 1. **Rapor = antenin kurulum bilgisayarı soruyor.** `report()` ile gönderilen sayıyı okul programı değil, devrik antenin kendi kurulum bilgisayarı ister ("kaç makara, kaç metre kablo?"). Doğru sayı gelince antenin dibindeki **durum ışığı bir kez yeşil yanar**. Neden: bulmacadaki yeni komuta hikâyede bir yer verir; Bölüm 50 finalinde Kıvılcım'ın anten ışığını **iki kez** yakması (motif) bu tek yanışın karşılığı olur.
 2. **Anten bölüm bölüm kalkar** (perdedeki gibi): 41-45 devrik (çanağı kuma dönük), 46 ayakları doğrulur (yarı kalkık), 47 çanak yerine oturur, 48 kablolar bağlanır (ışıklar sırayla yanar), 49 çanak açılır ve gökyüzüne döner, 50 tam güç. Anten alanın arkasında, her bölümde biraz daha yakın.
@@ -118,6 +118,17 @@ Biçim: **Başlık** · görev · **Program (giriş / bitiş)** · **Sahnede**. 
 - Ece kim; çizimdeki küçük çöp adam mı, kurdele onun mu?
 - "Okları takip et": direkler mi, başka oklar mı?
 
+## Oyuna konanlar (2026-10-08, Ragıp + Claude)
+
+Aşağıdaki "Oyuna yapılacaklar" listesinin hepsi yapıldı. Uygularken değişenler:
+- **Anten alanın sol arkasında.** 41'de uzakta ve küçük, 42'de biraz yakın, 43'ten sonra alanın hemen arkasında ve dev (`AntennaTraces.cs`, model `BigAntenna.cs`). Her bölüm **bitince** anten bir sonraki aşamaya kalkar, bitiş metniyle aynı anda: 46 sonu ayaklar doğrulur (yarı kalkık), 47 sonu direk dikilir + çanak yerine oturur, 48 sonu ana kablo + lambalar sırayla yanıp söner (güç yok), 49 sonu çanak gökyüzüne döner. Bir sonraki bölüm bu hâliyle başlar.
+- **Bölüm 44:** çanta robotun başladığı yerin yanında değil, antenin dibinde (alanın yanları telefon ekranında görünmüyor).
+- **Bölüm 50 bitişi** iki adım: önce "Toplam kablo: 340 m. Anten tam güce geçiyor…", anten tam güce gelince "Ödev 50 tamamlandı! Bir dosya geldi: ogretmene.ses".
+- **"Koloninin ışıkları titrer":** Bölge 5'in arka planında henüz koloni yok; şimdilik sahnenin ışıkları bir an titrer. Bölge 5 görünüşü (plan parça 3) yapılınca arka plandaki koloni ışıklarına bağlanabilir.
+- **Kapanış sırası:** robot antene döner, başını kaldırır; lambalar alttan üste yanar, durum ışığı yeşil kalır, ışıklar titrer; dosya satırı; ekran kararır + hışırtı; kayıt satır satır (ses dalgası yalnızca satır "söylenirken" kıpırdar; ekrana dokununca sonraki satır hemen gelir, sahne atlanamaz); sessizlik; ekran açılır: robot antenin dibinde, sırtı oyuncuya (kurdelesi görünür), gökyüzüne bakıyor; başının üstünde "BKM-7" silinip "KIVILCIM" yazılır; üstte "ÖDEV 50" silinip "BÖLGE 5 · ANTEN TEPESİ" yazılır (XP satırları kalkar, büyük başlık "Tamamlandı!" kalır); "Ödev modu kapatıldı."; robotun ve antenin ışığı iki kez birlikte yanıp söner (iki kısa bip).
+- Bölüm listesi artık açılınca oynanan bölüme kayar (50 bölümde kilitli kart görünsün diye).
+- **Açık soru (yeni):** `sinav-50` sınavı şu an hiç çıkmıyor (sınav "Sonraki bölüm"e basınca açılır, 51 yok). 51 gelince "Ödev modu kapatıldı."dan sonra "ödev sınavı" çıkması tuhaf olur; sınav finalden önceye mi alınsın, kaldırılsın mı, yoksa ad/biçim mi değişsin?
+
 ## Oyuna yapılacaklar (onaydan sonra)
 
 1. **Bölüm dosyaları 41-50:** `etiket: "ÖDEV"`, `giris`/`bitis` (yukarıda). Öneri 3 onaylanırsa Bölüm 47 `makara_uzunlugu` → `[10, 60, 80]` (dosyada okuma sırası kuzeyden başlar, robot ise güneyden yürür: ilk ölçtüğü en güneydeki 80, sonra 60, sonra 10).
@@ -128,11 +139,11 @@ Biçim: **Başlık** · görev · **Program (giriş / bitiş)** · **Sahnede**. 
 6. **Bölüm 50 kapanışı (`Oyun.ClosingSceneBolge5`):** yukarıdaki 6 adım; hışırtı için `Sound.Static` zaten var. Kayıt metni tam ekran, satır satır; ses dalgası simgesi.
 7. **Arayüz değişimi kalıcı:** Bölüm 50 bitince "ÖDEV" etiketleri (1-50 tekrar oynanırken bile mi? → açık soru 2) ve programın neşeli metinleri kalkar.
 
-## Açık sorular (Ragıp)
+## Açık sorular — Ragıp'ın kararları (2026-10-08): üçü de önerildiği gibi
 
-1. **"BKM-7" ekranda hiçbir yerde yazmıyor** (yalnızca ilk açılış sahnesinde "Robot bulundu: BKM-7"). "BKM-7 silinir, KIVILCIM yazılır" anı için bir yer gerekli. Önerim: kapanışta robotun başının üstünde küçük bir ad etiketi belirir ("BKM-7"), harfleri silinip "KIVILCIM" yazılır, sonra söner; ondan sonra başlıkta "KIVILCIM" görünmez, ad yalnızca o anda yazılır. Alternatif: bölüm başlığının altında kalıcı küçük bir ad satırı.
-2. Bölüm 50'den sonra 1-50 tekrar oynanırsa "ÖDEV" etiketleri ve programın neşeli metinleri yine görünsün mü? Önerim: **evet** (oyuncu geçmişe dönüyor; o zamanlar ödevdi). Yalnızca 51+ yeni arayüzde.
-3. Defne'nin kaydı: gerçek ses mi, yalnızca yazı mı? (ILERLEME'deki karar: yapay zekâ gerçekçi bir ses verirse ses; lisans kontrolü.) İlk sürüm yalnızca yazı + ses dalgası olabilir, ses sonra eklenir.
+1. **Karar: robotun başında.** **"BKM-7" ekranda hiçbir yerde yazmıyor** (yalnızca ilk açılış sahnesinde "Robot bulundu: BKM-7"). "BKM-7 silinir, KIVILCIM yazılır" anı için bir yer gerekli. Önerim: kapanışta robotun başının üstünde küçük bir ad etiketi belirir ("BKM-7"), harfleri silinip "KIVILCIM" yazılır, sonra söner; ondan sonra başlıkta "KIVILCIM" görünmez, ad yalnızca o anda yazılır. Alternatif: bölüm başlığının altında kalıcı küçük bir ad satırı.
+2. **Karar: evet, görünsün.** Bölüm 50'den sonra 1-50 tekrar oynanırsa "ÖDEV" etiketleri ve programın neşeli metinleri yine görünsün mü? Önerim: **evet** (oyuncu geçmişe dönüyor; o zamanlar ödevdi). Yalnızca 51+ yeni arayüzde.
+3. **Karar: şimdilik yalnızca yazı + ses dalgası simgesi;** gerçek ses Ragıp dinleyip seçince eklenir. Defne'nin kaydı: gerçek ses mi, yalnızca yazı mı? (ILERLEME'deki karar: yapay zekâ gerçekçi bir ses verirse ses; lisans kontrolü.) İlk sürüm yalnızca yazı + ses dalgası olabilir, ses sonra eklenir.
 
 ## Hikâye kitabıyla çelişki kontrolü (taslak)
 

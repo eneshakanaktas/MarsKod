@@ -1,7 +1,10 @@
 {
   "numara": 48,
   "baslik": "En uzun",
+  "etiket": "ÖDEV",
   "gorev": "En uzunu bildir",
+  "giris": "Sol 1.081 · Ana kablo tek parça olmalı: en uzunu bul.",
+  "bitis": "Ana kablo: 95 m. Bağlantılar kuruldu.",
   "harita": [
     ". . . . . .",
     ". . . . . .",

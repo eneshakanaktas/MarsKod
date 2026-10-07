@@ -114,6 +114,13 @@ public abstract class Robot : MonoBehaviour
     // Kurdelenin ucup gelecegi nokta (dunya konumu): varsayilan robotun ustu
     public virtual Vector3 RibbonPoint => transform.position + Vector3.up * 0.5f;
 
+    // Basinin tepesi (dunya konumu): Bolum 50'deki ad etiketi bunun ustunde durur
+    public virtual Vector3 HeadTop => transform.position + Vector3.up * 0.8f;
+    // Bolum 50 kapanisi: sakinlesip gokyuzune bakar; Signal: anten isigini art arda yakip sondurur (selam).
+    // Gorunus desteklemiyorsa bir sey yapmaz.
+    public virtual IEnumerator LookUp() { yield break; }
+    public virtual IEnumerator Signal(int times) { yield break; }
+
     // Kod hatayla durdu ya da gorev bitmedi: kisa bir saskinlik tepkisi (gorunum isterse; varsayilan yok)
     protected virtual IEnumerator Puzzled() { yield break; }
 

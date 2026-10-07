@@ -1,7 +1,10 @@
 {
   "numara": 49,
   "baslik": "Tozlu yol",
+  "etiket": "ÖDEV",
   "gorev": "Tozlu yolda topla",
+  "giris": "Sol 1.082 · Son kablolar tozun ardında.",
+  "bitis": "Anten açılıyor. Büyük veri bekleniyor: 1 dosya (ses). Tahmini süre: 4 dk. Ödevle ilgisi: bilinmiyor.",
   "harita": [
     ". . . . . .",
     ". . . . . .",

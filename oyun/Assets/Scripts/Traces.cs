@@ -3,7 +3,7 @@ using UnityEngine;
 
 // Hikaye izleri: bazi bolumlerde alanin kenarinda duran kucuk sus nesneleri (docs/tasarim/senaryo-bolge-01.md, -02.md).
 // Bulmacayi etkilemezler, yalnizca merak uyandirmak icin dururlar. Bolge 2'ninkiler PolarTraces'te, Bolge 3'unkuler CraterTraces'te,
-// Bolge 4'unkuler DuneTraces'te.
+// Bolge 4'unkuler DuneTraces'te, Bolge 5'inkiler AntennaTraces'te.
 public static class Traces
 {
     // Arka plandaki izler (MarsSky.hlsl, colonyTraces): kolonide acik kapi (Bolum 6), sera kubbesinde kuru saksi (Bolum 7).
@@ -22,6 +22,8 @@ public static class Traces
 
     // Bolum 40 kapanisinin nesneleri (yon bulma diregi, kurdele, anten); baska bolumlerde null
     public static DuneFinale Dune { get; private set; }
+    // Bolge 5'in dev anteni (Bolum 41-50); baska bolumlerde null
+    public static BigAntenna Antenna { get; private set; }
 
     // targetPos: bolumde hedef kare varsa dunya konumu (10. bolumdeki telsiz diregi, 40. bolumdeki son isaret diregi icin).
     public static void Build(int levelNumber, Transform parent, Vector2 areaHalf, Vector3? targetPos = null)
@@ -29,6 +31,7 @@ public static class Traces
         rover = PolarTraces.Build(levelNumber, parent, areaHalf);
         CraterTraces.Build(levelNumber, parent, areaHalf);
         Dune = DuneTraces.Build(levelNumber, parent, areaHalf, targetPos);
+        Antenna = AntennaTraces.Build(levelNumber, parent, areaHalf);
         tank = levelNumber == PolarTraces.TankLevel ? WaterTank.Create(parent, PolarTraces.TankPosition(areaHalf)) : null;
         ResetBackdrop(levelNumber);
         switch (levelNumber)
@@ -50,6 +53,7 @@ public static class Traces
         if (rover != null) rover.Restore();
         if (tank != null) tank.Restore();
         if (Dune != null) Dune.Restore();
+        if (Antenna != null) Antenna.Restore();
     }
 
     // Bolum 17: her toplanan buz tanki biraz daha doldurur
@@ -66,8 +70,10 @@ public static class Traces
     }
 
     // Bolum bitti: Bolum 7'de seraya enerji gelir, kubbenin isigi yanar ve camin ardinda kuru saksi gorunur.
+    // Bolge 5'te anten bir sonraki asamaya kalkar (Bolum 50'de kapanis sahnesi tam guce getirir).
     public static void LevelDone(int levelNumber)
     {
+        if (Antenna != null) Antenna.Advance(AntennaTraces.StageAfter(levelNumber));
         if (levelNumber == GreenhouseLevel) Shader.SetGlobalFloat(GreenhouseId, Time.timeSinceLevelLoad); // cizimdeki _Time.y ile ayni saat
         if (levelNumber == PolarTraces.RoverStandLevel && rover != null) rover.StandUp();
     }
@@ -117,7 +123,8 @@ public static class Traces
     public static string[] TransitionLines(int levelNumber) =>
         levelNumber == PolarTraces.FirstLevel ? PolarTraces.TransitionLines :
         levelNumber == CraterTraces.FirstLevel ? CraterTraces.TransitionLines :
-        levelNumber == DuneTraces.FirstLevel ? DuneTraces.TransitionLines : null;
+        levelNumber == DuneTraces.FirstLevel ? DuneTraces.TransitionLines :
+        levelNumber == AntennaTraces.FirstLevel ? AntennaTraces.TransitionLines : null;
 
     // Bolum 8 (ve Bolum 21-22): firtinanin izi: devrilmis gunes paneli, kuma gomulu kablo, kayalarin yanina yigilmis kum.
     public static void StormDebris(Transform parent, Vector3 p)

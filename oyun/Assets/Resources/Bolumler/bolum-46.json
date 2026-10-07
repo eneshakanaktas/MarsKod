@@ -1,7 +1,10 @@
 {
   "numara": 46,
   "baslik": "Kalan",
+  "etiket": "ÖDEV",
   "gorev": "Eksiği bildir",
+  "giris": "Sol 1.080 · -= çıkarır. Anten 300 m istiyor.",
+  "bitis": "Eksik: 60 m. Antenin ayakları doğrultuldu.",
   "harita": [
     ". . . . . .",
     ". . . . . .",

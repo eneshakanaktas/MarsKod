@@ -1,7 +1,8 @@
 using UnityEngine;
 
-// Robotun gogsundeki silik cocuk cizimi (hikaye: Ece'nin cizimi; anlami Bolum 200'de cikar): bir cicek ve
-// yaninda el ele bir kiz ile kucuk bir robot. Mum boya gibi, yer yer silinmis cizgiler. Kodla kucuk bir dokuya cizilir.
+// Ece'nin cizimleri, mum boya gibi, yer yer silinmis cizgilerle kodla kucuk bir dokuya cizilir:
+// - Robotun gogsundeki silik cizim (anlami Bolum 200'de cikar): bir cicek ve yaninda el ele bir kiz ile kucuk bir robot.
+// - Alet cantasinin kapagina bantli cizim (Bolum 44, senaryo-bolge-05.md): anten ve el sallayan iki kisi, biri buyuk biri kucuk.
 public static class ChildDrawing
 {
     const int W = 128, H = 96;
@@ -15,10 +16,8 @@ public static class ChildDrawing
     // background: gogus plakasinin rengi (cizim onun ustune solgun karisir)
     public static Texture2D Create(Color background)
     {
-        var tex = new Texture2D(W, H, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
-        var px = new Color[W * H];
         var rng = new System.Random(5);
-        for (int i = 0; i < px.Length; i++) px[i] = background * (0.97f + 0.03f * (float)rng.NextDouble());
+        var px = Paper(background, rng);
 
         // cicek (solda): sap, iki yaprak, bes tac yaprak, sari orta
         Line(px, rng, 30, 12, 30, 52, Green);
@@ -46,6 +45,59 @@ public static class ChildDrawing
         Line(px, rng, 98, 22, 98, 30, Blue); Line(px, rng, 112, 22, 112, 30, Blue);
         Line(px, rng, 78, 55, 96, 46, Brown);   // kizin eli robotun elinde
 
+        return ToTexture(px);
+    }
+
+    // Alet cantasinin kapagindaki cizim: solda anten (cubuk, iki ayak, yukari bakan canak), sagda el ele iki copten adam;
+    // buyuk olan (anne) bir elini sallar, kucuk olan (kiz, Ece'nin turkuazi) obur elini. Kosede gunes.
+    public static Texture2D CreateAntenna(Color paper)
+    {
+        var rng = new System.Random(11);
+        var px = Paper(paper, rng);
+        var teal = CraterTraces.EceColor;
+
+        Line(px, rng, 4, 10, 124, 12, Green);   // yer
+        // anten
+        Line(px, rng, 28, 12, 28, 62, Blue);
+        Line(px, rng, 28, 36, 16, 12, Blue); Line(px, rng, 28, 36, 40, 12, Blue);
+        for (int k = 0; k <= 8; k++)
+        {
+            float a = Mathf.PI * (1.05f + k * 0.9f / 8f);   // asagi kavisli canak
+            Dot(px, rng, 28 + Mathf.Cos(a) * 14f, 74 + Mathf.Sin(a) * 9f, Blue);
+        }
+        Line(px, rng, 14, 74, 42, 74, Blue);
+        Line(px, rng, 28, 66, 28, 80, Blue); Circle(px, rng, 28, 82, 2f, Yellow);
+
+        // anne: bas, govde, bacaklar; sol kol sallanir, sag kol kizin elinde
+        Circle(px, rng, 70, 66, 7f, Brown);
+        Line(px, rng, 70, 59, 70, 34, Brown);
+        Line(px, rng, 70, 34, 62, 12, Brown); Line(px, rng, 70, 34, 78, 12, Brown);
+        Line(px, rng, 70, 52, 57, 68, Brown); Line(px, rng, 57, 68, 54, 74, Brown);
+        Line(px, rng, 70, 50, 86, 40, Brown);
+
+        // kiz: kucuk bas, iki orgu, ucgen etek; sol kol annenin elinde, sag kol sallanir
+        Circle(px, rng, 96, 46, 5.5f, teal);
+        Line(px, rng, 91, 47, 88, 38, teal); Line(px, rng, 101, 47, 104, 38, teal);
+        Line(px, rng, 96, 40, 90, 24, teal); Line(px, rng, 96, 40, 102, 24, teal); Line(px, rng, 90, 24, 102, 24, teal);
+        Line(px, rng, 93, 24, 93, 12, teal); Line(px, rng, 99, 24, 99, 12, teal);
+        Line(px, rng, 94, 34, 86, 40, teal);
+        Line(px, rng, 98, 34, 110, 48, teal); Line(px, rng, 110, 48, 112, 54, teal);
+
+        Circle(px, rng, 114, 84, 6f, Yellow);
+        return ToTexture(px);
+    }
+
+    // Kagit: zeminin rengi, hafif dokulu
+    static Color[] Paper(Color background, System.Random rng)
+    {
+        var px = new Color[W * H];
+        for (int i = 0; i < px.Length; i++) px[i] = background * (0.97f + 0.03f * (float)rng.NextDouble());
+        return px;
+    }
+
+    static Texture2D ToTexture(Color[] px)
+    {
+        var tex = new Texture2D(W, H, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
         tex.SetPixels(px);
         tex.Apply();
         return tex;

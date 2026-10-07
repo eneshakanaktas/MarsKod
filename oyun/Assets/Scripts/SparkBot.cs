@@ -27,6 +27,7 @@ public class SparkBot : Robot
     readonly Transform[] shoulders = new Transform[2], elbows = new Transform[2];
     Material eyeMat, thrusterMat, beaconMat;
     Color eyeColor;
+    Vector3 arms = ArmRest;   // kollarin su anki durusu (SetArms)
     float headYaw, headYawTarget, nod, tilt, lean, lift, beaconBoost;
     bool posing;   // kutlama/omuz silkme: bos durus hareketleri durur
 
@@ -144,6 +145,7 @@ public class SparkBot : Robot
     // pose: (one kalkma, yana acilma, dirsek bukumu); iki kol ayna gibi
     void SetArms(Vector3 pose)
     {
+        arms = pose;
         for (int side = 0; side < 2; side++)
         {
             float sx = side == 0 ? -1f : 1f;
@@ -238,6 +240,34 @@ public class SparkBot : Robot
             });
         lift = 0f;
         beaconBoost = 0f;
+    }
+
+    public override Vector3 HeadTop => head.position + Vector3.up * 0.25f * transform.lossyScale.y;
+
+    // Kutlamadan sonra kollar iner, gozler sakinlesir, basi yavasca gokyuzune kalkar ve orada kalir.
+    public override IEnumerator LookUp()
+    {
+        GlanceAtCamera(false);
+        posing = true;
+        SetEyes(EyeCalm, 0f);
+        var from = arms;
+        yield return Tween.Run(1.4f, t =>
+        {
+            float e = Tween.InOutCubic(t);
+            SetArms(Vector3.Lerp(from, ArmRest, e));
+            nod = -30f * e;
+        });
+    }
+
+    // Basindaki anten isigi art arda parlayip soner (selam).
+    public override IEnumerator Signal(int times)
+    {
+        for (int i = 0; i < times; i++)
+        {
+            yield return Tween.Run(0.34f, t => beaconBoost = 1.6f * Mathf.Sin(t * Mathf.PI));
+            beaconBoost = 0f;
+            yield return Tween.Wait(0.18f);
+        }
     }
 
     // Kod hatayla durdu ya da gorev bitmedi: basini yana egip omuz silker ("bu nasil olacak?")

@@ -1,7 +1,10 @@
 {
   "numara": 50,
   "baslik": "Anten",
+  "etiket": "ÖDEV",
   "gorev": "Topla, bildir, git",
+  "giris": "Sol 1.082 · Son ödev! Kabloyu topla, antene git.",
+  "bitis": "Toplam kablo: 340 m. Anten tam güce geçiyor…",
   "harita": [
     ". . . . . .",
     ". . . . . .",

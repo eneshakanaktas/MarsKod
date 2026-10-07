@@ -1,7 +1,10 @@
 {
   "numara": 44,
   "baslik": "Geri dönüş",
+  "etiket": "ÖDEV",
   "gorev": "Makarayı al, dön",
+  "giris": "Sol 1.079 · Kaç adım gittiysen, o kadar dön: range(adim).",
+  "bitis": "Çantanın kapağında bir çizim: anten ve el sallayan iki kişi. Ödevle ilgisi yok.",
   "harita": [
     ". . . . . .",
     ". . . . . .",

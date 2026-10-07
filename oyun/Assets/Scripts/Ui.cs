@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -21,6 +22,14 @@ public static class Ui
     {
         e.style.marginLeft = 0; e.style.marginRight = 0; e.style.marginTop = 0; e.style.marginBottom = 0;
         e.style.paddingLeft = 0; e.style.paddingRight = 0; e.style.paddingTop = 0; e.style.paddingBottom = 0;
+    }
+
+    // Bir ozelligin (opacity, scale...) degisimini yumusak gecisle yapar
+    public static void Transition(VisualElement e, string prop, float seconds, EasingMode mode = EasingMode.EaseInOut)
+    {
+        e.style.transitionProperty = new List<StylePropertyName> { new StylePropertyName(prop) };
+        e.style.transitionDuration = new List<TimeValue> { new TimeValue(seconds, TimeUnit.Second) };
+        e.style.transitionTimingFunction = new List<EasingFunction> { new EasingFunction(mode) };
     }
 
     // Tek parca yazi (dokunmayi gecirir): yazi tipi, boyut, renk

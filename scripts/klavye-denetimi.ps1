@@ -25,9 +25,9 @@ public static class Tus {
 $WM_KEYDOWN = 0x100; $WM_KEYUP = 0x101; $WM_CHAR = 0x102
 
 $oyun = Start-Process $exe -ArgumentList @("-screen-width", "450", "-screen-height", "975", "-screen-fullscreen", "0",
-    "-logFile", "`"$log`"", "-shots", "`"$Klasor`"", "-klavyedenetimi") -PassThru
+    "-logFile", "`"$log`"", "-shots", "`"$Klasor`"", "-bolum", "50", "-klavyedenetimi") -PassThru
 
-# Oyun once butun bolumleri cozup goruntuler (bolum sayisiyla uzar), sonra koda tiklayip hazir dosyasini yazar
+# Oyun once bolum goruntulerini alir (-bolum 50: yalnizca Bolum 50; hepsi ~20 dk surer), sonra koda tiklayip hazir dosyasini yazar
 $son = (Get-Date).AddMinutes(10)
 while (-not (Test-Path $hazir)) {
     if ((Get-Date) -gt $son -or $oyun.HasExited) { throw "Oyun klavye denetimine gelmedi" }

@@ -52,6 +52,25 @@ public class Oyun : MonoBehaviour
         "Yapı tarandı: anten (devrik).",
         "Sonraki ödev: anten tepesi.",
     };
+    // Bolge 5 finali = Perde 1 finali: docs/tasarim/senaryo-bolge-05.md "Kapanis sahnesi". Anten tam guce gecer,
+    // Defne'nin kaydi gelir (metin senaryo-perde-1.md), arayuz degisir: robotun adi, baslik, programin son satiri.
+    const int Bolge5SonBolum = AntennaTraces.LastLevel;
+    const string Bolge5DosyaSatiri = "Ödev 50 tamamlandı! Bir dosya geldi: ogretmene.ses";
+    const string Bolge5Dosya = "ogretmene.ses";
+    static readonly string[] Bolge5Kayit =
+    {
+        "Bu bir ödev değil.",
+        "Adım Defne Aras. Bu koloninin komutanıyım.",
+        "Bunu duyuyorsan, onu yeniden öğretecek kişi sensin.",
+        "Bir güneş fırtınası geliyor. Biz yeraltına iniyoruz, hepimiz. Uyuyacağız.",
+        "Fırtına robotumuzun belleğini silecek. Ona her şeyi baştan öğretmen gerekecek.",
+        "Kızım Ece ona Kıvılcım der. Ona iyi bak.",
+        "Yolu işaretledik. Okları takip et.",
+        "Seni tanımıyorum. Ama sana güveniyorum. Lütfen… ona öğret.",
+    };
+    const string Bolge5EskiAd = "BKM-7", Bolge5YeniAd = "KIVILCIM";
+    const string Bolge5Baslik = "BÖLGE 5  ·  ANTEN TEPESİ";
+    const string Bolge5SonSatir = "Ödev modu kapatıldı.";
 
 
     Camera cam;
@@ -70,6 +89,8 @@ public class Oyun : MonoBehaviour
     Light skyLight, sunLight;
     Target target;
     Transform levelRoot;
+    // Bolum 50 kapanisinda robotun ustundeki ad etiketi (yeniden denemede kaldirilir)
+    NameTag nameTag;
     Material ground;
     Hud hud;
     // Bolumler (numara sirasiyla) ve oynanan bolum
@@ -275,8 +296,9 @@ public class Oyun : MonoBehaviour
             hud.ShowOpening(() => { });
         }
 
+        bool finale = System.Array.IndexOf(a, "-final") >= 0;   // yalnizca Bolum 50 kapanisinin goruntuleri (~2 dk)
         for (int i = 0; i < a.Length - 1; i++)
-            if (a[i] == "-shots") { shotsMode = true; LoadLevel(levelIndex); StartCoroutine(Shots(a[i + 1])); }
+            if (a[i] == "-shots") { shotsMode = true; LoadLevel(levelIndex); StartCoroutine(finale ? FinaleShots(a[i + 1]) : Shots(a[i + 1])); }
     }
 
     // Arka plan animasyonlari (ayar, bolum secme ekraninda): kapaliyken gokyuzu duraganlasir, telefon daha az yorulur
@@ -623,12 +645,14 @@ public class Oyun : MonoBehaviour
     // GECICI TEST ANAHTARI (Ragip, 2026-10-03): ekip denemesi icin butun bolumler acik.
     // Play Store'a cikmadan once false yapilmali (ILERLEME.md'de not var).
     const bool TestAllLevelsOpen = true;
-    bool LocksOn => !shotsMode && !TestAllLevelsOpen;   // -shots modunda da kilit yok
+    bool LocksOn => forceLocks || (!shotsMode && !TestAllLevelsOpen);   // -shots modunda da kilit yok
+    bool forceLocks;   // yalnizca goruntu denetimi: kilitli kartlar gercekte nasil gorunur
 
     List<LevelSelect.Entry> LevelEntries()
     {
         var entries = new List<LevelSelect.Entry>();
         bool prevSolved = true;
+        bool noteFound = xp.LevelTotal(AntennaTraces.LockedNoteLevel) > 0;
         foreach (var l in levels)
         {
             int here = xp.LevelTotal(l.Number);
@@ -636,6 +660,7 @@ public class Oyun : MonoBehaviour
             {
                 Number = l.Number, Title = l.Title, Goal = l.Goal,
                 Xp = here, Current = l == level, Locked = LocksOn && !prevSolved && l != level,
+                LockedTitle = AntennaTraces.ShowsLockedNote(l.Number, noteFound) ? AntennaTraces.LockedNote : null,
             });
             prevSolved = here > 0;
         }
@@ -695,6 +720,7 @@ public class Oyun : MonoBehaviour
         colonyPower.Begin(PowerLampCount);
         Traces.ResetBackdrop(level.Number);
         RegionLook.For(Regions.Of(level.Number)).Apply(skyLight, sunLight);   // Bolge 3 finalindeki gun dogumunu geri alir
+        if (nameTag != null) Destroy(nameTag.gameObject);
         if (target != null) target.Restore();
         hud.ResetView();
     }
@@ -772,6 +798,7 @@ public class Oyun : MonoBehaviour
             if (level.Number == Bolge2SonBolum) yield return ClosingSceneBolge2();
             if (level.Number == Bolge3SonBolum) yield return ClosingSceneBolge3();
             if (level.Number == Bolge4SonBolum) yield return ClosingSceneBolge4();
+            if (level.Number == Bolge5SonBolum) yield return ClosingSceneBolge5();
         }
         else
         {
@@ -871,6 +898,63 @@ public class Oyun : MonoBehaviour
         hud.SetOutro(Bolge4KapanisSatirlari[2]);
     }
 
+    // Bolge 5 kapanisi (Perde 1 finali, oyunun en guclu ani): anten tam guce gecer, isiklar bir an titrer, program
+    // neseyle dosyayi haber verir. Ekran kararir, hisirti, Defne'nin kaydi satir satir. Sessizlik; ekran acilinca robot
+    // antenin dibinde, gokyuzune bakiyor. Basinin ustunde "BKM-7" silinip "KIVILCIM" yazilir, ustteki "ÖDEV 50" yerine
+    // bolgenin adi gelir, programin son satiri "Ödev modu kapatıldı." Robot anten isigini iki kez yakip sondurur (selam).
+    IEnumerator ClosingSceneBolge5()
+    {
+        var antenna = Traces.Antenna;
+        if (antenna == null) yield break;
+        yield return Tween.Wait(0.5f);
+        yield return robot.TurnTo(DuneFinale.YawTowards(robot.transform.position, antenna.Foot), 0.6f);
+        robot.StartCoroutine(robot.LookUp());   // robotun kendi uzerinde: yeniden denemede ResetTo durdurur
+        yield return antenna.PowerUp();
+        yield return FlickerLights();
+        hud.SetOutro(Bolge5DosyaSatiri);
+        yield return Tween.Wait(3f);
+
+        Sound.Static();
+        hud.ShowRecording(Bolge5Dosya, Bolge5Kayit);
+        yield return Tween.Wait(1.2f);   // ekran karardi: robot antenin dibine gecer
+        var foot = new Vector3(Pos(level.Target ?? level.Robot).x, TileTop, AreaHalfZ - 0.5f);
+        yield return robot.MoveTo(foot, 0.05f);
+        yield return robot.TurnTo(DuneFinale.YawTowards(robot.transform.position, antenna.Foot), 0.05f);
+        while (!hud.RecordingFinished) yield return null;
+        yield return Tween.Wait(1.6f);   // sessizlik
+        Sound.Static();
+        hud.HideRecording();
+        yield return Tween.Wait(2.2f);
+
+        nameTag = NameTag.Create(levelRoot, robot);
+        var rename = nameTag.StartCoroutine(nameTag.Rename(Bolge5EskiAd, Bolge5YeniAd));
+        yield return Tween.Wait(3.2f);
+        hud.RewriteChapter(Bolge5Baslik);
+        yield return rename;
+        hud.SetOutro(Bolge5SonSatir);
+        yield return Tween.Wait(1.6f);
+        for (int i = 0; i < 2; i++)
+        {
+            Sound.Blip();
+            antenna.StartCoroutine(antenna.Greet(1));
+            yield return robot.Signal(1);
+        }
+    }
+
+    // Anten tam guce gecerken sahnenin isiklari bir an titrer (guc dalgalanmasi)
+    IEnumerator FlickerLights()
+    {
+        float sky = skyLight.intensity, sun = sunLight.intensity;
+        yield return Tween.Run(0.9f, t =>
+        {
+            float k = Mathf.PerlinNoise(t * 14f, 0.3f) < 0.5f ? 0.45f : 1f;
+            skyLight.intensity = sky * k;
+            sunLight.intensity = sun * k;
+        });
+        skyLight.intensity = sky;
+        sunLight.intensity = sun;
+    }
+
     static IEnumerator FlashAfter(SolarPanel panel, float delay)
     {
         yield return Tween.Wait(delay);
@@ -928,6 +1012,7 @@ public class Oyun : MonoBehaviour
                 break;
             case ReportSent rs:
                 if (rs.Correct) Sound.Collect();
+                if (rs.Correct && Traces.Antenna != null) Traces.Antenna.Acknowledge();   // antenin durum isigi bir kez yesil
                 StartCoroutine(PowerLabel.Show(levelRoot, Pos(rs.At), "RAPOR " + rs.Value, rs.Correct ? Mats.Hex("#7CF07A") : Mats.Hex("#FF6B5A")));
                 yield return Tween.Wait(0.7f);
                 break;
@@ -1235,13 +1320,13 @@ public class Oyun : MonoBehaviour
         // Kilit gorunumu (gercek ilerlemeden bagimsiz, yalnizca goruntu icin): sahte bos ilerlemeyle bir kez acar.
         // shotsMode'da kilit normalde kapali (bolum-bolum tarama serbest gezsin diye); burada gecici acilir.
         var xpBefore = xp;
-        shotsMode = false; xp = new Xp();
+        forceLocks = true; xp = new Xp();
         hud.ShowLevelSelect(LevelEntries());
         yield return new WaitForSeconds(0.3f);
         Cap(Path.Combine(dir, "bolum-secme-kilitli.png"));
         yield return new WaitForSeconds(0.3f);
         hud.HideLevelSelect();
-        shotsMode = true; xp = xpBefore;
+        forceLocks = false; xp = xpBefore;
 
         hud.ShowLevelSelect(LevelEntries());
         yield return new WaitForSeconds(0.5f);
@@ -1385,6 +1470,41 @@ public class Oyun : MonoBehaviour
     // ---- Kontrol icin ekran goruntusu: MarsKod.exe -shots <klasor> ----
 
     static void Cap(string path) => ScreenCapture.CaptureScreenshot(path, 2);
+
+    // Bolum 50 kapanisi (Perde 1 finali) goruntuleri: dogru cozum calisir, kapanis bitene kadar her 2 saniyede bir
+    // goruntu; once de Bolum 45 bitmisken odev listesindeki kilitli Bolum 50 karti.
+    IEnumerator FinaleShots(string dir)
+    {
+        Directory.CreateDirectory(dir);
+        yield return new WaitForSeconds(2f);
+
+        var xpBefore = xp;
+        forceLocks = true; xp = new Xp();
+        for (int n = 1; n <= 48; n++) xp.Award(n, LineKind.Dugme);
+        LoadLevel(levels.FindIndex(l => l.Number == 49));
+        hud.ShowLevelSelect(LevelEntries());
+        yield return new WaitForSeconds(0.6f);
+        Cap(Path.Combine(dir, "final-0-kilitli-kart.png"));
+        yield return new WaitForSeconds(0.3f);
+        hud.HideLevelSelect();
+        forceLocks = false; xp = xpBefore;
+
+        LoadLevel(levels.FindIndex(l => l.Number == AntennaTraces.LastLevel));
+        yield return new WaitForSeconds(1f);
+        SetCode(level.Solution);
+        yield return new WaitForSeconds(0.5f);
+        OnRun();
+        int shot = 1;
+        while (running)
+        {
+            Cap(Path.Combine(dir, "final-" + shot++.ToString("00") + ".png"));
+            yield return new WaitForSeconds(2f);
+        }
+        yield return new WaitForSeconds(1f);
+        Cap(Path.Combine(dir, "final-son.png"));
+        yield return new WaitForSeconds(0.5f);
+        Application.Quit();
+    }
 
     IEnumerator Shots(string dir)
     {

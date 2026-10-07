@@ -1,7 +1,10 @@
 {
   "numara": 47,
   "baslik": "Geri sayım",
+  "etiket": "ÖDEV",
   "gorev": "3 makara bul",
+  "giris": "Sol 1.081 · Sayaç geri de sayar: kalan -= 1.",
+  "bitis": "Son 3 makara bulundu. Çanak yerine oturdu.",
   "harita": [
     ". M H . . .",
     ". M . . . .",
@@ -11,9 +14,9 @@
     ". R . . . ."
   ],
   "makara_uzunlugu": [
-    40,
-    55,
-    35
+    10,
+    60,
+    80
   ],
   "komutlar": [
     "move",

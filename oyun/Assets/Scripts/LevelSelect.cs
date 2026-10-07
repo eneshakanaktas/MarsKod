@@ -15,6 +15,7 @@ public class LevelSelect : FullScreenPanel
         public int Xp;       // bu bolumden kazanilan toplam XP
         public bool Current; // su an oynanan bolum
         public bool Locked;  // onceki bolum bitirilmedigi icin henuz girilemez
+        public string LockedTitle; // kilitliyken "???" yerine yazilacak (hikaye: Bolum 50 "gönderen: D. Aras"); bossa "???"
     }
 
     public event Action<int> Picked; // secilen bolumun numarasi
@@ -39,8 +40,18 @@ public class LevelSelect : FullScreenPanel
                                      () => AnimationsToggled?.Invoke()));
         Content.Add(performance.Build("Performans modu", "Açıkken oyun daha akıcı, görüntü biraz sadeleşir", fMed, fSemi, ink, accent,
                                       () => PerformanceToggled?.Invoke()));
-        foreach (var e in entries) Content.Add(Row(e));
+        VisualElement current = null;
+        foreach (var e in entries)
+        {
+            var row = Row(e);
+            Content.Add(row);
+            if (e.Current) current = row;
+        }
         ShowPanel();
+        // 50 bolumluk listede oynanan bolum gorunsun: yerlesim hesaplaninca onu ekranin ust ucte birine kaydirir
+        // (altindaki bolumler, orn. kilitli siradaki, de gorunur)
+        if (current != null)
+            schedule.Execute(() => Scroll.scrollOffset = new Vector2(0f, Mathf.Max(0f, current.layout.y - Scroll.layout.height * 0.3f))).StartingIn(30);
     }
 
     public void SetAnimations(bool on) => animations.Set(on);
@@ -143,7 +154,7 @@ public class LevelSelect : FullScreenPanel
         texts.style.flexGrow = 1;
         texts.style.flexShrink = 1;
         texts.Add(Ui.Text("BÖLÜM " + e.Number, fSemi, 24, new Color(ink.r, ink.g, ink.b, 0.5f)));
-        var title = Ui.Text(e.Locked ? "???" : e.Title, fSemi, 40, ink);
+        var title = Ui.Text(e.Locked ? (string.IsNullOrEmpty(e.LockedTitle) ? "???" : e.LockedTitle) : e.Title, fSemi, 40, ink);
         title.style.whiteSpace = WhiteSpace.Normal;
         texts.Add(title);
         if (!e.Locked)

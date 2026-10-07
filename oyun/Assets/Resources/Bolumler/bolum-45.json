@@ -1,7 +1,10 @@
 {
   "numara": 45,
   "baslik": "Uzun makaralar",
+  "etiket": "ÖDEV",
   "gorev": "Uzunları say",
+  "giris": "Sol 1.080 · Ödev listesi güncellendi: 1 yeni ödev (kilitli).",
+  "bitis": "Uzun makaralar ayrıldı. Sırada küçük bir sınav var.",
   "harita": [
     ". . . . . .",
     ". . . . . .",

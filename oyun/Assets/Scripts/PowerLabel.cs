@@ -5,27 +5,12 @@ using UnityEngine;
 // Renk: 0 gri (kirik ya da panel yok), catlak turuncu, saglam yesil. Yazi her zaman kameraya bakar.
 public static class PowerLabel
 {
-    static Font font;
-
     public static IEnumerator Show(Transform parent, Vector3 localPos, int power, Color color) => Show(parent, localPos, power.ToString(), color);
 
     public static IEnumerator Show(Transform parent, Vector3 localPos, string label, Color color)
     {
-        if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        var go = new GameObject("PowerLabel");
-        go.transform.SetParent(parent, false);
-        var text = go.AddComponent<TextMesh>();
-        text.font = font;
-        text.text = label;
-        text.fontSize = 96;
-        text.characterSize = 0.055f;
-        text.fontStyle = FontStyle.Bold;
-        text.anchor = TextAnchor.MiddleCenter;
-        text.alignment = TextAlignment.Center;
-        text.color = color;
-        var renderer = go.GetComponent<MeshRenderer>();
-        renderer.sharedMaterial = font.material;
-        renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        var text = WorldText.Create(parent, label, localPos, 0.528f, color);
+        var go = text.gameObject;
 
         var cam = Camera.main;
         yield return Tween.Run(1.1f, t =>

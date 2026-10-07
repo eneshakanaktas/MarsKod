@@ -50,12 +50,14 @@ public class Hud : MonoBehaviour
     TierMenu tierMenu;
     LevelSelect levelSelect;
     OpeningScene opening;
+    RecordingScene recording;
     QuizView quiz;
     // Su an acik olan yazma paneli (klavye ya da palet), kapaliyken null
     VisualElement shownPanel;
     KeyboardTier tier = KeyboardTier.Orta;
     Label chapter, title, runText, msgTag, msgTitle, msgText, msgOriginal, xpTotalLabel, xpDoneLabel, xpNextLabel, outroLabel, introText;
     VisualElement dotsRow;
+    IVisualElementScheduledItem chapterRewrite;   // RewriteChapter suruyorsa (ResetView durdurur)
     Icon starIcon, soundIcon;
     bool soundOn = true;
     readonly List<Icon> dots = new List<Icon>();
@@ -121,6 +123,8 @@ public class Hud : MonoBehaviour
         overlay.Add(glossary);
         opening = new OpeningScene(fBold);
         overlay.Add(opening);
+        recording = new RecordingScene(fMed, fMono);
+        overlay.Add(recording);
         quiz = new QuizView(fMed, fSemi, fBold, Ink, Accent, ButtonBg, Hairline, ErrorRed, CellFill);
         overlay.Add(quiz);
 
@@ -170,7 +174,7 @@ public class Hud : MonoBehaviour
         chapter.style.letterSpacing = 6;
         title = Text("3 buz topla", fBold, 68, HeaderText);
         title.style.marginTop = -4;
-        Transition(title, "scale", 0.35f, EasingMode.EaseOutBack);
+        Ui.Transition(title, "scale", 0.35f, EasingMode.EaseOutBack);
         center.Add(chapter);
         center.Add(title);
 
@@ -180,7 +184,7 @@ public class Hud : MonoBehaviour
         introText.style.whiteSpace = WhiteSpace.Normal;
         introText.style.unityTextAlign = TextAnchor.UpperCenter;
         introText.style.display = DisplayStyle.None;
-        Transition(introText, "opacity", 0.5f, EasingMode.EaseOutSine);
+        Ui.Transition(introText, "opacity", 0.5f, EasingMode.EaseOutSine);
         center.Add(introText);
 
         outroLabel = Text("", fMed, 30, new Color(1f, 1f, 1f, 0.78f));
@@ -310,7 +314,7 @@ public class Hud : MonoBehaviour
         stepBtn.RegisterCallback<ClickEvent>(_ => { Sound.Tap(); StepPressed?.Invoke(); });
         runBtn.Add(stepBtn);
         Pressable(runBtn, null);
-        Transition(runBtn, "opacity", 0.2f, EasingMode.EaseOut);
+        Ui.Transition(runBtn, "opacity", 0.2f, EasingMode.EaseOut);
 
         var resetBtn = RoundButton(124, ButtonBg, new Icon(56, DrawReset), () => ResetPressed?.Invoke());
         Ui.Border(resetBtn, 2, Hairline);
@@ -413,7 +417,7 @@ public class Hud : MonoBehaviour
                 : item == Collectible.CableReel ? new Icon(36, (p, r) => DrawReelDot(p, r, idx < collected))
                 : new Icon(36, (p, r) => DrawIceDot(p, r, idx < collected));
             d.style.marginLeft = 10; d.style.marginRight = 10;
-            Transition(d, "scale", 0.28f, EasingMode.EaseOutBack);
+            Ui.Transition(d, "scale", 0.28f, EasingMode.EaseOutBack);
             dots.Add(d);
             dotsRow.Add(d);
         }
@@ -578,6 +582,31 @@ public class Hud : MonoBehaviour
     public void ShowOpening(Action onDone) => opening.Show(onDone);
     public void ShowTransition(string[] texts, Action onDone) => opening.Show(texts, -1, onDone);
 
+    // Bolum 50 kapanisi: kararan ekranda kaydin satirlari (RecordingScene). Bitince RecordingFinished; HideRecording ekrani acar.
+    public void ShowRecording(string file, string[] lines)
+    {
+        CloseTransient();
+        recording.Show(file, lines);
+    }
+    public bool RecordingFinished => recording.Finished;
+    public void HideRecording() => recording.Hide();
+
+    // Bolum 50 kapanisi, arayuz degisir: ustteki "ÖDEV 50" harf harf silinir, yerine yeni yazi harf harf yazilir;
+    // XP satirlari kalkar (o an oyun degil, hikaye konusur). Bolum yeniden kurulunca (ResetView) eski haline doner.
+    public void RewriteChapter(string text)
+    {
+        xpDoneLabel.style.display = DisplayStyle.None;
+        xpNextLabel.style.display = DisplayStyle.None;
+        string from = chapter.text;
+        int step = 0, erase = from.Length;
+        chapterRewrite?.Pause();
+        chapterRewrite = chapter.schedule.Execute(() =>
+        {
+            step++;
+            chapter.text = step <= erase ? from.Substring(0, erase - step) : text.Substring(0, Mathf.Min(step - erase, text.Length));
+        }).Every(70).Until(() => step >= erase + text.Length);
+    }
+
     // Mini sinav (her 5 bolumden sonra, zorunlu); tum sorular dogru cevaplaninca onPassed cagrilir.
     public void ShowQuiz(Quiz q, Action onPassed) => quiz.Show(q, onPassed);
     public bool QuizOpen => quiz.Open;
@@ -596,6 +625,7 @@ public class Hud : MonoBehaviour
 
     public void ResetView()
     {
+        chapterRewrite?.Pause();
         chapter.text = ChapterText;
         title.text = goal;
         xpDoneLabel.style.display = DisplayStyle.None;
@@ -785,18 +815,11 @@ public class Hud : MonoBehaviour
 
     static void Pressable(VisualElement b, Action onClick)
     {
-        Transition(b, "scale", 0.12f, EasingMode.EaseOut);
+        Ui.Transition(b, "scale", 0.12f, EasingMode.EaseOut);
         b.RegisterCallback<PointerDownEvent>(_ => b.style.scale = new Scale(new Vector3(0.94f, 0.94f, 1f)));
         b.RegisterCallback<PointerUpEvent>(_ => b.style.scale = new Scale(Vector3.one));
         b.RegisterCallback<PointerLeaveEvent>(_ => b.style.scale = new Scale(Vector3.one));
         if (onClick != null) b.RegisterCallback<ClickEvent>(_ => onClick());
-    }
-
-    static void Transition(VisualElement e, string prop, float seconds, EasingMode mode)
-    {
-        e.style.transitionProperty = new List<StylePropertyName> { new StylePropertyName(prop) };
-        e.style.transitionDuration = new List<TimeValue> { new TimeValue(seconds, TimeUnit.Second) };
-        e.style.transitionTimingFunction = new List<EasingFunction> { new EasingFunction(mode) };
     }
 
 

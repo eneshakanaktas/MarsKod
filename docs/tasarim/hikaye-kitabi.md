@@ -125,7 +125,7 @@ Bölge 16-20 için kayıt yerine **canlı konuşma** (Defne uyanık); dakikalarc
 | Motif | İlk görünüş | Karşılığı |
 |---|---|---|
 | Göğüsteki çizim | Bölüm 1 (Kıvılcım'ın göğsü) | Final: Ece yıldız ekler ("öğretmen"). |
-| İki kez yanan ışık | Bölüm sonu kutlaması | Final: Kıvılcım Dünya'ya iki kez yakar. |
+| İki kez yanan ışık | Bölüm sonu kutlaması; Bölge 5'te antenin durum ışığı doğru raporda bir kez yeşil yanar | Bölüm 50: Kıvılcım anten ışığını ilk kez oyuncuya iki kez yakar (selam); final: Dünya'ya iki kez yakar. |
 | Saksı bitkisi | Bölüm 1 kuru | Bölge 2 yeşerir, final çiçek açmış. |
 | Koloni ışıkları | Bölge 1 tek tek yanar | Final: hepsi yanık. |
 | "Ece" yazısı (turkuaz) | Bölge 3 kulübe kapısı; Bölge 4 direk 5'in numarası ve son direkteki kurdele aynı renk | Saksı, duvarlar; final: çizime "öğretmen" yazan da o. |
@@ -133,7 +133,9 @@ Bölge 16-20 için kayıt yerine **canlı konuşma** (Defne uyanık); dakikalarc
 | Mavi yıldız (Dünya) | Bölge 10 (Mars'tan Dünya parlak bir yıldız gibi görünür) | Final: Ece'nin çizdiği yıldız = Dünya = öğretmen = Yıldız (üç anlam). |
 | Kıvılcım'ın çantası | Bölge 4 kurdele (Bölüm 40, son direkten; pil çantasına bağlı); sonra boya kalemi (7), katlanmış çizim (8), oyuncak astronot (9) | Final: Ece eşyalarını tanır; katlanmış çizim açılır. |
 | Geri sayan direkler | Bölge 4: işaret direkleri 9 → 1, son direk tepede anteni görür | Bölüm 50: "Yolu işaretledik. Okları takip et." |
-| D.A. notları (koddaki yorumlar) | Bölüm 9 `# sabah turu - D.A.`, Bölüm 35 (adı "Acele etme") `# toz gecene kadar bekle.` + `# acele etme. - D.A.` (iki satır) | Bölge 5 "D. ARAS" çantası; Bölüm 50 kayıt; Bölge 6 `sabah_turu()`. |
+| D.A. notları (koddaki yorumlar) | Bölüm 9 `# sabah turu - D.A.`, Bölüm 35 (adı "Acele etme") `# toz gecene kadar bekle.` + `# acele etme. - D.A.` (iki satır) | Bölge 5 "D. ARAS" çantası (43; üçüncü not yok, ad eşyadan okunur); Bölüm 50 kayıt; Bölge 6 `sabah_turu()`. |
+| Ece'nin çizimleri | Kıvılcım'ın göğsü (çiçek, kız, robot); Bölge 5 alet çantasının kapağına bantlı çizim (44: anten + el sallayan iki kişi, büyük ve küçük; küçük olan turkuaz) | Final: göğüsteki çizime yıldız eklenir. |
+| Sol 861 | Bölge 3 boy çizgisi + takvim (Ece'nin 9. doğum günü = sığınağa iniş); Bölüm 47'deki makaralar 80-60-10 m (ilk rakamlar 8-6-1; kimse söylemez) | Perde 3: sığınak kapısının kodu. |
 
 ## Yan karakterler ve adlar
 

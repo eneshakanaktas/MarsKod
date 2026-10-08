@@ -1,7 +1,10 @@
 {
   "numara": 54,
   "baslik": "Serçe",
-  "gorev": "toz_gec ile 3 parça topla",
+  "gorev": "toz_gec ile 3 parça",
+  "etiket": "BÖLGE 6 · KANYON GİRİŞİ",
+  "giris": "Sol 1.084 · Depo çatısı yırtık · İçerisi tozlu",
+  "bitis": "Drone parçası: 9/9 · Gövdede el yazısı: SERÇE",
   "harita": [
     ". . . Z D .",
     ". . D . K .",

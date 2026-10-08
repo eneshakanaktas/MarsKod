@@ -1,5 +1,6 @@
 {
   "bolum": 60,
+  "baslik": "KIVILCIM · KENDİNİ DENETLİYOR",
   "sorular": [
     {
       "soru": "tur() rutini içinde adim() iki kez çağrılıyor. tur() üç kez çağrılırsa adim() kaç kez çalışır?",

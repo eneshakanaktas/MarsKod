@@ -107,7 +107,7 @@ Bölüm 50'den önce kayıt yok (yalnızca kısa kod geliyor; öneri 4). Perde 1
 |---|---|---|
 | 0 | İlk günden kilitli | Son kayıt ("Bunu duyuyorsan, ona öğretmeyi başardın…"). Finalde açılır. |
 | 1 | Bölüm 50 | "Bu bir ödev değil. Adım Defne Aras…" |
-| 2 | Bölge 6 başı | Rutinler: "Ona ezber değil, beceri öğret. Bir kez öğrettiğini kendisi tekrar edebilir." |
+| 2 | Bölge 6 başı (oyunda: Bölüm 52 başı, `rutinler.ses`) | Rutinler: "Ona ezber değil, beceri öğret. Bir kez öğrettiğini kendisi tekrar edebilir. Bunlara biz 'rutin' derdik. İlki sabah turuydu; her sabah yapardı." |
 | 3 | Bölge 7 | Ayak izleri: "Ece yine önden koştu. Ona kızamıyorum." |
 | 4 | Bölge 8 | "Ece korkuyor ama belli etmiyor. Bana benziyor." |
 | 5 | Bölge 9 | Oklar, volkan: "Okları takip et. Biz oradayız; dağın altında. Acele etme, ama durma da." |

@@ -1,5 +1,6 @@
 {
   "bolum": 55,
+  "baslik": "KIVILCIM · KENDİNİ DENETLİYOR",
   "sorular": [
     {
       "soru": "def sabah_turu(): ve altındaki girintili satırlar çalışınca robot ne yapar?",

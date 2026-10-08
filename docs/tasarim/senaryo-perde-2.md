@@ -37,6 +37,8 @@ Finalde Ece çantayı görür ve eşyalarını tek tek tanır. Kimse açıklamaz
 
 ## Bölge 6 — Kanyon girişi (Bölüm 51-60) · fonksiyonlar
 
+> Ayrıntılı senaryo ve Perde 2 biçimi (etiket, kayıt damgaları, "KIVILCIM · KENDİNİ DENETLİYOR" sınavı): `senaryo-bolge-06.md` (2026-10-08). Kıvılcım roketi uçurmaz: otomatik rota (D. Aras).
+
 **Olay:** Kıvılcım koloninin küçük roketiyle kanyona uçar (bölge geçişi sahnesi: ilk roket yolculuğu). Kanyon girişindeki depoda fırtınada parçalanmış bir **drone** bulunur ve onarılır. Drone'un gövdesinde Ece'nin el yazısıyla adı: **SERÇE**. Kanyon duvarlarında turuncu **boya oklar**. Defne'nin "rutinleri" öğretilir: bir kez yazılan iş adıyla tekrar çağrılır (fonksiyon).
 
 **Kayıt 2 (bölge başı):**

@@ -1,5 +1,6 @@
 {
   "bolum": 50,
+  "baslik": "KIVILCIM · KENDİNİ DENETLİYOR",
   "sorular": [
     {
       "soru": "kalan = 300 iken kalan -= 70 çalışırsa kalan kaç olur?",

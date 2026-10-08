@@ -4,7 +4,8 @@ using MarsKod.Dunya;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-// Mini sinav ekrani (her 5 bolumden sonra, zorunlu; tasarim belgesi §6): soru + secenekler.
+// Mini sinav ekrani (her 5 bolumden sonra, zorunlu; tasarim belgesi §6): soru + secenekler. Baslik sinav dosyasindan
+// (Perde 2'de "KIVILCIM · KENDİNİ DENETLİYOR").
 // Yanlis secim kirmizi yanip soner, tekrar denenebilir. Dogru secilince aciklama + "Devam" gorunur.
 // Son soru da dogru cevaplaninca "Bitir" ile onPassed cagrilir. Kapatma dugmesi yoktur: zorunlu.
 public class QuizView : VisualElement
@@ -12,7 +13,7 @@ public class QuizView : VisualElement
     readonly Font fMed, fSemi, fBold;
     readonly Color ink, accent, buttonBg, hairline, errorRed, cellFill;
 
-    readonly Label progress, promptLabel, explainLabel;
+    readonly Label titleLabel, progress, promptLabel, explainLabel;
     readonly VisualElement choicesCol;
     readonly Label continueText;
     readonly VisualElement continueBtn;
@@ -38,7 +39,9 @@ public class QuizView : VisualElement
         var top = new VisualElement { pickingMode = PickingMode.Ignore };
         top.style.paddingLeft = 52; top.style.paddingRight = 52;
         top.style.paddingTop = Ui.SafeTop() + 44; top.style.paddingBottom = 8;
-        top.Add(Ui.Text("Mini sınav", fBold, 56, ink));
+        titleLabel = Ui.Text("", fBold, 56, ink);
+        titleLabel.style.whiteSpace = WhiteSpace.Normal;   // Perde 2 basligi uzun: dar ekranda iki satira iner
+        top.Add(titleLabel);
         progress = Ui.Text("", fSemi, 30, new Color(1f, 1f, 1f, 0.5f));
         progress.style.marginTop = 8;
         top.Add(progress);
@@ -87,6 +90,7 @@ public class QuizView : VisualElement
         this.quiz = quiz;
         this.onPassed = onPassed;
         index = 0;
+        titleLabel.text = quiz.Title;
         style.display = DisplayStyle.Flex;
         ShowQuestion();
     }

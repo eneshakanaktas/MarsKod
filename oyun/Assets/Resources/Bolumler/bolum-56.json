@@ -1,7 +1,10 @@
 {
   "numara": 56,
   "baslik": "Görev çizelgesi",
-  "gorev": "koridor rutinini döngüde kullan",
+  "gorev": "Döngüde koridor çağır",
+  "etiket": "BÖLGE 6 · KANYON GİRİŞİ",
+  "giris": "Sol 1.085 · Duvarda görev çizelgesi",
+  "bitis": "Çizelge: BKM-7 · Son görev: KAPI",
   "harita": [
     ". . . . . .",
     "K . . . . .",

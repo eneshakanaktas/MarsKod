@@ -1,7 +1,10 @@
 {
   "numara": 53,
   "baslik": "Depo",
-  "gorev": "raftan_al ile 3 parça al",
+  "gorev": "raftan_al ile 3 parça",
+  "etiket": "BÖLGE 6 · KANYON GİRİŞİ",
+  "giris": "Sol 1.084 · Kanyon deposu · Raflar",
+  "bitis": "Drone parçası: 6/9",
   "harita": [
     ". . . . . .",
     ". . . . . .",
@@ -22,11 +25,11 @@
   "tipik_hatalar": [
     {
       "kod": ["def raftan_al():", "    move(North)", "    collect()", "    move(South)", "for i in range(3):", "    move(East)", "    raftan_al()"],
-      "aciklama": "Raflar arası yürüyüş eşit değil: ikinci turda robot rafın kayasına uzanır."
+      "aciklama": "Raflar arası yürüyüş eşit değil: ikinci turda robot raftaki sandığa uzanır."
     },
     {
       "kod": ["def raftan_al():", "    move(North)", "    collect()", "move(East)", "raftan_al()", "move(East)", "move(East)", "raftan_al()", "move(East)", "raftan_al()"],
-      "aciklama": "Rutin geri çekilmiyor: robot raf sırasında kalır ve yandaki kayaya çarpar."
+      "aciklama": "Rutin geri çekilmiyor: robot raf sırasında kalır ve yandaki sandığa çarpar."
     },
     {
       "kod": ["move(East)", "move(North)", "collect()", "move(South)", "move(East)", "move(East)", "move(North)", "collect()", "move(South)", "move(East)", "move(North)", "collect()", "move(South)"],

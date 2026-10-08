@@ -1,7 +1,10 @@
 {
   "numara": 60,
   "baslik": "Kanyona iniş",
-  "gorev": "İki rutinle kanyonun dibine in",
+  "gorev": "İki rutinle aşağı in",
+  "etiket": "BÖLGE 6 · KANYON GİRİŞİ",
+  "giris": "Sol 1.087 · Hedef: kanyon dibi",
+  "bitis": "Sonraki: kanyon dibi",
   "harita": [
     "R . . . . .",
     "Z K . . . .",

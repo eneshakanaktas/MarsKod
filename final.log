@@ -1,0 +1,67 @@
+Mono path[0] = 'C:/Users/samsung/MarsKod/oyun/Build/Win/MarsKod_Data/Managed'
+Mono config path = 'C:/Users/samsung/MarsKod/oyun/Build/Win/MonoBleedingEdge/etc'
+CodeReloadManager initialized
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+Initialize engine version: 6000.6.3f1 (45d8eee7de74)
+[EntityIdStore] init: VM path (explicit commit), pageSize=4096, blockCount=1048576, entitiesPerBlock=256, slots reserved=4294967296 bytes
+[Subsystems] Discovering subsystems at path C:/Users/samsung/MarsKod/oyun/Build/Win/MarsKod_Data/UnitySubsystems
+GfxDevice: creating device client; kGfxThreadingModeClientWorkerJobs
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.0]
+    Renderer: Intel(R) HD Graphics 4000 (ID=0x166)
+    Vendor:   Intel
+    VRAM:     128 MB
+    Driver:   10.18.10.5069
+Begin MonoManager ReloadAssembly
+- Finished resetting the current domain, in  0.024 seconds
+[Physics::Module] Selected backend (deferred post-plugins).
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+GpuFence::Create(): Failed to create ID3D11Fence, error 0x80070057
+<RI> Initializing input.
+Using Windows.Gaming.Input
+UnloadTime: 5.788200 ms
+GRAFIK: Full | secenekler: varsayilan | arka plan olcegi 1 | ekran 450x900 | Intel(R) HD Graphics 4000 (Direct3D11) | olcek 1 msaa 4 hdr True
+ICU Data not available: falling back to minimal text segmentation (basic line breaking rules only, emoji sequences may not render correctly). The data is automatically assigned to the PanelSettings in the editor if the advanced text option is enabled in the project settings. It will not be present on PanelSettings created at runtime, so make sure the build contains at least one PanelSettings asset to get full international text support.
+No ICU data provided. Falling back to minimal text segmentation (basic line breaking rules only, emoji sequences may not render correctly).
+Shader 'Hidden/Universal Render Pipeline/GaussianDepthOfField' is not supported or has been stripped from the build (in 'DepthOfFieldGaussianPostProcessPass'). PostProcessing render passes will not execute.
+Shader 'Hidden/Universal Render Pipeline/GaussianDepthOfField' is not supported or has been stripped from the build (in 'DepthOfFieldGaussianPostProcessPass'). PostProcessing render passes will not execute.
+Shader 'Hidden/Universal Render Pipeline/BokehDepthOfField' is not supported or has been stripped from the build (in 'DepthOfFieldBokehPostProcessPass'). PostProcessing render passes will not execute.
+Shader 'Hidden/Universal Render Pipeline/PaniniProjection' is not supported or has been stripped from the build (in 'PaniniProjectionPostProcessPass'). PostProcessing render passes will not execute.
+KARE: 0 kare/sn | en uzun 7154 ms | islemci — ms | ekran karti — ms | performans kapali
+KARE: 41 kare/sn | en uzun 26 ms | islemci 25 ms | ekran karti 24 ms | performans kapali
+KARE: 48 kare/sn | en uzun 26 ms | islemci 21 ms | ekran karti 20 ms | performans kapali
+KARE: 48 kare/sn | en uzun 26 ms | islemci 21 ms | ekran karti 20 ms | performans kapali
+KARE: 33 kare/sn | en uzun 148 ms | islemci 31 ms | ekran karti 27 ms | performans kapali
+KARE: 39 kare/sn | en uzun 43 ms | islemci 26 ms | ekran karti 26 ms | performans kapali
+KARE: 40 kare/sn | en uzun 136 ms | islemci 25 ms | ekran karti 25 ms | performans kapali
+KARE: 44 kare/sn | en uzun 27 ms | islemci 23 ms | ekran karti 22 ms | performans kapali
+KARE: 40 kare/sn | en uzun 134 ms | islemci 25 ms | ekran karti 24 ms | performans kapali
+KARE: 44 kare/sn | en uzun 27 ms | islemci 23 ms | ekran karti 22 ms | performans kapali
+KARE: 40 kare/sn | en uzun 134 ms | islemci 25 ms | ekran karti 24 ms | performans kapali
+KARE: 44 kare/sn | en uzun 27 ms | islemci 23 ms | ekran karti 22 ms | performans kapali
+KARE: 41 kare/sn | en uzun 139 ms | islemci 25 ms | ekran karti 24 ms | performans kapali
+KARE: 42 kare/sn | en uzun 28 ms | islemci 24 ms | ekran karti 24 ms | performans kapali
+KARE: 41 kare/sn | en uzun 132 ms | islemci 25 ms | ekran karti 24 ms | performans kapali
+KARE: 45 kare/sn | en uzun 27 ms | islemci 22 ms | ekran karti 22 ms | performans kapali
+KARE: 40 kare/sn | en uzun 139 ms | islemci 25 ms | ekran karti 24 ms | performans kapali
+KARE: 45 kare/sn | en uzun 26 ms | islemci 22 ms | ekran karti 22 ms | performans kapali
+KARE: 40 kare/sn | en uzun 140 ms | islemci 25 ms | ekran karti 24 ms | performans kapali
+KARE: 44 kare/sn | en uzun 26 ms | islemci 23 ms | ekran karti 22 ms | performans kapali
+KARE: 40 kare/sn | en uzun 140 ms | islemci 25 ms | ekran karti 25 ms | performans kapali
+KARE: 45 kare/sn | en uzun 27 ms | islemci 22 ms | ekran karti 22 ms | performans kapali
+KARE: 46 kare/sn | en uzun 26 ms | islemci 24 ms | ekran karti 24 ms | performans kapali
+KARE: 36 kare/sn | en uzun 137 ms | islemci 25 ms | ekran karti 28 ms | performans kapali
+KARE: 46 kare/sn | en uzun 27 ms | islemci 22 ms | ekran karti 22 ms | performans kapali
+FINAL DENETIMI: TAMAM
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input Polling Thread exited.
+Input System module state changed to: Shutdown.
+CodeReloadManager destroyed

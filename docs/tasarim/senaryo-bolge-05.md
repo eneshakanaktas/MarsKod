@@ -11,7 +11,7 @@
 4. **D.A.'nın üçüncü notu yok.** Bölge 5'te D.A. kendini notla değil eşyayla ele verir (alet çantası "D. ARAS"). Not tekrar ederse sıradanlaşır; adı görmek daha güçlü.
 5. **Program, çantayı ve çizimi "Ödevle ilgisi yok." diye geçer** (Bölge 3'ten gelen nakarat). Bölüm 49'da nakarat son kez değişir: "Ödevle ilgisi: bilinmiyor."
 6. **Kilitli ödev satırı (45'ten itibaren):** Bölüm seçme ekranında Bölüm 50'nin kilitli kartında "???" yerine `KİLİTLİ — gönderen: D. Aras` yazar. (Not: şu an `TestAllLevelsOpen = true` olduğu için kilitli kart görünmüyor; satır yalnızca kilit açıkken görülür. Yine de koymak gerekir.)
-7. **Bölüm 50'den sonrası (şimdilik):** 51-60 yazılana kadar finalin son karesi ("Ödev modu kapatıldı." + Kıvılcım gökyüzüne bakıyor) ekranda kalır; "Sonraki bölüm" düğmesi çıkmaz. "Devamı yakında" yazısı yok (Ragıp'ın kararı).
+7. **Bölüm 50'den sonrası (şimdilik):** 51-60 yazılana kadar finalin son karesi ("Ödev modu kapatıldı." + Kıvılcım gökyüzüne bakıyor) ekranda kalır; "Sonraki bölüm" düğmesi çıkmaz. "Devamı yakında" yazısı yok (Ragıp'ın kararı). **Güncellendi (Enes, 2026-10-08, Bölge 6 geldi):** son kare yine yalnız kalır; final bitince 2,5 sn sonra "Devam" → sınav-50 ("KIVILCIM · KENDİNİ DENETLİYOR") → Bölüm 51 (`senaryo-bolge-06.md`).
 
 ## Bu bölgenin görevi
 

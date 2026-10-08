@@ -71,6 +71,9 @@ public class Oyun : MonoBehaviour
     const string Bolge5EskiAd = "BKM-7", Bolge5YeniAd = "KIVILCIM";
     const string Bolge5Baslik = "BÖLGE 5  ·  ANTEN TEPESİ";
     const string Bolge5SonSatir = "Ödev modu kapatıldı.";
+    // Perde 2'ye gecis (senaryo-bolge-06.md): finalin son karesinden bu kadar sonra "Devam" -> sinav-50 -> Bolum 51
+    const float Bolge5DevamBekleme = 2.5f;
+    const string Kayit2Anahtari = "kayit2";   // Bolum 52 basindaki kayit bir kez gosterilir
 
 
     Camera cam;
@@ -516,7 +519,24 @@ public class Oyun : MonoBehaviour
         hud.SetLevel(level.Number, level.Label, level.Title, level.Goal, level.Ices.Count, level.Item, level.Intro);
         var transition = Traces.TransitionLines(level.Number);
         if (!shotsMode && transition != null) hud.ShowTransition(transition, () => { });
+        if (!shotsMode && level.Number == CanyonTraces.RecordingLevel && PlayerPrefs.GetInt(Kayit2Anahtari, 0) == 0)
+            StartCoroutine(PlayCanyonRecording());
         hintView.Close();
+    }
+
+    // Kayit 2 (Bolum 52 basi): ekran kararir, Defne'nin kaydi satir satir; bitince ekran acilir ve bolumun giris damgasi gelir.
+    IEnumerator PlayCanyonRecording()
+    {
+        Sound.Static();
+        hud.ShowRecording(CanyonTraces.RecordingFile, CanyonTraces.RecordingLines);
+        while (!hud.RecordingFinished) yield return null;
+        PlayerPrefs.SetInt(Kayit2Anahtari, 1);
+        PlayerPrefs.Save();
+        yield return Tween.Wait(1.2f);   // sessizlik
+        Sound.Static();
+        hud.HideRecording();
+        yield return Tween.Wait(1f);
+        hud.ShowIntro(level.Intro);
     }
 
     void LateUpdate()
@@ -794,6 +814,8 @@ public class Oyun : MonoBehaviour
             }
             else xpLine = Xp.Name(kind) + " ile çözdün · bu XP daha önce alındı";
             hud.SetDone(HasNext, xpLine, xp.NextBetterText(level.Number, kind), level.Outro);
+            bool perde1Finale = level.Number == Bolge5SonBolum && HasNext;
+            if (perde1Finale) hud.HoldNext();
             done = true;
             Sound.Celebrate();
             Traces.LevelDone(level.Number);
@@ -803,6 +825,11 @@ public class Oyun : MonoBehaviour
             if (level.Number == Bolge3SonBolum) yield return ClosingSceneBolge3();
             if (level.Number == Bolge4SonBolum) yield return ClosingSceneBolge4();
             if (level.Number == Bolge5SonBolum) yield return ClosingSceneBolge5();
+            if (perde1Finale)
+            {
+                yield return Tween.Wait(Bolge5DevamBekleme);   // son kare bir sure yalniz kalir
+                hud.ShowContinue();
+            }
         }
         else
         {
@@ -1367,14 +1394,16 @@ public class Oyun : MonoBehaviour
         yield return null;
     }
 
-    // ---- Adim adim denetimi (-shots icinde): son bolumun cozumunde ⏭'a uc kez, sonra Devam'a fareyle tiklanir ----
+    // ---- Adim adim denetimi (-shots icinde): Bolum 9'un cozumunde ⏭'a uc kez, sonra Devam'a fareyle tiklanir ----
     // Uc adimda for, move, collect calisir: robot bir kare ilerler (ve yalnizca bir kare), satirin yaninda "i = 0" yazar ve kod bekler;
     // Devam kalanini bitirir. Log'da "ADIM ADIM DENETIMI:" satiri; goruntu adim-adim.png.
+    const int StepCheckLevel = 9;
     IEnumerator StepCheck(string dir)
     {
         var mouse = UnityEngine.InputSystem.Mouse.current;
         if (mouse == null) { Debug.Log("ADIM ADIM DENETIMI: fare yok, atlandi"); yield break; }
-        LoadLevel(levels.Count - 1);
+        // cozumu for / move / collect ile baslayan sabit bir bolum (son bolum olmaz: Bolge 6'dan beri cozumler def ile baslar)
+        LoadLevel(levels.FindIndex(l => l.Number == StepCheckLevel));
         SetCode(level.Solution);
         yield return new WaitForSeconds(0.4f);
         for (int k = 0; k < 3; k++)
@@ -1484,6 +1513,18 @@ public class Oyun : MonoBehaviour
         Directory.CreateDirectory(dir);
         yield return new WaitForSeconds(2f);
 
+        // Bolum 52 basindaki Kayit 2 (oyunda bir kez gelir; burada dogrudan gosterilir)
+        LoadLevel(levels.FindIndex(l => l.Number == CanyonTraces.RecordingLevel));
+        int kayit2Before = PlayerPrefs.GetInt(Kayit2Anahtari, 0);
+        StartCoroutine(PlayCanyonRecording());
+        yield return new WaitForSeconds(9f);
+        Cap(Path.Combine(dir, "kayit-2.png"));
+        while (!hud.RecordingFinished) yield return null;
+        yield return new WaitForSeconds(2.6f);
+        Cap(Path.Combine(dir, "bolum-52-giris.png"));
+        yield return new WaitForSeconds(0.4f);   // goruntu kare sonunda alinir: sonraki ekran onu ortmesin
+        PlayerPrefs.SetInt(Kayit2Anahtari, kayit2Before);   // deneme, oyuncunun ilk dinleyisini engellemesin
+
         var xpBefore = xp;
         forceLocks = true; xp = new Xp();
         for (int n = 1; n <= 48; n++) xp.Award(n, LineKind.Dugme);
@@ -1507,7 +1548,16 @@ public class Oyun : MonoBehaviour
             yield return new WaitForSeconds(2f);
         }
         yield return new WaitForSeconds(1f);
-        Cap(Path.Combine(dir, "final-son.png"));
+        Cap(Path.Combine(dir, "final-son.png"));   // "Devam" dugmesi gorunur olmali
+        yield return new WaitForSeconds(0.4f);
+
+        // Perde 2'ye gecis: Devam -> sinav-50 ("KIVILCIM · KENDİNİ DENETLİYOR")
+        suppressQuiz = false;
+        quizzesPassed.Remove(level.Number);
+        OnRun();
+        yield return new WaitForSeconds(0.8f);
+        Cap(Path.Combine(dir, "final-sinav.png"));
+        Debug.Log("FINAL DENETIMI: " + (hud.QuizOpen ? "TAMAM" : "sinav acilmadi"));
         yield return new WaitForSeconds(0.5f);
         Application.Quit();
     }

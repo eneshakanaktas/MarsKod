@@ -124,7 +124,8 @@ public static class Traces
         levelNumber == PolarTraces.FirstLevel ? PolarTraces.TransitionLines :
         levelNumber == CraterTraces.FirstLevel ? CraterTraces.TransitionLines :
         levelNumber == DuneTraces.FirstLevel ? DuneTraces.TransitionLines :
-        levelNumber == AntennaTraces.FirstLevel ? AntennaTraces.TransitionLines : null;
+        levelNumber == AntennaTraces.FirstLevel ? AntennaTraces.TransitionLines :
+        levelNumber == CanyonTraces.FirstLevel ? CanyonTraces.TransitionLines : null;
 
     // Bolum 8 (ve Bolum 21-22): firtinanin izi: devrilmis gunes paneli, kuma gomulu kablo, kayalarin yanina yigilmis kum.
     public static void StormDebris(Transform parent, Vector3 p)

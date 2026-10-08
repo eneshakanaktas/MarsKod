@@ -1,7 +1,10 @@
 {
   "numara": 52,
   "baslik": "Sabah turu",
-  "gorev": "sabah_turu rutinini yaz, 3 kez çağır",
+  "gorev": "Rutini 3 kez çağır",
+  "etiket": "BÖLGE 6 · KANYON GİRİŞİ",
+  "giris": "Sol 1.083 · Fırtına izi: dağılmış drone parçaları",
+  "bitis": "Drone parçası: 3/9 · Rutin kaydedildi: sabah_turu",
   "harita": [
     ". . . . . .",
     "K . . . . .",

@@ -1,7 +1,10 @@
 {
   "numara": 55,
   "baslik": "İlk uçuş",
-  "gorev": "panel_bak ile onar, piste var",
+  "gorev": "panel_bak ile onar",
+  "etiket": "BÖLGE 6 · KANYON GİRİŞİ",
+  "giris": "Sol 1.085 · Depo paneli: güç zayıf",
+  "bitis": "Serçe: çevrimiçi · İlk uçuş",
   "harita": [
     ". . . . . .",
     ". . . . . .",

@@ -25,6 +25,21 @@ public class BolumTests
         Assert.Equal((6, 6), (level.Cols, level.Rows));
     }
 
+    // Perde 2 biçimi (senaryo-bolge-06.md): üst etikette bölge adı, "ÖDEV" yok; giriş ve bitiş kayıt damgası
+    [Fact]
+    public void Bolge_6_bolumleri_kanyon_etiketi_ve_damga_tasir()
+    {
+        for (int n = 51; n <= 60; n++)
+        {
+            var level = Load("bolum-" + n + ".json");
+            Assert.Equal("BÖLGE 6 · KANYON GİRİŞİ", level.Label);
+            Assert.False(string.IsNullOrEmpty(level.Intro), n + ": giris yok");
+            Assert.False(string.IsNullOrEmpty(level.Outro), n + ": bitis yok");
+            // büyük başlık telefonda tek satır: "Topla, bildir, git" sığıyor, 28 harf taşıyor
+            Assert.True(level.Goal.Length <= 22, n + ": gorev çok uzun (" + level.Goal.Length + " harf)");
+        }
+    }
+
     [Theory]
     [MemberData(nameof(Files))]
     public void Tipik_hatalar_gercekten_durur_ya_da_eksik_kalir(string file)

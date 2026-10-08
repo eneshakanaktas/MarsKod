@@ -22,13 +22,16 @@ namespace MarsKod.Dunya
     {
         /// <summary>Bu sınav hangi bölüm bitince çıkar (örn. 5, 10, 15, 20)</summary>
         public int AfterLevel;
+        /// <summary>Sınav ekranının başlığı ("baslik", isteğe bağlı); Perde 2'de "KIVILCIM · KENDİNİ DENETLİYOR"</summary>
+        public string Title = "Mini sınav";
         public List<QuizQuestion> Questions = new List<QuizQuestion>();
 
         public static Quiz Parse(string json)
         {
-            var known = new HashSet<string> { "bolum", "sorular" };
+            var known = new HashSet<string> { "bolum", "baslik", "sorular" };
             var d = ParseObject(json, known);
             var quiz = new Quiz { AfterLevel = Int(d, "bolum") };
+            if (d.ContainsKey("baslik")) quiz.Title = Text(d, "baslik");
             if (quiz.AfterLevel < 1) throw new DataFormatError("\"bolum\" 1 ya da daha büyük olmalı.");
             quiz.Questions = ReadQuestions(Field(d, "sorular"));
             if (quiz.Questions.Count == 0) throw new DataFormatError("\"sorular\" boş olamaz; en az bir soru yaz.");

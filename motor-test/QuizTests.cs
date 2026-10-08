@@ -41,6 +41,25 @@ public class QuizTests
         """;
 
     [Fact]
+    public void Baslik_yazilmazsa_mini_sinav()
+    {
+        Assert.Equal("Mini sınav", Quiz.Parse(Mini).Title);
+        var titled = Quiz.Parse(Mini.Replace("\"bolum\": 5,", "\"bolum\": 5, \"baslik\": \"KIVILCIM · KENDİNİ DENETLİYOR\","));
+        Assert.Equal("KIVILCIM · KENDİNİ DENETLİYOR", titled.Title);
+    }
+
+    // Perde 2 (Bölüm 50'den sonra) "ödev" yok: sınav Kıvılcım'ın kendi denetimi (senaryo-bolge-06.md)
+    [Fact]
+    public void Perde_2_sinavlari_kendini_denetliyor()
+    {
+        foreach (var f in Files())
+        {
+            var quiz = Load((string)f[0]);
+            Assert.Equal(quiz.AfterLevel >= 50 ? "KIVILCIM · KENDİNİ DENETLİYOR" : "Mini sınav", quiz.Title);
+        }
+    }
+
+    [Fact]
     public void Gecerli_dosya_okunur()
     {
         var quiz = Quiz.Parse(Mini);

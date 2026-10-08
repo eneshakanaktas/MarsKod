@@ -239,7 +239,7 @@ public class Hud : MonoBehaviour
     }
 
     // "Program giris" metnini basligin altinda kisa sure gosterir, sonra kendiliginden kaybolur.
-    void ShowIntro(string text)
+    public void ShowIntro(string text)
     {
         introText.style.display = DisplayStyle.None;
         if (string.IsNullOrEmpty(text)) return;
@@ -427,7 +427,11 @@ public class Hud : MonoBehaviour
     // Turkce buyuk harf (i -> İ, ı -> I); telefonun dil ayarina guvenmeden
     static string Upper(string s) => s.Replace('i', 'İ').Replace('ı', 'I').ToUpperInvariant();
 
-    string ChapterText => levelLabel + " " + levelNumber + (levelName.Length > 0 ? "  ·  " + Upper(levelName) : "");
+    // Perde 2'de etiket bolgenin adidir ("BÖLGE 6 · KANYON GİRİŞİ"): numara ve bolum adi yazilmaz (Bolum 50 finalindeki
+    // basligin devami); oncesinde "BÖLÜM 12  ·  AD" ya da "ÖDEV 45  ·  AD".
+    bool RegionHeader => levelLabel.StartsWith("BÖLGE ");
+    string ChapterHead => RegionHeader ? levelLabel : levelLabel + " " + levelNumber;
+    string ChapterText => ChapterHead + (!RegionHeader && levelName.Length > 0 ? "  ·  " + Upper(levelName) : "");
 
     // ---- Disaridan cagrilanlar ----
 
@@ -536,7 +540,7 @@ public class Hud : MonoBehaviour
     // outro: "program metni" (bitis); bos olabilir.
     public void SetDone(bool hasNext, string xpLine, string nextBetter, string outro = "")
     {
-        chapter.text = levelLabel + " " + levelNumber + (iceTotal > 0 ? "  ·  " + collected + "/" + iceTotal : "");
+        chapter.text = ChapterHead + (iceTotal > 0 ? "  ·  " + collected + "/" + iceTotal : "");
         title.text = "Tamamlandı!";
         title.style.scale = new Scale(new Vector3(1.12f, 1.12f, 1f));
         title.schedule.Execute(() => title.style.scale = new Scale(Vector3.one)).StartingIn(180);
@@ -549,6 +553,17 @@ public class Hud : MonoBehaviour
         xpDoneLabel.style.display = string.IsNullOrEmpty(xpLine) ? DisplayStyle.None : DisplayStyle.Flex;
         xpNextLabel.text = nextBetter;
         xpNextLabel.style.display = string.IsNullOrEmpty(nextBetter) ? DisplayStyle.None : DisplayStyle.Flex;
+    }
+
+    // Bolum 50 finali: kapanis surerken alttaki dugme gizli (sahne bolunmesin); bitince "Devam" olarak gelir
+    // (basinca sinav, sonra Bolum 51). Bolum yeniden kurulunca (ResetView) dugme geri gelir.
+    public void HoldNext() => runBtn.style.visibility = Visibility.Hidden;
+    public void ShowContinue()
+    {
+        runText.text = "Devam";
+        runBtn.style.opacity = 0f;
+        runBtn.style.visibility = Visibility.Visible;
+        runBtn.schedule.Execute(() => runBtn.style.opacity = 1f).StartingIn(20);
     }
 
     // Bolum secme ekranini acar; satirlar (cozuldu mu, kac XP) Oyun.cs'ten gelir. Acikken yazma ve acilir kutular kapanir.
@@ -628,6 +643,7 @@ public class Hud : MonoBehaviour
         chapterRewrite?.Pause();
         chapter.text = ChapterText;
         title.text = goal;
+        runBtn.style.visibility = Visibility.Visible;
         xpDoneLabel.style.display = DisplayStyle.None;
         xpNextLabel.style.display = DisplayStyle.None;
         outroLabel.style.display = DisplayStyle.None;

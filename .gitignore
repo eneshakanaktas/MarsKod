@@ -61,3 +61,5 @@ prototipler/**/.godot/
 /build-android.log
 /oyun-shots.log
 /opening.log
+/final.log
+/shots.log

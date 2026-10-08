@@ -86,7 +86,11 @@ public class BackdropCache : MonoBehaviour
         int w = Mathf.Max(1, Mathf.RoundToInt(Screen.width * scale));
         int h = Mathf.Max(1, Mathf.RoundToInt(Screen.height * scale));
         if (target != null && target.width == w && target.height == h) return false;
-        if (target != null) target.Release();
+        if (target != null)
+        {
+            target.Release();
+            Destroy(target);
+        }
         target = new RenderTexture(w, h, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear)
         {
             name = "Arka plan",
@@ -119,7 +123,11 @@ public class BackdropCache : MonoBehaviour
 
     void OnDestroy()
     {
-        if (target != null) target.Release();
+        if (target != null)
+        {
+            target.Release();
+            Destroy(target);
+        }
         cmd?.Release();
     }
 

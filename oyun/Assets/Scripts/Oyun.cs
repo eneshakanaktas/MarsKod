@@ -256,8 +256,8 @@ public class Oyun : MonoBehaviour
         SetAnimations(!GraphicsOptions.NoAnimations && PlayerPrefs.GetInt(AnimationsKey, 1) != 0);
         hud.AnimationsToggled += () =>
         {
-            SetAnimations(!backdropCache.Animated);
-            PlayerPrefs.SetInt(AnimationsKey, backdropCache.Animated ? 1 : 0);
+            SetAnimations(!animationsOn);
+            PlayerPrefs.SetInt(AnimationsKey, animationsOn ? 1 : 0);
             PlayerPrefs.Save();
         };
         hud.PerformanceToggled += () =>
@@ -304,16 +304,20 @@ public class Oyun : MonoBehaviour
     // Arka plan animasyonlari (ayar, bolum secme ekraninda): kapaliyken gokyuzu duraganlasir, telefon daha az yorulur
     const string AnimationsKey = "animasyon";
 
+    bool animationsOn;   // oyuncunun ayari; Performans modu acikken arka plan yine de duragan kalir
+
     void SetAnimations(bool on)
     {
-        backdropCache.Animated = on;
+        animationsOn = on;
+        backdropCache.Animated = on && !GraphicsQuality.Performance;
         hud.SetAnimations(on);
     }
 
-    // Grafik ayari (performans modu) uygulaninca: gunes golgesi, gokyuzu dokusu
+    // Grafik ayari (performans modu) uygulaninca: gunes golgesi, gokyuzu dokusu, arka plan animasyonu
     void ApplyGraphics()
     {
         skyLight.shadows = GraphicsQuality.Shadows;
+        backdropCache.Animated = animationsOn && !GraphicsQuality.Performance;
         backdropCache.SetQuality(GraphicsQuality.BackdropScale, GraphicsQuality.BackdropRate);
         if (hud != null) hud.SetPerformance(GraphicsQuality.Performance);
     }

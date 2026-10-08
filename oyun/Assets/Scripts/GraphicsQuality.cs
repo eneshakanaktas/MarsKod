@@ -19,7 +19,7 @@ public static class GraphicsQuality
     public static event Action Changed;
 
     public static bool Performance => Mode == GraphicsMode.Performance;
-    public static float BackdropScale => GraphicsOptions.BackdropScale ?? (Performance ? 0.35f : Application.isMobilePlatform ? 0.5f : 1f);
+    public static float BackdropScale => GraphicsOptions.BackdropScale ?? (Performance ? 0.5f : Application.isMobilePlatform ? 0.5f : 1f);
     public static float BackdropRate => Performance ? 10f : 20f;
     public static LightShadows Shadows => GraphicsOptions.NoShadows ? LightShadows.None : Performance ? LightShadows.Hard : LightShadows.Soft;
 
@@ -68,11 +68,19 @@ public static class GraphicsQuality
         QualitySettings.renderPipeline = original;
     }
 
+    // Performans modunda cizilen yukseklik en fazla ~1400 piksel: uzun telefon ekraninda (2400) olcek 0,6'ya iner,
+    // bilgisayardaki kucuk pencerede (975) tam cozunurluk kalir (0,6 orada cok bulanik duruyordu).
+    const float PerformanceTargetHeight = 1400f;
+    const float PerformanceMinScale = 0.6f;
+
+    static float PerformanceRenderScale() =>
+        Mathf.Clamp(PerformanceTargetHeight / Mathf.Max(1, Screen.height), PerformanceMinScale, 1f);
+
     static void Apply()
     {
         if (urp != null)
         {
-            urp.renderScale = Performance ? 0.6f : 1f;
+            urp.renderScale = Performance ? PerformanceRenderScale() : 1f;
             urp.msaaSampleCount = Performance ? 1 : 4;
             urp.supportsHDR = !Performance;
             urp.mainLightShadowmapResolution = Performance ? 1024 : 2048;

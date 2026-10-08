@@ -140,6 +140,9 @@ Bölge 16-20 için kayıt yerine **canlı konuşma** (Defne uyanık); dakikalarc
 ## Yan karakterler ve adlar
 
 - **Serçe:** Kanyon deposunda bulunan drone (Bölge 6). Adını Ece vermiş, gövdesinde el yazısı. Uçar; yukarıdan yol gösterir.
+  **Görünüşü (Enes, 2026-10-08; Ragıp'a haber):** tombul, yuvarlak serçe gövdesi (krem), önde iki kamera "göz" ve küçük turuncu gaga,
+  arkada kısa kuyruk, altta iki kızak; dört çapraz kolda halkalı (korumalı) pervaneler; Kıvılcım'ın yarı boyu; gövdenin üstünde
+  turkuaz (`#2FC4B8`) çocuk eliyle "SERÇE". Uçarken gözleri açık mavi yanar (`Sparrow.cs`).
 - **24 kişi:** Sığınaktaki koloni; listesi Bölge 8'de (isimler sonra yazılacak; Perde 4'te uyananlar).
 
 ## Çelişki kontrol listesi (yeni sahne yazarken)

@@ -50,6 +50,7 @@ Shader "MarsKod/Ground"
             float4 _RobotPos;   // C#'tan: robotun konumu
             float4 _RobotFwd;   // C#'tan: robotun baktigi yon
             float4 _RobotBeam;  // C#'tan: robotun onune dusen isigin rengi
+            float _CanyonIndoor;  // C#'tan (CanyonTraces): 1 = kanyon deposunun ici, zemin beton
 
             struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; };
             struct Varyings
@@ -68,6 +69,21 @@ Shader "MarsKod/Ground"
                 o.positionCS = TransformWorldToHClip(o.posWS);
                 o.screenPos = ComputeScreenPos(o.positionCS);
                 return o;
+            }
+
+            // Kanyon deposunun ici (Bolum 53-56, _CanyonIndoor = 1): alan ve duvarlara kadar cevresi toz kapli beton plakalar.
+            // Plaka eklemleri iki karede bir (kare cizgileriyle cakisir, onlardan koyu ve ince); duvarlara dogru pas rengi toz birikir.
+            float3 depotFloor(float2 q, float3 ground)
+            {
+                float outside = length(max(abs(q) - _Area.xy, 0.0));
+                float m = _CanyonIndoor * (1.0 - smoothstep(0.42, 0.55, outside));
+                if (m <= 0.0) return ground;
+                float3 c = float3(0.45, 0.39, 0.34) * (0.93 + 0.10 * vnoise2(q * 1.5 + 2.0));
+                float2 seam = abs(frac((q + _Area.xy) * 0.5) - 0.5) * 2.0;     // 0: eklem
+                c *= 1.0 - 0.18 * (1.0 - smoothstep(0.0, 0.03, min(seam.x, seam.y)));
+                float dust = saturate(smoothstep(-0.6, 0.45, outside) * 0.8 + 0.6 * smoothstep(0.5, 0.75, vnoise2(q * 0.9 + 3.0)));
+                c = lerp(c, ground * 1.05, dust * 0.55);
+                return lerp(ground, c, m);
             }
 
 #if defined(MARSKOD_SADE)
@@ -119,6 +135,16 @@ Shader "MarsKod/Ground"
                 float rip = sin(dot(q, float2(0.92, 0.38)) * 24.0 + vnoise2(q * 0.9 + 13.0) * 7.0);
                 a *= 1.0 + (1.0 - 0.7 * inArea) * (1.0 - far) * 0.07 * rip;   // ruzgar dalgaciklari
                 return a * (1.0 + 0.08 * (vnoise2(q * 45.0) - 0.5));
+            }
+
+            float3 canyonFloor(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float3 a = lerp(float3(0.39, 0.22, 0.15), float3(0.48, 0.28, 0.19), vnoise2(q * 0.9 + 7.0));
+                float plate = smoothstep(0.62, 0.64, vnoise2(q * 0.55 + 21.0)) * (1.0 - 0.75 * inArea);
+                a = lerp(a, float3(0.54, 0.35, 0.25), plate * 0.8);   // katmanli kaya plakalari
+                a *= 1.0 + 0.14 * (vnoise2(q * 40.0) - 0.5);
+                return depotFloor(q, a);
             }
 #else
             // Krater: icte koyu (gunes arkadan, alcaktan: uzak ic duvar golgede), kenari hafif kabarik ve aydinlik,
@@ -275,6 +301,28 @@ Shader "MarsKod/Ground"
                 return lerp(a, float3(0.35, 0.22, 0.17), speck * 0.4);           // seyrek koyu cakil
             }
 
+            // Kanyon (Bolge 6): koyu pas rengi, sikismis toprak; yer yer duvarlardan kopmus duz, katmanli kaya plakalari
+            // (kenarlarinda ince koyu golge), seyrek koyu cakil ve acik renkli taslar. Kum dalgasi yok. Depo icinde beton. sRGB.
+            float3 canyonFloor(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float detail = 1.0 - far * 0.5;
+                float3 a = lerp(float3(0.39, 0.22, 0.15), float3(0.48, 0.28, 0.19), fbm(q * 0.9 + 7.0));
+                a *= 0.9 + 0.2 * fbm(q * 0.3 + 2.0);                              // genis lekeler
+                float pv = fbm(q * 0.55 + 21.0);
+                float plate = smoothstep(0.57, 0.585, pv);
+                float rim = smoothstep(0.55, 0.57, pv) - plate;                 // plakanin dibindeki ince golge
+                float bands = 0.92 + 0.10 * sin(dot(q, float2(0.35, 1.0)) * 7.0 + fbm(q * 1.2) * 3.0);   // plakada tortu cizgileri
+                float plateAmt = 1.0 - 0.75 * inArea;                            // alanda soluk: kareler okunsun
+                a = lerp(a, float3(0.54, 0.35, 0.25) * bands, plate * plateAmt * 0.8);
+                a *= 1.0 - 0.12 * rim * plateAmt * detail;
+                a *= 1.0 + detail * 0.12 * (vnoise2(q * 42.0) - 0.5);           // ince taneler
+                float around = detail * (1.0 - 0.6 * inArea);
+                a = lerp(a, float3(0.20, 0.12, 0.10), smoothstep(0.86, 0.94, vnoise2(q * 16.0 + 3.0)) * around * 0.5);   // koyu cakil
+                a = lerp(a, float3(0.62, 0.44, 0.34), smoothstep(0.90, 0.96, vnoise2(q * 11.0 + 9.0)) * around * 0.4);   // acik taslar
+                return depotFloor(q, a);
+            }
+
 #endif
 
             half4 frag (Varyings i) : SV_Target
@@ -292,6 +340,7 @@ Shader "MarsKod/Ground"
                 [branch] if (MarsPolar()) a = iceSheet(p, far, inArea);
                 else if (MarsCrater()) a = craterPlain(p, far, inArea);
                 else if (MarsDunes()) a = duneSand(p, far, inArea);
+                else if (MarsCanyon()) a = canyonFloor(p, far, inArea);
                 else a = regolith(p, far, inArea);
 
                 // oyun alani: ayni zemin, biraz daha duzgun; kare sinirlari ince ve soluk

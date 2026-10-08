@@ -23,7 +23,7 @@
 
 1. **Bulmacalar** — Sonnet 5.5 · medium (~3 sa). Bu belgenin "1. Bulmacalar" bölümü.
 2. **Hikâye metinleri + sınav çerçevesi + 50→51 geçişi** — Sonnet 5.5 · medium (~2 sa). "2. Hikâye".
-3. **Görünüş, nesneler, sahneler** — Opus 5.5 · high (~4-5 sa, gerekirse ikiye bölünür). "3. Görünüş".
+3. **Görünüş, nesneler, sahneler** — Opus 5.5 · high (~4-5 sa), ikiye bölündü: **3a** ortam + nesneler, **3b** sahneler. "3. Görünüş".
 
 ---
 
@@ -118,12 +118,55 @@ Sol 1.083'ten başlar (Bölge 5 sol 1.082'de bitti). Bütün metinler yeni `docs
 
 Her şey kodla çizilir; hazır model / büyük doku yok (paket boyutu, Ragıp'ın kuralı).
 
-- **Gökyüzü/arka plan** (`Shaders/CanyonSky.hlsl`, `MarsSky.hlsl`'e bölge olarak): iki yanda katman katman dev kanyon duvarları (Valles Marineris esinli), dar gökyüzü şeridi, uzakta kıvrılarak derinleşen kanyon, dipte sis. İkindi; duvar gölgesi oyun alanına düşmez.
-- **Zemin** (`Ground.shader` yeni çeşit): kızıl, sert, çatlaklı kaya + çakıl; Performans modu için hafif sürüm aynı işte.
-- **Işık** (`RegionLook.Canyon`): güneş yönü gökyüzündeki güneşle tutarlı.
-- **Nesneler** (her biri ayrı dosya): `ColonyRocket` (51-52 arka plan), `CanyonDepot` (hangar + raflar, 53-56), `DronePart` (`D`; pervane / kol / gövde parçası), `Sparrow` (Serçe; 54 rafta + "SERÇE" `WorldText`, 55'ten sonra uçar), boya oklar + tarihler (51+, 58), görev çizelgesi (56). Yerleşim `CanyonTraces.cs` (önceki `AntennaTraces` gibi).
-- **Sahneler** yeni dosyada (`CanyonScenes.cs`; `Oyun.cs` ~1.700 satır, büyütülmez): 51 açılışı (roket), 55 kapanışı (Serçe ilk uçuş, üstten bakış), 60 finali (iniş, kamera derinliğe).
-- **Performans riski:** Hamza'nın telefon ölçümü ~10-11 Ekim. Görünüş hafif tutulur, Performans modu birlikte yapılır, `telefon-denemesi.md`'ye Bölüm 51 kare hızı satırı eklenir.
+**İkiye bölündü (Enes, 2026-10-08 gece):** **3a** = kanyon ortamı + bütün nesneler (bu bölüm, ayrıntılar aşağıda); **3b** = üç hareketli sahne (51 roket inişi, 55 Serçe'nin ilk uçuşu, 60 kanyona iniş), yeni sohbet, Opus 5.5 · high. Sahneler `CanyonScenes.cs`'e (`Oyun.cs` ~1.750 satır, büyütülmez).
+
+### 3a.1 Ortam (Enes onayladı)
+
+- **Saat ikindi.** Ekranın üstü kuzey; güneş **batıda = solda**, sol kanyon duvarının kenarının hemen üstünde. Işık sol arkadan, gölgeler sağa-öne. Sağ duvarın güneşe bakan yüzü altın sarısı, sol duvar kendi gölgesinde morumsu-mavi. Duvar gölgesi oyun alanına düşmez.
+- **Arka plan** (`Shaders/CanyonSky.hlsl`, `MarsSky.hlsl`'e `_Region` 4 olarak): kanyonun ağzındayız, kuzeye bakıyoruz. İki yanda ekran kenarlarından yükselen dev duvarlar (yatay tortu katmanları, basamaklı, eteklerinde moloz yelpazesi; Valles Marineris esinli); ortada kanyon uzaklara kıvrılarak alçalır, en uzakta mavimsi pus, dipte ince toz sisi. Gökyüzü iki duvar arasında: üstte soluk, ufka doğru karamela. Yıldız yok.
+- **Zemin** (`Ground.shader` yeni `canyonFloor` + Performans modu hafif sürümü): koyu pas rengi sıkışmış toprak, yer yer düz katmanlı kaya plakaları, dağınık çakıl/moloz; kum dalgası yok. **Depo bölümlerinde** aynı çizimin "içeride" hâli: toz kaplı beton plakalar (genel bir anahtarla, ör. `_CanyonIndoor`).
+- **Işık** (`RegionLook.Canyon`): sıcak altın-turuncu güneş, gölgeli taraf için serin ortam ışığı.
+- **Kayalar** (`Obstacles`): köşeli, katmanlı tortu kayası. Depo bölümlerinde (53-56) aynı kareler **sandık**.
+
+### 3a.2 Bölüm bölüm yerleşim (Enes onayladı)
+
+İzler alanın arkasında ve yanlarında; alanın içindekiler bulmacanın kendisi.
+
+| Bölüm | Nerede | Görünüşte |
+|---|---|---|
+| 51 | Kanyon ağzı | Sol arkada inmiş roket (üç ayak, kapı açık, merdiven, altında yanık iz); sağ arkada büyük kaya bloğunda ilk turuncu boya ok (depoyu gösterir). |
+| 52 | Kanyon ağzı | Roket uzakta; alan çevresinde dağılmış drone kırıntıları (kol, kırık pervane) ve kumda sürüklenme izleri. |
+| 53 | Depo içi | `K D K D D K` sırası **uzun metal raf**: D'ler rafın alt gözünde, K'ler rafın önüne yığılmış sandıklar. Arka duvarda dekor raflar, kutular. |
+| 54 | Depo içi | Arka duvardaki rafta Serçe gövdesi (eksik, sönük), turkuaz çocuk eliyle **SERÇE** okunur. Toz yırtık çatıdan girmiş. |
+| 55 | Depo içi | Paneller = deponun **çatısındaki güneş panelleri**, fırtınada çatıyla içeri düşmüş (çatının en yırtık yeri; güneş içeri vurur). Serçe rafta, tam ama sönük. |
+| 56 | Depo içi | Arka duvarda görev panosu; satırlar tozlu/silinmiş, okunan tek satır **"BKM-7 ··· KAPI"**. |
+| 57 | Deponun arka avlusu | Depo alanın arkasında, dışarıdan (yırtık çatısıyla). |
+| 58 | Kanyon duvarının dibi | Duvarda sıra sıra oklar, yanlarında sol 852 … sol 861; son oklarda akmış boya. "sol 861" telefonda okunur. |
+| 59 | Kanyon kenarı | Serçe hedef karenin üstünde süzülür. |
+| 60 | Kanyon kenarı | Alanın arkasında kanyona inen kayalık rampa, aşağıda derinlik. |
+
+- **Depo (53-56):** arkada ve iki yanda alçak yıpranmış metal duvarlar, ön (kamera tarafı) açık; yırtık çatı iskeleti (kirişler alanın kenarlarına düşer, alanın üstünü kapatmaz) + sarkan branda; duvarların üstünden kanyon duvarları görünür.
+- **Serçe 56-60** hep yanımızda: alanın kenarında hafifçe süzülür (59'da hedefin üstünde).
+- **Boya oklar 51-60:** her bölümde alanın arkasında en az bir ok, yolun devamını gösterir.
+
+### 3a.3 Nesneler (her biri ayrı dosya; Enes onayladı)
+
+| Nesne | Bölüm | Görünüş |
+|---|---|---|
+| Drone parçası (`D`) | 52-58 | Geçici pusula görüntüsünün yerine. Üç çeşit sırayla: halkalı pervane, ucunda motorlu kol, gövde kabuğu parçası. Serçe renkleri (krem gövde, turuncu ayrıntı). Üst sayaçta pervane simgesi. |
+| **Serçe** | 54-60 | **Tombul, yuvarlak serçe gövdesi**, önde iki kamera "göz", arkada kısa kuyruk, dört kolda **halkalı (korumalı) pervaneler** (Ingenuity gibi Mars'ta uçana uygun), Kıvılcım'ın yarı boyu. Gövdede turkuaz (`#2FC4B8`) "SERÇE". Hâller: eksik (54), tam-sönük (55), uçuyor (56-60: ışıklar yanık, pervaneler döner, hafif süzülme). **Ragıp'a haber:** kalıcı karakter görünüşü (Bölge 7'de oynanır olacak). |
+| Roket | 51-52 | İnce uzun üç ayaklı koloni roketi, açık kapı, merdiven, yanık iz. |
+| Depo | 53-57 | Alçak metal duvarlar, yırtık çatı iskeleti, branda, dekor raflar/kutular. |
+| Raf + sandık | 53 (sandık 53-56) | Uzun metal raf; sandıklar tahta/metal, köşeleri ezik, bazıları kapağı açık. |
+| Boya oklar + tarihler | 51-60 (tarihler 58) | Kaya yüzeyine boyanmış turuncu ok; akmış boya damlaları. |
+| Görev panosu | 56 | Okunmayan satırlar + "BKM-7 ··· KAPI". |
+
+Yerleşimi `CanyonTraces.cs` seçer (önceki `AntennaTraces` gibi); `Oyun.cs`'e yalnızca birkaç bağlantı satırı.
+
+### 3a.4 Telefon hızı ve denetim
+
+- Kanyon arka planı önceki bölgelerden ağır olmaz (arka plan zaten bir kez çizilip saklanıyor, `BackdropCache`); zemin için Performans modu sürümü aynı işte. `telefon-denemesi.md`'ye Bölüm 51 ve 53 kare hızı satırı.
+- Denetim: `dotnet test` geçer; Windows paketi hatasız; Bölüm 51-60 görüntüleri tek tek bakılır, Performans modunda en az iki bölüm; görüntüler `docs/tasarim/bolge-6-gorunus-2026-10-08/`; yedi fare denetimi TAMAM.
 
 ## Kapsam dışı
 

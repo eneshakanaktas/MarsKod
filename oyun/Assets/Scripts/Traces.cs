@@ -1,9 +1,10 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 // Hikaye izleri: bazi bolumlerde alanin kenarinda duran kucuk sus nesneleri (docs/tasarim/senaryo-bolge-01.md, -02.md).
 // Bulmacayi etkilemezler, yalnizca merak uyandirmak icin dururlar. Bolge 2'ninkiler PolarTraces'te, Bolge 3'unkuler CraterTraces'te,
-// Bolge 4'unkuler DuneTraces'te, Bolge 5'inkiler AntennaTraces'te.
+// Bolge 4'unkuler DuneTraces'te, Bolge 5'inkiler AntennaTraces'te, Bolge 6'ninkiler CanyonTraces'te.
 public static class Traces
 {
     // Arka plandaki izler (MarsSky.hlsl, colonyTraces): kolonide acik kapi (Bolum 6), sera kubbesinde kuru saksi (Bolum 7).
@@ -26,12 +27,14 @@ public static class Traces
     public static BigAntenna Antenna { get; private set; }
 
     // targetPos: bolumde hedef kare varsa dunya konumu (10. bolumdeki telsiz diregi, 40. bolumdeki son isaret diregi icin).
-    public static void Build(int levelNumber, Transform parent, Vector2 areaHalf, Vector3? targetPos = null)
+    // itemPositions: toplanacak nesnelerin dunya konumlari (Bolum 53'teki raf icin).
+    public static void Build(int levelNumber, Transform parent, Vector2 areaHalf, Vector3? targetPos, IReadOnlyList<Vector3> itemPositions)
     {
         rover = PolarTraces.Build(levelNumber, parent, areaHalf);
         CraterTraces.Build(levelNumber, parent, areaHalf);
         Dune = DuneTraces.Build(levelNumber, parent, areaHalf, targetPos);
         Antenna = AntennaTraces.Build(levelNumber, parent, areaHalf);
+        CanyonTraces.Build(levelNumber, parent, areaHalf, targetPos, itemPositions);
         tank = levelNumber == PolarTraces.TankLevel ? WaterTank.Create(parent, PolarTraces.TankPosition(areaHalf)) : null;
         ResetBackdrop(levelNumber);
         switch (levelNumber)
@@ -50,6 +53,7 @@ public static class Traces
         Shader.SetGlobalFloat(GreenhouseId, 0f);   // 0 = sonuk (cizim tanimsiz degeri de 0 okur)
         Shader.SetGlobalFloat(RoverHereId, PolarTraces.HasRover(levelNumber) ? 1f : 0f);
         Shader.SetGlobalFloat(LeafId, PlayerPrefs.GetInt(LeafKey, 0));
+        CanyonTraces.ResetBackdrop(levelNumber);
         if (rover != null) rover.Restore();
         if (tank != null) tank.Restore();
         if (Dune != null) Dune.Restore();

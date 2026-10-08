@@ -4,10 +4,11 @@
 #define MARSKOD_SKY_INCLUDED
 
 float _StarsOn;
-float _Region;    // bolge (RegionLook.cs): 0 inis ovasi, 1 kutup buzulu, 2 kraterli duzluk, 3 kum tepeleri
+float _Region;    // bolge (RegionLook.cs): 0 inis ovasi, 1 kutup buzulu, 2 kraterli duzluk, 3 kum tepeleri, 4 kanyon
 bool MarsPolar() { return abs(_Region - 1.0) < 0.5; }
 bool MarsCrater() { return abs(_Region - 2.0) < 0.5; }
-bool MarsDunes() { return _Region > 2.5; }
+bool MarsDunes() { return abs(_Region - 3.0) < 0.5; }
+bool MarsCanyon() { return abs(_Region - 4.0) < 0.5; }
 // Cok hafif genel aydinlatma: arka plan ve zeminin karistigi ova rengi ayni oranda (yoksa yeni renk siniri olusur)
 static const float MARS_EXPOSURE = 1.06;
 float _Horizon;   // ufuk: fotograf koordinatinda (asagida)
@@ -918,6 +919,7 @@ float3 PlainBackdrop(float2 suv)
 #include "PolarSky.hlsl"
 #include "CraterSky.hlsl"
 #include "DuneSky.hlsl"
+#include "CanyonSky.hlsl"
 
 // Ekran konumuna (suv, alttan 0) gore arka plan rengi (sRGB): bolgenin kendi manzarasi. Pahali: yalnizca dokuya
 // cizerken kullanilir (Backdrop.shader "Bake"); ekrandakiler saklanan dokuyu okur (MarsBackdropCached).
@@ -927,6 +929,7 @@ float3 MarsBackdrop(float2 suv)
     [branch] if (MarsPolar()) col = PolarBackdrop(suv);
     else if (MarsCrater()) col = CraterBackdrop(suv);
     else if (MarsDunes()) col = DuneBackdrop(suv);
+    else if (MarsCanyon()) col = CanyonBackdrop(suv);
     else col = PlainBackdrop(suv);
     return col;
 }
@@ -950,6 +953,7 @@ float3 MarsHorizonPlain()
     if (MarsPolar()) return POLAR_PLAIN;
     if (MarsCrater()) return CRATER_PLAIN;
     if (MarsDunes()) return DUNE_PLAIN;
+    if (MarsCanyon()) return CANYON_PLAIN;
     return float3(0.176, 0.110, 0.106) * MARS_EXPOSURE;   // ova: ekrandan olculdu
 }
 
@@ -959,6 +963,7 @@ float3 MarsGroundWarmth()
     if (MarsPolar()) return float3(0.06, 0.11, 0.24);
     if (MarsCrater()) return float3(0.32, 0.12, 0.11);
     if (MarsDunes()) return float3(0.26, 0.17, 0.09);
+    if (MarsCanyon()) return float3(0.30, 0.16, 0.07);
     return float3(0.30, 0.13, 0.06);
 }
 
@@ -1002,6 +1007,7 @@ float3 MarsRegionSurface(float3 albedo, float3 n)
     }
     if (MarsCrater()) return dot(albedo, float3(0.3, 0.5, 0.2)) * float3(0.62, 0.55, 0.60);
     if (MarsDunes()) return lerp(albedo, float3(0.48, 0.24, 0.12), smoothstep(0.5, 0.8, n.y));
+    if (MarsCanyon()) return lerp(albedo * float3(0.95, 0.85, 0.80), float3(0.42, 0.22, 0.14), smoothstep(0.6, 0.9, n.y));
     return albedo;
 }
 

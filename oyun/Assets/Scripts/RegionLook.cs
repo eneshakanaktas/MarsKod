@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 
 // Bolgenin havasi: isik renkleri, ortam isigi ve cizimlere (zemin, arka plan, kayalar) "hangi bolgedeyiz" bilgisi.
 // Manzaranin kendisini cizimler secer (MarsSky.hlsl: PlainBackdrop / PolarSky.hlsl / CraterSky.hlsl / DuneSky.hlsl,
-// Ground.shader: regolith / iceSheet / craterPlain / duneSand).
+// Ground.shader: regolith / iceSheet / craterPlain / duneSand / canyonFloor).
 // Yeni bolge: buraya bir tablo + cizimlerde _Region'a gore bir dal.
 public class RegionLook
 {
@@ -16,6 +16,9 @@ public class RegionLook
     string skyLight; float skyIntensity;        // ustten gelen los gok isigi (golge verir)
     string sunLight; float sunIntensity;        // tepelerin/ucurumlarin ardindaki gunes (arkadan, golgesiz)
     string ambientSky, ambientEquator, ambientGround, probeBase, probeTop;
+    // Isiklarin yonu (Euler). Bolge 1-5'te hep ayni; kanyonda ikindi gunesi batidan (solda) gelir.
+    static readonly Vector3 DefaultSkyDir = new Vector3(52f, -35f, 0f), DefaultSunDir = new Vector3(14f, 168f, 0f);
+    Vector3 skyDir = DefaultSkyDir, sunDir = DefaultSunDir;
 
     // Inis ovasi: safaktan hemen once; soguk los gok isigi, arkadan sicak turuncu safak
     static readonly RegionLook Plain = new RegionLook
@@ -57,6 +60,19 @@ public class RegionLook
         probeBase = "#7A5E50", probeTop = "#8E7266",
     };
 
+    // Kanyon: ikindi; gunes solda, sol duvarin hemen ustunde (CanyonSky.hlsl). Golge veren isik batidan (hafif onden: nesnelerin
+    // kameraya bakan yuzu okunsun) gelir, golgeler doguya (saga) duser; arkadan alcak, golgesiz gunes isigi; golgedeki yuzler serin.
+    static readonly RegionLook Canyon = new RegionLook
+    {
+        shaderRegion = 4f,
+        skyLight = "#FFD9AE", skyIntensity = 0.9f,
+        sunLight = "#FFB070", sunIntensity = 0.6f,
+        ambientSky = "#7C6E80", ambientEquator = "#7A5A4E", ambientGround = "#33241E",
+        probeBase = "#6E5658", probeTop = "#7A6A7A",
+        skyDir = new Vector3(40f, 75f, 0f),
+        sunDir = new Vector3(12f, 120f, 0f),
+    };
+
     // Bolge 3 finali: oyundaki ilk gun dogumu (docs/tasarim/senaryo-bolge-03.md, kapanis). Ova safaginin aydinlanmis hali.
     static readonly RegionLook SunriseLook = new RegionLook
     {
@@ -74,8 +90,8 @@ public class RegionLook
             case Region.PolarIce: return Polar;
             case Region.CraterField: return Crater;
             case Region.Dunes:
-            case Region.AntennaHill:
-            case Region.Canyon: return Dunes; // anten tepesinin ve kanyonun kendi gorunusu gelene kadar kum tepeleri
+            case Region.AntennaHill: return Dunes; // anten tepesinin kendi gorunusu gelene kadar kum tepeleri
+            case Region.Canyon: return Canyon;
             default: return Plain;
         }
     }
@@ -92,6 +108,8 @@ public class RegionLook
 
     static void Blend(RegionLook a, RegionLook b, float t, Light sky, Light sun)
     {
+        sky.transform.rotation = Quaternion.Slerp(Quaternion.Euler(a.skyDir), Quaternion.Euler(b.skyDir), t);
+        sun.transform.rotation = Quaternion.Slerp(Quaternion.Euler(a.sunDir), Quaternion.Euler(b.sunDir), t);
         sky.color = Mix(a.skyLight, b.skyLight, t);
         sky.intensity = Mathf.Lerp(a.skyIntensity, b.skyIntensity, t);
         sun.color = Mix(a.sunLight, b.sunLight, t);

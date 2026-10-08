@@ -70,3 +70,11 @@ Sol sayısı iki bölümde bir artar (Bölge 5 sol 1.082'de bitti). Drone parça
 - `CanyonTraces.cs` (yeni): bölge açılış satırları + Kayıt 2. Görünüş eklenince yerleşim de buraya.
 - `Hud`: "BÖLGE …" etiketinde numara/ad yazılmaz; Bölüm 50 finalinde düğme gizli, sonra "Devam".
 - Denetim: `-shots <klasör> -bolum 50 -final` artık Kayıt 2'yi, Bölüm 52 girişini, "Devam"lı son kareyi ve sınav başlığını da çeker (`FINAL DENETIMI:` satırı).
+
+## Oyuna konanlar: görünüş 3a (2026-10-08/09, Enes; tasarım belgesi 3a)
+
+- **Kanyon ortamı:** `CanyonSky.hlsl` (ikindi; güneş solda, alçak sol duvarın üstünde; sol duvar gölgede morumsu, sağ duvar dev ve altın; ortada kat kat uzaklaşan kanyon + dipte sis), `Ground.shader` `canyonFloor` (pas rengi taban, katmanlı plakalar) + depo içinde beton (`_CanyonIndoor`), Performans modu hafif sürümü; `RegionLook.Canyon` (ışık batıdan, gölgeler sağa; ışık yönleri artık `RegionLook`'ta).
+- **Nesneler:** `DronePart` (pervane / kol / kabuk; üst sayaçta pervane simgesi), `Sparrow` (Serçe; eksik / sönük / uçuyor), `ColonyRocket`, `PaintMarks` (oklar + tarihler), `CanyonCliff` (58 duvarı, 60 kenarı), `CanyonDepot` (içeriden 53-56, dışarıdan 57), `StorageShelf`, `TaskBoard` ("BKM-7 ··· KAPI"); kanyon kayaları katmanlı, depoda sandık (`Obstacles`).
+- **Yerleşim** `CanyonTraces.Build`: 51 roket + oklu kaya; 52 uzakta roket + kırıntılar; 53 raf satırı; 54 Serçe rafta (eksik); 55 Serçe rafta (sönük), çatı en yırtık; 56 görev panosu; 57 depo dışarıdan; 58 tarihli oklar; 59 Serçe hedefin üstünde; 60 kanyon kenarı. Serçe 56-60'ta süzülür.
+- **3b'ye kalan:** 51 roket iniş sahnesi, 55 Serçe'nin ilk uçuşu, 60 kanyona iniş (kenarın ötesindeki derinlik o sahnede).
+

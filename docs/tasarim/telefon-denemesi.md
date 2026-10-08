@@ -32,7 +32,8 @@ Adım 1'de 30 kare/sn ve üstü çıkarsa 2-4'e gerek yok, yalnızca 5'i yap.
 
 **Yeni bölgeler için ek ölçüm (Bölge 3-5 geldi, 2026-10-08):** Bölge 3 ve 4'ün kendi zemini/gökyüzü var; kare hızına etkisi hiç ölçülmedi.
 Adım 1'in ayarıyla (Performans modu açık) şu bölümleri sırayla aç (`-bolum N` ya da bölüm listesinden), her birinde **30 sn bekle**
-ve son 3 `KARE:` satırını gönder: **Bölüm 1** (karşılaştırma için), **21** (Bölge 3), **31** (Bölge 4), **41** (Bölge 5, şimdilik Bölge 4'ün görünüşü).
+ve son 3 `KARE:` satırını gönder: **Bölüm 1** (karşılaştırma için), **21** (Bölge 3), **31** (Bölge 4), **41** (Bölge 5, şimdilik Bölge 4'ün görünüşü),
+**51** (Bölge 6 kanyonu: yeni gökyüzü + zemin, roket) ve **53** (kanyon deposu: duvarlar, raflar, sandıklar; en çok nesne bu bölümde).
 Ayrıca gözle bak: Bölüm 31'de toz bulutları ve turuncu hedef halkası seçiliyor mu; Bölüm 50 kapanışı (`-bolum 50`, kod çözülünce) takılmadan akıyor mu.
 
 **Nasıl okunur:** 30 kare/sn için kare başına 33 ms'den az gerekir. `ekran karti` sayısı büyükse çizim ağır

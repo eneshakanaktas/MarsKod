@@ -413,7 +413,8 @@ public class Hud : MonoBehaviour
             int idx = i;
             var d = item == Collectible.EnergyCell ? new Icon(36, (p, r) => DrawCellDot(p, r, idx < collected))
                 : item == Collectible.PanelPart ? new Icon(36, (p, r) => DrawPanelDot(p, r, idx < collected))
-                : item == Collectible.CompassPart || item == Collectible.DronePart ? new Icon(36, (p, r) => DrawCompassDot(p, r, idx < collected))
+                : item == Collectible.CompassPart ? new Icon(36, (p, r) => DrawCompassDot(p, r, idx < collected))
+                : item == Collectible.DronePart ? new Icon(36, (p, r) => DrawPropellerDot(p, r, idx < collected))
                 : item == Collectible.CableReel ? new Icon(36, (p, r) => DrawReelDot(p, r, idx < collected))
                 : new Icon(36, (p, r) => DrawIceDot(p, r, idx < collected));
             d.style.marginLeft = 10; d.style.marginRight = 10;
@@ -989,6 +990,33 @@ public class Hud : MonoBehaviour
         p.LineTo(new Vector2(w * 0.5f, h * 0.8f));
         p.LineTo(new Vector2(w * 0.4f, h * 0.5f));
         p.ClosePath();
+        p.Fill();
+    }
+
+    // Drone parcasi: ustten gorunen halkali pervane (halka koruyucu + capraz iki pal + gobek)
+    static void DrawPropellerDot(Painter2D p, Rect r, bool filled)
+    {
+        float w = r.width, h = r.height;
+        var color = filled ? DroneColors.Accent : new Color(1f, 1f, 1f, 0.5f);
+        var c = new Vector2(w * 0.5f, h * 0.5f);
+        p.lineCap = LineCap.Round;
+        p.strokeColor = color;
+        p.lineWidth = 3f;
+        p.BeginPath();
+        p.Arc(c, w * 0.36f, Deg(0), Deg(360));
+        p.Stroke();
+        p.lineWidth = 3.5f;
+        foreach (float a in new[] { 40f, 130f })
+        {
+            var d = new Vector2(Mathf.Cos(a * Mathf.Deg2Rad), Mathf.Sin(a * Mathf.Deg2Rad)) * w * 0.27f;
+            p.BeginPath();
+            p.MoveTo(c - d);
+            p.LineTo(c + d);
+            p.Stroke();
+        }
+        p.fillColor = color;
+        p.BeginPath();
+        p.Arc(c, w * 0.08f, Deg(0), Deg(360));
         p.Fill();
     }
 

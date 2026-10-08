@@ -355,20 +355,18 @@ public class Oyun : MonoBehaviour
         backdropCache = BackdropCache.Create(backdrop, mesh, GraphicsQuality.BackdropScale, GraphicsOptions.BackdropFlat);
     }
 
-    // Isiklarin yonu ve golgesi; renkleri ve ortam isigi bolgeye gore (RegionLook, bolum yuklenince)
+    // Isiklar ve golge; yonleri, renkleri ve ortam isigi bolgeye gore (RegionLook, bolum yuklenince)
     void SetupLight()
     {
         // los gok isigi (robot okunabilsin diye yumusak golge verir)
         skyLight = new GameObject("Sun").AddComponent<Light>();
         skyLight.type = LightType.Directional;
         skyLight.shadowStrength = 0.6f;
-        skyLight.transform.rotation = Quaternion.Euler(52f, -35f, 0f);
 
         // tepelerin ardindaki gunes: arkadan, alcaktan gelen, golgesiz isik
         sunLight = new GameObject("Dawn").AddComponent<Light>();
         sunLight.type = LightType.Directional;
         sunLight.shadows = LightShadows.None;
-        sunLight.transform.rotation = Quaternion.Euler(14f, 168f, 0f);
 
         RenderSettings.skybox = null;
         RenderSettings.fog = false;
@@ -505,9 +503,10 @@ public class Oyun : MonoBehaviour
             ground.SetVector("_Frost" + i, new Vector4(p.x, p.z, 0.45f, i < frostCount ? 1f : 0f));
         }
         for (int i = 0; i < level.Rocks.Count; i++)
-            Obstacles.Create(region, levelRoot, Pos(level.Rocks[i]), i);
+            Obstacles.Create(region, levelRoot, Pos(level.Rocks[i]), i, crate: CanyonTraces.IsDepot(level.Number));
         target = level.Target.HasValue ? Target.Create(levelRoot, Pos(level.Target.Value)) : null;
-        Traces.Build(level.Number, levelRoot, new Vector2(AreaHalfX, AreaHalfZ), level.Target.HasValue ? Pos(level.Target.Value) : (Vector3?)null);
+        Traces.Build(level.Number, levelRoot, new Vector2(AreaHalfX, AreaHalfZ), level.Target.HasValue ? Pos(level.Target.Value) : (Vector3?)null,
+            level.Ices.ConvertAll(c => Pos(c)));
 
         ResetRobot();
         string saved = SavedCode(level);

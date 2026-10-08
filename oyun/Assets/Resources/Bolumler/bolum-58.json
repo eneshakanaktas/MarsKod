@@ -1,0 +1,49 @@
+{
+  "numara": 58,
+  "baslik": "Boya oklar",
+  "gorev": "Kendi rutinini yaz: topla ve onar",
+  "harita": [
+    ". . . . . D",
+    ". . . . . 1",
+    ". K . . . 9",
+    ". . . K . D",
+    ". . . . . 2",
+    "R D 7 3 . D"
+  ],
+  "komutlar": ["move", "collect", "panel_power", "repair"],
+  "rutin_sayisi": 1,
+  "parcalar": ["def bak():", "bak()", "move(East)", "move(North)", "if panel_power() == 0:", "elif panel_power() < 50:", "collect()", "repair()", "for i in range(5):"],
+  "konular": ["fonksiyon", "rutine ad verme", "elif"],
+  "ipuclari": [
+    "Oklar önce doğuya, sonra kuzeye gösteriyor. Yoldaki her karede aynı soruyu sor; bu soruyu bir rutine koy ve ona sen ad ver.",
+    "Panel yoksa `panel_power()` 0 verir: orada toplanacak parça olabilir. Çatlak panel 50'nin altındadır. Sıra önemli: önce 0'ı sor.",
+    "`if panel_power() == 0:` → `collect()`, `elif panel_power() < 50:` → `repair()`. Rutini iki döngüde de kullan: `for i in range(5):` + `move(East)`, sonra `move(North)` ile."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def bak():", "    if panel_power() < 50:", "        repair()", "    elif panel_power() == 0:", "        collect()", "for i in range(5):", "    move(East)", "    bak()", "for i in range(5):", "    move(North)", "    bak()"],
+      "aciklama": "0 da 50'den küçük: parçanın olduğu karede repair() çalışır ama orada panel yok. Önce 0'ı sor."
+    },
+    {
+      "kod": ["def bak():", "    if panel_power() == 0:", "        collect()", "    else:", "        repair()", "for i in range(5):", "    move(East)", "    bak()", "for i in range(5):", "    move(North)", "    bak()"],
+      "aciklama": "else her panele repair() der: sağlam panel onarılmaz. Zayıf olanı ayrıca sor: elif panel_power() < 50."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(East)", "    if panel_power() == 0:", "        collect()", "    elif panel_power() < 50:", "        repair()", "for i in range(5):", "    move(North)", "    if panel_power() == 0:", "        collect()", "    elif panel_power() < 50:", "        repair()"],
+      "aciklama": "Robot işi yapar ama aynı soru iki kez yazıldı: bir rutine koy ve iki döngüde de çağır."
+    }
+  ],
+  "cozum": [
+    "def bak():",
+    "    if panel_power() == 0:",
+    "        collect()",
+    "    elif panel_power() < 50:",
+    "        repair()",
+    "for i in range(5):",
+    "    move(East)",
+    "    bak()",
+    "for i in range(5):",
+    "    move(North)",
+    "    bak()"
+  ]
+}

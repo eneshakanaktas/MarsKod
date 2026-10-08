@@ -54,6 +54,8 @@ namespace MarsKod.Dunya
         public Dictionary<Cell, int> Reels = new Dictionary<Cell, int>();
         /// <summary>Antenin report() ile beklediği sayı; null ise rapor istenmez</summary>
         public int? ExpectedReport;
+        /// <summary>Rutin şartı ("rutinler", "rutin_sayisi"); yazılmadıysa şart yok</summary>
+        public RoutineRule Routines = RoutineRule.None;
         public Cell? Target;
         /// <summary>Bu bölümde açık oyun komutları (move, collect...)</summary>
         public List<string> Commands = new List<string>();
@@ -72,6 +74,9 @@ namespace MarsKod.Dunya
 
         public World CreateWorld() => new World(Cols, Rows, Robot, Ices, Rocks, Target, Commands, Crystals, Panels, Dust, Reels, ExpectedReport);
 
+        /// <summary>Kodu bu bölümün yeni bir dünyasında, bölümün rutin şartıyla çalıştırır (denetleyici ve testler için)</summary>
+        public RunReport Run(string code) => ProgramRun.Execute(code, CreateWorld(), routines: Routines);
+
         public const char RobotMark = 'R', RockMark = 'K', CrystalMark = 'T', TargetMark = 'H', DustMark = 'Z', EmptyMark = '.';
         /// <summary>Haritada panelin rakamı gücün onda biri (7 → 70)</summary>
         public const int PanelPowerPerDigit = 10;
@@ -81,7 +86,7 @@ namespace MarsKod.Dunya
         /// <summary>JSON metninden bölümü okur; yanlışta DataFormatError verir (Türkçe, satır numaralı).</summary>
         public static Level Parse(string json)
         {
-            var known = new HashSet<string> { "numara", "baslik", "etiket", "gorev", "giris", "bitis", "harita", "komutlar", "konular", "parcalar", "python_kelimeleri", "ipuclari", "tipik_hatalar", "baslangic_kodu", "cozum", "toz_suresi", "makara_uzunlugu", "rapor" };
+            var known = new HashSet<string> { "numara", "baslik", "etiket", "gorev", "giris", "bitis", "harita", "komutlar", "konular", "parcalar", "python_kelimeleri", "ipuclari", "tipik_hatalar", "baslangic_kodu", "cozum", "toz_suresi", "makara_uzunlugu", "rapor", "rutinler", "rutin_sayisi" };
             var d = DataFields.ParseObject(json, known);
 
             var level = new Level
@@ -107,6 +112,7 @@ namespace MarsKod.Dunya
             ReadDust(level, dustCells, d.ContainsKey("toz_suresi") ? IntList(d, "toz_suresi") : new List<int>());
             ReadReels(level, d.ContainsKey("makara_uzunlugu") ? IntList(d, "makara_uzunlugu") : new List<int>());
             ReadReport(level, d);
+            ReadRoutines(level, d);
             level.Pieces = d.ContainsKey("parcalar") ? NonEmptyList(d, "parcalar") : DerivePieces(level.Commands);
             if (d.ContainsKey("python_kelimeleri")) level.PythonWords = TextList(d, "python_kelimeleri");
             if (d.ContainsKey("tipik_hatalar")) level.Mistakes = ReadMistakes(d["tipik_hatalar"]);
@@ -240,6 +246,28 @@ namespace MarsKod.Dunya
             if (open) level.ExpectedReport = Int(d, "rapor");
         }
 
+        static readonly Regex RoutineName = new Regex(@"^[A-Za-z_][A-Za-z0-9_]*$");
+
+        /// <summary>"rutinler": def ile yazılması istenen rutin adları; "rutin_sayisi": adı serbest en az kaç rutin.</summary>
+        static void ReadRoutines(Level level, Dictionary<string, object> d)
+        {
+            var names = d.ContainsKey("rutinler") ? NonEmptyList(d, "rutinler") : new List<string>();
+            foreach (var name in names)
+            {
+                if (!RoutineName.IsMatch(name) || Suggestions.IsPythonWord(name))
+                    throw new DataFormatError("\"rutinler\" içindeki \"" + name + "\" geçerli bir rutin adı değil: harf ya da _ ile başlamalı, boşluk içermemeli, Python kelimesi olmamalı (örn. \"sabah_turu\").");
+                if (Array.IndexOf(World.AllCommands, name) >= 0)
+                    throw new DataFormatError("\"rutinler\" içindeki \"" + name + "\" bir oyun komutunun adı; rutine başka bir ad ver.");
+            }
+            int count = 0;
+            if (d.ContainsKey("rutin_sayisi"))
+            {
+                count = Int(d, "rutin_sayisi");
+                if (count < 1) throw new DataFormatError("\"rutin_sayisi\" en az 1 olmalı (rutin istemiyorsan alanı hiç yazma).");
+            }
+            level.Routines = new RoutineRule(names, count);
+        }
+
         /// <summary>"B buz, E enerji hücresi" (hata mesajları için)</summary>
         static string MarkList() => string.Join(", ", Collectibles.Marks.Select(m => m.Key + " " + Collectibles.Name(m.Value)));
 
@@ -268,19 +296,19 @@ namespace MarsKod.Dunya
         public static List<string> Problems(Level level)
         {
             var problems = new List<string>();
-            var report = ProgramRun.Execute(level.Solution, level.CreateWorld());
+            var report = level.Run(level.Solution);
             if (report.Stopped)
                 problems.Add("Doğru çözüm " + (report.StopLine?.ToString() ?? "?") + ". satırda durdu: " + Reason(report));
             else if (!report.Complete)
                 problems.Add("Doğru çözüm sonuna kadar çalıştı ama görevi bitirmedi.");
 
-            if (level.StartCode.Trim().Length > 0 && ProgramRun.Execute(level.StartCode, level.CreateWorld()).Complete)
+            if (level.StartCode.Trim().Length > 0 && level.Run(level.StartCode).Complete)
                 problems.Add("Başlangıç kodu görevi zaten bitiriyor; oyuncuya iş kalmıyor.");
 
             problems.AddRange(PieceProblems(level));
 
             for (int i = 0; i < level.Mistakes.Count; i++)
-                if (ProgramRun.Execute(level.Mistakes[i].Code, level.CreateWorld()).Complete)
+                if (level.Run(level.Mistakes[i].Code).Complete)
                     problems.Add((i + 1) + ". tipik hata görevi bitiriyor; hata örneği gerçekten hatalı olmalı.");
             return problems;
         }

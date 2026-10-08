@@ -186,6 +186,18 @@
       "ornek": [
         "report(toplam)"
       ]
+    },
+    {
+      "baslik": "def",
+      "kelimeler": ["def"],
+      "aciklama": "Rutin (fonksiyon) tanımlar: birkaç adımı bir ada bağlarsın, sonra o adı yazdıkça adımlar çalışır. Tanımlamak çalıştırmaz, çağırmak çalıştırır. Adımlar 4 boşluk içeride yazılır; rutin, çağrılmadan önce tanımlanmalı.",
+      "ornek": [
+        "def sabah_turu():",
+        "    move(East)",
+        "    collect()",
+        "sabah_turu()   # bir kez",
+        "sabah_turu()   # bir kez daha"
+      ]
     }
   ]
 }

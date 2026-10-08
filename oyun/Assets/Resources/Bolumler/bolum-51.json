@@ -1,0 +1,49 @@
+{
+  "numara": 51,
+  "baslik": "Kanyon kapısı",
+  "gorev": "Hedefe var",
+  "harita": [
+    ". . . . . H",
+    ". . . K . .",
+    ". . . . Z K",
+    ". . K . K .",
+    "K . . Z . .",
+    "R Z K . . ."
+  ],
+  "toz_suresi": [2, 3, 2],
+  "komutlar": ["move", "dust_here", "wait"],
+  "konular": ["tekrar", "while", "komut sırası"],
+  "ipuclari": [
+    "Yolda üç toz kapısı var. Her kapıda aynı şeyi yaparsın: doğuya gir, toz geçene kadar bekle, kuzeye çık.",
+    "Toz ne kadar sürer bilemezsin: `while dust_here():` altında `wait()`. Kapıların arasındaki adımlar her seferinde farklı.",
+    "İlk kapı: `move(East)`, `while dust_here():`, `    wait()`, `move(North)`. Sonra `move(East)` ve ikinci kapı..."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(3):", "    move(East)", "    while dust_here():", "        wait()", "    move(North)"],
+      "aciklama": "Kapıların arasındaki adımlar farklı olduğu için aynı döngü üç kez dönemez: ikinci turda robot kayaya çarpar."
+    },
+    {
+      "kod": ["move(East)", "while dust_here():", "    wait()", "move(North)", "move(East)", "move(East)", "move(North)"],
+      "aciklama": "İkinci kapıda beklemeden kuzeye çıkmak olmaz: tozda yol görünmez."
+    }
+  ],
+  "cozum": [
+    "move(East)",
+    "while dust_here():",
+    "    wait()",
+    "move(North)",
+    "move(East)",
+    "move(East)",
+    "while dust_here():",
+    "    wait()",
+    "move(North)",
+    "move(North)",
+    "move(East)",
+    "while dust_here():",
+    "    wait()",
+    "move(North)",
+    "move(East)",
+    "move(North)"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "numara": 53,
+  "baslik": "Depo",
+  "gorev": "raftan_al ile 3 parça al",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    "K D K D D K",
+    "R . . . . .",
+    ". . . . . ."
+  ],
+  "komutlar": ["move", "collect"],
+  "rutinler": ["raftan_al"],
+  "parcalar": ["def raftan_al():", "raftan_al()", "move(East)", "move(North)", "move(South)", "collect()"],
+  "konular": ["fonksiyon", "fonksiyon mu döngü mü"],
+  "ipuclari": [
+    "Raftan parça almak hep aynı: kuzeye uzan, topla, güneye geri çekil. Ama raflar arası yürüyüş her seferinde farklı.",
+    "Döngü aynı şeyi arka arkaya yapar; rutin ise gereken her yerde çağrılır, araya başka adımlar girebilir.",
+    "`def raftan_al():` altına `    move(North)`, `    collect()`, `    move(South)`. Sonra: `move(East)`, `raftan_al()`, `move(East)`, `move(East)`, `raftan_al()`..."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def raftan_al():", "    move(North)", "    collect()", "    move(South)", "for i in range(3):", "    move(East)", "    raftan_al()"],
+      "aciklama": "Raflar arası yürüyüş eşit değil: ikinci turda robot rafın kayasına uzanır."
+    },
+    {
+      "kod": ["def raftan_al():", "    move(North)", "    collect()", "move(East)", "raftan_al()", "move(East)", "move(East)", "raftan_al()", "move(East)", "raftan_al()"],
+      "aciklama": "Rutin geri çekilmiyor: robot raf sırasında kalır ve yandaki kayaya çarpar."
+    },
+    {
+      "kod": ["move(East)", "move(North)", "collect()", "move(South)", "move(East)", "move(East)", "move(North)", "collect()", "move(South)", "move(East)", "move(North)", "collect()", "move(South)"],
+      "aciklama": "Parçalar toplanır ama raftan_al rutini yok: tekrar eden üç adımı rutine koy."
+    }
+  ],
+  "cozum": [
+    "def raftan_al():",
+    "    move(North)",
+    "    collect()",
+    "    move(South)",
+    "move(East)",
+    "raftan_al()",
+    "move(East)",
+    "move(East)",
+    "raftan_al()",
+    "move(East)",
+    "raftan_al()"
+  ]
+}

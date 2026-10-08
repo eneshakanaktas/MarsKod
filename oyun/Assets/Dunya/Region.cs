@@ -4,14 +4,14 @@
 
 namespace MarsKod.Dunya
 {
-    public enum Region { Plain, PolarIce, CraterField, Dunes, AntennaHill }
+    public enum Region { Plain, PolarIce, CraterField, Dunes, AntennaHill, Canyon }
 
     public static class Regions
     {
         public const int LevelsPerRegion = 10;
 
         // Bölge sırasıyla: 1. bölge Bölüm 1-10, 2. bölge Bölüm 11-20...
-        static readonly Region[] Order = { Region.Plain, Region.PolarIce, Region.CraterField, Region.Dunes, Region.AntennaHill };
+        static readonly Region[] Order = { Region.Plain, Region.PolarIce, Region.CraterField, Region.Dunes, Region.AntennaHill, Region.Canyon };
 
         /// <summary>Bölümün geçtiği bölge (henüz yazılmamış bölgelerin bölümleri son bölgede kalır)</summary>
         public static Region Of(int levelNumber)
@@ -22,7 +22,7 @@ namespace MarsKod.Dunya
             return Order[index];
         }
 
-        /// <summary>Bölgede toplanan şey (iniş ovası: enerji hücresi, kutup buzulu: buz, kraterli düzlük: kırık panelin parçası, kum tepeleri: yön bulma direğinin parçası, anten tepesi: kablo makarası)</summary>
+        /// <summary>Bölgede toplanan şey (iniş ovası: enerji hücresi, kutup buzulu: buz, kraterli düzlük: kırık panelin parçası, kum tepeleri: yön bulma direğinin parçası, anten tepesi: kablo makarası, kanyon girişi: drone parçası)</summary>
         public static Collectible Item(Region r)
         {
             switch (r)
@@ -31,6 +31,7 @@ namespace MarsKod.Dunya
                 case Region.CraterField: return Collectible.PanelPart;
                 case Region.Dunes: return Collectible.CompassPart;
                 case Region.AntennaHill: return Collectible.CableReel;
+                case Region.Canyon: return Collectible.DronePart;
                 default: return Collectible.EnergyCell;
             }
         }

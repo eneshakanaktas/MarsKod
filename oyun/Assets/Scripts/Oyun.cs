@@ -736,7 +736,7 @@ public class Oyun : MonoBehaviour
         hud.SetRunning(true);
         hud.HideMessage();
         var world = level.CreateWorld();
-        var report = ProgramRun.Execute(code, world);
+        var report = ProgramRun.Execute(code, world, routines: level.Routines);
 
         // Bitmeyen dongude kaydin sadece basi oynatilir; uzun kayitta bos satirlarda beklenmez.
         int count = report.Halt != null && report.Halt.Reason == "steps" ? Mathf.Min(report.Trace.Count, 40) : report.Trace.Count;
@@ -807,7 +807,9 @@ public class Oyun : MonoBehaviour
         else
         {
             hud.SetActiveLine(-1);
-            if (world.IceLeft > 0)
+            if (world.Complete && report.RoutineProblem != null) // robot isi yapti ama bolumun istedigi rutin yok
+                hud.ShowMessage("GÖREV", report.RoutineProblem.Title, report.RoutineProblem.Text, null, error: false);
+            else if (world.IceLeft > 0)
                 hud.ShowMessage("GÖREV", "Kod bitti, " + Collectibles.PluralName(level.Item) + " bitmedi",
                     "Kodun sonuna kadar çalıştı ama " + world.IceLeft + " " + Collectibles.Name(level.Item) + " daha toplanmayı bekliyor. Robot yalnızca kodda yazanı yapar: eksik adımı bul.",
                     null, error: false);

@@ -1,0 +1,50 @@
+{
+  "numara": 55,
+  "baslik": "İlk uçuş",
+  "gorev": "panel_bak ile onar, piste var",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . 4 6 H",
+    ". . . 7 . .",
+    "R 3 8 2 . ."
+  ],
+  "komutlar": ["move", "panel_power", "repair"],
+  "rutinler": ["panel_bak"],
+  "parcalar": ["def panel_bak():", "panel_bak()", "move(East)", "move(North)", "if panel_power() < 50:", "repair()", "for i in range(3):"],
+  "konular": ["fonksiyon", "rutin içinde if"],
+  "ipuclari": [
+    "Yoldaki her panelde aynı soru: zayıf mı? Zayıfsa onar, sağlamsa dokunma. Bu soruyu bir rutine koy.",
+    "Rutinin içine `if` yazılabilir. Rutin her çağrıldığında robotun o an durduğu panele bakar.",
+    "`def panel_bak():` altına `    if panel_power() < 50:`, `        repair()`. Her adımdan sonra `panel_bak()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def panel_bak():", "    repair()", "move(East)", "panel_bak()", "move(East)", "panel_bak()"],
+      "aciklama": "Sağlam panel onarılmaz: önce panel_power() ile ölç, yalnızca zayıfsa repair()."
+    },
+    {
+      "kod": ["move(East)", "repair()", "move(East)", "move(East)", "repair()", "move(North)", "move(North)", "repair()", "move(East)", "move(East)"],
+      "aciklama": "Paneller onarılır ama panel_bak rutini yok: bu bölüm ölç-onar işini bir rutine koymanı istiyor."
+    }
+  ],
+  "cozum": [
+    "def panel_bak():",
+    "    if panel_power() < 50:",
+    "        repair()",
+    "move(East)",
+    "panel_bak()",
+    "move(East)",
+    "panel_bak()",
+    "move(East)",
+    "panel_bak()",
+    "move(North)",
+    "panel_bak()",
+    "move(North)",
+    "panel_bak()",
+    "move(East)",
+    "panel_bak()",
+    "move(East)"
+  ]
+}

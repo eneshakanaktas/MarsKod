@@ -58,6 +58,8 @@ En kolayı: var olan bir bölümü kopyala, adını ve numarasını değiştir, 
 | `toz_suresi` | Haritada toz bulutu (`Z`) varsa zorunlu: her bulutun kaç beklemede (`wait()`) dağılacağı, tırnaksız sayı listesi, örn. `[3, 5]`. Sıra haritadaki okuma sırasıdır: üst satırdan başla, soldan sağa. Oyuncu bu sayıları görmez; bu yüzden doğru çözüm `while dust_here(): wait()` olur. |
 | `makara_uzunlugu` | Haritada kablo makarası (`M`) varsa zorunlu: her makaranın uzunluğu (metre), tırnaksız sayı listesi, `toz_suresi` gibi haritadaki okuma sırasıyla. Oyuncu bu sayıları görmez; `cable_length()` ölçer. |
 | `rapor` | `komutlar` içinde `report` varsa zorunlu (yoksa yazılmaz): antenin `report()` ile beklediği sayı (örn. makara sayısı, toplam uzunluk). Yanlış sayı gönderilirse robot durur; hiç gönderilmezse görev bitmez. |
+| `rutinler` | İsteğe bağlı (Bölge 6'dan itibaren, fonksiyonlar). Oyuncunun `def` ile yazması gereken rutin adları, örn. `["sabah_turu"]`. Her biri tanımlı olmalı ve kod çalışırken **en az 2 kez** çalışmalı; yoksa robot işi bitirse de görev bitmez ("Kod bitti, sabah_turu rutini yok"). Ad: harf ya da `_` ile başlar, boşluk yok, Python kelimesi ya da oyun komutu değil. Görev yazısında adı söyle. |
+| `rutin_sayisi` | İsteğe bağlı. Adı oyuncuya bırakılmış rutin şartı: en az 2 kez çalışan en az bu kadar farklı rutin olmalı (örn. `1`, `2`). `rutinler` ile birlikte yazılabilir. |
 | `konular` | Bölümün öğrettiği konular (ileride oyuncu profili bunlarla tutulacak). |
 | `ipuclari` | En az 1, ideali 3 ipucu: 1. yön gösterir, 2. konuyu hatırlatır, 3. kodun bir kısmını verir. Kod parçası ters tırnak içine yazılır (`` `move(East)` ``): tırnaklar görünmez, kod renginde çıkar. Ampule basınca 1. ipucu görünür; oyuncu "Bir ipucu daha" dedikçe 2. ve 3. altına eklenir (şimdilik üçü de bedava). |
 | `tipik_hatalar` | Oyuncuların sık yapacağı hatalar: hatalı kod + ne olduğunun açıklaması. İsteğe bağlı ama önerilir. |
@@ -83,11 +85,12 @@ Harfler arasındaki boşluklar önemsizdir, sadece okumayı kolaylaştırır. Ş
 | `Z` | Toz bulutu (Bölge 4). Robot içine girebilir ama içindeyken yürüyemez; `wait()` ile bekler, bulut `toz_suresi`ndeki sayı kadar beklemede dağılır. Toz yokken `wait()` robotu durdurur (oyun kuralı). |
 | `0`-`9` | Güneş paneli (Bölge 3: Bölüm 21-30). Rakam gücün onda biri: `7` → gücü 70. `0` kırık panel (parçası `collect()` ile toplanır), `1`-`4` çatlak (`repair()` ile onarılmalı), `5`-`9` sağlam (dokunulmaz). Sağlam panele `repair()`/`collect()`, kırık panele `repair()`, boş kareye `repair()` robotu durdurur (oyun kuralı). |
 | `M` | Kablo makarası (toplanacak; Bölge 5: Bölüm 41-50). Uzunluğu `makara_uzunlugu` listesinde; `collect()` ile toplanır, toplanınca `cable_length()` 0 verir (önce ölç, sonra topla). |
+| `D` | Drone parçası (toplanacak; Bölge 6: Bölüm 51-60) |
 | `.` | Boş kare |
 
 Bir bölümde tek tür toplanacak olur (`E` ile `B` aynı haritada olmaz). `ice_here` yalnızca buz (`B`) olan bölümlerde açılabilir. Yeni bölge nesnesi eklemek: `oyun/Assets/Dunya/Collectible.cs` (işaret + Türkçe ad), görünüşü sahnede.
 
-Görev: tüm toplanacaklar toplanmış, tüm çatlak paneller onarılmış, (istendiyse) doğru sayı `report()` ile gönderilmiş **ve** (hedef varsa) robot hedef karede olmalı. Kod hatayla ya da oyun kuralıyla (kaya, alan sınırı) durursa görev tamam sayılmaz.
+Görev: tüm toplanacaklar toplanmış, tüm çatlak paneller onarılmış, (istendiyse) doğru sayı `report()` ile gönderilmiş (istendiyse) rutin şartı sağlanmış **ve** (hedef varsa) robot hedef karede olmalı. Kod hatayla ya da oyun kuralıyla (kaya, alan sınırı) durursa görev tamam sayılmaz.
 
 ## Denetim
 

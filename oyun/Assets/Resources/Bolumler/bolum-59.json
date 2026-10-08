@@ -1,0 +1,55 @@
+{
+  "numara": 59,
+  "baslik": "Ortak iş",
+  "gorev": "Panel gücünü topla, raporla, piste var",
+  "harita": [
+    ". . . . . .",
+    ". . K . . .",
+    "K . . . . H",
+    ". . . . Z 9",
+    ". . . . . .",
+    "R 6 Z 7 K ."
+  ],
+  "toz_suresi": [3, 2],
+  "komutlar": ["move", "dust_here", "wait", "panel_power", "report"],
+  "rapor": 220,
+  "rutin_sayisi": 1,
+  "parcalar": ["def ilerle():", "ilerle()", "move(East)", "move(North)", "while dust_here():", "wait()", "toplam = 0", "toplam += panel_power()", "report(toplam)", "for i in range(2):"],
+  "konular": ["fonksiyon", "değişken", "toplam"],
+  "ipuclari": [
+    "İki doğu yolu var, ikisinde de toz olabilir. Doğuya ilerle-bekle işini rutine koy; iki yolda da kullan. Her adımdan sonra panelin gücünü toplama ekle.",
+    "Toplamı rutinin dışında, ana kodda tut: rutinin içindeki `toplam`, dışarıdaki `toplam` ile aynı kutu değil.",
+    "`toplam = 0` en başta; `for i in range(3):` içinde `ilerle()` ve `toplam += panel_power()`; iki `move(North)`; sonra `for i in range(2):` aynısı; `report(toplam)`, `move(North)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["toplam = 0", "def ilerle():", "    move(East)", "    while dust_here():", "        wait()", "    toplam += panel_power()", "for i in range(3):", "    ilerle()", "move(North)", "move(North)", "for i in range(2):", "    ilerle()", "report(toplam)", "move(North)"],
+      "aciklama": "Rutinin içinde toplam'a eklemek hata verir: rutin kendi içinde ayrı bir toplam arar. Toplamı ana kodda tut."
+    },
+    {
+      "kod": ["def ilerle():", "    move(East)", "    while dust_here():", "        wait()", "for i in range(3):", "    toplam = 0", "    ilerle()", "    toplam += panel_power()", "move(North)", "move(North)", "for i in range(2):", "    ilerle()", "    toplam += panel_power()", "report(toplam)", "move(North)"],
+      "aciklama": "toplam = 0 döngünün içinde: her turda sıfırlanır, anten yanlış sayıyı alır."
+    },
+    {
+      "kod": ["def ilerle():", "    move(East)", "    while dust_here():", "        wait()", "toplam = 0", "for i in range(3):", "    ilerle()", "    toplam += panel_power()", "report(toplam)", "move(North)", "move(North)", "for i in range(2):", "    ilerle()", "move(North)"],
+      "aciklama": "Rapor erken gönderildi: ikinci yoldaki panel henüz ölçülmedi."
+    }
+  ],
+  "cozum": [
+    "def ilerle():",
+    "    move(East)",
+    "    while dust_here():",
+    "        wait()",
+    "toplam = 0",
+    "for i in range(3):",
+    "    ilerle()",
+    "    toplam += panel_power()",
+    "move(North)",
+    "move(North)",
+    "for i in range(2):",
+    "    ilerle()",
+    "    toplam += panel_power()",
+    "report(toplam)",
+    "move(North)"
+  ]
+}

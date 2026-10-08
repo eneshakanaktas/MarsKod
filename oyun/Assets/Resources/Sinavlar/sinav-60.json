@@ -1,0 +1,23 @@
+{
+  "bolum": 60,
+  "sorular": [
+    {
+      "soru": "tur() rutini içinde adim() iki kez çağrılıyor. tur() üç kez çağrılırsa adim() kaç kez çalışır?",
+      "secenekler": ["2", "3", "5", "6"],
+      "dogru": 3,
+      "aciklama": "Her tur() içinde 2 adim(): 3 × 2 = 6."
+    },
+    {
+      "soru": "Hangisi rutin adı olabilir?",
+      "secenekler": ["sabah turu", "2tur", "toz_gec", "def"],
+      "dogru": 2,
+      "aciklama": "Ad boşluk içermez, rakamla başlamaz, Python kelimesi olamaz. Kelimeleri _ ile bağla: toz_gec."
+    },
+    {
+      "soru": "Aynı adımlar, araya başka işler girerek farklı yerlerde tekrar ediyorsa en iyisi hangisi?",
+      "secenekler": ["Satırları kopyalamak", "Bir rutin yazıp gereken her yerde çağırmak", "Hepsini tek döngüye koymak", "Hiçbiri, olmaz"],
+      "dogru": 1,
+      "aciklama": "Döngü aynı şeyi arka arkaya yapar; rutin ise gereken her yerde, araya başka adımlar girerek çağrılabilir."
+    }
+  ]
+}

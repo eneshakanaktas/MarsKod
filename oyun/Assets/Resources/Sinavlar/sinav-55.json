@@ -1,0 +1,23 @@
+{
+  "bolum": 55,
+  "sorular": [
+    {
+      "soru": "def sabah_turu(): ve altındaki girintili satırlar çalışınca robot ne yapar?",
+      "secenekler": ["Hemen yürür", "Hiçbir şey yapmaz; rutin yalnızca öğrenilir", "Hata verir", "Rutini iki kez çalıştırır"],
+      "dogru": 1,
+      "aciklama": "def rutini tanımlar, çalıştırmaz. Çalışması için adıyla çağrılır: sabah_turu()."
+    },
+    {
+      "soru": "Rutini tanımından önce çağırırsan ne olur?",
+      "secenekler": ["Normal çalışır", "NameError: Python o adı henüz bilmiyor", "Rutin iki kez çalışır", "Robot durur ama hata yok"],
+      "dogru": 1,
+      "aciklama": "Kod yukarıdan aşağı çalışır; def satırına gelmeden ad tanımlı değildir. Önce def, sonra çağrı."
+    },
+    {
+      "soru": "Rutinin adımları nasıl yazılır?",
+      "secenekler": ["def satırıyla aynı hizada", "def satırından 4 boşluk içeride", "Hepsi tek satırda", "Tırnak içinde"],
+      "dogru": 1,
+      "aciklama": "Rutinin adımları, döngüdeki gibi girintiyle (4 boşluk) yazılır; girinti bitince rutin de biter."
+    }
+  ]
+}

@@ -33,7 +33,7 @@ public class BolumTests
         Assert.NotEmpty(level.Mistakes);
         foreach (var m in level.Mistakes)
         {
-            var report = ProgramRun.Execute(m.Code, level.CreateWorld());
+            var report = level.Run(m.Code);
             Assert.False(report.Complete, m.Explanation);
         }
     }
@@ -81,6 +81,12 @@ public class BolumTests
         Assert.Equal(Collectible.PanelPart, Regions.Item(Region.CraterField));
         Assert.Equal(Collectible.EnergyCell, Regions.Item(Region.Plain));
         Assert.Equal(Collectible.Ice, Regions.Item(Region.PolarIce));
+        Assert.Equal(Region.AntennaHill, Regions.Of(50));
+        Assert.Equal(Region.Canyon, Regions.Of(51));
+        Assert.Equal(Region.Canyon, Regions.Of(60));
+        Assert.Equal(Collectible.DronePart, Regions.Item(Region.Canyon));
+        Assert.Equal(Collectible.DronePart, Collectibles.Marks['D']);
+        Assert.Equal("drone parçası", Collectibles.Name(Collectible.DronePart));
     }
 
     // ---- dosya biçimi ----
@@ -246,5 +252,33 @@ public class BolumTests
         Assert.Equal("Bu komut henüz açılmadı", report.Rule.Title);
         Assert.Contains("move()", report.Rule.Text);
         Assert.Equal(2, report.StopLine);
+    }
+
+    // Mini bölüme rutin şartı eklenmiş hâli: cozum rutinsiz olduğu için denetleyici yakalamalı
+    [Fact]
+    public void Rutin_sarti_okunur_ve_denetlenir()
+    {
+        var level = Level.Parse(Mini.Replace("\"komutlar\"", "\"rutinler\": [\"git\"], \"komutlar\""));
+        Assert.Equal(new[] { "git" }, level.Routines.Names);
+        Assert.Contains(LevelCheck.Problems(level), p => p.Contains("görevi bitirmedi"));
+    }
+
+    [Fact]
+    public void Rutin_sayisi_okunur()
+    {
+        var level = Level.Parse(Mini.Replace("\"komutlar\"", "\"rutin_sayisi\": 2, \"komutlar\""));
+        Assert.Equal(2, level.Routines.MinCount);
+        Assert.True(Level.Parse(Mini).Routines.IsEmpty);
+    }
+
+    [Theory]
+    [InlineData("\"rutinler\": [\"sabah turu\"], ", "geçerli bir rutin adı değil")]
+    [InlineData("\"rutinler\": [\"move\"], ", "oyun komutunun adı")]
+    [InlineData("\"rutinler\": [], ", "boş olamaz")]
+    [InlineData("\"rutin_sayisi\": 0, ", "en az 1")]
+    public void Bozuk_rutin_alani_anlasilir_mesaj_verir(string field, string expected)
+    {
+        var e = Assert.Throws<DataFormatError>(() => Level.Parse(Mini.Replace("\"komutlar\"", field + "\"komutlar\"")));
+        Assert.Contains(expected, e.Message);
     }
 }

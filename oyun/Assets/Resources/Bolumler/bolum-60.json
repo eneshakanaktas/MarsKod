@@ -1,0 +1,52 @@
+{
+  "numara": 60,
+  "baslik": "Kanyona iniş",
+  "gorev": "İki rutinle kanyonun dibine in",
+  "harita": [
+    "R . . . . .",
+    "Z K . . . .",
+    ". 4 8 K . .",
+    ". . . . K .",
+    ". K Z 7 1 3",
+    ". . . . . H"
+  ],
+  "toz_suresi": [2, 4],
+  "komutlar": ["move", "dust_here", "wait", "panel_power", "repair"],
+  "rutin_sayisi": 2,
+  "parcalar": ["def asagi():", "def doguya():", "asagi()", "doguya()", "move(South)", "move(East)", "while dust_here():", "wait()", "if panel_power() < 50:", "repair()", "for i in range(2):"],
+  "konular": ["fonksiyon", "birden çok fonksiyon", "tekrar"],
+  "ipuclari": [
+    "İki tür adım var: güneye inerken toz çıkabilir, doğuya giderken panel çıkar. Her tür için bir rutin yaz.",
+    "Güney rutini: bir adım + toz varsa bekle. Doğu rutini: bir adım + zayıfsa onar. Doğu yolundaki her kare bir panel.",
+    "Sıra: `asagi()` ×2, `doguya()` ×2, `asagi()` ×2, `doguya()` ×3, `asagi()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def asagi():", "    move(South)", "    while dust_here():", "        wait()", "def doguya():", "    move(East)", "    repair()", "asagi()", "asagi()", "doguya()", "doguya()"],
+      "aciklama": "Sağlam panel onarılmaz: doğu rutini önce ölçmeli."
+    },
+    {
+      "kod": ["def asagi():", "    move(South)", "    while dust_here():", "        wait()", "asagi()", "asagi()", "move(East)", "if panel_power() < 50:", "    repair()", "move(East)", "asagi()", "asagi()", "move(East)", "move(East)", "if panel_power() < 50:", "    repair()", "move(East)", "if panel_power() < 50:", "    repair()", "asagi()"],
+      "aciklama": "Robot iner ama bu bölüm iki rutin istiyor: doğuya gidip panele bakma işi de bir rutin olmalı."
+    }
+  ],
+  "cozum": [
+    "def asagi():",
+    "    move(South)",
+    "    while dust_here():",
+    "        wait()",
+    "def doguya():",
+    "    move(East)",
+    "    if panel_power() < 50:",
+    "        repair()",
+    "asagi()",
+    "asagi()",
+    "doguya()",
+    "doguya()",
+    "asagi()",
+    "asagi()",
+    "for i in range(3):",
+    "    doguya()",
+    "asagi()"
+  ]
+}

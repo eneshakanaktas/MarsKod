@@ -1,0 +1,48 @@
+{
+  "numara": 57,
+  "baslik": "Rutin içinde rutin",
+  "gorev": "adim ve tur rutinlerini yaz",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . K H",
+    ". . K K . Z",
+    "K K . Z D .",
+    "R Z D . . ."
+  ],
+  "toz_suresi": [2, 3, 2],
+  "komutlar": ["move", "collect", "dust_here", "wait"],
+  "rutinler": ["adim", "tur"],
+  "parcalar": ["def adim():", "def tur():", "adim()", "tur()", "move(East)", "move(North)", "while dust_here():", "wait()", "collect()"],
+  "konular": ["fonksiyon", "fonksiyon içinde fonksiyon çağırma"],
+  "ipuclari": [
+    "Küçük iş: doğuya bir adım, toz varsa bekle (adim). Büyük iş: iki adım, topla, kuzeye çık (tur). Büyük iş küçüğü kullanır.",
+    "Bir rutin başka bir rutini çağırabilir. Önce ikisini de tanımla, sonra çağır.",
+    "`def tur():` altına `    adim()`, `    adim()`, `    collect()`, `    move(North)`. Sonunda: `tur()`, `tur()`, `adim()`, `move(North)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def tur():", "    adim()", "    adim()", "    collect()", "    move(North)", "tur()", "tur()", "def adim():", "    move(East)", "    while dust_here():", "        wait()", "adim()", "move(North)"],
+      "aciklama": "tur() çalışınca adim() henüz tanımlı değil (NameError). Hepsini başta tanımla, sonra çağır."
+    },
+    {
+      "kod": ["def tur():", "    move(East)", "    while dust_here():", "        wait()", "    move(East)", "    collect()", "    move(North)", "tur()", "tur()", "move(East)", "while dust_here():", "    wait()", "move(North)"],
+      "aciklama": "Robot hedefe varır ama adim rutini yok: tur'un içindeki tekrar eden adımı da rutine koy."
+    }
+  ],
+  "cozum": [
+    "def adim():",
+    "    move(East)",
+    "    while dust_here():",
+    "        wait()",
+    "def tur():",
+    "    adim()",
+    "    adim()",
+    "    collect()",
+    "    move(North)",
+    "tur()",
+    "tur()",
+    "adim()",
+    "move(North)"
+  ]
+}

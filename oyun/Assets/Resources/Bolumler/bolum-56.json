@@ -1,0 +1,41 @@
+{
+  "numara": 56,
+  "baslik": "Görev çizelgesi",
+  "gorev": "koridor rutinini döngüde kullan",
+  "harita": [
+    ". . . . . .",
+    "K . . . . .",
+    ". . . . . H",
+    ". . . . . D",
+    ". . . D K .",
+    "R D K . . ."
+  ],
+  "komutlar": ["move", "collect", "rock_ahead"],
+  "rutinler": ["koridor"],
+  "parcalar": ["def koridor():", "koridor()", "while not rock_ahead(East):", "move(East)", "move(North)", "collect()", "for i in range(2):"],
+  "konular": ["fonksiyon", "döngüden fonksiyon çağırma", "while"],
+  "ipuclari": [
+    "Üç koridor var, uzunlukları farklı. Her birinde: duvara kadar doğuya git, parçayı al, bir kat yukarı çık.",
+    "Uzunluğu bilmediğin yolu `while not rock_ahead(East):` yürür. Bunu bir rutine koyarsan döngünün içinden her turda çağırabilirsin.",
+    "`def koridor():` altına `    while not rock_ahead(East):`, `        move(East)`. Sonra `for i in range(3):` içinde `koridor()`, `collect()`, `move(North)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def koridor():", "    if not rock_ahead(East):", "        move(East)", "for i in range(3):", "    koridor()", "    collect()", "    move(North)"],
+      "aciklama": "if yalnızca bir kez bakar: robot koridorun sonuna varmadan toplar ve parçalar kalır. Duvara kadar gitmek için while."
+    },
+    {
+      "kod": ["for i in range(3):", "    while not rock_ahead(East):", "        move(East)", "    collect()", "    move(North)"],
+      "aciklama": "Robot işi yapar ama koridor rutini yok: koridoru yürüme işini rutine koy."
+    }
+  ],
+  "cozum": [
+    "def koridor():",
+    "    while not rock_ahead(East):",
+    "        move(East)",
+    "for i in range(3):",
+    "    koridor()",
+    "    collect()",
+    "    move(North)"
+  ]
+}

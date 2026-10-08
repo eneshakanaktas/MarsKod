@@ -47,6 +47,12 @@ namespace MarsKod.Dunya
         /// <summary>Görev tamamlandı mı: kod durmadan bitti ve görev yerine geldi. Kod hatayla ya da oyun kuralıyla durduysa
         /// görev yerine gelmiş olsa bile tamam sayılmaz (örn. son buzu toplayıp alanın dışına çıkmak isteyen kod yanlıştır).</summary>
         public bool Complete;
+        /// <summary>Oyuncunun def ile yazdığı (modül düzeyindeki) rutinler</summary>
+        public readonly HashSet<string> DefinedRoutines = new HashSet<string>();
+        /// <summary>Her rutinin kaç kez çalıştığı (döngüden ya da başka rutinden çağrılar dahil)</summary>
+        public readonly Dictionary<string, int> RoutineRuns = new Dictionary<string, int>();
+        /// <summary>Bölümün rutin şartı karşılanmadıysa açıklaması; şart yoksa, sağlandıysa ya da kod durduysa null</summary>
+        public RoutineProblem RoutineProblem;
 
         public bool Stopped => Error != null || Halt != null || Rule != null;
     }
@@ -56,12 +62,13 @@ namespace MarsKod.Dunya
         /// <summary>Oyunda bir çalıştırmanın en fazla adımı (bitmeyen döngü bu sınırda durur)</summary>
         public const int DefaultMaxSteps = 20000;
 
-        public static RunReport Execute(string source, World world, int maxSteps = DefaultMaxSteps)
+        public static RunReport Execute(string source, World world, int maxSteps = DefaultMaxSteps, RoutineRule routines = null)
         {
             var report = new RunReport();
             Interpreter interpreter = null;
             TraceEntry current = null;
             Frame frame = null; // current satirinin calistigi cerceve (degiskenleri satir bitince okunur)
+            var calls = new HashSet<Frame>(); // her rutin cagrisi yeni bir cerceve: ilk adiminda bir kez sayilir
             world.Events.Clear();
             try
             {
@@ -72,6 +79,7 @@ namespace MarsKod.Dunya
                     Flush(world, current, frame);
                     current = new TraceEntry { Line = step.Line };
                     frame = step.Frame;
+                    CountCall(report, calls, step.Frame);
                     report.Trace.Add(current);
                 }
             }
@@ -88,8 +96,26 @@ namespace MarsKod.Dunya
             }
             Flush(world, current, frame);
             report.Output = interpreter?.Output ?? "";
-            report.Complete = !report.Stopped && world.Complete;
+            if (interpreter != null) ReadDefinedRoutines(report, interpreter.Globals);
+            if (!report.Stopped && routines != null && !routines.IsEmpty)
+                report.RoutineProblem = routines.Check(report.DefinedRoutines, report.RoutineRuns);
+            report.Complete = !report.Stopped && world.Complete && report.RoutineProblem == null;
             return report;
+        }
+
+        // Rutin cagrisinin ilk adimi: cerceve yeniyse o rutinin calisma sayisini bir artirir
+        static void CountCall(RunReport report, HashSet<Frame> calls, Frame frame)
+        {
+            if (frame?.Fn == null || !calls.Add(frame)) return;
+            string name = frame.Fn.Def.Name;
+            report.RoutineRuns[name] = report.RoutineRuns.TryGetValue(name, out var n) ? n + 1 : 1;
+        }
+
+        // Kod bitince modul duzeyinde fonksiyon olarak duran adlar = oyuncunun def ile yazdigi rutinler
+        static void ReadDefinedRoutines(RunReport report, Frame globals)
+        {
+            foreach (var pair in globals.Vars)
+                if (pair.Value is PyFunction) report.DefinedRoutines.Add(pair.Key);
         }
 
         // Biten satira dunyada olanlari ve degiskenlerin son halini yazar

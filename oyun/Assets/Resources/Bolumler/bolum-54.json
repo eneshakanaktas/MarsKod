@@ -1,0 +1,51 @@
+{
+  "numara": 54,
+  "baslik": "Serçe",
+  "gorev": "toz_gec ile 3 parça topla",
+  "harita": [
+    ". . . Z D .",
+    ". . D . K .",
+    ". K Z K . .",
+    "D . . . . .",
+    "Z K . . . .",
+    "R K . . . ."
+  ],
+  "toz_suresi": [2, 4, 3],
+  "komutlar": ["move", "collect", "dust_here", "wait"],
+  "rutinler": ["toz_gec"],
+  "parcalar": ["def toz_gec():", "toz_gec()", "move(North)", "move(East)", "while dust_here():", "wait()", "collect()"],
+  "konular": ["fonksiyon", "rutin içinde while"],
+  "ipuclari": [
+    "Kuzeye her adımda toz olabilir de olmayabilir de. Bir adım + 'toz varsa bekle' rutini her kuzey adımında güvenle çalışır.",
+    "Rutinin içine `while` da yazılabilir; rutin çağrılınca içindeki döngü de çalışır. Toz yoksa `while` hiç dönmez.",
+    "`def toz_gec():` altına `    move(North)`, `    while dust_here():`, `        wait()`. Sonra `toz_gec()`, `toz_gec()`, `collect()`..."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def toz_gec():", "    move(North)", "    wait()", "toz_gec()", "toz_gec()", "collect()", "move(East)", "move(East)", "toz_gec()", "toz_gec()", "collect()", "move(East)", "toz_gec()", "move(East)", "collect()"],
+      "aciklama": "Tek wait() yetmez: toz birkaç tur sürer; tozsuz karede de wait() robotu durdurur. Sorarak bekle: while dust_here()."
+    },
+    {
+      "kod": ["move(North)", "while dust_here():", "    wait()", "move(North)", "collect()", "move(East)", "move(East)", "move(North)", "while dust_here():", "    wait()", "move(North)", "collect()", "move(East)", "move(North)", "while dust_here():", "    wait()", "move(East)", "collect()"],
+      "aciklama": "Parçalar toplanır ama toz_gec rutini yok: tekrar eden adımları rutine koy."
+    }
+  ],
+  "cozum": [
+    "def toz_gec():",
+    "    move(North)",
+    "    while dust_here():",
+    "        wait()",
+    "toz_gec()",
+    "toz_gec()",
+    "collect()",
+    "move(East)",
+    "move(East)",
+    "toz_gec()",
+    "toz_gec()",
+    "collect()",
+    "move(East)",
+    "toz_gec()",
+    "move(East)",
+    "collect()"
+  ]
+}

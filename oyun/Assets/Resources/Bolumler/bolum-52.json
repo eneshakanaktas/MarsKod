@@ -1,0 +1,47 @@
+{
+  "numara": 52,
+  "baslik": "Sabah turu",
+  "gorev": "sabah_turu rutinini yaz, 3 kez çağır",
+  "harita": [
+    ". . . . . .",
+    "K . . . . .",
+    ". . . D . .",
+    ". . D . . .",
+    ". D . . . .",
+    "R . . . . K"
+  ],
+  "komutlar": ["move", "collect"],
+  "rutinler": ["sabah_turu"],
+  "python_kelimeleri": ["def"],
+  "parcalar": ["def sabah_turu():", "sabah_turu()", "move(East)", "move(North)", "collect()"],
+  "konular": ["fonksiyon", "def", "fonksiyon çağırma", "girinti"],
+  "ipuclari": [
+    "Her parça bir öncekinin bir sağında ve bir üstünde: aynı üç adım üç kez. Bu üç adımı bir kez öğret, sonra adıyla çağır.",
+    "`def sabah_turu():` bir rutin tanımlar; altındaki girintili satırlar rutinin adımlarıdır. Tanımlamak çalıştırmaz: `sabah_turu()` yazınca çalışır.",
+    "`def sabah_turu():` altına `    move(East)`, `    move(North)`, `    collect()`; sonra üç kez `sabah_turu()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["sabah_turu()", "def sabah_turu():", "    move(East)", "    move(North)", "    collect()", "sabah_turu()", "sabah_turu()"],
+      "aciklama": "Rutin tanımlanmadan çağrılamaz: Python o adı henüz bilmiyor (NameError). Önce def, sonra çağrı."
+    },
+    {
+      "kod": ["def sabah_turu():", "    move(East)", "    move(North)", "    collect()"],
+      "aciklama": "Rutin tanımlandı ama hiç çağrılmadı: robot yerinden kıpırdamaz."
+    },
+    {
+      "kod": ["move(East)", "move(North)", "collect()", "move(East)", "move(North)", "collect()", "move(East)", "move(North)", "collect()"],
+      "aciklama": "Robot parçaları toplar ama bu bölüm rutini istiyor: aynı satırları kopyalamak yerine sabah_turu yaz."
+    }
+  ],
+  "baslangic_kodu": ["# sabah turu - D.A.", "def sabah_turu():", "    move(East)"],
+  "cozum": [
+    "def sabah_turu():",
+    "    move(East)",
+    "    move(North)",
+    "    collect()",
+    "sabah_turu()",
+    "sabah_turu()",
+    "sabah_turu()"
+  ]
+}

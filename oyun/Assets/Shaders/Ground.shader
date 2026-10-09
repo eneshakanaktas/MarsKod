@@ -140,7 +140,7 @@ Shader "MarsKod/Ground"
             float3 canyonFloor(float3 p, float far, float inArea)
             {
                 float2 q = p.xz;
-                float3 a = lerp(float3(0.39, 0.22, 0.15), float3(0.48, 0.28, 0.19), vnoise2(q * 0.9 + 7.0));
+                float3 a = lerp(float3(0.35, 0.21, 0.16), float3(0.43, 0.26, 0.19), vnoise2(q * 0.9 + 7.0));
                 float plate = smoothstep(0.62, 0.64, vnoise2(q * 0.55 + 21.0)) * (1.0 - 0.75 * inArea);
                 a = lerp(a, float3(0.54, 0.35, 0.25), plate * 0.8);   // katmanli kaya plakalari
                 a *= 1.0 + 0.14 * (vnoise2(q * 40.0) - 0.5);
@@ -307,7 +307,7 @@ Shader "MarsKod/Ground"
             {
                 float2 q = p.xz;
                 float detail = 1.0 - far * 0.5;
-                float3 a = lerp(float3(0.39, 0.22, 0.15), float3(0.48, 0.28, 0.19), fbm(q * 0.9 + 7.0));
+                float3 a = lerp(float3(0.35, 0.21, 0.16), float3(0.43, 0.26, 0.19), fbm(q * 0.9 + 7.0));
                 a *= 0.9 + 0.2 * fbm(q * 0.3 + 2.0);                              // genis lekeler
                 float pv = fbm(q * 0.55 + 21.0);
                 float plate = smoothstep(0.57, 0.585, pv);

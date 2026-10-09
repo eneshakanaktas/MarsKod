@@ -60,17 +60,17 @@ public class RegionLook
         probeBase = "#7A5E50", probeTop = "#8E7266",
     };
 
-    // Kanyon: ikindi; gunes solda, sol duvarin hemen ustunde (CanyonSky.hlsl). Golge veren isik batidan (hafif onden: nesnelerin
-    // kameraya bakan yuzu okunsun) gelir, golgeler doguya (saga) duser; arkadan alcak, golgesiz gunes isigi; golgedeki yuzler serin.
+    // Kanyon: Mars'ta gun batimi; gunes solda, alcakta (CanyonSky.hlsl). Golge veren isik batidan ve alcaktan gelir:
+    // golgeler doguya (saga) uzun duser. Isik los ve sicak; golgedeki yuzler serin gok isigi alir.
     static readonly RegionLook Canyon = new RegionLook
     {
         shaderRegion = 4f,
-        skyLight = "#FFD9AE", skyIntensity = 0.9f,
-        sunLight = "#FFB070", sunIntensity = 0.6f,
-        ambientSky = "#7C6E80", ambientEquator = "#7A5A4E", ambientGround = "#33241E",
-        probeBase = "#6E5658", probeTop = "#7A6A7A",
-        skyDir = new Vector3(40f, 75f, 0f),
-        sunDir = new Vector3(12f, 120f, 0f),
+        skyLight = "#FFCFA0", skyIntensity = 0.85f,
+        sunLight = "#FF9E62", sunIntensity = 0.5f,
+        ambientSky = "#6E6478", ambientEquator = "#6E5048", ambientGround = "#2C1F1B",
+        probeBase = "#5E4A4E", probeTop = "#6C5E70",
+        skyDir = new Vector3(24f, 80f, 0f),
+        sunDir = new Vector3(8f, 115f, 0f),
     };
 
     // Bolge 3 finali: oyundaki ilk gun dogumu (docs/tasarim/senaryo-bolge-03.md, kapanis). Ova safaginin aydinlanmis hali.

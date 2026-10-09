@@ -963,7 +963,7 @@ float3 MarsGroundWarmth()
     if (MarsPolar()) return float3(0.06, 0.11, 0.24);
     if (MarsCrater()) return float3(0.32, 0.12, 0.11);
     if (MarsDunes()) return float3(0.26, 0.17, 0.09);
-    if (MarsCanyon()) return float3(0.30, 0.16, 0.07);
+    if (MarsCanyon()) return float3(0.22, 0.12, 0.08);   // gun batimi: zayif, sicak
     return float3(0.30, 0.13, 0.06);
 }
 
@@ -975,7 +975,7 @@ float3 MarsDustHaze(float3 col, float3 posWS, float2 area)
     float2 o = max(abs(posWS.xz) - area, 0.0);
     if (posWS.z < 0.0) o.y *= 0.4;
     float dist = length(o * float2(0.8, 1.0));
-    float haze = smoothstep(0.4, 7.0, dist) * 0.8;
+    float haze = smoothstep(0.4, 7.0, dist) * (MarsCanyon() ? 0.4 : 0.8);   // kanyonda hava daha acik: alan disindaki nesneler yere bassin
     return lerp(col, SRGBToLinear(MarsHorizonPlain()), haze);
 }
 
@@ -986,7 +986,12 @@ float3 MarsFadeToBackdrop(float3 col, float3 posWS, float2 suv, float2 fogRange,
 {
     col = MarsDustHaze(col, posWS, area);
     float distFog = smoothstep(fogRange.x, fogRange.y, posWS.z);
-    float scrFog = smoothstep(_Horizon - 0.15, _Horizon - 0.06, MarsPictureUV(suv).y);
+    // kanyonda bant dar: alanin arkasindaki zemin seridi (roket, kaya, depo burada durur) zemin olarak kalir, ufka yakinda karisir
+    // kanyonda gecis yavas baslar (us 1,5): nesnelerin dibinde zayif, zeminin kivrilip bittigi cizgide (ufkun ~0,02 alti)
+    // tamamlanir; yoksa orada sert bir cizgi kalir
+    float2 band = MarsCanyon() ? float2(0.085, 0.03) : float2(0.15, 0.06);
+    float scrFog = smoothstep(_Horizon - band.x, _Horizon - band.y, MarsPictureUV(suv).y);
+    if (MarsCanyon()) scrFog = pow(scrFog, 1.5);
     float fog = max(distFog, scrFog);
     if (fog > 0.001)
     {

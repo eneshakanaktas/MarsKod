@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,14 +28,15 @@ public static class Traces
     public static BigAntenna Antenna { get; private set; }
 
     // targetPos: bolumde hedef kare varsa dunya konumu (10. bolumdeki telsiz diregi, 40. bolumdeki son isaret diregi icin).
-    // itemPositions: toplanacak nesnelerin dunya konumlari (Bolum 53'teki raf icin).
-    public static void Build(int levelNumber, Transform parent, Vector2 areaHalf, Vector3? targetPos, IReadOnlyList<Vector3> itemPositions)
+    // itemPositions: toplanacak nesnelerin dunya konumlari (Bolum 53'teki raf icin). groundHeight: zemin yuksekligi (x, z).
+    public static void Build(int levelNumber, Transform parent, Vector2 areaHalf, Vector3? targetPos, IReadOnlyList<Vector3> itemPositions,
+        Func<float, float, float> groundHeight)
     {
         rover = PolarTraces.Build(levelNumber, parent, areaHalf);
         CraterTraces.Build(levelNumber, parent, areaHalf);
         Dune = DuneTraces.Build(levelNumber, parent, areaHalf, targetPos);
         Antenna = AntennaTraces.Build(levelNumber, parent, areaHalf);
-        CanyonTraces.Build(levelNumber, parent, areaHalf, targetPos, itemPositions);
+        CanyonTraces.Build(levelNumber, parent, areaHalf, targetPos, itemPositions, groundHeight);
         tank = levelNumber == PolarTraces.TankLevel ? WaterTank.Create(parent, PolarTraces.TankPosition(areaHalf)) : null;
         ResetBackdrop(levelNumber);
         switch (levelNumber)

@@ -95,8 +95,8 @@ float3 CanyonBackdrop(float2 suv)
     float2 ds = (sp - sunPos) * float2(1.0, 1.15);
     float dSun = length(ds);
     col += float3(0.50, 0.34, 0.24) * exp(-dSun * 5.0) * 0.25;
-    col = lerp(col, float3(0.62, 0.78, 0.95), exp(-dSun * 30.0) * 0.55);
-    col = lerp(col, float3(0.86, 0.93, 1.0), exp(-dSun * 90.0) * 0.5);
+    col = lerp(col, float3(0.55, 0.74, 0.98), exp(-dSun * 17.0) * 0.72);
+    col = lerp(col, float3(0.84, 0.92, 1.0), exp(-dSun * 60.0) * 0.6);
     float disc = 1.0 - smoothstep(0.0065 - pixel, 0.0065 + pixel, dSun);
     col = lerp(col, float3(1.0, 0.99, 0.97), disc);
 

@@ -71,11 +71,14 @@ Shader "MarsKod/Ground"
                 return o;
             }
 
-            // Kanyon deposunun ici (Bolum 53-56, _CanyonIndoor = 1): alan ve duvarlara kadar cevresi toz kapli beton plakalar.
-            // Plaka eklemleri iki karede bir (kare cizgileriyle cakisir, onlardan koyu ve ince); duvarlara dogru pas rengi toz birikir.
+            // Kanyon deposu (Bolum 53-56, _CanyonIndoor = 1): alan ve arkadaki sundurmanin altina kadar toz kapli beton plakalar
+            // (yanlarda ve onde dar). Plaka eklemleri iki karede bir (kare cizgileriyle cakisir, onlardan koyu ve ince); kenarlara dogru
+            // pas rengi toz birikir.
             float3 depotFloor(float2 q, float3 ground)
             {
-                float outside = length(max(abs(q) - _Area.xy, 0.0));
+                float2 d = max(abs(q) - _Area.xy, 0.0);
+                d.y *= (q.y > 0.0) ? 0.3 : 1.0;      // arkada beton ~1.6 birim uzar: sundurmanin altini kaplar
+                float outside = length(d);
                 float m = _CanyonIndoor * (1.0 - smoothstep(0.42, 0.55, outside));
                 if (m <= 0.0) return ground;
                 float3 c = float3(0.45, 0.39, 0.34) * (0.93 + 0.10 * vnoise2(q * 1.5 + 2.0));
@@ -84,6 +87,30 @@ Shader "MarsKod/Ground"
                 float dust = saturate(smoothstep(-0.6, 0.45, outside) * 0.8 + 0.6 * smoothstep(0.5, 0.75, vnoise2(q * 0.9 + 3.0)));
                 c = lerp(c, ground * 1.05, dust * 0.55);
                 return lerp(ground, c, m);
+            }
+
+            // Bolum 60 (_CanyonDescent.y = 1): alanin arka kenarindan (w) kanyonun kenarina (x) giden genis, acik renkli patika;
+            // ustunde iki ince tekerlek izi. Kenarin otesinde (alcaktaki vadi tabani) patikanin devami ince, soluk bir cizgi olarak
+            // uzaga kivrilir ve zemin arka plana karismadan once soner (zemin boyasi oldugu icin kayaliklarin ustune cikamaz). sRGB.
+            float3 canyonDescent(float2 q, float3 ground)
+            {
+                if (_CanyonDescent.y < 0.5) return ground;
+                float edgeZ = _CanyonDescent.x, pathX = _CanyonDescent.z, startZ = _CanyonDescent.w;
+                float3 pathCol = float3(0.74, 0.52, 0.38);   // zeminden belirgin acik: sikismis, acik renkli toz
+                // kenara kadar: genis patika
+                float cx = pathX + 0.15 * sin((q.y - startZ) * 2.0);
+                float dx = abs(q.x - cx);
+                float along = smoothstep(startZ - 0.1, startZ + 0.2, q.y) * (1.0 - smoothstep(edgeZ - 0.05, edgeZ + 0.1, q.y));
+                float wide = (1.0 - smoothstep(0.28, 0.34, dx)) * along;
+                float ruts = (1.0 - smoothstep(0.012, 0.03, abs(dx - 0.13))) * wide;   // iki tekerlek izi
+                float3 c = lerp(ground, pathCol * (0.95 + 0.1 * vnoise2(q * 6.0)), wide * 0.95);
+                c = lerp(c, pathCol * 0.72, ruts * 0.6);
+                // kenarin otesi: vadi tabaninda ince devam
+                float s = saturate((q.y - edgeZ) / 9.0);
+                float beyond = step(edgeZ + 0.3, q.y);
+                float vx = pathX * (1.0 - s) + 0.25 * sin(s * 5.0);
+                float thin = (1.0 - smoothstep(0.06, 0.10, abs(q.x - vx))) * beyond * (1.0 - smoothstep(0.7, 1.0, s));
+                return lerp(c, pathCol, thin * 0.7);
             }
 
 #if defined(MARSKOD_SADE)
@@ -144,7 +171,7 @@ Shader "MarsKod/Ground"
                 float plate = smoothstep(0.62, 0.64, vnoise2(q * 0.55 + 21.0)) * (1.0 - 0.75 * inArea);
                 a = lerp(a, float3(0.54, 0.35, 0.25), plate * 0.8);   // katmanli kaya plakalari
                 a *= 1.0 + 0.14 * (vnoise2(q * 40.0) - 0.5);
-                return depotFloor(q, a);
+                return canyonDescent(q, depotFloor(q, a));
             }
 #else
             // Krater: icte koyu (gunes arkadan, alcaktan: uzak ic duvar golgede), kenari hafif kabarik ve aydinlik,
@@ -320,7 +347,7 @@ Shader "MarsKod/Ground"
                 float around = detail * (1.0 - 0.6 * inArea);
                 a = lerp(a, float3(0.20, 0.12, 0.10), smoothstep(0.86, 0.94, vnoise2(q * 16.0 + 3.0)) * around * 0.5);   // koyu cakil
                 a = lerp(a, float3(0.62, 0.44, 0.34), smoothstep(0.90, 0.96, vnoise2(q * 11.0 + 9.0)) * around * 0.4);   // acik taslar
-                return depotFloor(q, a);
+                return canyonDescent(q, depotFloor(q, a));
             }
 
 #endif

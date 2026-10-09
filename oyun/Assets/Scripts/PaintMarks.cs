@@ -1,49 +1,45 @@
-using System.Collections.Generic;
 using UnityEngine;
 
-// Kanyondaki turuncu boya oklar ve yanlarindaki kucuk tarihler (Bolge 6): D. Aras'in isaretledigi yol.
-// Yuzeye (kaya, duvar) yapisik cizilir: yuzeyin yerel XY duzleminde, -Z'ye (kameraya) bakar. Gerceklik: boya ince, golge vermez.
+// Kanyondaki turuncu boya oklar ve tek okunur kelimeler (Bolge 6): D. Aras'in isaretledigi yol. Elle, firca ile boyanmis
+// (BrushPaint): titrek, uclari yuvarlak. Yuzeye (kaya, branda, zemin) yapisik: yuzeyin yerel XY duzleminde, -Z'ye bakar.
 public static class PaintMarks
 {
     public static readonly Color Paint = Mats.Hex("#FF8436");
-    static Mesh triangle;
+    static readonly Color SunBleached = Mats.Hex("#A8705A");   // gunes yemis boya kayanin rengine karisir
 
-    // angleDeg: okun gosterdigi yon (0 saga, 90 yukari). drips: altindan akan boya (acele cizilmis).
-    public static Transform Arrow(Transform surface, Vector3 localPos, float angleDeg, float size, bool drips)
+    // Ok: govde + iki kanatli uc; 0..1 kutuda saga bakar
+    static readonly Vector2[][] ArrowShape =
     {
-        var mat = Mats.Emissive(Paint, Paint * 0.22f, 0.25f);   // hafif parlak: kizil kayada secilsin
-        var arrow = Parts.Empty("Ok", surface);
-        arrow.localPosition = localPos;
-        arrow.localRotation = Quaternion.Euler(0f, 0f, angleDeg);
-        Parts.Add("Govde", arrow, MeshFactory.RoundedBox(new Vector3(size * 0.62f, size * 0.2f, 0.004f), 0.002f), mat,
-            new Vector3(-size * 0.19f, 0f, 0f), outline: false, castShadow: false);
-        var head = Parts.Add("Uc", arrow, Triangle(), mat, new Vector3(size * 0.1f, 0f, -0.001f), outline: false, castShadow: false);
-        head.localScale = new Vector3(size * 0.42f, size * 0.55f, 1f);
-        if (!drips) return arrow;
-        // akintilar ok dondurulse de asagi akar
-        for (int k = 0; k < 3; k++)
-        {
-            float len = size * (0.18f + 0.12f * k);
-            var p = arrow.TransformPoint(new Vector3(-size * (0.4f - 0.2f * k), -size * 0.06f, 0f));
-            var drip = Parts.Add("Akinti", surface, MeshFactory.RoundedBox(new Vector3(size * 0.035f, len, 0.004f), 0.002f), mat,
-                surface.InverseTransformPoint(p) - new Vector3(0f, len * 0.5f, 0f), outline: false, castShadow: false);
-            Parts.Add("Damla", drip, MeshFactory.Sphere(size * 0.03f, 4, 8), mat, new Vector3(0f, -len * 0.5f, 0f), outline: false, castShadow: false);
-        }
+        new[] { new Vector2(0f, 0.5f), new Vector2(1f, 0.5f) },
+        new[] { new Vector2(0.7f, 0.78f), new Vector2(1f, 0.5f), new Vector2(0.7f, 0.22f) },
+    };
+
+    // fade: 0 taze (parlak: golgedeki kizil kayada da secilsin) .. 1 gunes yemis, kayaya karismis
+    public static Material PaintMat(float fade) =>
+        Mats.Emissive(Color.Lerp(Paint, SunBleached, fade * 0.75f), Paint * 0.6f * (1f - fade), 0.25f);
+
+    // angleDeg: okun gosterdigi yon (0 saga, 90 yukari). drips: altindan akan boya (acele boyanmis).
+    public static Transform Arrow(Transform surface, Vector3 localPos, float angleDeg, float size, float fade, bool drips, int seed)
+    {
+        var mat = PaintMat(fade);
+        var arrow = BrushPaint.Strokes(surface, ArrowShape, localPos, size, angleDeg, mat, seed, thickness: 0.16f);
+        if (drips) Drips(surface, arrow, size, mat, seed);
         return arrow;
     }
 
-    public static TextMesh Date(Transform surface, Vector3 localPos, string text, float height) =>
-        WorldText.Create(surface, text, localPos, height, Paint);
+    public static Transform Word(Transform surface, string text, Vector3 localPos, float height, float fade, int seed) =>
+        BrushPaint.Write(surface, text, localPos, height, PaintMat(fade), seed);
 
-    // Okun ucu: tabani x=0'da, sivri ucu x=1'de; -Z'ye bakan tek yuzlu ucgen
-    static Mesh Triangle()
+    // Okun govdesinin altindan uc akinti; ok dondurulse de asagi (yuzeyin -Y'si) akar
+    static void Drips(Transform surface, Transform arrow, float size, Material mat, int seed)
     {
-        if (triangle != null) return triangle;
-        triangle = new Mesh { name = "Ucgen" };
-        triangle.SetVertices(new List<Vector3> { new Vector3(0f, 0.5f, 0f), new Vector3(1f, 0f, 0f), new Vector3(0f, -0.5f, 0f) });
-        triangle.SetNormals(new List<Vector3> { Vector3.back, Vector3.back, Vector3.back });
-        triangle.SetTriangles(new[] { 0, 1, 2 }, 0);
-        triangle.RecalculateBounds();
-        return triangle;
+        var lines = new Vector2[3][];
+        for (int k = 0; k < lines.Length; k++)
+        {
+            Vector3 start = surface.InverseTransformPoint(arrow.TransformPoint(new Vector3(-0.3f + 0.2f * k, -0.03f, 0f)));
+            float len = size * (0.18f + 0.12f * k);
+            lines[k] = new[] { new Vector2(start.x, start.y), new Vector2(start.x, start.y - len) };
+        }
+        BrushPaint.Lines(surface, lines, arrow.localPosition.z, mat, seed + 7, thickness: size * 0.04f);
     }
 }

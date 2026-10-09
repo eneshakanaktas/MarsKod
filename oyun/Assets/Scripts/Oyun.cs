@@ -506,7 +506,7 @@ public class Oyun : MonoBehaviour
             Obstacles.Create(region, levelRoot, Pos(level.Rocks[i]), i, crate: CanyonTraces.IsDepot(level.Number));
         target = level.Target.HasValue ? Target.Create(levelRoot, Pos(level.Target.Value)) : null;
         Traces.Build(level.Number, levelRoot, new Vector2(AreaHalfX, AreaHalfZ), level.Target.HasValue ? Pos(level.Target.Value) : (Vector3?)null,
-            level.Ices.ConvertAll(c => Pos(c)));
+            level.Ices.ConvertAll(c => Pos(c)), TerrainHeight);
 
         ResetRobot();
         string saved = SavedCode(level);

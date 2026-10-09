@@ -86,9 +86,10 @@ public class Sparrow : MonoBehaviour
         hole = Parts.Add("Delik", body, MeshFactory.Sphere(0.05f, 6, 10), dark, new Vector3(0.11f, 0.05f, 0.04f), outline: false).gameObject;
         hole.transform.localScale = new Vector3(0.5f, 1f, 1.2f);
 
-        // ad: ust-on yuzde, cocuk eliyle hafif egik; yukaridan bakan kamera okur
-        var label = WorldText.Create(body, "SERÇE", new Vector3(0f, 0.108f, -0.055f), 0.075f, CraterTraces.EceColor);
-        label.transform.localRotation = Quaternion.Euler(52f, 0f, -7f);
+        // ad: ust-on yuzde, cocuk eliyle boyanmis, hafif egik; yukaridan bakan kamera okur
+        var label = BrushPaint.Write(body, "SERÇE", new Vector3(0f, 0.108f, -0.055f), 0.065f,
+            Mats.Lit(CraterTraces.EceColor, 0.3f), seed: 11, thickness: 0.14f);
+        label.localRotation = Quaternion.Euler(52f, 0f, -7f);
     }
 
     public void SetState(SparrowState s)

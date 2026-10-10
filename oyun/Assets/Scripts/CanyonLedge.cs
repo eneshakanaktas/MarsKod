@@ -35,7 +35,7 @@ public static class CanyonLedge
                 float rx = cx + w * (k == 0 ? -0.22f : 0.18f) + 0.05f * Mathf.Sin(i + k);
                 var top = Parts.Add("UstKaya", root, MeshFactory.Rock(0.22f + 0.06f * Mathf.Sin(i * 1.9f + k), 590 + i * 2 + k), RockTop,
                     new Vector3(rx, y + h - 0.02f, z + back + d * (0.45f + 0.15f * k)));
-                top.localScale = new Vector3(1.6f, 0.45f, 1.1f);
+                top.localScale = new Vector3(1.6f, 0.32f, 1.1f);
             }
             // on yuzde iki ince koyu tortu bandi (hafif egik)
             foreach (float t in new[] { 0.33f, 0.68f })
@@ -51,21 +51,28 @@ public static class CanyonLedge
         return face;
     }
 
-    // Bolum 60. z: kenarin cizgisi; pathX: patikanin kenari kestigi yer. Kenar boyunca duzensiz, basik koyu kayalar;
+    // Bolum 60. z: kenarin cizgisi; pathX: patikanin kenari kestigi yer. Kenar boyunca dogal dagilmis koyu kayalar: boylari,
+    // aralari ve one/arkaya kaymalari farkli, yer yer iki-uc kaya bir arada, aralarda kucuk taslar (sira gibi gorunmesin);
     // patikada aciklik, iki yaninda isaret diregi (ustte turuncu bant). Doner: patikanin basindaki zemin yuzeyi (yere yatik:
     // yerel -Z yukari, +Y kanyona dogru; ok buraya).
     public static Transform Edge(Transform parent, float z, float width, float pathX, Func<float, float, float> ground)
     {
         var root = Parts.Empty("Iz-KanyonKenari", parent);
-        const int Rocks = 8;
+        const int Rocks = 13;
         for (int i = 0; i < Rocks; i++)
         {
-            float x = -width * 0.5f + width * (i + 0.5f) / Rocks + 0.15f * Mathf.Sin(i * 2.9f);
+            float x = -width * 0.5f + width * (i + 0.5f) / Rocks + 0.3f * Mathf.Sin(i * 2.9f);
             if (Mathf.Abs(x - pathX) < PathMouth) continue;
-            float h = 0.12f + 0.1f * Mathf.Abs(Mathf.Sin(i * 1.3f));
-            var rock = Parts.Add("Kaya", root, MeshFactory.Rock(0.3f, 640 + i), RimRock,
-                new Vector3(x, ground(x, z) + h * 0.3f, z + 0.05f * Mathf.Cos(i)));   // kayanin yarisi gomulu
-            rock.localScale = new Vector3(1.4f + 0.3f * Mathf.Sin(i), h / 0.6f, 1f);    // Rock(0.3) ~0.6 yuksek: gorunen boy ~h
+            float size = 0.12f + 0.2f * Mathf.Pow(Mathf.Abs(Mathf.Sin(i * 1.7f + 0.4f)), 2f);   // cogu kucuk, birkaci iri
+            float rz = z + 0.3f * Mathf.Sin(i * 3.7f + 1.1f);
+            var rock = Parts.Add("Kaya", root, MeshFactory.Rock(size, 640 + i), RimRock,
+                new Vector3(x, ground(x, rz) + size * 0.35f, rz));   // kayanin bir kismi gomulu
+            rock.localScale = new Vector3(1.1f + 0.4f * Mathf.Abs(Mathf.Sin(i * 2.3f)), 0.55f + 0.35f * Mathf.Abs(Mathf.Cos(i * 1.9f)), 1f);
+            rock.localRotation = Quaternion.Euler(0f, 37f * i, 0f);
+            if (i % 3 == 1) continue;
+            float px = x + 0.28f * Mathf.Cos(i * 2.1f), pz = rz - 0.15f - 0.1f * Mathf.Sin(i);   // yaninda kucuk tas
+            if (Mathf.Abs(px - pathX) < PathMouth) continue;
+            Parts.Add("Tas", root, MeshFactory.Rock(0.06f, 660 + i), RimRock, new Vector3(px, ground(px, pz) + 0.02f, pz));
         }
         foreach (float side in new[] { -1f, 1f })
             MarkerPost(root, new Vector3(pathX + side * PathMouth, 0f, z - 0.05f), ground);

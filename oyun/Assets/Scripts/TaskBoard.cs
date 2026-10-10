@@ -6,7 +6,7 @@ using UnityEngine;
 public static class TaskBoard
 {
     public const string ReadableWord = "KAPI", FaintTag = "BKM-7";
-    const float W = 0.62f, H = 0.44f;
+    const float W = 0.8f, H = 0.54f;   // telefonda "KAPI" okunsun
 
     // postFace: diregin kameraya bakan yuzu (parent'a gore); panonun ortasi buraya gelir, pano -Z'ye bakar
     public static Transform Create(Transform parent, Vector3 postFace)
@@ -37,9 +37,9 @@ public static class TaskBoard
                 x += len + 0.025f + 0.02f * Mathf.Abs(Mathf.Cos(k + row));
             }
         }
-        var chalk = Mats.Emissive(Mats.Hex("#E8E4D8"), Mats.Hex("#E8E4D8") * 0.12f, 0.1f);
-        BrushPaint.Write(root, ReadableWord, new Vector3(0f, -H * 0.27f, -0.021f), 0.12f, chalk, seed: 56, angleDeg: 2f);
-        BrushPaint.Write(root, FaintTag, new Vector3(W * 0.31f, H * 0.5f - 0.07f, -0.021f), 0.045f, Mats.Lit(Mats.Hex("#8A948C"), 0.1f), seed: 7);
+        var chalk = Mats.Emissive(Mats.Hex("#F2EEE2"), Mats.Hex("#E8E4D8") * 0.35f, 0.1f);   // golgede de secilsin
+        BrushPaint.Write(root, ReadableWord, new Vector3(0f, -H * 0.22f, -0.021f), 0.19f, chalk, seed: 56, angleDeg: 2f);
+        BrushPaint.Write(root, FaintTag, new Vector3(W * 0.31f, H * 0.5f - 0.07f, -0.021f), 0.055f, Mats.Lit(Mats.Hex("#8A948C"), 0.1f), seed: 7);
         return root;
     }
 }

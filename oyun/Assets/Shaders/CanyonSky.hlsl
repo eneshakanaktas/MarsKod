@@ -7,7 +7,7 @@
 #ifndef MARSKOD_CANYON_INCLUDED
 #define MARSKOD_CANYON_INCLUDED
 
-static const float3 CANYON_PLAIN = float3(0.37, 0.24, 0.20);   // ufuk dibindeki puslu kanyon tabani (zemin buna solar)
+static const float3 CANYON_PLAIN = float3(0.33, 0.17, 0.11);   // ufuk dibindeki kanyon tabani: zeminin uzaktaki rengi (ekrandan olculdu)
 static const float2 CANYON_SUN = float2(-0.14, 0.07);           // gunes: x, ufka gore yukseklik (alcak, sol kayaliklarin ustunde;
                                                                 // sol dugmelerin saginda, ust yazilarin altinda)
 
@@ -59,9 +59,9 @@ float3 canyonMesaFace(float2 sp, float top, float lowerTop, float lit, float ris
     // ust kenar: duz tepeler gunesi yandan alir
     float edge = 1.0 - smoothstep(0.0, 2.0 * onePx, top - sp.y);
     c = lerp(c, lerp(CANYON_SHADE * 1.5, CANYON_LIT, lit), edge * lerp(0.45, 0.8, lit));
-    // etek: dokulmus moloz; daha acik ve puslu, ufka yumusakca karisir
+    // etek: dokulmus moloz; tabanin rengine yaklasir, kayalik zeminle bulusur
     float talus = 1.0 - smoothstep(0.004, 0.014, above + 0.003 * vnoise(sp.x * 30.0));
-    c = lerp(c, lerp(c, CANYON_PLAIN, 0.55) * 1.05, talus);
+    c = lerp(c, lerp(c, CANYON_PLAIN, 0.55), talus);
     return c;
 }
 
@@ -74,6 +74,20 @@ float canyonFarTop(float x)
     return _Horizon + 0.003 + 0.022 * stepped + 0.0015 * vnoise(x * 80.0);
 }
 
+// Bolum 60: patikanin son parcasi. Kenar kayalarinin otesindeki zemin seridi ekranda cok ince oldugu icin zemin orada
+// arka plana karisir; patika burada devam eder: zemindeki patikanin hizasindan (ekranda, ufkun altinda d kadar asagida,
+// ortanin ~1,1 d sagi) ufuktaki kanyon agzina (x = 0) duz bir cizgiyle daralarak gider (perspektif: genislik d ile orantili).
+static const float3 CANYON_PATH = float3(0.59, 0.32, 0.19);   // zemindeki patikanin ekrandaki rengi (olculdu)
+float3 canyonPathToMouth(float3 col, float x, float y, float pixel)
+{
+    float d = _Horizon - y;
+    if (d <= 0.0) return col;
+    float center = 1.08 * d, halfWidth = 0.23 * d;
+    float on = 1.0 - smoothstep(halfWidth - pixel, halfWidth + pixel, abs(x - center));
+    float3 c = lerp(CANYON_PLAIN, CANYON_PATH, 0.55 + 0.45 * saturate(d / 0.04));   // uzakta (ufka yakin) tabana yaklasir
+    return lerp(col, c, on);
+}
+
 float3 CanyonBackdrop(float2 suv)
 {
     float2 uv = MarsPictureUV(suv);
@@ -83,7 +97,6 @@ float3 CanyonBackdrop(float2 suv)
     float pixel = 1.5 / picturePx;
     float onePx = 1.0 / picturePx;
     float2 sp = float2(x, uv.y);
-    float t = _SkyTime;
 
     // Gokyuzu: gun batimi
     float skyT = saturate((uv.y - (_Horizon - 0.04)) / (1.0 - _Horizon + 0.04));
@@ -100,16 +113,11 @@ float3 CanyonBackdrop(float2 suv)
     float disc = 1.0 - smoothstep(0.0065 - pixel, 0.0065 + pixel, dSun);
     col = lerp(col, float3(1.0, 0.99, 0.97), disc);
 
-    // Kanyonun ici: uzak sirtlar, guclu mavimsi pus
+    // Kanyonun ici: uzak sirtlar, kanyon duvarlarinin golgesinde (sis yok: koyu, serin)
     float farTop = canyonFarTop(x);
     float farMask = 1.0 - smoothstep(farTop - pixel, farTop + pixel, uv.y);
-    float3 farCol = float3(0.52, 0.44, 0.48);   // gokyuzunden biraz koyu, mavimsi-mor: uzak ve puslu
-    col = lerp(col, lerp(farCol, skyLow, 0.35), farMask);
-
-    // Kanyonun agzinda toz sisi: ufkun hemen ustunde, cok yavas kayar
-    float mb = (uv.y - (_Horizon + 0.006)) / 0.012;
-    float mist = exp(-mb * mb) * (0.6 + 0.4 * fbm(float2(x * 16.0 - t * 0.01, uv.y * 40.0)));
-    col = lerp(col, float3(0.62, 0.50, 0.48), mist * 0.18 * (1.0 - smoothstep(0.03, 0.09, abs(x))));
+    float3 farCol = float3(0.36, 0.27, 0.29);   // golgedeki uzak kaya: serin, morumsu kahve
+    col = lerp(col, lerp(farCol, skyLow, 0.12), farMask);
 
     // Iki yandaki mesa siralari
     [unroll] for (int side = -1; side <= 1; side += 2)
@@ -118,20 +126,15 @@ float3 CanyonBackdrop(float2 suv)
         float top = canyonMesaTop(x, side, s, riser, lowerTop);
         float m = (1.0 - smoothstep(top - pixel, top + pixel, uv.y)) * smoothstep(0.0, 0.03, s);
         float3 c = canyonMesaFace(sp, top, lowerTop, side > 0 ? 1.0 : 0.0, riser, onePx);
-        c = lerp(c, skyLow, 0.08 + 0.18 * (1.0 - s));   // uzaklik pusu: ortaya (kanyonun icine) dogru artar
+        c = lerp(c, skyLow, 0.03 + 0.07 * (1.0 - s));   // ortaya (kanyonun icine) dogru cok hafif solar: uzaklik
         col = lerp(col, c, m);
     }
 
-    // Ufkun alti duz kanyon tabanidir: zemin uzakta bu renge solar (MarsDustHaze, CANYON_PLAIN). Burada kaya ya da gokyuzu
-    // kalirsa uzaktaki zemin onlari gosterir ve kayaliklar sisin icinden asagi uzanan hayaletler gibi gorunur.
-    // Uzaklastikca (ufka yaklastikca) toz yuzunden acilir: koyu tabandan ufuktaki pusa yavasca gecer (sert cizgi kalmasin).
-    float3 hazeLow = lerp(CANYON_PLAIN, float3(0.58, 0.44, 0.40), 0.6);
-    float3 plain = lerp(CANYON_PLAIN, hazeLow, smoothstep(_Horizon - 0.045, _Horizon + 0.002, uv.y));
-    col = lerp(col, plain, 1.0 - smoothstep(_Horizon - 0.004, _Horizon + 0.006, uv.y));
-
-    // Ufuk hizasinda alcak toz pusu (ince, zayif)
-    float lb = (uv.y - _Horizon) / 0.02;
-    col = lerp(col, hazeLow, exp(-lb * lb) * 0.15);
+    // Ufkun alti duz kanyon tabanidir: zemin ufka vardiginda bu renktedir (CANYON_PLAIN = zeminin uzaktaki rengi, ekrandan
+    // olculdu). Burada kaya ya da gokyuzu kalirsa uzaktaki zemin onlari gosterir. Sis yok (Enes): taban kayaliklarin dibine
+    // kadar ayni koyu renk, kayaliklarin molozlu etegiyle bulusur.
+    col = lerp(col, CANYON_PLAIN, 1.0 - smoothstep(_Horizon - 0.004, _Horizon + 0.003, uv.y));
+    if (_CanyonDescent.y > 0.5) col = canyonPathToMouth(col, x, uv.y, pixel);
     return col;
 }
 

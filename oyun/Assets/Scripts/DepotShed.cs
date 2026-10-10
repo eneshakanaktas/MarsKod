@@ -10,12 +10,14 @@ public static class DepotShed
     public readonly struct Spots
     {
         public readonly Vector3 ShelfTop;    // rafin ust gozunun ortasi (Serce burada durur)
-        public readonly Vector3 PostFace;    // sag on diregin kameraya bakan yuzu (pano buraya asilir)
+        public readonly Vector3 PostFace;    // rafin sagindaki ilk on diregin kameraya bakan yuzu (pano buraya asilir)
         public readonly Transform TarpFace;  // brandanin kameraya bakan yuzu (boya ok buraya)
         public Spots(Vector3 shelfTop, Vector3 postFace, Transform tarpFace) { ShelfTop = shelfTop; PostFace = postFace; TarpFace = tarpFace; }
     }
 
-    const float FrontH = 1.0f, BackH = 0.86f, Depth = 1.1f, PostSpacing = 1.2f, Post = 0.06f, SheetW = 0.8f;
+    // alcak: cati, kamera alana yaklastiginda da (kisa kodlu bolumler) uzaktaki kayaliklarin ustune binmez
+    const float FrontH = 0.68f, BackH = 0.58f, Depth = 0.85f, PostSpacing = 1.2f, Post = 0.06f, SheetW = 0.8f;
+    const float ShelfTopY = 0.4f;                   // sundurmanin altindaki rafin ust gozu (catidan alcak)
     const float BrokenDrop = 0.7f;                  // 55'te kopan kirisin sarkan ucunun dususu
     const float RoofGapMargin = 0.25f;              // rafin iki yaninda catinin acik kalan payi
 
@@ -39,14 +41,15 @@ public static class DepotShed
 
         // raf ortadan biraz solda (sagda pusula ve dugmeler var); uzun sundurmada iki, kisada bir kare boyu
         float shelfLength = width >= 5f ? 2f : 1f, shelfX = x0 - shelfLength * 0.25f;
-        var shelfPos = new Vector3(shelfX, ground(shelfX, zBack - 0.5f), zBack - 0.5f);
-        var shelf = StorageShelf.Create(root, shelfPos, shelfLength, stocked: true);
+        var shelfPos = new Vector3(shelfX, ground(shelfX, zBack - 0.45f), zBack - 0.45f);
+        var shelf = StorageShelf.Create(root, shelfPos, shelfLength, stocked: true, ShelfTopY);
         float gapHalf = shelfLength * 0.5f + RoofGapMargin;
         Roof(root, x0, zFront, width, baseY, shelfX - gapHalf, shelfX + gapHalf, bigHole);
         var tarpFace = Tarp(root, new Vector3(x0 - width * 0.5f + 0.55f, baseY + FrontH - 0.03f, zFront - 0.02f));
 
-        var postFace = new Vector3(x0 + RightFrontPostX(width), baseY + 0.75f, zFront - Post * 0.5f - 0.005f);
-        return new Spots(shelf.localPosition + StorageShelf.TopCenter, postFace, tarpFace);
+        float boardX = FirstPostRightOf(x0, width, shelfX + gapHalf + 0.35f);
+        var postFace = new Vector3(boardX, ground(boardX, zFront) + FrontH * 0.55f, zFront - Post * 0.5f - 0.005f);
+        return new Spots(shelf.localPosition + StorageShelf.TopCenter(ShelfTopY), postFace, tarpFace);
     }
 
     // On sira ile arka sira direkleri; her biri zemine oturur
@@ -55,7 +58,7 @@ public static class DepotShed
         int count = PostCount(width);
         for (int i = 0; i < count; i++)
         {
-            float x = x0 - width * 0.5f + i * width / (count - 1);
+            float x = PostX(x0, width, i, count);
             AddPost(root, x, zFront, FrontH, ground);
             AddPost(root, x, zBack, BackH, ground);
         }
@@ -68,7 +71,19 @@ public static class DepotShed
     }
 
     static int PostCount(float width) => Mathf.Max(2, Mathf.RoundToInt(width / PostSpacing) + 1);
-    static float RightFrontPostX(float width) => width * 0.5f;
+    static float PostX(float x0, float width, int i, int count) => x0 - width * 0.5f + i * width / (count - 1);
+
+    // minX'in sagindaki ilk direk (yoksa en sagdaki): pano ekranin kenarina degil, rafin yanina asilir
+    static float FirstPostRightOf(float x0, float width, float minX)
+    {
+        int count = PostCount(width);
+        for (int i = 0; i < count; i++)
+        {
+            float x = PostX(x0, width, i, count);
+            if (x >= minX) return x;
+        }
+        return x0 + width * 0.5f;
+    }
 
     // On ve arka kiris (direklerin tepesi) ile iki uctaki yan kiris. bigHole: arka kiris ortadan kirik, bir yarisi sarkik.
     static void Beams(Transform root, float x0, float zFront, float zBack, float width, float baseY, bool bigHole)
@@ -132,7 +147,7 @@ public static class DepotShed
     // On kirisden sarkan tek branda; hafif egik. Doner: kameraya bakan yuzu (boya ok icin).
     static Transform Tarp(Transform root, Vector3 hangPoint)
     {
-        const float w = 0.75f, h = 0.6f;
+        const float w = 0.75f, h = 0.5f;
         var tarp = Parts.Empty("Branda", root);
         tarp.localPosition = hangPoint;
         tarp.localRotation = Quaternion.Euler(-6f, 0f, 4f);

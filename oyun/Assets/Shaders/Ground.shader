@@ -89,28 +89,24 @@ Shader "MarsKod/Ground"
                 return lerp(ground, c, m);
             }
 
-            // Bolum 60 (_CanyonDescent.y = 1): alanin arka kenarindan (w) kanyonun kenarina (x) giden genis, acik renkli patika;
-            // ustunde iki ince tekerlek izi. Kenarin otesinde (alcaktaki vadi tabani) patikanin devami ince, soluk bir cizgi olarak
-            // uzaga kivrilir ve zemin arka plana karismadan once soner (zemin boyasi oldugu icin kayaliklarin ustune cikamaz). sRGB.
+            // Bolum 60 (_CanyonDescent.y = 1): alanin arka kenarindan (w) baslayan genis, acik renkli patika; ustunde iki ince
+            // tekerlek izi. Kenardaki iki diregin arasindan (x) gecer, sonra ufuktaki kanyonun agzina (ekranin ortasi, x = 0)
+            // dogru kivrilip uzanir: ayni genislikte kaldigi icin perspektifle daralir, zemin ufukta kivrilip bittigi yerde
+            // kanyonun girisinde kaybolur (Enes: patika kanyona giris). sRGB.
             float3 canyonDescent(float2 q, float3 ground)
             {
                 if (_CanyonDescent.y < 0.5) return ground;
                 float edgeZ = _CanyonDescent.x, pathX = _CanyonDescent.z, startZ = _CanyonDescent.w;
                 float3 pathCol = float3(0.74, 0.52, 0.38);   // zeminden belirgin acik: sikismis, acik renkli toz
-                // kenara kadar: genis patika
-                float cx = pathX + 0.15 * sin((q.y - startZ) * 2.0);
+                float toMouth = smoothstep(edgeZ, edgeZ + 7.0, q.y);   // kenardan sonra kanyon agzina dogru kivrilir
+                float cx = lerp(pathX + 0.15 * sin((q.y - startZ) * 2.0), 0.0, toMouth);
                 float dx = abs(q.x - cx);
-                float along = smoothstep(startZ - 0.1, startZ + 0.2, q.y) * (1.0 - smoothstep(edgeZ - 0.05, edgeZ + 0.1, q.y));
-                float wide = (1.0 - smoothstep(0.28, 0.34, dx)) * along;
-                float ruts = (1.0 - smoothstep(0.012, 0.03, abs(dx - 0.13))) * wide;   // iki tekerlek izi
+                float aa = fwidth(dx);                                  // uzakta kenarlar titresmesin
+                float along = smoothstep(startZ - 0.1, startZ + 0.2, q.y);
+                float wide = (1.0 - smoothstep(0.28 - aa, 0.34 + aa, dx)) * along;
+                float ruts = (1.0 - smoothstep(0.012, 0.03 + aa, abs(dx - 0.13))) * wide * (1.0 - toMouth);   // iki tekerlek izi (uzakta secilmez)
                 float3 c = lerp(ground, pathCol * (0.95 + 0.1 * vnoise2(q * 6.0)), wide * 0.95);
-                c = lerp(c, pathCol * 0.72, ruts * 0.6);
-                // kenarin otesi: vadi tabaninda ince devam
-                float s = saturate((q.y - edgeZ) / 9.0);
-                float beyond = step(edgeZ + 0.3, q.y);
-                float vx = pathX * (1.0 - s) + 0.25 * sin(s * 5.0);
-                float thin = (1.0 - smoothstep(0.06, 0.10, abs(q.x - vx))) * beyond * (1.0 - smoothstep(0.7, 1.0, s));
-                return lerp(c, pathCol, thin * 0.7);
+                return lerp(c, pathCol * 0.72, ruts * 0.6);
             }
 
 #if defined(MARSKOD_SADE)

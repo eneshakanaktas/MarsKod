@@ -4,9 +4,6 @@ using UnityEngine;
 // (BrushPaint): titrek, uclari yuvarlak. Yuzeye (kaya, branda, zemin) yapisik: yuzeyin yerel XY duzleminde, -Z'ye bakar.
 public static class PaintMarks
 {
-    public static readonly Color Paint = Mats.Hex("#FF8436");
-    static readonly Color SunBleached = Mats.Hex("#A8705A");   // gunes yemis boya kayanin rengine karisir
-
     // Ok: govde + iki kanatli uc; 0..1 kutuda saga bakar
     static readonly Vector2[][] ArrowShape =
     {
@@ -14,15 +11,19 @@ public static class PaintMarks
         new[] { new Vector2(0.7f, 0.78f), new Vector2(1f, 0.5f), new Vector2(0.7f, 0.22f) },
     };
 
-    // fade: 0 taze (parlak: golgedeki kizil kayada da secilsin) .. 1 gunes yemis, kayaya karismis
+    // fade: 0 taze (parlak: golgedeki kizil kayada da secilsin) .. 1 gunes yemis, kayaya karismis.
+    // Isiktan etkilenmez (Unlit): kayalarin cogu gunesin karsisinda, golgede; isikli boya orada sonuk kahveye donuyordu.
+    // (Parlayan malzeme pakette parlamiyor: Mats.Emissive'in _EMISSION'i pakete girmiyor, ILERLEME.md acik sorular.)
+    static readonly Color FreshInShade = Mats.Hex("#E9783A");   // gunes almayan yuzde taze boyanin gorunen rengi
+    static readonly Color BleachedInShade = Mats.Hex("#80503E");   // gunes yemis: kayanin rengine karismis
     public static Material PaintMat(float fade) =>
-        Mats.Emissive(Color.Lerp(Paint, SunBleached, fade * 0.75f), Paint * 0.6f * (1f - fade), 0.25f);
+        Mats.Unlit(Color.Lerp(FreshInShade, BleachedInShade, fade * 0.75f));
 
     // angleDeg: okun gosterdigi yon (0 saga, 90 yukari). drips: altindan akan boya (acele boyanmis).
     public static Transform Arrow(Transform surface, Vector3 localPos, float angleDeg, float size, float fade, bool drips, int seed)
     {
         var mat = PaintMat(fade);
-        var arrow = BrushPaint.Strokes(surface, ArrowShape, localPos, size, angleDeg, mat, seed, thickness: 0.16f);
+        var arrow = BrushPaint.Strokes(surface, ArrowShape, localPos, size, angleDeg, mat, seed, thickness: 0.2f);
         if (drips) Drips(surface, arrow, size, mat, seed);
         return arrow;
     }

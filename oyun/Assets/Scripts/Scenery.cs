@@ -9,7 +9,9 @@ public static class Scenery
 {
     const int RockShapes = 16;
 
-    public static void Build(Transform parent, Func<float, float, float> height, Vector2 areaHalf, Func<string, Material> farMat)
+    // keepClear: kaya konmayacak serit (x, z dikdortgeni; ornegin Bolum 60'in patikasi). Kayalar yine sirayla uretilir,
+    // yalnizca bu seritte olanlar birakilir: obur kayalarin yeri ve sekli degismez.
+    public static void Build(Transform parent, Func<float, float, float> height, Vector2 areaHalf, Func<string, Material> farMat, Rect keepClear)
     {
         var rng = new System.Random(7);
         float R(float a, float b) => a + (float)rng.NextDouble() * (b - a);
@@ -24,6 +26,7 @@ public static class Scenery
             if (Mathf.Abs(x) < areaHalf.x + 0.45f && Mathf.Abs(z) < areaHalf.y + 0.45f) return;
             int shape = rng.Next(RockShapes);
             var rot = Quaternion.Euler(R(-10, 10), R(0, 360), R(-10, 10));
+            if (keepClear.Contains(new Vector2(x, z))) return;
             var m = Matrix4x4.TRS(new Vector3(x, height(x, z) + size * 0.12f, z), rot, Vector3.one * size);
             (shape % 3 == 0 ? dark : light).Add(new CombineInstance { mesh = shapes[shape], transform = m });
         }

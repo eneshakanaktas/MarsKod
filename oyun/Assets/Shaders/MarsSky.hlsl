@@ -12,6 +12,9 @@ bool MarsCanyon() { return abs(_Region - 4.0) < 0.5; }
 // Cok hafif genel aydinlatma: arka plan ve zeminin karistigi ova rengi ayni oranda (yoksa yeni renk siniri olusur)
 static const float MARS_EXPOSURE = 1.06;
 float _Horizon;   // ufuk: fotograf koordinatinda (asagida)
+// Bolum 60'in kanyona giden patikasi (CanyonTraces): x kenarin z'si, y 1 = acik (0: hicbir bolumde etkisi yok),
+// z patikanin x'i, w alanin arka kenari. Zemin (Ground.shader) ve arka plan (CanyonSky.hlsl) ikisi de cizer.
+float4 _CanyonDescent;
 float4 _Picture;  // x: fotografin olcegi (1 = tam boy), y: dikey kayma (ekranin -1..1 biriminde)
 float4 _Focus;
 float4 _Sun;
@@ -975,19 +978,8 @@ float3 MarsDustHaze(float3 col, float3 posWS, float2 area)
     float2 o = max(abs(posWS.xz) - area, 0.0);
     if (posWS.z < 0.0) o.y *= 0.4;
     float dist = length(o * float2(0.8, 1.0));
-    float haze = smoothstep(0.4, 7.0, dist) * (MarsCanyon() ? 0.4 : 0.8);   // kanyonda hava daha acik: alan disindaki nesneler yere bassin
+    float haze = smoothstep(0.4, 7.0, dist) * (MarsCanyon() ? 0.0 : 0.8);   // kanyonda pus yok (Enes): hava acik, her sey net
     return lerp(col, SRGBToLinear(MarsHorizonPlain()), haze);
-}
-
-// Bolum 60: kanyona inen kenarin otesi daha alcak vadi tabanidir; oradaki zemin ve kayalar daha puslu, serin ve soluk
-// gorunur (uzaklik/derinlik). _CanyonDescent (CanyonTraces): x kenarin z'si, y 1 = acik (0: hicbir bolumde etkisi yok),
-// z patikanin x'i, w alanin arka kenari.
-float4 _CanyonDescent;
-float MarsBeyondDescent(float3 posWS) { return _CanyonDescent.y * smoothstep(_CanyonDescent.x, _CanyonDescent.x + 0.25, posWS.z); }
-float3 MarsDescentHaze(float3 col, float3 posWS)
-{
-    float b = MarsBeyondDescent(posWS);
-    return lerp(col, SRGBToLinear(MarsHorizonPlain()) * float3(0.86, 0.9, 1.06), b * 0.7);
 }
 
 // Zemindeki her sey (zemin, uzaktaki kayalar) ayni kuralla arka plana karisir: once toz pusu, sonra uzaklastikca
@@ -995,7 +987,7 @@ float3 MarsDescentHaze(float3 col, float3 posWS)
 // zemin nerede gokyuzune donuyorsa ustundeki kaya da orada kaybolur (havada asili kaya kalmaz). Renkler dogrusal.
 float3 MarsFadeToBackdrop(float3 col, float3 posWS, float2 suv, float2 fogRange, float2 area)
 {
-    col = MarsDescentHaze(MarsDustHaze(col, posWS, area), posWS);
+    col = MarsDustHaze(col, posWS, area);
     float distFog = smoothstep(fogRange.x, fogRange.y, posWS.z);
     // kanyonda bant dar: alanin arkasindaki zemin seridi (roket, kaya, depo burada durur) zemin olarak kalir, ufka yakinda karisir
     // kanyonda gecis yavas baslar (us 1,5): nesnelerin dibinde zayif, zeminin kivrilip bittigi cizgide (ufkun ~0,02 alti)

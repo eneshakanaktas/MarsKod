@@ -18,6 +18,10 @@ public static class CanyonTraces
     // ResetBackdrop yazar: bolum yuklenince ve "yeniden dene"de ayni deger kalir; 60 disinda sifir.
     static Vector4 descent;
 
+    // Bolum 60'in patikasinin gectigi serit (alanin arkasindan kanyonun agzina): cevre kayalari buraya konmaz (Scenery)
+    public static Rect PathCorridor(Vector2 areaHalf) =>
+        Rect.MinMaxRect(-0.4f, areaHalf.y, DescentPathX + 0.6f, areaHalf.y + DescentGap + 9f);
+
     // Bolum 53-56 acik sundurma deponun onunde gecer (zemin beton, engeller sandik)
     public static bool IsDepot(int levelNumber) => levelNumber >= DepotFirst && levelNumber <= DepotLast;
 
@@ -43,7 +47,7 @@ public static class CanyonTraces
                 MarkedRock(parent, OnGround(ground, areaHalf.x - 0.3f, areaHalf.y + 1.0f), 1.1f, 75f, levelNumber);
                 break;
             case StormLevel:
-                ColonyRocket.Create(parent, OnGround(ground, -areaHalf.x + 1.2f, areaHalf.y + 2.4f), 0.4f);
+                ColonyRocket.Create(parent, OnGround(ground, -areaHalf.x + 1.2f, areaHalf.y + 1.9f), 0.3f);   // kucuk: kisa kodda kamera yaklasinca ust yazilara degmesin
                 MarkedRock(parent, OnGround(ground, areaHalf.x - 0.2f, areaHalf.y + 1.0f), 0.9f, 70f, levelNumber);
                 StormScatter(parent, areaHalf, ground);
                 break;
@@ -60,7 +64,7 @@ public static class CanyonTraces
                 ActiveSparrow = Sparrow.Create(parent, HoverSpot(areaHalf, ground), SparrowState.Flying);
                 break;
             case DatesLevel:
-                FadedArrows(CanyonLedge.Step(parent, areaHalf.y + 0.7f, areaHalf.x * 2f + 1.4f, LedgeHeight, ground), areaHalf);
+                FadedArrows(CanyonLedge.Step(parent, areaHalf.y + 0.5f, areaHalf.x * 2f + 1.4f, LedgeHeight, ground), areaHalf);
                 ActiveSparrow = Sparrow.Create(parent, HoverSpot(areaHalf, ground), SparrowState.Flying);
                 break;
             case 59:
@@ -77,7 +81,7 @@ public static class CanyonTraces
         }
     }
 
-    const float LedgeHeight = 0.45f;   // 58'deki kaya basamagi: ufku kesmeyecek kadar alcak
+    const float LedgeHeight = 0.38f;   // 58'deki kaya basamagi: ufku (kayaliklarin dibini) kesmeyecek kadar alcak
 
     static Vector3 OnGround(Func<float, float, float> ground, float x, float z) => new Vector3(x, ground(x, z), z);
 
@@ -120,10 +124,10 @@ public static class CanyonTraces
         {
             bool last = i == Count - 1;
             float x = -areaHalf.x + 0.3f + i * (areaHalf.x * 2f - 0.9f) / (Count - 1);
-            PaintMarks.Arrow(face, new Vector3(x, last ? 0.25f : 0.22f, 0f), last ? -6f : -2f + i, last ? 0.36f : 0.26f,
+            PaintMarks.Arrow(face, new Vector3(x, last ? 0.2f : 0.18f, 0f), last ? -6f : -2f + i, last ? 0.36f : 0.26f,
                 fade: last ? 0f : 0.85f - 0.1f * i, drips: last, seed: 580 + i);
         }
-        PaintMarks.Word(face, "861", new Vector3(areaHalf.x - 1.25f, 0.24f, 0f), 0.14f, fade: 0f, seed: 861);   // son iki okun arasinda
+        PaintMarks.Word(face, "861", new Vector3(areaHalf.x - 1.3f, 0.17f, 0f), 0.2f, fade: 0f, seed: 861);   // son iki okun arasinda
     }
 
     // Alanin arkasinda taze boya oklu kaya (yolun devami). arrowDeg: okun yonu.

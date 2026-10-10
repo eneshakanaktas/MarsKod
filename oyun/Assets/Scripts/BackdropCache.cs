@@ -131,7 +131,7 @@ public class BackdropCache : MonoBehaviour
         cmd?.Release();
     }
 
-    // Arka plan cizimin C#'tan okudugu degerler (MarsSky.hlsl, PolarSky.hlsl, CraterSky.hlsl). Yeni bir deger eklenirse buraya da eklenir.
+    // Arka plan cizimin C#'tan okudugu degerler (MarsSky.hlsl, PolarSky.hlsl, CraterSky.hlsl, CanyonSky.hlsl). Yeni bir deger eklenirse buraya da eklenir.
     class BackdropInputs
     {
         static readonly int[] FloatIds =
@@ -143,6 +143,7 @@ public class BackdropCache : MonoBehaviour
         static readonly int[] VectorIds =
         {
             Shader.PropertyToID("_Picture"), Shader.PropertyToID("_Focus"), Shader.PropertyToID("_Sun"),
+            Shader.PropertyToID("_CanyonDescent"),
         };
         static readonly int LampsId = Shader.PropertyToID("_PowerLamps");
 

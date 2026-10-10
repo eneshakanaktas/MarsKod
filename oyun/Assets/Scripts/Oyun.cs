@@ -444,7 +444,8 @@ public class Oyun : MonoBehaviour
 
         // Kayalar, kaya kumeleri, olcum istasyonlari, sandiklar (Scenery.cs). Alanin icindeki kayalar bolumden gelir (engel).
         // Zeminle birlikte arka plana karisirlar: zemin ufukta gokyuzune donustugu yerde havada asili kalmazlar.
-        if (!GraphicsOptions.NoScenery) Scenery.Build(board, TerrainHeight, new Vector2(AreaHalfX, AreaHalfZ), FarRockMat);
+        if (!GraphicsOptions.NoScenery) Scenery.Build(board, TerrainHeight, new Vector2(AreaHalfX, AreaHalfZ), FarRockMat,
+            CanyonTraces.PathCorridor(new Vector2(AreaHalfX, AreaHalfZ)));
     }
 
     // inner0..inner1 arasi fine adimla; disinda outer'a kadar coarse adimla (outer = 0: disari uzanmaz)

@@ -181,6 +181,47 @@ Her adımın sonunda Enes'e görüntü gösterilir; **onaylamadan bir sonraki ad
 - Kanyon arka planı önceki bölgelerden ağır olmaz (`BackdropCache`); zemin için Performans modu sürümü aynı işte. `telefon-denemesi.md`'de Bölüm 51 ve 53 kare hızı satırı kalır.
 - Denetim: `dotnet test` geçer; Windows paketi hatasız; Bölüm 51-60 görüntüleri tek tek bakılır (60'ta patikanın kayalıkların altında kaldığı ayrıca kontrol edilir), Performans modunda en az iki bölüm; görüntüler `docs/tasarim/bolge-6-gorunus-2026-10-09/`; yedi fare denetimi TAMAM.
 
+### 3b. Üç sahne (Enes + Claude, 2026-10-11; Enes bölüm bölüm onayladı)
+
+Kurallar 3a'daki gibi: sis yok (derinlik gölgeyle), nesneler zemine basar, dünyada bilgisayar yazısı yok, robotlar konuşmaz, Kıvılcım uçmaz (süzülür, yerden kalkmaz; engellerin üstünden geçmez), roket otomatik. Ses kodla üretilir.
+
+#### 3b.1 Ortak yapı
+
+- **`CanyonScenes.cs`** (yeni): üç sahnenin akışı. `Oyun.cs`'e yalnızca çağrı satırları (kapanışlar `ClosingSceneBolge*` yanına; 51 açılışı `LoadLevel`'daki Kayıt 2 gibi).
+- **`CameraShot`** (yeni, yalnızca kamerayı bilir): sahne sürerken kameranın her karedeki alan ayarı (`FitCamera`) durur, kamera sahnenin verdiği yere/açıya yumuşakça gider; `Release` ile normal ayara yumuşakça döner. Tek kamera: gökyüzü, ışık, Performans modu aynı kalır. Kesme geçişi (55'teki "kırpışma") de buradan.
+- **Boş karelerden yol** (saf C#, `Dunya/`, `dotnet test` ile sınanır): ızgarada robotun bulunduğu kareden istenen kareye yalnızca boş karelerden (kaya, panel, toz, buz/parça, kristal üstünden değil) en kısa yol. 51 ve 60 kullanır. Yol yoksa sahne robotu doğrudan son yerine koyar (görüntü bozulmaz).
+- **Geri alma:** "Tekrar" ve bölüm değişince her şey eski hâline (kamera serbest, roket yerinde, Serçe rafta/köşesinde, robot başlangıçta) — 40/50 kapanışlarındaki gibi.
+- **Yeni sesler** (`Sound`): roket gürlemesi (alçalan, sonda kesilen), pervane vızıltısı (yükselen). Kısa, kodla üretilir.
+- **Serçe'nin gözleri** ışıktan etkilenmeyen parlak renkle (Unlit, boya oklar gibi): yanınca pakette de net görünür. Tüm oyundaki "parlayan malzeme pakette parlamıyor" sorunu ayrı iş olarak kalır (ILERLEME.md açık soru).
+
+#### 3b.2 Bölüm 60 — Kanyona iniş (final, her bitirişte, ~16 sn)
+
+- **Görünüşte değişen:** direklerin hemen ötesinde zeminde **dar bir yarık** başlar, ufuktaki kanyon ağzına doğru daralıp derinleşerek gider (normal bakışta kanyon ağzına giden koyu çizgi; 10 Ekim'deki "patika kanyon ağzına gider" fikriyle uyumlu). Patika yarığın içine, duvarına oyulmuş olarak iner. Zemin yarığın üstünde kesilir (yalnızca 60'ta; başka bölüm etkilenmez). 3a.2'deki 60 satırının "kenarda aşağı döner" kısmı böylece yarığa iner.
+- **Akış:** kutlama + bitiş damgası ("Sonraki: kanyon dibi") → Serçe köşesinden Kıvılcım'ın üstüne gelir (~1 sn) → Kıvılcım hedeften boş karelerden alanın arkasına, patikaya, iki direğin arasından geçer; Serçe biraz önünde (~4-5 sn) → kamera ileri kayar, yükselir, yarığa aşağı bakar (~3 sn) → Kıvılcım yarık duvarındaki patikadan aşağı süzülür, Serçe tam üstünde (~4 sn) → bir dönemeçten sonra küçülüp gözden kaybolurlar; kamera aşağı bakar hâlde kalır (son kare).
+- **Işık (gerçekçilik):** güneş solda alçak → yarığın sağ duvarının yalnızca üst kısmı aydınlık, alt kısımlar ve sol duvar gölgede; dip **gölgeyle** koyulaşır, sis yok. Duvarlar yatay katmanlı (uzak mesalarla aynı tortu).
+- **Yapılmayan:** kanyon dibinin ayrıntısı (Bölge 7). Dip gölgede seçilen düz taban.
+
+#### 3b.3 Bölüm 55 — Serçe'nin ilk uçuşu (her bitirişte, ~12 sn)
+
+- **Akış:** kutlama → Kıvılcım raftaki Serçe'ye döner → Serçe'nin gözleri iki kısa bip'le sırayla yanar, pervaneler yavaştan hızlıya, vızıltı yükselir (~1,5 sn) → Serçe raftan kalkar, ilk uçuşu: önce yalpalar, dengesini bulur, **çatıdaki büyük delikten** yükselir; Kıvılcım başını kaldırıp izler (~3 sn) → ekran kırpışır, **Serçe'nin gözünden** tam yukarıdan aşağı bakış: delikli çatı, alan, yukarı bakan küçük Kıvılcım; görüntü hafifçe salınır; ekranda yazı yok (~2,5 sn) → kırpışma, kamera yerine döner; Serçe yukarıdan alçalıp alanın sağ arka köşesine yerleşir ve süzülür (56-60'taki yeri). Bitiş damgası: "Serçe: çevrimiçi · İlk uçuş".
+- Delik Serçe'nin rafının tam üstünde değilse delik ya da Serçe kaydırılır (çatı yine kayalıkların altında kalır).
+
+#### 3b.4 Bölüm 51 — Roketin inişi (yalnızca ilk açılışta, ~10 sn, dokununca atlanır)
+
+- **Akış:** kara ekranda "Yeni bölge: Kanyon girişi / Hedef: kanyon deposu" → ekran açılır, alan boş (Kıvılcım görünmez) → roket alanın sol arkasının üstünde gökyüzünde belirir, motor alevi + gürlemeyle alçalır, yere yaklaştıkça yavaşlar; altında toz halka gibi yayılır ve birkaç saniyede çöker (anlık iniş tozu, sis değil) (~4 sn) → ayaklar değer, hafif sekip oturur, motor susar, yanık iz belirir (~1 sn) → kapak yana açılır, merdiven iner (~1 sn) → Kıvılcım kapıda belirir, merdivenden süzülerek iner, boş karelerden başlangıç karesine gider (~3 sn) → giriş damgası ("Sol 1.083 · Otomatik rota: Kanyon deposu · Hazırlayan: D. Aras"), bölüm başlar.
+- Sahne sürerken başlık ve kod kartı yerinde, "Çalıştır" kapalı. Ekrana dokunmak sahneyi son hâline atlatır. Telefonda bir kez (`PlayerPrefs`, Kayıt 2 gibi); sonraki açılışlarda roket zaten yerde (bugünkü gibi).
+- `senaryo-bolge-06.md`'deki "sahne yazılardan önce gelir" cümlesi düzeltilir: önce yazılar, sonra sahne.
+
+#### 3b.5 Çalışma sırası ve denetim
+
+Her adımın sonunda Enes'e görüntü gösterilir; **onaylamadan sonraki adıma geçilmez.**
+
+1. `CameraShot` + 60'ın yarığı → 60 normal bakış + kameranın yarığa aşağı bakışı (en riskli parça önce).
+2. Boş karelerden yol (+ testler) + 60 sahnesinin tamamı → ara kareler.
+3. 55 sahnesi (Serçe gözleri Unlit, vızıltı) → ara kareler (özellikle yukarıdan bakış).
+4. 51 sahnesi (roket inişi, gürleme, toz) → ara kareler.
+5. Son denetim: `dotnet test`; Windows paketi hatasız; görüntü turuna üç sahnenin ara kareleri eklenir, `SAHNE DENETIMI: TAMAM` satırı; Bölüm 41, 51-59'un normal görünüşü değişmedi (60 dışında); Performans modunda 60; final ve klavye denetimleri TAMAM; belgeler (`senaryo-bolge-06.md` "Oyuna konanlar", ILERLEME.md).
+
 ## Kapsam dışı
 
 Oynanır Serçe (Bölge 7), parametreli fonksiyon (Bölge 7), `return` (Bölge 8), "Kayıtlar" sayfası (Bölge 7), Bölge 5'in kendi görünüşü (ayrı iş, Hamza'nın ölçümünden sonra), `TestAllLevelsOpen` (Play Store öncesi).

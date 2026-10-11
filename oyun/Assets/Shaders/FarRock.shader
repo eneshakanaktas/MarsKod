@@ -8,6 +8,7 @@ Shader "MarsKod/FarRock"
         _BaseColor ("Renk", Color) = (0.42, 0.25, 0.2, 1)
         _FogRange ("Arka plana karisma (z basla, z bit)", Vector) = (9, 19, 0, 0)
         _Area ("Oyun alani yari boyutu (x, z); toz pusu buradan olculur", Vector) = (3, 3, 0, 0)
+        _FadeBand ("Ekranda arka plana karisma bandi (ufkun alti; 0 = bolge varsayilani)", Vector) = (0, 0, 0, 0)
     }
     SubShader
     {
@@ -19,6 +20,7 @@ Shader "MarsKod/FarRock"
             float4 _BaseColor;
             float4 _FogRange;
             float4 _Area;
+            float4 _FadeBand;
         CBUFFER_END
         ENDHLSL
 
@@ -70,7 +72,7 @@ Shader "MarsKod/FarRock"
                 float3 dawn = _DawnColor.rgb * saturate(dot(n, -_DawnDir.xyz));
                 float3 col = MarsRegionSurface(_BaseColor.rgb, n) * (lightCol + SampleSH(n) + dawn);
                 col *= MarsVignette(suv);
-                return half4(MarsFadeToBackdrop(col, p, suv, _FogRange.xy, _Area.xy), 1.0);
+                return half4(MarsFadeToBackdropBand(col, p, suv, _FogRange.xy, _Area.xy, _FadeBand.xy), 1.0);
             }
             ENDHLSL
         }

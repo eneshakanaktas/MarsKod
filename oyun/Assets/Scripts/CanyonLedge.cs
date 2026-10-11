@@ -62,7 +62,7 @@ public static class CanyonLedge
         for (int i = 0; i < Rocks; i++)
         {
             float x = -width * 0.5f + width * (i + 0.5f) / Rocks + 0.3f * Mathf.Sin(i * 2.9f);
-            if (Mathf.Abs(x - pathX) < PathMouth) continue;
+            if (Mathf.Abs(x - pathX) < RiftMouth) continue;
             float size = 0.12f + 0.2f * Mathf.Pow(Mathf.Abs(Mathf.Sin(i * 1.7f + 0.4f)), 2f);   // cogu kucuk, birkaci iri
             float rz = z + 0.3f * Mathf.Sin(i * 3.7f + 1.1f);
             var rock = Parts.Add("Kaya", root, MeshFactory.Rock(size, 640 + i), RimRock,
@@ -71,7 +71,7 @@ public static class CanyonLedge
             rock.localRotation = Quaternion.Euler(0f, 37f * i, 0f);
             if (i % 3 == 1) continue;
             float px = x + 0.28f * Mathf.Cos(i * 2.1f), pz = rz - 0.15f - 0.1f * Mathf.Sin(i);   // yaninda kucuk tas
-            if (Mathf.Abs(px - pathX) < PathMouth) continue;
+            if (Mathf.Abs(px - pathX) < RiftMouth) continue;
             Parts.Add("Tas", root, MeshFactory.Rock(0.06f, 660 + i), RimRock, new Vector3(px, ground(px, pz) + 0.02f, pz));
         }
         foreach (float side in new[] { -1f, 1f })
@@ -85,6 +85,7 @@ public static class CanyonLedge
     }
 
     const float PathMouth = 0.42f;   // patika agzinin yari genisligi (direkler bunun kenarinda)
+    static readonly float RiftMouth = Mathf.Max(PathMouth, CanyonRift.HalfWidth(0f) + 0.15f);   // kenar kayalari yarigin agzini kapatmaz
 
     // Patikanin iki yanindaki isaret diregi: telefonda secilecek boyda, ustunde turuncu boya bandi
     static void MarkerPost(Transform root, Vector3 pos, Func<float, float, float> ground)

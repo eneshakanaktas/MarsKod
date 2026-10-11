@@ -74,17 +74,17 @@ float canyonFarTop(float x)
     return _Horizon + 0.003 + 0.022 * stepped + 0.0015 * vnoise(x * 80.0);
 }
 
-// Bolum 60: patikanin son parcasi. Kenar kayalarinin otesindeki zemin seridi ekranda cok ince oldugu icin zemin orada
-// arka plana karisir; patika burada devam eder: zemindeki patikanin hizasindan (ekranda, ufkun altinda d kadar asagida,
-// ortanin ~1,1 d sagi) ufuktaki kanyon agzina (x = 0) duz bir cizgiyle daralarak gider (perspektif: genislik d ile orantili).
-static const float3 CANYON_PATH = float3(0.59, 0.32, 0.19);   // zemindeki patikanin ekrandaki rengi (olculdu)
-float3 canyonPathToMouth(float3 col, float x, float y, float pixel)
+// Bolum 60: yarigin son parcasi. Kenar kayalarinin otesindeki zemin seridi ekranda cok ince oldugu icin zemin orada arka
+// plana karisir; yarik burada ince koyu bir cizgi olarak devam eder: 3B yarigin ufka vardigi yerden (ekranda, ufkun altinda d
+// kadar asagida, ortanin ~1,1 d sagi) ufuktaki kanyon agzina (x = 0) duz bir cizgiyle daralarak gider (perspektif: genislik d
+// ile orantili). Cizgi ufka yaklastikca tabana karisir, kanyon agzinda kaybolur.
+float3 canyonRiftToMouth(float3 col, float x, float y, float pixel)
 {
     float d = _Horizon - y;
     if (d <= 0.0) return col;
-    float center = 1.08 * d, halfWidth = 0.23 * d;
+    float center = 1.08 * d, halfWidth = 0.12 * d;
     float on = 1.0 - smoothstep(halfWidth - pixel, halfWidth + pixel, abs(x - center));
-    float3 c = lerp(CANYON_PLAIN, CANYON_PATH, 0.55 + 0.45 * saturate(d / 0.04));   // uzakta (ufka yakin) tabana yaklasir
+    float3 c = lerp(CANYON_PLAIN, float3(0.22, 0.13, 0.11), 0.85 * saturate(d / 0.04));
     return lerp(col, c, on);
 }
 
@@ -134,7 +134,7 @@ float3 CanyonBackdrop(float2 suv)
     // olculdu). Burada kaya ya da gokyuzu kalirsa uzaktaki zemin onlari gosterir. Sis yok (Enes): taban kayaliklarin dibine
     // kadar ayni koyu renk, kayaliklarin molozlu etegiyle bulusur.
     col = lerp(col, CANYON_PLAIN, 1.0 - smoothstep(_Horizon - 0.004, _Horizon + 0.003, uv.y));
-    if (_CanyonDescent.y > 0.5) col = canyonPathToMouth(col, x, uv.y, pixel);
+    if (_CanyonDescent.y > 0.5) col = canyonRiftToMouth(col, x, uv.y, pixel);
     return col;
 }
 

@@ -12,7 +12,7 @@ using UnityEngine.Rendering.Universal;
 // robot, buzlar, arayuz). Bolumler dosyadan gelir (Resources/Bolumler/*.json): harita, gorev, ipucu, dogru cozum.
 // Kod karttaki Python kodu gercekten calisir: once motorda (Assets/Motor) ve dunya kurallarinda (Assets/Dunya)
 // aninda calistirilir, sonra olanlar satir satir animasyonla oynatilir.
-public class Oyun : MonoBehaviour
+public partial class Oyun : MonoBehaviour
 {
     // Sahne simdilik 6x6 alan ciziyor; bolum dosyalari da 6x6 (motor-test bunu denetler).
     const int Cols = 6, Rows = 6;
@@ -77,6 +77,7 @@ public class Oyun : MonoBehaviour
 
 
     Camera cam;
+    CameraShot shot;   // Bolge 6 sahneleri: sahne surerken kamerayi bu yonetir
     Material backdrop;
     BackdropCache backdropCache;
     Transform world;
@@ -300,8 +301,9 @@ public class Oyun : MonoBehaviour
         }
 
         bool finale = System.Array.IndexOf(a, "-final") >= 0;   // yalnizca Bolum 50 kapanisinin goruntuleri (~2 dk)
+        bool scenes = System.Array.IndexOf(a, "-sahneler") >= 0;   // yalnizca Bolge 6 sahnelerinin kareleri
         for (int i = 0; i < a.Length - 1; i++)
-            if (a[i] == "-shots") { shotsMode = true; LoadLevel(levelIndex); StartCoroutine(finale ? FinaleShots(a[i + 1]) : Shots(a[i + 1])); }
+            if (a[i] == "-shots") { shotsMode = true; LoadLevel(levelIndex); StartCoroutine(scenes ? SceneShots(a[i + 1]) : finale ? FinaleShots(a[i + 1]) : Shots(a[i + 1])); }
     }
 
     // Arka plan animasyonlari (ayar, bolum secme ekraninda): kapaliyken gokyuzu duraganlasir, telefon daha az yorulur
@@ -335,6 +337,7 @@ public class Oyun : MonoBehaviour
         cam.backgroundColor = Mats.Hex("#0E0B12");
         cam.fieldOfView = CameraFov;
         cam.allowMSAA = true;
+        shot = new CameraShot(cam);
 
         // Arka plan: kameraya bagli, ekrani dolduran tek kare
         backdrop = Mats.Custom("Backdrop", "MarsKod/Backdrop");
@@ -460,7 +463,7 @@ public class Oyun : MonoBehaviour
     }
 
     // Suslu kaya malzemesi: zeminle ayni isik ve ayni arka plana karisma (FarRock.shader)
-    static Material FarRockMat(string hex)
+    internal static Material FarRockMat(string hex)
     {
         var m = Mats.Custom("FarRock", "MarsKod/FarRock");
         m.SetColor("_BaseColor", Mats.Hex(hex));
@@ -472,6 +475,7 @@ public class Oyun : MonoBehaviour
     // Bolumu kurar: buzlar, engel kayalari, hedef kare, zemindeki buz izleri, karttaki kod ve ust baslik.
     void LoadLevel(int index)
     {
+        shot.Release();
         if (program != null) StopCoroutine(program);
         program = null;
         running = false; done = false; complete = false;
@@ -541,7 +545,7 @@ public class Oyun : MonoBehaviour
 
     void LateUpdate()
     {
-        FitCamera();
+        if (shot.Active) shot.Apply(); else FitCamera();
         stars = Mathf.MoveTowards(stars, starsTarget, Time.deltaTime * 2.5f);
         Shader.SetGlobalFloat("_StarsOn", stars);
     }
@@ -733,6 +737,7 @@ public class Oyun : MonoBehaviour
 
     void ResetLevel()
     {
+        shot.Release();
         if (program != null) StopCoroutine(program);
         program = null;
         running = false; done = false; complete = false;

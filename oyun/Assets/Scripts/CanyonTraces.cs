@@ -18,6 +18,9 @@ public static class CanyonTraces
     // ResetBackdrop yazar: bolum yuklenince ve "yeniden dene"de ayni deger kalir; 60 disinda sifir.
     static Vector4 descent;
 
+    // 60'taki yarik (3B sahneleri kullanir); baska bolumlerde null
+    public static CanyonRift Rift { get; private set; }
+
     // Bolum 60'in patikasinin gectigi serit (alanin arkasindan kanyonun agzina): cevre kayalari buraya konmaz (Scenery)
     public static Rect PathCorridor(Vector2 areaHalf) =>
         Rect.MinMaxRect(-0.4f, areaHalf.y, DescentPathX + 0.6f, areaHalf.y + DescentGap + 9f);
@@ -38,6 +41,7 @@ public static class CanyonTraces
         Func<float, float, float> ground)
     {
         ActiveSparrow = null;
+        Rift = null;
         descent = Vector4.zero;
         if (levelNumber < FirstLevel || levelNumber > LastLevel) return;
         switch (levelNumber)
@@ -76,6 +80,7 @@ public static class CanyonTraces
                 var pathHead = CanyonLedge.Edge(parent, areaHalf.y + DescentGap, areaHalf.x * 2f + 3f, DescentPathX, ground);
                 PaintMarks.Arrow(pathHead, Vector3.zero, 90f, 0.5f, fade: 0f, drips: false, seed: levelNumber);
                 ActiveSparrow = Sparrow.Create(parent, HoverSpot(areaHalf, ground), SparrowState.Flying);
+                Rift = CanyonRift.Build(parent, areaHalf.y + DescentGap, DescentPathX, ground);
                 descent = new Vector4(areaHalf.y + DescentGap, 1f, DescentPathX, areaHalf.y);
                 break;
         }

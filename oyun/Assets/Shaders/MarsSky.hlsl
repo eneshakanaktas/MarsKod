@@ -985,16 +985,19 @@ float3 MarsDustHaze(float3 col, float3 posWS, float2 area)
 // Zemindeki her sey (zemin, uzaktaki kayalar) ayni kuralla arka plana karisir: once toz pusu, sonra uzaklastikca
 // (fogRange: z basla, z bit) ve ekranda cizilen ufka yaklastikca. Kamera geri cekilip zemin ekranda yukari kaysa da
 // zemin nerede gokyuzune donuyorsa ustundeki kaya da orada kaybolur (havada asili kaya kalmaz). Renkler dogrusal.
-float3 MarsFadeToBackdrop(float3 col, float3 posWS, float2 suv, float2 fogRange, float2 area)
+// band: ufkun altinda karismanin basladigi ve bittigi uzaklik (ekran yuksekligi); (0, 0) = bolgenin varsayilani.
+// Yalniz yarik (CanyonRift) kullanir: yarik ufka kadar gorunur kalir, ufkun ustunde gokyuzune karisir.
+float3 MarsFadeToBackdropBand(float3 col, float3 posWS, float2 suv, float2 fogRange, float2 area, float2 customBand)
 {
     col = MarsDustHaze(col, posWS, area);
     float distFog = smoothstep(fogRange.x, fogRange.y, posWS.z);
     // kanyonda bant dar: alanin arkasindaki zemin seridi (roket, kaya, depo burada durur) zemin olarak kalir, ufka yakinda karisir
     // kanyonda gecis yavas baslar (us 1,5): nesnelerin dibinde zayif, zeminin kivrilip bittigi cizgide (ufkun ~0,02 alti)
     // tamamlanir; yoksa orada sert bir cizgi kalir
-    float2 band = MarsCanyon() ? float2(0.085, 0.03) : float2(0.15, 0.06);
+    bool custom = customBand.x > customBand.y;
+    float2 band = custom ? customBand : (MarsCanyon() ? float2(0.085, 0.03) : float2(0.15, 0.06));
     float scrFog = smoothstep(_Horizon - band.x, _Horizon - band.y, MarsPictureUV(suv).y);
-    if (MarsCanyon()) scrFog = pow(scrFog, 1.5);
+    if (MarsCanyon() && !custom) scrFog = pow(scrFog, 1.5);
     float fog = max(distFog, scrFog);
     if (fog > 0.001)
     {
@@ -1002,6 +1005,11 @@ float3 MarsFadeToBackdrop(float3 col, float3 posWS, float2 suv, float2 fogRange,
         col = lerp(col, bd, fog);
     }
     return col;
+}
+
+float3 MarsFadeToBackdrop(float3 col, float3 posWS, float2 suv, float2 fogRange, float2 area)
+{
+    return MarsFadeToBackdropBand(col, posWS, suv, fogRange, area, float2(0.0, 0.0));
 }
 
 // Cevredeki kayalarin bolgeye gore yuzu. Renkler dogrusal.

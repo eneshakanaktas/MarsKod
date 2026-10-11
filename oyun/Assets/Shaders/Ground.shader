@@ -89,22 +89,30 @@ Shader "MarsKod/Ground"
                 return lerp(ground, c, m);
             }
 
+            // Bolum 60: yarigin ustunde zemin cizilmez (CanyonRift.cs ile ayni olculer: CenterX, HalfWidth, Length)
+            void riftClip(float2 q)
+            {
+                if (_CanyonDescent.y < 0.5) return;
+                float t = q.y - _CanyonDescent.x;
+                if (t <= 0.0 || t >= 9.0) return;
+                float cx = lerp(_CanyonDescent.z, 0.0, smoothstep(0.0, 7.0, t));
+                float hw = (0.5 + 0.06 * t) * (1.0 - smoothstep(0.0, 1.0, (t - 7.0) / 2.0));
+                clip(abs(q.x - cx) - hw);   // seridin icinde (hw'den az) negatif: cizilmez
+            }
+
             // Bolum 60 (_CanyonDescent.y = 1): alanin arka kenarindan (w) baslayan genis, acik renkli patika; ustunde iki ince
-            // tekerlek izi. Kenardaki iki diregin arasindan (x) gecer, sonra ufuktaki kanyonun agzina (ekranin ortasi, x = 0)
-            // dogru kivrilip uzanir: ayni genislikte kaldigi icin perspektifle daralir, zemin ufukta kivrilip bittigi yerde
-            // kanyonun girisinde kaybolur (Enes: patika kanyona giris). sRGB.
+            // tekerlek izi. Kenardaki iki diregin arasinda (x) biter: otesi yarik (CanyonRift), patika oradan raf olarak iner. sRGB.
             float3 canyonDescent(float2 q, float3 ground)
             {
                 if (_CanyonDescent.y < 0.5) return ground;
                 float edgeZ = _CanyonDescent.x, pathX = _CanyonDescent.z, startZ = _CanyonDescent.w;
                 float3 pathCol = float3(0.74, 0.52, 0.38);   // zeminden belirgin acik: sikismis, acik renkli toz
-                float toMouth = smoothstep(edgeZ, edgeZ + 7.0, q.y);   // kenardan sonra kanyon agzina dogru kivrilir
-                float cx = lerp(pathX + 0.15 * sin((q.y - startZ) * 2.0), 0.0, toMouth);
+                float cx = pathX + 0.15 * sin((q.y - startZ) * 2.0);
                 float dx = abs(q.x - cx);
                 float aa = fwidth(dx);                                  // uzakta kenarlar titresmesin
-                float along = smoothstep(startZ - 0.1, startZ + 0.2, q.y);
+                float along = smoothstep(startZ - 0.1, startZ + 0.2, q.y) * (1.0 - smoothstep(edgeZ - 0.1, edgeZ + 0.15, q.y));   // patika kenarda biter
                 float wide = (1.0 - smoothstep(0.28 - aa, 0.34 + aa, dx)) * along;
-                float ruts = (1.0 - smoothstep(0.012, 0.03 + aa, abs(dx - 0.13))) * wide * (1.0 - toMouth);   // iki tekerlek izi (uzakta secilmez)
+                float ruts = (1.0 - smoothstep(0.012, 0.03 + aa, abs(dx - 0.13))) * wide;   // iki tekerlek izi
                 float3 c = lerp(ground, pathCol * (0.95 + 0.1 * vnoise2(q * 6.0)), wide * 0.95);
                 return lerp(c, pathCol * 0.72, ruts * 0.6);
             }
@@ -351,6 +359,7 @@ Shader "MarsKod/Ground"
             half4 frag (Varyings i) : SV_Target
             {
                 float3 p = i.posWS;
+                riftClip(p.xz);
                 float3 n = normalize(i.nWS);
                 float2 suv = i.screenPos.xy / i.screenPos.w;
 

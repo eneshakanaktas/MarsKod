@@ -62,20 +62,20 @@ public static class CanyonLedge
         for (int i = 0; i < Rocks; i++)
         {
             float x = -width * 0.5f + width * (i + 0.5f) / Rocks + 0.3f * Mathf.Sin(i * 2.9f);
-            if (Mathf.Abs(x - pathX) < RiftMouth) continue;
             float size = 0.12f + 0.2f * Mathf.Pow(Mathf.Abs(Mathf.Sin(i * 1.7f + 0.4f)), 2f);   // cogu kucuk, birkaci iri
             float rz = z + 0.3f * Mathf.Sin(i * 3.7f + 1.1f);
+            if (Mathf.Abs(x - pathX) < PathMouth || CanyonRift.Covers(x, rz, z, pathX, size + 0.1f)) continue;   // patika ve yarigin agzi acik
             var rock = Parts.Add("Kaya", root, MeshFactory.Rock(size, 640 + i), RimRock,
                 new Vector3(x, ground(x, rz) + size * 0.35f, rz));   // kayanin bir kismi gomulu
             rock.localScale = new Vector3(1.1f + 0.4f * Mathf.Abs(Mathf.Sin(i * 2.3f)), 0.55f + 0.35f * Mathf.Abs(Mathf.Cos(i * 1.9f)), 1f);
             rock.localRotation = Quaternion.Euler(0f, 37f * i, 0f);
             if (i % 3 == 1) continue;
             float px = x + 0.28f * Mathf.Cos(i * 2.1f), pz = rz - 0.15f - 0.1f * Mathf.Sin(i);   // yaninda kucuk tas
-            if (Mathf.Abs(px - pathX) < RiftMouth) continue;
+            if (Mathf.Abs(px - pathX) < PathMouth || CanyonRift.Covers(px, pz, z, pathX, 0.12f)) continue;
             Parts.Add("Tas", root, MeshFactory.Rock(0.06f, 660 + i), RimRock, new Vector3(px, ground(px, pz) + 0.02f, pz));
         }
         foreach (float side in new[] { -1f, 1f })
-            MarkerPost(root, new Vector3(pathX + side * PathMouth, 0f, z - 0.05f), ground);
+            MarkerPost(root, new Vector3(pathX + side * PathMouth, 0f, z - 0.15f), ground);   // yarigin basinin hemen onunde
 
         var surface = Parts.Empty("PatikaBasi", root);
         float sz = z - 0.6f;
@@ -85,7 +85,6 @@ public static class CanyonLedge
     }
 
     const float PathMouth = 0.42f;   // patika agzinin yari genisligi (direkler bunun kenarinda)
-    static readonly float RiftMouth = Mathf.Max(PathMouth, CanyonRift.HalfWidth(0f) + 0.15f);   // kenar kayalari yarigin agzini kapatmaz
 
     // Patikanin iki yanindaki isaret diregi: telefonda secilecek boyda, ustunde turuncu boya bandi
     static void MarkerPost(Transform root, Vector3 pos, Func<float, float, float> ground)

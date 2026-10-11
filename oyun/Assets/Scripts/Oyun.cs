@@ -337,7 +337,7 @@ public partial class Oyun : MonoBehaviour
         cam.backgroundColor = Mats.Hex("#0E0B12");
         cam.fieldOfView = CameraFov;
         cam.allowMSAA = true;
-        shot = new CameraShot(cam);
+        shot = new CameraShot(cam, TerrainHeight);
 
         // Arka plan: kameraya bagli, ekrani dolduran tek kare
         backdrop = Mats.Custom("Backdrop", "MarsKod/Backdrop");

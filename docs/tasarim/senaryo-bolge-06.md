@@ -78,3 +78,16 @@ Sol sayısı iki bölümde bir artar (Bölge 5 sol 1.082'de bitti). Drone parça
 - **Yerleşim** `CanyonTraces.Build`: 51 roket + oklu kaya; 52 uzakta roket + kırıntılar; 53 raf satırı; 54 Serçe rafta (eksik); 55 Serçe rafta (sönük), çatı en yırtık; 56 görev panosu; 57 depo dışarıdan; 58 tarihli oklar; 59 Serçe hedefin üstünde; 60 kanyon kenarı. Serçe 56-60'ta süzülür.
 - **3b'ye kalan:** 51 roket iniş sahnesi, 55 Serçe'nin ilk uçuşu, 60 kanyona iniş (kenarın ötesindeki derinlik o sahnede).
 
+## Oyuna konanlar: görünüş 3a yeniden (2026-10-09/10, Enes; tasarım belgesi 3a, 2026-10-09 hâli)
+
+Enes 3a'yı beğenmedi (dev duvarlı kanyon, kutu depo, bilgisayar yazıları, havada kaya); görsel yön baştan seçildi ve yeniden yapıldı. `CanyonCliff.cs` ve `CanyonDepot.cs` silindi.
+
+- **Kanyon ortamı:** gün batımı kanyon ağzı (ufukta alçak, düz tepeli katmanlı kayalıklar; güneş solda alçak, küçük beyaz disk + mavi hale; sis yok, zemin ufka kadar net).
+- **Açık sundurma depo** (`DepotShed.cs`, yeni): alanın arkasında, ince direkler + arkaya eğik oluklu sac çatı, rafın üstü açık (yukarıdan Serçe görülür), branda, 55'te delik + kırık kiriş; çatı kayalıkların altında kalacak kadar alçak.
+- **Elle boyanmış işaretler** (`BrushPaint.cs`, yeni ortak parça): titrek fırça darbesi + harfler, gölgede de net (Unlit); `PaintMarks` ve `TaskBoard` ("KAPI" + soluk "BKM-7") bununla yeniden çizildi; bilgisayar yazısı (`WorldText`) Bölge 6'da kullanılmaz, bir sahnede en fazla tek okunur kelime.
+- **58 kaya basamağı + 60 kanyon kenarı:** yeni `CanyonLedge.cs`; 58'de doğal kaya basamağı + soluk oklar + taze ok + "861"; 60'ta düzensiz dağılmış kenar kayaları + turuncu bantlı direkler.
+- **60 patikası:** zeminde + arka planda (`_CanyonDescent`, `Ground.shader` `canyonDescent`, `CanyonSky.hlsl` `canyonPathToMouth`) direklerin arasından ufuktaki kanyon ağzına perspektifle daralarak gider; yalnızca 60'ta (`CanyonTraces.ResetBackdrop` her bölümde sıfırlar).
+- **Diğer:** `ColonyRocket` küçüldü (52); `CanyonTraces.PathCorridor` patika şeridine çevre kayası koymaz.
+- **Denetim (Görev 5, 2026-10-11):** Hafif mod 51/53/60'ta zemin+beton+patika doğru; `dotnet test` 1395/1395; final denetimi (`-bolum 50 -final`) ve klavye denetimi TAMAM; Bölüm 41 ekran görüntüsü önceki bölgeye sızma olmadığını doğruladı. Görüntüler: `docs/tasarim/bolge-6-gorunus-2026-10-09/` (51-60 normal mod + 51/53 performans modu). Eski `bolge-6-gorunus-2026-10-08/` beğenilmeyen ilk deneme olarak kalıyor.
+- **3b'ye kalan:** 51 roket iniş sahnesi, 55 Serçe'nin ilk uçuşu, 60 kanyona iniş (kenarın ötesindeki derinlik), parlayan malzemeler sorunu (ayrı açık soru, bkz. ILERLEME.md).
+

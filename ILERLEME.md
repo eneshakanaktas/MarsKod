@@ -1,5 +1,10 @@
 # İlerleme Notu — MarsKod (geçici isim)
 
+## Bölge 6 görünüşü 3b: üç sahnenin tasarımı (Enes, 2026-10-11 akşam) — commit edilmedi
+- **Tasarım yazıldı** (Opus 5.5 · high): `docs/superpowers/specs/2026-10-08-bolge-6-design.md` §3b. Enes bölüm bölüm onayladı: **60** final — direklerin ötesinde kanyon ağzına uzanan yarık, Kıvılcım boş karelerden patikaya, yarıktan aşağı iner, kamera yarığa aşağı bakar; **55** — Serçe gözleri yanar, çatı deliğinden yükselir, an'lık "Serçe'nin gözünden" yukarıdan bakış; **51** — ilk açılışta bir kez roket iner, Kıvılcım merdivenden iner (dokununca atlanır). Ortak: `CameraShot`, boş karelerden yol (saf C#), yeni sesler. Serçe gözleri Unlit (tüm oyundaki parlama sorunu ayrı iş kaldı).
+- **Enes tasarımı onayladı. Yapım planı yazıldı:** `docs/superpowers/plans/2026-10-11-bolge-6-sahneler-3b.md` (5 görev; Görev 1-4 sonunda görüntü, Enes onaylamadan ilerlenmez). Görev 1 = sahne kamerası (`CameraShot`, gökyüzü ufku kamerayla birlikte kayar) + 60 yarığı. **Bulgu:** 51'deki roket Kıvılcım'dan ince (kapıdan sığmıyor) → Görev 4 başında roket gövdesi kalınlaştırılıp Enes'e sorulacak.
+- **Sıradaki:** Enes planı okuyup çalışma biçimini seçince Görev 1.
+
 ## Bölge 6 görünüşü: Görev 5 — son denetim + belgeler (Ragıp, 2026-10-11) — GitHub'a yüklendi
 - **Paket + testler:** Windows paketi yeniden üretildi (Unity lisansı oturumda bir kez etkinleştirilmesi gerekti), derleme hatası yok. `dotnet test` 1395/1395.
 - **Denetimler:** Hafif mod (`-performans ac`) 51/53/60'ta zemin, beton, patika doğru. Final denetimi (`-bolum 50 -final`) → `FINAL DENETIMI: TAMAM`. Klavye denetimi (`scripts/klavye-denetimi.ps1`) iki kez `FARKLI -> move(East)` verdi (tuşlar oyuna hiç ulaşmamış); debug ile pencere tutamacının (handle) geçerli olduğu, mesajların `True` döndüğü görüldü — **sonraki denemelerde `TAMAM`** çıktı, yani kod hatası değil, zamanlama kaynaklı rastgele bir aksaklıktı (iki kez art arda doğrulandı). Bölüm 41 ekran görüntüsü Bölge 5'e sızma olmadığını doğruladı (karşılaştırma: `docs/tasarim/bolge-5-bulmacalar-2026-10-07/b41-1-bekleme.png`).

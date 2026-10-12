@@ -672,6 +672,13 @@ public class Hud : MonoBehaviour
     // Olcum icin (-arayuz yok): arayuz cizilmez ama yerlesimi durur, sahnenin kamera hesabi degismez
     public void HideForMeasurement() => root.visible = false;
 
+    // Sahneler (Bolge 6) surerken alttaki kod karti (klavye, dugmeler dahil) tamamen kapanir: ekranin tamami sahnenin olur
+    public void SetCardVisible(bool visible)
+    {
+        if (!visible) editor.StopEditing();
+        card.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+    }
+
     public bool HintOpen => hint.Open;
 
     // Ipucu balonunu gosterir: n. ipucu (1'den), toplam total (acilinca hata kutusu kapanir)

@@ -35,16 +35,20 @@ public class CanyonScenes
         var rift = CanyonTraces.Rift;
         var sparrow = CanyonTraces.ActiveSparrow;
         if (rift == null) yield break;
-        hud.StopEditing();   // klavye acik kalirsa kanyona giris gorunmez (kamera ve ekran duzeni bu sirada oturur)
+        hud.StopEditing();   // klavye kapanir; ekran duzeni kalkis sirasinda oturur
         Phase = "kalkis";
         if (sparrow != null) yield return sparrow.FlyTo(robot.transform.localPosition + Vector3.up * 1.2f, 1f);
+        else yield return Tween.Wait(1f);
+        // Kamera simdiki gorunumde sabitlenir, SONRA kod karti kapanir: kart kapaninca normal kamera ekrani yeniden sigdirip
+        // alani yakinlastirmasin. Sahne boyunca kart yok, ekranin tamami sahnenin.
+        shot.Begin();
+        hud.SetCardVisible(false);
         Phase = "yol";
         var walk = CellsTo(level, level.Target ?? level.Robot, ExitCell(level), itemsTaken: true).ConvertAll(c => cellPos(c));
         walk.Add(rift.Trail[0]);
         if (sparrow != null) sparrow.StartCoroutine(Follow(sparrow, 0.5f));
         yield return Walk(walk, 0.45f);
         Phase = "bakis";
-        shot.Begin();
         yield return shot.MoveTo(rift.ViewPoint, rift.ViewTarget, 3f, CanyonRift.ViewFov);
         Phase = "inis";
         if (sparrow != null)
@@ -60,6 +64,8 @@ public class CanyonScenes
             yield return sparrow.FlyTo(rift.AirBeside(rift.Trail[rift.BendIndex]), 1.2f);
             sparrow.gameObject.SetActive(false);
         }
+        yield return Tween.Wait(0.8f);
+        hud.SetCardVisible(true);   // son kare kalir; "Tekrar" yeniden gorunur
         Phase = "son";
     }
 
@@ -67,6 +73,7 @@ public class CanyonScenes
     public void Restore()
     {
         robot.gameObject.SetActive(true);
+        hud.SetCardVisible(true);
         shot.Release();
         Phase = "";
     }

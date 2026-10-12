@@ -14,6 +14,7 @@ Shader "MarsKod/FarRock"
         _VertexAO ("Kose renginin kirmizisi ortam isigini kisar (0 kapali)", Float) = 0
         _DawnShadow ("Safak isigi da gunesin golgesinde kalir (0 kapali)", Float) = 0
         _DeepShadow ("Golge tam koyu (0 = isigin kendi golge gucu)", Float) = 0
+        _SceneOnly ("1: yalniz sahne kamerasinda gorunur (normal bakista yerini zemindeki cizim alir; _SceneCamera ile erir)", Float) = 0
     }
     SubShader
     {
@@ -29,6 +30,7 @@ Shader "MarsKod/FarRock"
             float _VertexAO;
             float _DawnShadow;
             float _DeepShadow;
+            float _SceneOnly;
         CBUFFER_END
         ENDHLSL
 
@@ -73,6 +75,7 @@ Shader "MarsKod/FarRock"
 
             half4 frag (Varyings i) : SV_Target
             {
+                if (_SceneOnly > 0.5) clip(_SceneCamera - SceneDither(i.positionCS.xy));   // Ground.shader ayni gurultuyle tamamlayici
                 float3 p = i.posWS;
                 float3 n = normalize(i.nWS);
                 float2 suv = i.screenPos.xy / i.screenPos.w;

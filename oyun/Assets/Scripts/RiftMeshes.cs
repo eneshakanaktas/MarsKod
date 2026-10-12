@@ -225,6 +225,7 @@ public static class RiftMeshes
         m.SetFloat("_VertexAO", 1f);
         m.SetFloat("_DawnShadow", 1f);
         m.SetFloat("_DeepShadow", 1f);
+        m.SetFloat("_SceneOnly", 1f);   // normal bakista yok: yerini zemindeki catlak alir (Ground.shader riftCrack)
         return m;
     }
 }

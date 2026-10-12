@@ -57,12 +57,24 @@ public class CanyonRift : MonoBehaviour
     public Vector3 ViewTarget { get; private set; }     // kameranin baktigi nokta (dunya)
 
     RiftShape shape;
+    Renderer[] renderers;
+    static readonly int SceneCameraId = Shader.PropertyToID("_SceneCamera");
+
+    // 3B yarik yalnizca sahne kamerasinda var (normal bakista zemindeki catlak: Ground.shader riftCrack); gecis sirasinda ikisi
+    // nokta nokta erir. Normal bakista hic cizilmesin (golge de dusurmesin) diye kapatilir.
+    void Update()
+    {
+        bool visible = Shader.GetGlobalFloat(SceneCameraId) > 0.001f;
+        if (renderers[0].enabled != visible)
+            foreach (var r in renderers) r.enabled = visible;
+    }
 
     public static CanyonRift Build(Transform parent, float startZ, float pathX, Func<float, float, float> ground)
     {
         var rift = Parts.Empty("Iz-Yarik", parent).gameObject.AddComponent<CanyonRift>();
         rift.shape = new RiftShape(startZ, pathX, ground);
         RiftMeshes.Build(rift.transform, rift.shape);
+        rift.renderers = rift.GetComponentsInChildren<Renderer>(true);
         rift.BuildTrail(pathX, startZ, ground);
         rift.SetView();
         return rift;

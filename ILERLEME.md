@@ -5,7 +5,8 @@
 - **Yapıldı:** `GridPath.cs` (boş karelerden en kısa yol; 7 test, `dotnet test` 1403), `CanyonScenes.cs` (60: Serçe kalkar → Kıvılcım hedeften alanın arkasına, direklerin arasından patikaya → kamera yarığa bakar → patikadan iner, Serçe ardından → ikisi de kenardan aşağı gözden kaybolur), `Robot.Glide` (patikada durmadan akıcı yürüyüş), `Sparrow.FlyTo/ResetHome`, "Tekrar" sahneyi geri alır. `-sahneler` denetimi TAMAM (kareler `docs/tasarim/bolge-6-sahneler-2026-10-11/gorev2-*.png`).
 - **Karar:** toz bulutu katı engel sayılmadı (51'de robot kaya + toz arasında başlıyor, 60'ın üst yarısına yalnız bir toz karesinden geçiliyor).
 - **Açık (kapsam dışı):** denetimde "çalıştır → Tekrar"dan yarım sn sonra toz topları dev görünüyor; sahnesiz 31. bölümde de oluyor, ölçülen boyutlar normal → büyük olasılıkla denetim ortamına özgü, oyunda görülmedi. Telefonda/oyunda "Tekrar" sonrası bakılmalı.
-- **Sıradaki:** Enes onayı → Görev 3 (55 Serçe'nin ilk uçuşu).
+- **Enes'in düzeltme isteği (2026-10-12):** normal bakışta yarık "saçma" (şişkin balon, ufukta düz kesik, patika yapışık); iç görünüm güzel, dokunulmadı. Çözüm: 3B yarık yalnızca sahne kamerasında; normal bakışta zemin bütün, yarık yerine ince koyu çatlak (`Ground.shader riftCrack` yakında, `CanyonSky.hlsl canyonRiftToMouth` ufukta kanyon ağzına inen çizgi). Kamera yarığa dönerken ikisi nokta nokta erir (`SceneDither`). Görüntüler `gorev2-duzeltme-*.png`.
+- **Sıradaki:** Enes onayı (normal bakış çatlağı + sahne) → Görev 3 (55 Serçe'nin ilk uçuşu).
 
 ## Bölge 6 · 3b Görev 1 düzeltmesi (Enes, 2026-10-12) — commit edilmedi (dal: `bolge6-sahneler-3b`)
 - **Çalışma biçimi değişti (Enes):** yardımcı (subagent) yok; Claude (Opus 5.5 · high) işi kendisi yapıyor.

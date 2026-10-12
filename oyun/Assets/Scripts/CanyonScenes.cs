@@ -35,6 +35,7 @@ public class CanyonScenes
         var rift = CanyonTraces.Rift;
         var sparrow = CanyonTraces.ActiveSparrow;
         if (rift == null) yield break;
+        hud.StopEditing();   // klavye acik kalirsa kanyona giris gorunmez (kamera ve ekran duzeni bu sirada oturur)
         Phase = "kalkis";
         if (sparrow != null) yield return sparrow.FlyTo(robot.transform.localPosition + Vector3.up * 1.2f, 1f);
         Phase = "yol";
@@ -46,12 +47,17 @@ public class CanyonScenes
         shot.Begin();
         yield return shot.MoveTo(rift.ViewPoint, rift.ViewTarget, 3f, CanyonRift.ViewFov);
         Phase = "inis";
+        if (sparrow != null)
+        {
+            sparrow.StopAllCoroutines();   // zemindeki "Follow" biter; yarikta acik havadan eslik eder
+            sparrow.StartCoroutine(FollowBeside(sparrow, rift));
+        }
         yield return robot.Glide(rift.Trail.Take(rift.BendIndex + 1).ToList(), 0.5f);
         robot.gameObject.SetActive(false);
         if (sparrow != null)
         {
             sparrow.StopAllCoroutines();
-            yield return sparrow.FlyTo(rift.Trail[rift.BendIndex] + Vector3.up * 0.3f, 1.2f);
+            yield return sparrow.FlyTo(rift.AirBeside(rift.Trail[rift.BendIndex]), 1.2f);
             sparrow.gameObject.SetActive(false);
         }
         Phase = "son";
@@ -72,6 +78,17 @@ public class CanyonScenes
         {
             var target = robot.transform.localPosition + robot.transform.forward * lead + Vector3.up * 1.1f;
             sparrow.transform.localPosition = Vector3.Lerp(sparrow.transform.localPosition, target, 1f - Mathf.Exp(-Time.deltaTime * 3f));
+            yield return null;
+        }
+    }
+
+    // Yarikta Serce robotun yaninda, acik havada kalir (rafin sacaginin ve duvarin icine girmez)
+    IEnumerator FollowBeside(Sparrow sparrow, CanyonRift rift)
+    {
+        while (true)
+        {
+            var target = rift.AirBeside(robot.transform.localPosition + robot.transform.forward * 0.3f);
+            sparrow.transform.localPosition = Vector3.Lerp(sparrow.transform.localPosition, target, 1f - Mathf.Exp(-Time.deltaTime * 4f));
             yield return null;
         }
     }

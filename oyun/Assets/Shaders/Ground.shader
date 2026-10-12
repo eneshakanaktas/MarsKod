@@ -108,21 +108,22 @@ Shader "MarsKod/Ground"
             }
 
             // Sahne kamerasinda (60 kanyona inis, _SceneCamera > 0) zemin yarigin ustunde cizilmez: 3B yarik (RiftMeshes) gorunur.
-            // Normal bakista zemin butundur, yarik yerine riftCrack cizilir. Gecis ayni gurultuyle nokta nokta erir (ikisi tamamlayici).
-            void riftClip(float2 q, float dither)
+            // Normal bakista zemin butundur, yarik yerine riftCrack cizilir. Gecis: yarik basindan uzaga dogru acilir (RiftReveal);
+            // FarRock.shader ayni t sinirini kullanir, ikisi tamamlayicidir.
+            void riftClip(float2 q)
             {
                 float t, cx, hw, rim;
-                if (!riftShape(q, t, cx, hw, rim) || dither >= _SceneCamera) return;
+                if (!riftShape(q, t, cx, hw, rim) || t >= RiftReveal()) return;
                 clip(abs(q.x - cx) - rim);   // yarigin icinde negatif: cizilmez
             }
 
             // Normal bakista yarik: kanyon agzina giden ince, koyu bir catlak (yeri 3B yarigin ortasi, ama dar); sag kenarinda patikanin
             // devami (dar bir seki). Ufka yaklastikca perspektifle daralir ve gokyuzundeki cizgiyle (canyonRiftToMouth) birlesir. sRGB.
-            float3 riftCrack(float2 q, float3 ground, float dither)
+            float3 riftCrack(float2 q, float3 ground)
             {
                 float aa = fwidth(q.x) + 0.01;   // dallanmadan once: turevler her pikselde ayni yoldan hesaplanir
                 float t, cx, hw, rim;
-                if (!riftShape(q, t, cx, hw, rim) || dither < _SceneCamera) return ground;
+                if (!riftShape(q, t, cx, hw, rim) || t < RiftReveal()) return ground;
                 float w = 0.5 * hw * (0.85 + 0.3 * vnoise2(float2(t * 3.0, 1.0)));          // catlak yarigin yarisi kadar dar, kenari duzensiz
                 float dx = q.x - cx + 0.05 * (vnoise2(q * 7.0) - 0.5);
                 float crack = 1.0 - smoothstep(w - aa, w + aa, abs(dx));
@@ -396,8 +397,7 @@ Shader "MarsKod/Ground"
             half4 frag (Varyings i) : SV_Target
             {
                 float3 p = i.posWS;
-                float riftDither = SceneDither(i.positionCS.xy);
-                riftClip(p.xz, riftDither);
+                riftClip(p.xz);
                 float3 n = normalize(i.nWS);
                 float2 suv = i.screenPos.xy / i.screenPos.w;
 
@@ -412,7 +412,7 @@ Shader "MarsKod/Ground"
                 else if (MarsDunes()) a = duneSand(p, far, inArea);
                 else if (MarsCanyon()) a = canyonFloor(p, far, inArea);
                 else a = regolith(p, far, inArea);
-                a = riftCrack(p.xz, a, riftDither);
+                a = riftCrack(p.xz, a);
 
                 // oyun alani: ayni zemin, biraz daha duzgun; kare sinirlari ince ve soluk
                 // sinirlar alanin kenarindan (-_Area) birer birim arayla; tek/cift kare sayisinda da dogru

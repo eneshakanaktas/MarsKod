@@ -16,8 +16,10 @@ float _Horizon;   // ufuk: fotograf koordinatinda (asagida)
 // z patikanin x'i, w alanin arka kenari. Zemin (Ground.shader) ve arka plan (CanyonSky.hlsl) ikisi de cizer.
 float4 _CanyonDescent;
 float _SceneCamera;   // CameraShot: 0 normal kamera, 1 sahne kamerasi (arada yumusak gecis)
-// Ekran noktasina gore 0..1 sabit gurultu: iki goruntu (normal bakis / sahne bakisi) arasinda nokta nokta eriyerek gecmek icin
-float SceneDither(float2 pixel) { return frac(52.9829189 * frac(dot(pixel, float2(0.06711056, 0.00583715)))); }
+// 60'ta yarigin acilmasi: sahne kamerasi yarigi gosterirken (_SceneCamera 0 -> 1) 3B yarik, yarigin basindan uzaga dogru
+// "fermuar gibi" acilir. Yarik boyunca uzaklik t (z - baslangic) < RiftReveal ise 3B yarik gorunur, degilse zemindeki catlak.
+// Piksel gurultusu yok: gecis yarik boyunca ilerleyen tek, temiz bir sinirdir.
+float RiftReveal() { return _SceneCamera * 20.0; }
 float4 _Picture;  // x: fotografin olcegi (1 = tam boy), y: dikey kayma (ekranin -1..1 biriminde)
 float4 _Focus;
 float4 _Sun;

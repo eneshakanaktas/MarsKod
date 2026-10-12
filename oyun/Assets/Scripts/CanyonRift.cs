@@ -73,9 +73,9 @@ public class CanyonRift : MonoBehaviour
     {
         var rift = Parts.Empty("Iz-Yarik", parent).gameObject.AddComponent<CanyonRift>();
         rift.shape = new RiftShape(startZ, pathX, ground);
-        RiftMeshes.Build(rift.transform, rift.shape);
-        rift.renderers = rift.GetComponentsInChildren<Renderer>(true);
         rift.BuildTrail(pathX, startZ, ground);
+        RiftMeshes.Build(rift.transform, rift.shape, rift.trail);   // kayalar patikanin uzerine konmaz
+        rift.renderers = rift.GetComponentsInChildren<Renderer>(true);
         rift.SetView();
         return rift;
     }
@@ -92,6 +92,15 @@ public class CanyonRift : MonoBehaviour
         ViewPoint = transform.TransformPoint(eye);
         ViewTarget = transform.TransformPoint(eye + dir * 6f);
     }
+
+    // Serce'nin yarikta ucacagi yer: patika noktasinin yaninda, yarigin ortasina dogru ve biraz yukarida. Sag duvardaki patikanin
+    // ustunde rafin sacagi var; Serce onun altina girmesin diye acik havada (rafin disinda) ucar.
+    public Vector3 AirBeside(Vector3 trailPoint)
+    {
+        float toCenter = shape.CenterX(trailPoint.z - shape.Z(0f)) - trailPoint.x;
+        return new Vector3(trailPoint.x + Mathf.Sign(toCenter) * Mathf.Min(AirOffset, Mathf.Abs(toCenter)), trailPoint.y + AirHeight, trailPoint.z);
+    }
+    const float AirOffset = 0.6f, AirHeight = 0.65f;
 
     // Patika: zemindeki patikadan (direklerin arasi) rafa, raf boyunca dibe, dipte donemec kayasini gecip kenardan asagi
     void BuildTrail(float pathX, float startZ, Func<float, float, float> ground)

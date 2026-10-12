@@ -92,11 +92,38 @@ public class Sparrow : MonoBehaviour
         hole = Parts.Add("Delik", body, MeshFactory.Sphere(0.05f, 6, 10), dark, new Vector3(0.11f, 0.05f, 0.04f), outline: false).gameObject;
         hole.transform.localScale = new Vector3(0.5f, 1f, 1.2f);
 
-        // ad: ust-on yuzde, cocuk eliyle boyanmis, hafif egik; yukaridan bakan kamera okur
-        var label = BrushPaint.Write(body, "SERÇE", new Vector3(0f, 0.108f, -0.055f), 0.065f,
+        // ad: ust-on yuzde, cocuk eliyle boyanmis, hafif egik; yukaridan bakan kamera okur. Harflerin kosesi kubbenin yuzeyine
+        // yapistirilir: duz levha kubbenin egrisinde alt kismini gomuyordu ("SERCE" -> "SFRCF").
+        var label = BrushPaint.Write(body, "SERÇE", new Vector3(0f, 0.12f, -0.05f), 0.065f,
             Mats.Lit(CraterTraces.EceColor, 0.3f), seed: 11, thickness: 0.14f);
-        label.localRotation = Quaternion.Euler(52f, 0f, -7f);
+        label.localRotation = Quaternion.Euler(40f, 0f, 0f) * Quaternion.Euler(0f, 0f, -7f);
+        WrapOnDome(label, dome.localScale);
     }
+
+    // Yazinin koselerini kubbenin (elipsoit) yuzeyine radyal olarak iter (3 mm disarida) ve normallerini yuzeye gore yazar
+    void WrapOnDome(Transform label, Vector3 domeScale)
+    {
+        var radii = domeScale * BodyRadius;
+        var mesh = label.GetComponent<MeshFilter>().mesh;
+        var vertices = mesh.vertices;
+        var normals = new Vector3[vertices.Length];
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            var p = label.localPosition + label.localRotation * Vector3.Scale(label.localScale, vertices[i]);
+            float k = 1f / Mathf.Sqrt(Sq(p.x / radii.x) + Sq(p.y / radii.y) + Sq(p.z / radii.z));
+            var onSurface = p * k;
+            normals[i] = new Vector3(onSurface.x / Sq(radii.x), onSurface.y / Sq(radii.y), onSurface.z / Sq(radii.z)).normalized;
+            vertices[i] = onSurface + normals[i] * 0.003f;
+        }
+        mesh.vertices = vertices;
+        mesh.normals = normals;
+        mesh.RecalculateBounds();
+        label.localPosition = Vector3.zero;
+        label.localRotation = Quaternion.identity;
+        label.localScale = Vector3.one;
+    }
+
+    static float Sq(float x) => x * x;
 
     public void SetState(SparrowState s)
     {

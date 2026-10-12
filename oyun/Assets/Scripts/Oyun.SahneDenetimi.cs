@@ -51,6 +51,8 @@ public partial class Oyun
         yield return new WaitForSeconds(1f);
         SetCode(level.Solution);
         OnRun();
+        yield return new WaitForSeconds(0.5f);
+        hud.FocusCode(0, 0);   // klavye acik: sahne basinda kapanmali (kareler klavyesiz olmali)
         foreach (var (phase, wait, file) in new[] { ("yol", 0f, "s60-5-yol.png"), ("bakis", 1.5f, "s60-6-bakis.png"), ("inis", 1.5f, "s60-7-inis.png"), ("son", 1f, "s60-8-son.png") })
         {
             yield return WaitForPhase(phase, problems);

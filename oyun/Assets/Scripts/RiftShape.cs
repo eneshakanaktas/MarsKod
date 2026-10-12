@@ -14,7 +14,7 @@ public class RiftShape
     public const float LedgeHeadroom = 0.75f;    // raf ile sacak arasi (Kivilcim ~0,55 boyunda)
     public const float LedgeThickness = 0.16f;   // dudagin on yuzunun yuksekligi (altinda karanlik alt yuz)
     public const float BendRockT = 6.2f;         // donemec kayasi (sol duvara yaslanmis iri kaya)
-    // dipte patika: kayanin sagindan arkasina, sonra dibin kenarindan asagi (CanyonRift.DropT)
+    // dipte patika: sag yanda, sonra dibin kenarindan asagi (CanyonRift.DropT)
     public static readonly float[] FloorTrail = { 5.5f, 6.0f, 6.5f, 6.9f, 7.3f, 7.7f, 8.1f, 8.6f };
     const float FloorHalfMin = 0.3f;             // dip en az 0,6 genis (robot gecer)
 
@@ -160,13 +160,8 @@ public class RiftShape
     public float FloorLeftX(float t) => WallX(t, -1f, FloorY(t));
     public float FloorRightX(float t) => WallX(t, 1f, FloorY(t));
 
-    // Dipteki patika: donemec kayasina kadar sag yanda, sonra kayanin arkasina (sol duvara) gecer
-    public Vector3 FloorTrailPoint(float t)
-    {
-        float behind = Mathf.SmoothStep(0f, 1f, (t - BendRockT - 0.1f) / 0.6f);
-        float x = Mathf.Lerp(FloorRightX(t) - 0.3f, FloorLeftX(t) + 0.3f, behind);
-        return new Vector3(x, FloorY(t), Z(t));
-    }
+    // Dipteki patika: hep sag yanda (donemec kayasi sol duvara yaslidir; robot kayanin icinden gecmesin)
+    public Vector3 FloorTrailPoint(float t) => new Vector3(FloorRightX(t) - 0.3f, FloorY(t), Z(t));
 
     public Vector3 BendRockPoint() => new Vector3(FloorLeftX(BendRockT) + 0.2f, FloorY(BendRockT), Z(BendRockT));
 

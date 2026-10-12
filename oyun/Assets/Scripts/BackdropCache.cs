@@ -139,6 +139,7 @@ public class BackdropCache : MonoBehaviour
             Shader.PropertyToID("_StarsOn"), Shader.PropertyToID("_Region"), Shader.PropertyToID("_Horizon"),
             Shader.PropertyToID("_TraceDoor"), Shader.PropertyToID("_TraceGreenhouse"), Shader.PropertyToID("_TraceLeaf"),
             Shader.PropertyToID("_PolarRoverHere"), Shader.PropertyToID("_PowerLampCount"), Shader.PropertyToID("_Sunrise"),
+            Shader.PropertyToID("_SceneCamera"),
         };
         static readonly int[] VectorIds =
         {

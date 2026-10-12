@@ -14,7 +14,8 @@ public class RiftShape
     public const float LedgeHeadroom = 0.75f;    // raf ile sacak arasi (Kivilcim ~0,55 boyunda)
     public const float LedgeThickness = 0.16f;   // dudagin on yuzunun yuksekligi (altinda karanlik alt yuz)
     public const float BendRockT = 6.2f;         // donemec kayasi (sol duvara yaslanmis iri kaya)
-    public static readonly float[] FloorTrail = { 5.5f, 6.0f, 6.5f, 6.9f, 7.3f, 7.7f };   // dipte patika: kayanin sagindan arkasina
+    // dipte patika: kayanin sagindan arkasina, sonra dibin kenarindan asagi (CanyonRift.DropT)
+    public static readonly float[] FloorTrail = { 5.5f, 6.0f, 6.5f, 6.9f, 7.3f, 7.7f, 8.1f, 8.6f };
     const float FloorHalfMin = 0.3f;             // dip en az 0,6 genis (robot gecer)
 
     // Tortu katmanlari, ustten alta (ortadaki zeminden derinlik): kalinlik, ust sinirdaki basamak (iceri kayma), renk.
@@ -116,7 +117,8 @@ public class RiftShape
         float strata = StrataInward(top - y) - StrataInward(top - rimY);
         float fromRim = Mathf.SmoothStep(0f, 1f, (rimY - y) / 0.15f);
         float inward = strata + (LayerWobble(top - y, t, s) + Roughness(t, s, y)) * fromRim;
-        return Mathf.Min(inward, CanyonRift.HalfWidth(t) - FloorHalfMin);
+        float hw = CanyonRift.HalfWidth(t);
+        return Mathf.Min(inward, hw - Mathf.Min(FloorHalfMin, 0.6f * hw));   // yarigin sivri basinda dip de daralir
     }
 
     // ---- Sag duvardaki patika rafi ----
@@ -173,8 +175,8 @@ public class RiftShape
     {
         float depth = Mathf.Max(RimY(t, -1f), RimY(t, 1f)) - y;
         float width = Mathf.Max(FloorRightX(t) - FloorLeftX(t), 0.3f);
-        float open = width / (width + 1.4f * Mathf.Max(depth, 0f));
-        return Mathf.Lerp(0.3f, 1f, open);
+        float open = width / (width + 2f * Mathf.Max(depth, 0f));
+        return Mathf.Lerp(0.12f, 1f, open);
     }
 
     // Oyugun icinde (sacak altinda) ek golge

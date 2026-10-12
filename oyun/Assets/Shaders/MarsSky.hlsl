@@ -15,6 +15,7 @@ float _Horizon;   // ufuk: fotograf koordinatinda (asagida)
 // Bolum 60'in kanyona giden patikasi (CanyonTraces): x kenarin z'si, y 1 = acik (0: hicbir bolumde etkisi yok),
 // z patikanin x'i, w alanin arka kenari. Zemin (Ground.shader) ve arka plan (CanyonSky.hlsl) ikisi de cizer.
 float4 _CanyonDescent;
+float _SceneCamera;   // CameraShot: 0 normal kamera, 1 sahne kamerasi (arada yumusak gecis)
 float4 _Picture;  // x: fotografin olcegi (1 = tam boy), y: dikey kayma (ekranin -1..1 biriminde)
 float4 _Focus;
 float4 _Sun;
@@ -995,7 +996,8 @@ float3 MarsFadeToBackdropBand(float3 col, float3 posWS, float2 suv, float2 fogRa
     // kanyonda gecis yavas baslar (us 1,5): nesnelerin dibinde zayif, zeminin kivrilip bittigi cizgide (ufkun ~0,02 alti)
     // tamamlanir; yoksa orada sert bir cizgi kalir
     bool custom = customBand.x > customBand.y;
-    float2 band = custom ? customBand : (MarsCanyon() ? float2(0.085, 0.03) : float2(0.15, 0.06));
+    // sahne kamerasinda (60'ta yariga bakis) zemin ufka kadar dolu kalir: ufkun altindaki arka plan yalniz yarigin icinden gorunur
+    float2 band = custom ? customBand : (MarsCanyon() ? lerp(float2(0.085, 0.03), float2(0.035, 0.01), _SceneCamera) : float2(0.15, 0.06));
     float scrFog = smoothstep(_Horizon - band.x, _Horizon - band.y, MarsPictureUV(suv).y);
     if (MarsCanyon() && !custom) scrFog = pow(scrFog, 1.5);
     float fog = max(distFog, scrFog);

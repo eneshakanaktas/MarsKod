@@ -10,13 +10,15 @@ public class CameraShot
 {
     static readonly int HorizonId = Shader.PropertyToID("_Horizon");
     static readonly int PictureId = Shader.PropertyToID("_Picture");
+    static readonly int SceneCameraId = Shader.PropertyToID("_SceneCamera");
 
-    // Kameranin bir hali: yeri, yonu, gorus acisi ve gokyuzu resminin yerlesimi (olcek, dikey kayma, ufuk farki)
+    // Kameranin bir hali: yeri, yonu, gorus acisi, gokyuzu resminin yerlesimi (olcek, dikey kayma, ufuk farki) ve ne kadar
+    // "sahne kamerasi" oldugu (0 normal kamera, 1 sahne; gokyuzu ve zemin buna gore yumusakca degisir, _SceneCamera)
     struct Pose
     {
         public Vector3 Position;
         public Quaternion Rotation;
-        public float Fov, Shift, PictureScale, HorizonOffset;
+        public float Fov, Shift, PictureScale, HorizonOffset, Scene;
 
         public static Pose Lerp(Pose a, Pose b, float e) => new Pose
         {
@@ -26,6 +28,7 @@ public class CameraShot
             Shift = Mathf.Lerp(a.Shift, b.Shift, e),
             PictureScale = Mathf.Lerp(a.PictureScale, b.PictureScale, e),
             HorizonOffset = Mathf.Lerp(a.HorizonOffset, b.HorizonOffset, e),
+            Scene = Mathf.Lerp(a.Scene, b.Scene, e),
         };
     }
 
@@ -83,7 +86,12 @@ public class CameraShot
     }
 
     // Aninda birakir ("Tekrar", bolum degisimi, 55'teki kirpisma donusu)
-    public void Release() { Active = false; Sway = 0f; }
+    public void Release()
+    {
+        Active = false;
+        Sway = 0f;
+        Shader.SetGlobalFloat(SceneCameraId, 0f);
+    }
 
     // Oyun.LateUpdate her karede cagirir (Active iken FitCamera yerine)
     public void Apply()
@@ -101,6 +109,7 @@ public class CameraShot
         float screenHorizon = GroundHorizon() + pose.HorizonOffset;
         Shader.SetGlobalVector(PictureId, new Vector4(pose.PictureScale, pose.Shift, 0f, 0f));
         Shader.SetGlobalFloat(HorizonId, PictureY(screenHorizon, pose));
+        Shader.SetGlobalFloat(SceneCameraId, pose.Scene);
     }
 
     Pose Target(Vector3 to, Quaternion rotation, float fieldOfView) => new Pose
@@ -111,6 +120,7 @@ public class CameraShot
         Shift = 0f,
         PictureScale = 1f,
         HorizonOffset = 0f,
+        Scene = 1f,
     };
 
     IEnumerator Blend(Pose target, float seconds)

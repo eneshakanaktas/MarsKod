@@ -89,7 +89,7 @@ Shader "MarsKod/Ground"
                 return lerp(ground, c, m);
             }
 
-            // Bolum 60: yarigin ustunde zemin cizilmez. IKIZ: CanyonRift.cs (Length, BendLength, HeadShift, HalfWidth, RimJitter,
+            // Bolum 60: yarigin ustunde zemin cizilmez. IKIZ: CanyonRift.cs (Length, BendLength, HeadShift, HalfWidth, HeadRound, RimJitter,
             // RimSetback) ile ayni formuller; biri degisirse oteki de degisir. HLSL smoothstep(0,1,x) = Mathf.SmoothStep(0,1,x).
             void riftClip(float2 q)
             {
@@ -97,11 +97,12 @@ Shader "MarsKod/Ground"
                 float t = q.y - _CanyonDescent.x;
                 if (t <= 0.0 || t >= 16.0) return;                                         // Length
                 float cx = lerp(_CanyonDescent.z - 0.35, 0.0, smoothstep(0.0, 7.0, t));   // CenterX (HeadShift, BendLength)
-                float hw = (0.5 + 0.06 * t) * (0.6 + 0.4 * smoothstep(0.0, 1.2, t));       // HalfWidth
+                float head = sqrt(saturate(t / 0.5));                                        // Head (HeadRound)
+                float hw = (0.5 + 0.06 * t) * (0.6 + 0.4 * smoothstep(0.0, 1.2, t)) * head;  // HalfWidth
                 float s = q.x >= cx ? 1.0 : -1.0;
-                float jitter = 0.03 * (1.0 + sin(t * 2.3 + s * 1.7)) + 0.018 * (1.0 + sin(t * 5.9 + s * 4.1))
-                             + 0.008 * (1.0 + sin(t * 13.1 + s * 2.9));                    // RimJitter
-                float setback = s > 0.0 ? 0.3 * (1.0 - smoothstep(2.7, 3.3, t)) : 0.0;     // RimSetback (LedgeRecess, SetbackFrom/To)
+                float jitter = head * (0.03 * (1.0 + sin(t * 2.3 + s * 1.7)) + 0.018 * (1.0 + sin(t * 5.9 + s * 4.1))
+                             + 0.008 * (1.0 + sin(t * 13.1 + s * 2.9)));                   // RimJitter
+                float setback = s > 0.0 ? head * 0.3 * (1.0 - smoothstep(2.7, 3.3, t)) : 0.0;   // RimSetback (LedgeRecess, SetbackFrom/To)
                 clip(abs(q.x - cx) - (hw + jitter + setback));   // yarigin icinde negatif: cizilmez
             }
 

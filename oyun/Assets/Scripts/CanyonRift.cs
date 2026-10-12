@@ -17,12 +17,15 @@ public class CanyonRift : MonoBehaviour
     public const float SetbackFrom = 2.7f, SetbackTo = 3.3f;   // bas tarafta raf ustu acik (duvar raf boyunca geride); burada kapanir
 
     public static float CenterX(float t, float pathX) => Mathf.Lerp(pathX - HeadShift, 0f, Mathf.SmoothStep(0f, 1f, t / BendLength));
-    public static float HalfWidth(float t) => (0.5f + 0.06f * t) * (0.6f + 0.4f * Mathf.SmoothStep(0f, 1f, t / 1.2f));
+    // Bas (t = 0) yuvarlak bir uc: genislik, kenar duzensizligi ve raf acikligi sifirdan karekokle acilir (zeminde duz kesik kalmaz)
+    public const float HeadRound = 0.5f;
+    static float Head(float t) => Mathf.Sqrt(Mathf.Clamp01(t / HeadRound));
+    public static float HalfWidth(float t) => (0.5f + 0.06f * t) * (0.6f + 0.4f * Mathf.SmoothStep(0f, 1f, t / 1.2f)) * Head(t);
     // Kenarin duzensizligi (her zaman disari) + sag duvarda bas taraftaki raf acikligi. s: -1 sol, +1 sag.
     public static float RimOffset(float t, float s) => RimJitter(t, s) + (s > 0f ? RimSetback(t) : 0f);
-    public static float RimJitter(float t, float s) =>
-        0.03f * (1f + Mathf.Sin(t * 2.3f + s * 1.7f)) + 0.018f * (1f + Mathf.Sin(t * 5.9f + s * 4.1f)) + 0.008f * (1f + Mathf.Sin(t * 13.1f + s * 2.9f));
-    public static float RimSetback(float t) => LedgeRecess * (1f - Mathf.SmoothStep(0f, 1f, (t - SetbackFrom) / (SetbackTo - SetbackFrom)));
+    public static float RimJitter(float t, float s) => Head(t) *
+        (0.03f * (1f + Mathf.Sin(t * 2.3f + s * 1.7f)) + 0.018f * (1f + Mathf.Sin(t * 5.9f + s * 4.1f)) + 0.008f * (1f + Mathf.Sin(t * 13.1f + s * 2.9f)));
+    public static float RimSetback(float t) => Head(t) * LedgeRecess * (1f - Mathf.SmoothStep(0f, 1f, (t - SetbackFrom) / (SetbackTo - SetbackFrom)));
     // ---- (ikiz sonu) ----
 
     // (x, z) yarigin agzinin margin kadar yakininda mi (kenara konan kayalar yarigin ustunde havada kalmasin)
@@ -35,17 +38,21 @@ public class CanyonRift : MonoBehaviour
         return Mathf.Abs(x - cx) < HalfWidth(t) + RimOffset(t, s) + margin;
     }
 
-    // Ortadaki zeminden dibe derinlik: bas tarafi sig, uzaklastikca derinlesir
-    public static float Depth(float t) => (0.8f + 0.3f * t) * (0.35f + 0.65f * Mathf.SmoothStep(0f, 1f, t));
+    // Ortadaki zeminden dibe derinlik: bas tarafi sig, uzaklastikca derinlesir; DropT'de dip kanyona dogru dikce iner (kenar).
+    // Yukaridan bakan kamera kenarin otesini goremez: Kivilcim oradan inince gozden kaybolur.
+    public const float DropT = 7.4f, DropLength = 1.2f, DropDepth = 5f;
+    public static float Depth(float t) =>
+        (0.8f + 0.3f * t) * (0.35f + 0.65f * Mathf.SmoothStep(0f, 1f, t)) + DropDepth * Mathf.SmoothStep(0f, 1f, (t - DropT) / DropLength);
 
     // "Yariga bakis" sahnesinin kamerasi: direklerin ve Kivilcim'in arkasindan, yukaridan, yarik boyunca kanyon agzina bakar
-    // (Enes). Yarigin ufka vardigi yer ekranin ortasinda: gokyuzundeki kanyon agzi orada.
+    // (Enes). Kamera yarigin ufka vardigi yere (ViewAimT) doner: orasi ekranin ortasina gelir, gokyuzundeki kanyon agzi da orada
+    // (gokyuzu resmi ekrana sabit, kameranin yonuyle donmez).
     public const float ViewFov = 50f;
-    const float ViewBack = 2.5f, ViewHeight = 3.0f, ViewPitch = 40f, ViewAimT = 6.5f;
+    const float ViewBack = 2.5f, ViewHeight = 3.0f, ViewPitch = 40f, ViewAimT = 9f;
 
     readonly List<Vector3> trail = new List<Vector3>();
     public IReadOnlyList<Vector3> Trail => trail;       // yerel; zemindeki patikadan rafa, raftan dibe, donemecin arkasina
-    public int BendIndex { get; private set; }          // Trail'de donemec kayasinin arkasina gecilen ilk nokta
+    public int BendIndex { get; private set; }          // Trail'de dibin kenarindan inip gozden kaybolunan ilk nokta
     public Vector3 ViewPoint { get; private set; }      // "yariga bakis" sahnesinin kamerasi (dunya)
     public Vector3 ViewTarget { get; private set; }     // kameranin baktigi nokta (dunya)
 
@@ -61,11 +68,12 @@ public class CanyonRift : MonoBehaviour
         return rift;
     }
 
-    // Kamera: patikanin basinin back kadar gerisinde, zeminden height yukarida; yarigin ufka vardigi yere doner, pitch kadar egilir
-    public void SetView(float back = ViewBack, float height = ViewHeight, float pitch = ViewPitch)
+    // Kamera: patikanin basinin ViewBack kadar gerisinde, zeminden ViewHeight yukarida; yarigin ufka vardigi yere doner, ViewPitch
+    // kadar egilir
+    void SetView()
     {
-        float z = shape.Z(0f) - back, x = shape.PathX;
-        var eye = new Vector3(x, shape.Ground(x, z) + height, z);
+        float z = shape.Z(0f) - ViewBack, x = shape.PathX, pitch = ViewPitch;
+        var eye = new Vector3(x, shape.Ground(x, z) + ViewHeight, z);
         var aim = new Vector3(shape.CenterX(ViewAimT), 0f, shape.Z(ViewAimT)) - eye;
         aim.y = 0f;
         var dir = aim.normalized * Mathf.Cos(pitch * Mathf.Deg2Rad) + Vector3.down * Mathf.Sin(pitch * Mathf.Deg2Rad);
@@ -73,7 +81,7 @@ public class CanyonRift : MonoBehaviour
         ViewTarget = transform.TransformPoint(eye + dir * 6f);
     }
 
-    // Patika: zemindeki patikadan (direklerin arasi) rafa, raf boyunca dibe, dipte sag yandan donemec kayasini gecip arkasina
+    // Patika: zemindeki patikadan (direklerin arasi) rafa, raf boyunca dibe, dipte donemec kayasini gecip kenardan asagi
     void BuildTrail(float pathX, float startZ, Func<float, float, float> ground)
     {
         float z0 = startZ - 0.3f;
@@ -81,7 +89,7 @@ public class CanyonRift : MonoBehaviour
         for (float t = 0.25f; t < RiftShape.LedgeReach - 1e-3f; t += 0.5f) trail.Add(shape.LedgeCenter(t));
         foreach (float t in RiftShape.FloorTrail)
         {
-            if (BendIndex == 0 && t > RiftShape.BendRockT + 0.3f) BendIndex = trail.Count;   // kayayi gectik: robot burada gozden kaybolur
+            if (BendIndex == 0 && t > DropT + 0.5f) BendIndex = trail.Count;   // kenardan indik: robot burada gozden kaybolur
             trail.Add(shape.FloorTrailPoint(t));
         }
     }

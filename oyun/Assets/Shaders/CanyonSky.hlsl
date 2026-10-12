@@ -78,6 +78,7 @@ float canyonFarTop(float x)
 // plana karisir; yarik burada ince koyu bir cizgi olarak devam eder: 3B yarigin ufka vardigi yerden (ekranda, ufkun altinda d
 // kadar asagida, ortanin ~1,1 d sagi) ufuktaki kanyon agzina (x = 0) duz bir cizgiyle daralarak gider (perspektif: genislik d
 // ile orantili). Cizgi ufka yaklastikca tabana karisir, kanyon agzinda kaybolur.
+static const float3 CANYON_DEPTH = float3(0.15, 0.085, 0.065);   // yarigin golgedeki derinligi (60, sahne kamerasi)
 float3 canyonRiftToMouth(float3 col, float x, float y, float pixel)
 {
     float d = _Horizon - y;
@@ -134,7 +135,15 @@ float3 CanyonBackdrop(float2 suv)
     // olculdu). Burada kaya ya da gokyuzu kalirsa uzaktaki zemin onlari gosterir. Sis yok (Enes): taban kayaliklarin dibine
     // kadar ayni koyu renk, kayaliklarin molozlu etegiyle bulusur.
     col = lerp(col, CANYON_PLAIN, 1.0 - smoothstep(_Horizon - 0.004, _Horizon + 0.003, uv.y));
-    if (_CanyonDescent.y > 0.5) col = canyonRiftToMouth(col, x, uv.y, pixel);
+    if (_CanyonDescent.y > 0.5)
+    {
+        // cizgi normal kameranin geometrisine gore; sahne kamerasinda 3B yarik ufka kadar gorunur, cizgi soner
+        col = lerp(col, canyonRiftToMouth(col, x, uv.y, pixel), 1.0 - _SceneCamera);
+        // Sahne kamerasinda yariga boyuna bakilir: zemin uzakta kivrildigi icin yarigin icinden bakan goz ufkun otesine cikar.
+        // Zemin ufka kadar dolu (MarsFadeToBackdropBand), ufkun altindaki arka plan yalniz yarigin icinden gorunur: orasi
+        // kanyonun golgedeki derinligi (sis degil; dibin golgesi).
+        col = lerp(col, CANYON_DEPTH, _SceneCamera * smoothstep(_Horizon - 0.012, _Horizon - 0.05, uv.y));
+    }
     return col;
 }
 

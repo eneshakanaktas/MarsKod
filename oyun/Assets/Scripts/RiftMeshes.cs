@@ -214,15 +214,17 @@ public static class RiftMeshes
         part.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
     }
 
-    // FarRock: zeminle ayni isik. Yarik ufka kadar gorunur kalir, ufukta kademeli gokyuzune karisir (_FadeBand); derinde ortam
-    // isigi koselerdeki gok gorunurluguyle kisilir (_VertexAO); alcak safak isigi da gunesin golgesinde kalir (_DawnShadow).
+    // FarRock: zeminle ayni isik. Yarik ufka kadar gorunur kalir, ancak ufkun hemen altinda gokyuzune karisir (_FadeBand; daha
+    // genis bantta yarik ufka varmadan silinip duz zemine donuyordu); derinde ortam isigi koselerdeki gok gorunurluguyle kisilir
+    // (_VertexAO); alcak safak isigi da gunesin golgesinde kalir (_DawnShadow); golge tam koyu (_DeepShadow).
     static Material RiftMat(string hex)
     {
         var m = Oyun.FarRockMat(hex);
-        m.SetVector("_FadeBand", new Vector4(0.05f, 0f, 0f, 0f));
+        m.SetVector("_FadeBand", new Vector4(0.012f, 0f, 0f, 0f));
         m.SetVector("_FogRange", new Vector4(60f, 80f, 0f, 0f));   // uzaklik karismasi yok: yalnizca ufukta
         m.SetFloat("_VertexAO", 1f);
         m.SetFloat("_DawnShadow", 1f);
+        m.SetFloat("_DeepShadow", 1f);
         return m;
     }
 }

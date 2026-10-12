@@ -89,6 +89,32 @@ public abstract class Robot : MonoBehaviour
         rig.localRotation = Quaternion.identity;
     }
 
+    // Noktalar boyunca kesintisiz gider (patika, kivrilan yol): yalnizca bastan ve sondan yavaslar, kose dolasirken durmaz.
+    // Yon gidilen parcanin yonune yumusakca doner. Sahneler kullanir (Bolge 6).
+    public IEnumerator Glide(IReadOnlyList<Vector3> path, float secondsPerUnit)
+    {
+        var lengths = new List<float>();
+        float total = 0f;
+        for (int i = 1; i < path.Count; i++) { total += Vector3.Distance(path[i - 1], path[i]); lengths.Add(total); }
+        if (total < 1e-3f) yield break;
+        float startAngle = wheelAngle;
+        yield return Tween.Run(total * secondsPerUnit, t =>
+        {
+            float dist = Mathf.SmoothStep(0f, 1f, t) * total;
+            int seg = 0;
+            while (seg < lengths.Count - 1 && lengths[seg] < dist) seg++;
+            float segStart = seg == 0 ? 0f : lengths[seg - 1];
+            Vector3 a = path[seg], b = path[seg + 1];
+            float along = Mathf.InverseLerp(segStart, lengths[seg], dist);
+            transform.localPosition = Vector3.Lerp(a, b, along);
+            var flat = b - a; flat.y = 0f;
+            if (flat.sqrMagnitude > 1e-6f)
+                SetYaw(Mathf.MoveTowardsAngle(Yaw, Mathf.Atan2(flat.x, flat.z) * Mathf.Rad2Deg, 360f * Time.deltaTime));
+            wheelAngle = startAngle + dist / WheelRadius * Mathf.Rad2Deg;
+            foreach (var w in wheels) w.localRotation = Quaternion.Euler(wheelAngle, 0, 0);
+        });
+    }
+
     // Ilerleyemedi (alanin siniri): biraz one atilir, geri sekip sallanir.
     public IEnumerator Bump()
     {

@@ -33,6 +33,7 @@ public static class CanyonTraces
     {
         Shader.SetGlobalFloat(IndoorId, IsDepot(levelNumber) ? 1f : 0f);
         Shader.SetGlobalVector(DescentId, levelNumber == LastLevel ? descent : Vector4.zero);
+        if (ActiveSparrow != null) ActiveSparrow.ResetHome();   // sahne (60 inis) Serce'yi goturmus olabilir
     }
 
     // Bolumun izlerini kurar (Bolge 6 disinda hicbir sey). itemPositions: toplanacak drone parcalarinin yerleri

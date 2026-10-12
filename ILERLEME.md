@@ -1,5 +1,20 @@
 # İlerleme Notu — MarsKod (geçici isim)
 
+## Bölge 6 · 3b Görev 2: 60 kanyona iniş sahnesi (Enes, 2026-10-12) — commit edilmedi (dal: `bolge6-sahneler-3b`; Enes onayı bekliyor)
+- **Görev 1 Enes onayladı** (yarık, kamera, kenardan iniş). Model: Sonnet 5.5 · medium'a geçildi (Enes onayladı).
+- **Yapıldı:** `GridPath.cs` (boş karelerden en kısa yol; 7 test, `dotnet test` 1403), `CanyonScenes.cs` (60: Serçe kalkar → Kıvılcım hedeften alanın arkasına, direklerin arasından patikaya → kamera yarığa bakar → patikadan iner, Serçe ardından → ikisi de kenardan aşağı gözden kaybolur), `Robot.Glide` (patikada durmadan akıcı yürüyüş), `Sparrow.FlyTo/ResetHome`, "Tekrar" sahneyi geri alır. `-sahneler` denetimi TAMAM (kareler `docs/tasarim/bolge-6-sahneler-2026-10-11/gorev2-*.png`).
+- **Karar:** toz bulutu katı engel sayılmadı (51'de robot kaya + toz arasında başlıyor, 60'ın üst yarısına yalnız bir toz karesinden geçiliyor).
+- **Açık (kapsam dışı):** denetimde "çalıştır → Tekrar"dan yarım sn sonra toz topları dev görünüyor; sahnesiz 31. bölümde de oluyor, ölçülen boyutlar normal → büyük olasılıkla denetim ortamına özgü, oyunda görülmedi. Telefonda/oyunda "Tekrar" sonrası bakılmalı.
+- **Sıradaki:** Enes onayı → Görev 3 (55 Serçe'nin ilk uçuşu).
+
+## Bölge 6 · 3b Görev 1 düzeltmesi (Enes, 2026-10-12) — commit edilmedi (dal: `bolge6-sahneler-3b`)
+- **Çalışma biçimi değişti (Enes):** yardımcı (subagent) yok; Claude (Opus 5.5 · high) işi kendisi yapıyor.
+- **Yarım düzeltme bitti, paket hatasız, `-sahneler` TAMAM** (normal + hafif mod). Kamera Enes'in kararıyla: yarığın başında, Kıvılcım'ın arkasından yarık boyunca kanyon ağzına bakıyor (kamera kanyon ağzına hizalı).
+- **Bu oturumda düzeltilen:** yarığın uzak ucu ufka varmadan siliniyordu (karışma bandı daraldı); zemin uzakta kıvrıldığı için yarığın içinden ufkun ötesi görünüyordu → sahne kamerasında orası koyu "kanyon derinliği" (yalnızca yarığın içinden görünür, sis değil); dip fazla aydınlıktı → yarıkta gölge tam koyu + derinde ortam ışığı kısıldı; yarığın başı düz kesikti → yuvarlak uç; normal kameraya göre çizilen gökyüzü çizgisi sahne kamerasında söner.
+- **Karar (Enes'e soruldu):** Kıvılcım "dönemeç kayasının arkasında" değil, dibin bir kenardan kanyona dik indiği yerde gözden kaybolur (yukarıdan bakan kamera kayanın üstünden görüyordu). Kaya süs olarak kaldı.
+- **Görüntüler:** `docs/tasarim/bolge-6-sahneler-2026-10-11/duzeltme-1-*.png`. **Sıradaki:** Enes onayı → Görev 2 (60 sahnesi).
+- Not: `-bolum 59` turunda arayüz denetimleri (bölüm seçme, ipucu, sözlük…) hata verdi; bilinen pencere-odağı sorunu sanılıyor (bu iş arayüze dokunmadı), Görev 5'te yeniden denenecek.
+
 ## Bölge 6 görünüşü 3b: tasarım + plan + Görev 1 (yarım) (Enes, 2026-10-11 akşam) — GitHub'a yüklendi (kod ayrı dalda)
 - **Tasarım yazıldı** (Opus 5.5 · high): `docs/superpowers/specs/2026-10-08-bolge-6-design.md` §3b. Enes bölüm bölüm onayladı: **60** final — direklerin ötesinde kanyon ağzına uzanan yarık, Kıvılcım boş karelerden patikaya, yarıktan aşağı iner, kamera yarığa aşağı bakar; **55** — Serçe gözleri yanar, çatı deliğinden yükselir, an'lık "Serçe'nin gözünden" yukarıdan bakış; **51** — ilk açılışta bir kez roket iner, Kıvılcım merdivenden iner (dokununca atlanır). Ortak: `CameraShot`, boş karelerden yol (saf C#), yeni sesler. Serçe gözleri Unlit (tüm oyundaki parlama sorunu ayrı iş kaldı).
 - **Enes tasarımı onayladı. Yapım planı yazıldı:** `docs/superpowers/plans/2026-10-11-bolge-6-sahneler-3b.md` (5 görev; Görev 1-4 sonunda görüntü, Enes onaylamadan ilerlenmez). Görev 1 = sahne kamerası (`CameraShot`, gökyüzü ufku kamerayla birlikte kayar) + 60 yarığı. **Bulgu:** 51'deki roket Kıvılcım'dan ince (kapıdan sığmıyor) → Görev 4 başında roket gövdesi kalınlaştırılıp Enes'e sorulacak.

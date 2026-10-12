@@ -12,6 +12,7 @@ public partial class Oyun
         yield return new WaitForSeconds(2.5f);
         var problems = new List<string>();
         yield return RiftShots(dir, problems);
+        yield return DescentShots(dir, problems);
         yield return ShotKeyboardCheck(dir);
         Debug.Log("SAHNE DENETIMI: " + (problems.Count == 0 ? "TAMAM" : "HATA " + string.Join("; ", problems)));
         Application.Quit();
@@ -41,6 +42,51 @@ public partial class Oyun
         shot.Release();
         LoadLevel(levels.FindIndex(l => l.Number == CanyonTraces.LastLevel));   // robot ve Serce yerine
         yield return new WaitForSeconds(0.5f);
+    }
+
+    // 60'in kapanis sahnesi: dogru cozumu calistirir, evreler gelince kare alir; sonra sahne ortasinda "Tekrar" geri alma denetimi
+    IEnumerator DescentShots(string dir, List<string> problems)
+    {
+        LoadLevel(levels.FindIndex(l => l.Number == CanyonTraces.LastLevel));
+        yield return new WaitForSeconds(1f);
+        SetCode(level.Solution);
+        OnRun();
+        foreach (var (phase, wait, file) in new[] { ("yol", 0f, "s60-5-yol.png"), ("bakis", 1.5f, "s60-6-bakis.png"), ("inis", 1.5f, "s60-7-inis.png"), ("son", 1f, "s60-8-son.png") })
+        {
+            yield return WaitForPhase(phase, problems);
+            yield return new WaitForSeconds(wait);
+            Cap(Path.Combine(dir, file));
+            yield return new WaitForSeconds(0.4f);
+        }
+
+        // Geri alma: sahne ortasinda "Tekrar" her seyi yerine koymali
+        LoadLevel(levels.FindIndex(l => l.Number == CanyonTraces.LastLevel));
+        yield return new WaitForSeconds(1f);
+        SetCode(level.Solution);
+        OnRun();
+        yield return WaitForPhase("yol", problems);
+        yield return WaitForPhase("bakis", problems);
+        yield return WaitForPhase("inis", problems);
+        ResetLevel();
+        yield return null;
+        if (shot.Active) problems.Add("Tekrar: sahne kamerasi birakilmadi");
+        if (!robot.gameObject.activeSelf) problems.Add("Tekrar: robot gizli kaldi");
+        if ((robot.transform.localPosition - Pos(level.Robot)).sqrMagnitude > 1e-4f) problems.Add("Tekrar: robot baslangic karesinde degil");
+        var sparrow = CanyonTraces.ActiveSparrow;
+        if (sparrow == null || !sparrow.gameObject.activeSelf) problems.Add("Tekrar: Serce yok ya da gizli");
+        else if ((sparrow.transform.localPosition - sparrow.HomePosition).sqrMagnitude > 1e-4f) problems.Add("Tekrar: Serce evine donmedi");
+        yield return new WaitForSeconds(0.1f);   // 0,5 sn sonra denetim ortaminda (sahnesiz bolumlerde de) toz topu buyuk gorunuyor: bkz. ILERLEME.md
+        Cap(Path.Combine(dir, "s60-9-tekrar.png"));
+    }
+
+    // Sahnenin evresi gelene kadar bekler (en cok 40 sn)
+    IEnumerator WaitForPhase(string phase, List<string> problems)
+    {
+        for (float t = 0f; canyonScenes.Phase != phase; t += Time.deltaTime)
+        {
+            if (t > 40f) { problems.Add("60: " + phase + " evresi gelmedi (su an: '"+canyonScenes.Phase+"')"); yield break; }
+            yield return null;
+        }
     }
 
     IEnumerator PoseOnTrail(CanyonRift rift, int index, string dir, string file)

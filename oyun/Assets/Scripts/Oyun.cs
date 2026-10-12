@@ -78,6 +78,7 @@ public partial class Oyun : MonoBehaviour
 
     Camera cam;
     CameraShot shot;   // Bolge 6 sahneleri: sahne surerken kamerayi bu yonetir
+    CanyonScenes canyonScenes;   // Bolge 6 sahneleri: 60 kanyona inis (51 ve 55 sonraki gorevlerde)
     Material backdrop;
     BackdropCache backdropCache;
     Transform world;
@@ -241,6 +242,7 @@ public partial class Oyun : MonoBehaviour
 
         hud = gameObject.AddComponent<Hud>();
         hud.Build();
+        canyonScenes = new CanyonScenes(robot, shot, hud, c => Pos(c), Cols, Rows, StartYaw);
         if (GraphicsOptions.NoHud) hud.HideForMeasurement();
         FrameRateMeter.Create(System.Array.IndexOf(a, "-fps") >= 0);
         hud.RunPressed += OnRun;
@@ -475,7 +477,7 @@ public partial class Oyun : MonoBehaviour
     // Bolumu kurar: buzlar, engel kayalari, hedef kare, zemindeki buz izleri, karttaki kod ve ust baslik.
     void LoadLevel(int index)
     {
-        shot.Release();
+        canyonScenes.Restore();
         if (program != null) StopCoroutine(program);
         program = null;
         running = false; done = false; complete = false;
@@ -737,7 +739,7 @@ public partial class Oyun : MonoBehaviour
 
     void ResetLevel()
     {
-        shot.Release();
+        canyonScenes.Restore();
         if (program != null) StopCoroutine(program);
         program = null;
         running = false; done = false; complete = false;
@@ -830,6 +832,7 @@ public partial class Oyun : MonoBehaviour
             if (level.Number == Bolge3SonBolum) yield return ClosingSceneBolge3();
             if (level.Number == Bolge4SonBolum) yield return ClosingSceneBolge4();
             if (level.Number == Bolge5SonBolum) yield return ClosingSceneBolge5();
+            if (level.Number == CanyonTraces.LastLevel) yield return canyonScenes.Descent(level);
             if (perde1Finale)
             {
                 yield return Tween.Wait(Bolge5DevamBekleme);   // son kare bir sure yalniz kalir

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public enum SparrowState { Incomplete, Dormant, Flying }
@@ -19,9 +20,12 @@ public class Sparrow : MonoBehaviour
     Material eyeMat;
     SparrowState state;
     float phase;
+    Vector3 home;               // Create'teki yer ve hal: sahneler (Bolge 6) bozdugunda ResetHome geri verir
+    SparrowState homeState;
 
     // Govde (3b'deki ilk ucus sahnesi bunu yukari kaldirir)
     public Transform Body => body;
+    public Vector3 HomePosition => home;   // Create'teki yer (ResetHome'un varacagi yer)
     // Kizaklarin altindan govde merkezine yukseklik: rafa konurken
     public static float RestHeight => BodyRadius * 0.85f * Scale;
 
@@ -32,6 +36,8 @@ public class Sparrow : MonoBehaviour
         go.transform.localPosition = localPos;
         go.transform.localScale = Vector3.one * Scale;
         var sparrow = go.AddComponent<Sparrow>();
+        sparrow.home = localPos;
+        sparrow.homeState = state;
         sparrow.Build();
         sparrow.SetState(state);
         return sparrow;
@@ -100,6 +106,22 @@ public class Sparrow : MonoBehaviour
         eyeMat.SetColor("_EmissionColor", s == SparrowState.Flying ? EyeOn : Color.black);
         body.localPosition = Vector3.zero;
         body.localRotation = Quaternion.identity;
+    }
+
+    // Sahnelerde (60 inis) yumusakca baska yere ucar; cagiran coroutine'i bekler
+    public IEnumerator FlyTo(Vector3 localPos, float seconds)
+    {
+        Vector3 from = transform.localPosition;
+        yield return Tween.Run(seconds, t => transform.localPosition = Vector3.Lerp(from, localPos, Tween.InOutCubic(t)));
+    }
+
+    // Create'teki yer ve hale doner; Serce'nin kendi calisan hareketlerini durdurur ("Tekrar", bolum degisimi)
+    public void ResetHome()
+    {
+        StopAllCoroutines();
+        gameObject.SetActive(true);
+        transform.localPosition = home;
+        SetState(homeState);
     }
 
     void Update()

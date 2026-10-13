@@ -4,7 +4,7 @@
 **Kod `main`'de değil, `bolge6-sahneler-3b` dalında** (GitHub'da). Devam: `git checkout bolge6-sahneler-3b` → `git pull`. 3b'nin 5 görevinden **Görev 1 (kamera + yarık) Enes onayladı; Görev 2 (60 kanyona iniş sahnesi) yapıldı, Enes oyunda izleyip onaylayacak.** Sıradaki: Görev 3 (55 Serçe'nin ilk uçuşu), 4 (51 roketin inişi), 5 (son denetim + belgeler). Plan: `docs/superpowers/plans/2026-10-11-bolge-6-sahneler-3b.md`. Enes'in kararı: **yardımcı (subagent) yok, Claude işi kendisi yapar**; görsel işte ara görüntüyü Enes'e göster, onaysız sonraki göreve geçme.
 
 ## README + Unity'siz Windows paketi (Enes, 2026-10-13) — GitHub'a yüklendi (`main`)
-- Kökte `README.md` (şirket incelemesi için, sade dil): oyunun amacı, durumu, nasıl geliştirildiği, klasörler, bilinen eksikler, Unity'siz açma adımları.
+- Kökte `README.md` (sade dille): oyunun amacı, durumu, nasıl geliştirildiği, klasörler, bilinen eksikler, Unity'siz açma adımları.
 - Unity'siz açma: `scripts/dagitim-paketi.ps1` → `oyun/Build/MarsKod-Windows.zip` (~38 MB; içinde `MarsKod-Baslat.bat`). Zip GitHub **Releases** sayfasına konur (repoya girmez). Paket `bolge6-sahneler-3b` kodundan üretildi (60. bölüm sahnesi dahil).
 - Claude'u "Contributors" listesinden çıkarma denendi, Enes vazgeçti: eski commit'ler değişmedi, commit satırı eskisi gibi.
 - Açık: güncel Android APK yok (`paketler/`'deki 6 Ekim'den, 15 bölümlü); README'deki ekip rolleri ve lisans satırı Enes'çe gözden geçirilmeli.

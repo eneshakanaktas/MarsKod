@@ -83,7 +83,7 @@ Ayrıntılı günlük ilerleme: [ILERLEME.md](ILERLEME.md).
 - Bölge bölge senaryo: `docs/tasarim/senaryo-bolge-01.md` … `06.md`
 - Yapım planı: [docs/superpowers/plans/2026-09-25-marskod-yapim-plani.md](docs/superpowers/plans/2026-09-25-marskod-yapim-plani.md)
 
-## 6. Şirketin bilmesi gereken noktalar
+## 6. Bilinmesi gereken noktalar
 
 - **Lisans:** Projede henüz bir lisans dosyası yoktur; lisans henüz belirlenmemiştir; kullanım izni için ekiple görüşülmelidir.
 - **Üçüncü taraf içerik:** Yazı tipleri Poppins ve JetBrains Mono (açık lisanslı, ticari kullanıma uygun). Hazır model ya da doku eklenirken ticari kullanım lisansı kontrol edilir.

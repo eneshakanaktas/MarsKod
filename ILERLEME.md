@@ -3,6 +3,12 @@
 ## En son (özet) — Enes, 2026-10-12 akşam
 **Kod `main`'de değil, `bolge6-sahneler-3b` dalında** (GitHub'da). Devam: `git checkout bolge6-sahneler-3b` → `git pull`. 3b'nin 5 görevinden **Görev 1 (kamera + yarık) Enes onayladı; Görev 2 (60 kanyona iniş sahnesi) yapıldı, Enes oyunda izleyip onaylayacak.** Sıradaki: Görev 3 (55 Serçe'nin ilk uçuşu), 4 (51 roketin inişi), 5 (son denetim + belgeler). Plan: `docs/superpowers/plans/2026-10-11-bolge-6-sahneler-3b.md`. Enes'in kararı: **yardımcı (subagent) yok, Claude işi kendisi yapar**; görsel işte ara görüntüyü Enes'e göster, onaysız sonraki göreve geçme.
 
+## README + Unity'siz Windows paketi (Enes, 2026-10-13) — GitHub'a yüklendi (`main`)
+- Kökte `README.md` (şirket incelemesi için, sade dil): oyunun amacı, durumu, nasıl geliştirildiği, klasörler, bilinen eksikler, Unity'siz açma adımları.
+- Unity'siz açma: `scripts/dagitim-paketi.ps1` → `oyun/Build/MarsKod-Windows.zip` (~38 MB; içinde `MarsKod-Baslat.bat`). Zip GitHub **Releases** sayfasına konur (repoya girmez). Paket `bolge6-sahneler-3b` kodundan üretildi (60. bölüm sahnesi dahil).
+- Claude'u "Contributors" listesinden çıkarma denendi, Enes vazgeçti: eski commit'ler değişmedi, commit satırı eskisi gibi.
+- Açık: güncel Android APK yok (`paketler/`'deki 6 Ekim'den, 15 bölümlü); README'deki ekip rolleri ve lisans satırı Enes'çe gözden geçirilmeli.
+
 ## Bölge 6 · 3b Görev 1 + 2 (Enes, 2026-10-12) — GitHub'a yüklendi (dal: `bolge6-sahneler-3b`)
 - **Görev 1 (Opus 5.5 · high), Enes onayladı:** yarım düzeltme bitti. Kamera yarığın başında, Kıvılcım'ın arkasından yarık boyunca kanyon ağzına bakar. Yarık kapalı uçlu değil: dibi ileride bir kenardan kanyona dik iner (Kıvılcım orada gözden kaybolur; spec'teki "dönemeç kayasının arkası" yerine, çünkü yukarıdan bakan kamera kayanın üstünden görüyordu). Ayrıca: duvarlar katmanlı kaba kaya, sağ duvarda oyulmuş patika rafı, gölgede koyu dip (sis yok), yuvarlak yarık başı, uzak ucun koyu "kanyon derinliği".
 - **Görev 2 (Sonnet 5.5 · medium), Enes izleyip onaylayacak:** `GridPath.cs` (boş karelerden en kısa yol; 8 test, `dotnet test` 1403), `CanyonScenes.cs` (60 bitince: Serçe kalkar → Kıvılcım hedeften alanın arkasına, direklerin arasından patikaya yürür → kamera yarığa bakar → patikadan iner, Serçe yanında açık havada uçar → ikisi kenardan aşağı gözden kaybolur), `Robot.Glide` (durmadan akıcı yürüyüş), `Sparrow.FlyTo/ResetHome`. "Tekrar" ya da bölüm değişimi sahneyi geri alır. `-sahneler` denetimi TAMAM.

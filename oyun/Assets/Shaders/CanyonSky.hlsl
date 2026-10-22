@@ -74,23 +74,8 @@ float canyonFarTop(float x)
     return _Horizon + 0.003 + 0.022 * stepped + 0.0015 * vnoise(x * 80.0);
 }
 
-// Bolum 60: yarigin son parcasi. Kenar kayalarinin otesindeki zemin seridi ekranda cok ince oldugu icin zemin orada arka
-// plana karisir; yarik burada ince koyu bir cizgi olarak devam eder: 3B yarigin ufka vardigi yerden (ekranda, ufkun altinda d
-// kadar asagida, ortanin ~0,6 d sagi) ufuktaki kanyon agzina (x = 0) duz bir cizgiyle daralarak gider (perspektif: genislik d
-// ile orantili). Cizgi ufka yaklastikca tabana karisir, kanyon agzinda kaybolur.
+// Bolum 60: sahne kamerasinda yarigin golgedeki derinligi (normal bakista yarik gorunmez: ufukta cizgi yok)
 static const float3 CANYON_DEPTH = float3(0.15, 0.085, 0.065);   // yarigin golgedeki derinligi (60, sahne kamerasi)
-float3 canyonRiftToMouth(float3 col, float x, float y, float pixel)
-{
-    float d = _Horizon - y;
-    if (d <= 0.0) return col;
-    // yarigin basi direklerin hizasinda (d ~ 0,07; ortanin ~0,6 d sagi); genislik d ile orantili: ufka yaklastikca iner
-    float center = 0.6 * d, halfWidth = 0.26 * d;
-    float edge = 0.015 * sin(y * 900.0 + x * 40.0) * d;   // kenar hafif duzensiz
-    float on = 1.0 - smoothstep(halfWidth - pixel, halfWidth + pixel, abs(x - center) + edge);
-    float3 c = lerp(CANYON_PLAIN, float3(0.13, 0.075, 0.055), 0.95 * saturate(d / 0.03));
-    return lerp(col, c, on);
-}
-
 float3 CanyonBackdrop(float2 suv)
 {
     float2 uv = MarsPictureUV(suv);
@@ -139,12 +124,10 @@ float3 CanyonBackdrop(float2 suv)
     col = lerp(col, CANYON_PLAIN, 1.0 - smoothstep(_Horizon - 0.004, _Horizon + 0.003, uv.y));
     if (_CanyonDescent.y > 0.5)
     {
-        // cizgi normal kameranin geometrisine gore; sahne kamerasinda 3B yarik ufka kadar gorunur, cizgi soner
-        col = lerp(col, canyonRiftToMouth(col, x, uv.y, pixel), 1.0 - _SceneCamera);
         // Sahne kamerasinda yariga boyuna bakilir: zemin uzakta kivrildigi icin yarigin icinden bakan goz ufkun otesine cikar.
         // Zemin ufka kadar dolu (MarsFadeToBackdropBand), ufkun altindaki arka plan yalniz yarigin icinden gorunur: orasi
         // kanyonun golgedeki derinligi (sis degil; dibin golgesi).
-        col = lerp(col, CANYON_DEPTH, _SceneCamera * smoothstep(_Horizon - 0.012, _Horizon - 0.05, uv.y));
+        col = lerp(col, CANYON_DEPTH, RiftSceneBlend() * smoothstep(_Horizon - 0.012, _Horizon - 0.05, uv.y));
     }
     return col;
 }

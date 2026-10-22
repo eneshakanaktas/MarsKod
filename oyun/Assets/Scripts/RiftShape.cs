@@ -11,12 +11,11 @@ public class RiftShape
 {
     public const float LedgeReach = 5f;          // raf dibe burada varir
     public const float LipOut = 0.2f;            // rafin duvardan disari tasan kismi (dis dudak); raf = oyuk + dudak = 0,5
-    public const float LedgeHeadroom = 0.75f;    // raf ile sacak arasi (Kivilcim ~0,55 boyunda)
+    public const float LedgeHeadroom = 1.3f;     // raf ile sacak arasi: Kivilcim govdesi ~0,7 + anten + pay (0,75'te govde sacaga giriyordu)
     public const float LedgeThickness = 0.16f;   // dudagin on yuzunun yuksekligi (altinda karanlik alt yuz)
-    public const float BendRockT = 6.2f;         // donemec kayasi (sol duvara yaslanmis iri kaya)
     // dipte patika: sag yanda, sonra dibin kenarindan asagi (CanyonRift.DropT)
-    public static readonly float[] FloorTrail = { 5.5f, 6.0f, 6.5f, 6.9f, 7.3f, 7.7f, 8.1f, 8.6f };
-    const float FloorHalfMin = 0.3f;             // dip en az 0,6 genis (robot gecer)
+    public static readonly float[] FloorTrail = { 4.75f, 5.25f, 5.75f, 6.25f, 6.75f, 7.2f, 7.6f, 8.0f, 8.5f };
+    const float FloorHalfMin = 0.7f;             // dip en az 1,4 genis: robot ortada, iki yaninda 0,5'ten fazla bosluk
 
     // Tortu katmanlari, ustten alta (ortadaki zeminden derinlik): kalinlik, ust sinirdaki basamak (iceri kayma), renk.
     // Sira tekrar eder; birkac genis basamakta dusmus kayalar durur (RiftMeshes).
@@ -136,7 +135,7 @@ public class RiftShape
         float aboveLedge = Mathf.SmoothStep(0f, 1f, (y - ledge + 0.03f) / 0.06f);
         float underEaves = 1f - Mathf.SmoothStep(0f, 1f, (y - ledge - LedgeHeadroom + 0.08f) / 0.08f);
         float open = CanyonRift.RimSetback(t) / CanyonRift.LedgeRecess;
-        float fade = 1f - Mathf.SmoothStep(0f, 1f, (t - LedgeReach) / 0.8f);   // dipte oyuk biter
+        float fade = 1f - Mathf.SmoothStep(0f, 1f, (t - LedgeReach) / 2f);   // dipte oyuk yavasca biter (robot raftan dibe duvara degmeden gecer)
         return CanyonRift.LedgeRecess * aboveLedge * Mathf.Max(underEaves, open) * fade;
     }
 
@@ -154,16 +153,24 @@ public class RiftShape
     // Rafin arka kenari (oyugun dibi), dis dudagi (duvarin rafin altindaki yuzunden LipOut disarida) ve ortasi
     public float LedgeBackX(float t) => WallX(t, 1f, LedgeY(t) + 0.1f) + 0.02f;
     public float LedgeLipX(float t) => WallX(t, 1f, LedgeY(t) - 0.06f) - LipOut;
-    public Vector3 LedgeCenter(float t) => new Vector3(0.5f * (LedgeBackX(t) + LedgeLipX(t) + 0.08f), LedgeY(t), Z(t));
+    public Vector3 LedgeCenter(float t) => new Vector3(Mathf.Lerp(LedgeLipX(t), LedgeBackX(t), 0.42f), LedgeY(t), Z(t));   // rafin ortasindan dudaga biraz yakin: arka duvarda en cok yer
 
     // ---- Dip ----
     public float FloorLeftX(float t) => WallX(t, -1f, FloorY(t));
     public float FloorRightX(float t) => WallX(t, 1f, FloorY(t));
 
-    // Dipteki patika: hep sag yanda (donemec kayasi sol duvara yaslidir; robot kayanin icinden gecmesin)
-    public Vector3 FloorTrailPoint(float t) => new Vector3(FloorRightX(t) - 0.3f, FloorY(t), Z(t));
+    // Dipteki patika: dibin ortasindan biraz sagda (donemec kayasi sol duvara yaslidir; iki yanda da robota yer var)
+    public Vector3 FloorTrailPoint(float t)
+    {
+        // Rafin ucundan itibaren yol iki duvarin tam ortasindan gecer (duvarlar robotun govde yuksekliginde olculur: raf oyugu
+        // kapanirken sag duvar yola dogru gelir). Basta rafin ortasindan baslar, yumusakca ortaya gecer.
+        float y = LedgeY(t);
+        float middle = 0.5f * (WallX(t, -1f, y + RobotBodyHeight) + WallX(t, 1f, y + RobotBodyHeight));
+        float blend = Mathf.SmoothStep(0f, 1f, (t - (LedgeReach - 0.5f)) / 2f);
+        return new Vector3(Mathf.Lerp(LedgeCenter(t).x, middle, blend), y, Z(t));
+    }
+    const float RobotBodyHeight = 0.5f;
 
-    public Vector3 BendRockPoint() => new Vector3(FloorLeftX(BendRockT) + 0.2f, FloorY(BendRockT), Z(BendRockT));
 
     // ---- Golgelenme (gok gorunurlugu, 0..1): derin ve dar yerde kapali, kenarda acik. Isigi degil ortam isigini kisar. ----
     public float Shade(float t, float y)

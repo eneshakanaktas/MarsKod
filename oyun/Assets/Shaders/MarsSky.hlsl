@@ -16,10 +16,12 @@ float _Horizon;   // ufuk: fotograf koordinatinda (asagida)
 // z patikanin x'i, w alanin arka kenari. Zemin (Ground.shader) ve arka plan (CanyonSky.hlsl) ikisi de cizer.
 float4 _CanyonDescent;
 float _SceneCamera;   // CameraShot: 0 normal kamera, 1 sahne kamerasi (arada yumusak gecis)
-// 60'ta yarigin acilmasi: sahne kamerasi yarigi gosterirken (_SceneCamera 0 -> 1) 3B yarik, yarigin basindan uzaga dogru
-// "fermuar gibi" acilir. Yarik boyunca uzaklik t (z - baslangic) < RiftReveal ise 3B yarik gorunur, degilse zemindeki catlak.
-// Piksel gurultusu yok: gecis yarik boyunca ilerleyen tek, temiz bir sinirdir.
-float RiftReveal() { return _SceneCamera * 20.0; }
+// 60'ta 3B yarik her zaman gorunur (bolum acilir acilmaz yarik orada: Enes). Kamera hareketiyle yavas yavas acilmaz.
+// Yarik boyunca uzaklik t (z - baslangic) < RiftReveal ise zemin kesilir ve 3B yarik gorunur: hep (yarik boyundan uzun).
+float RiftReveal() { return 1000.0; }
+// 60'ta "sahne kamerasi" etkileri (ufuk bandi daralir, yarigin ici koyulasir) bolum acilir acilmaz tamdir: kamera yaklastikca yarik
+// "yukleniyormus" gibi degismesin. Diger bolumlerde kamera sahnesine gore yumusakca degisir.
+float RiftSceneBlend() { return _CanyonDescent.y > 0.5 ? 1.0 : _SceneCamera; }
 float4 _Picture;  // x: fotografin olcegi (1 = tam boy), y: dikey kayma (ekranin -1..1 biriminde)
 float4 _Focus;
 float4 _Sun;
@@ -1001,7 +1003,7 @@ float3 MarsFadeToBackdropBand(float3 col, float3 posWS, float2 suv, float2 fogRa
     // tamamlanir; yoksa orada sert bir cizgi kalir
     bool custom = customBand.x > customBand.y;
     // sahne kamerasinda (60'ta yariga bakis) zemin ufka kadar dolu kalir: ufkun altindaki arka plan yalniz yarigin icinden gorunur
-    float2 band = custom ? customBand : (MarsCanyon() ? lerp(float2(0.085, 0.03), float2(0.035, 0.01), _SceneCamera) : float2(0.15, 0.06));
+    float2 band = custom ? customBand : (MarsCanyon() ? lerp(float2(0.085, 0.03), float2(0.035, 0.01), RiftSceneBlend()) : float2(0.15, 0.06));
     float scrFog = smoothstep(_Horizon - band.x, _Horizon - band.y, MarsPictureUV(suv).y);
     if (MarsCanyon() && !custom) scrFog = pow(scrFog, 1.5);
     float fog = max(distFog, scrFog);

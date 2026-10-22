@@ -40,6 +40,7 @@ public class Hud : MonoBehaviour
 
     Font fMed, fSemi, fBold, fMono;
     VisualElement root, header, card, message, runBtn, stepBtn, glossaryBtn, hintBtn, overlay;
+    ScreenBlink blink;
     GlossaryView glossary;
     HintPanel hint;
     CodeEditor editor;
@@ -134,6 +135,8 @@ public class Hud : MonoBehaviour
         root.Add(keyboard);
         root.Add(palette);
         root.Add(overlay);
+        blink = new ScreenBlink();
+        root.Add(blink);
     }
 
     float SafeTop()
@@ -678,6 +681,10 @@ public class Hud : MonoBehaviour
         if (!visible) editor.StopEditing();
         card.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
     }
+
+    // Kisa kara kirpisma: kamera bir yerden baska yere kesilirken (55'te Serce'nin gozunden bakis)
+    public void Blink(float seconds) => blink.Play(seconds);
+    public void ClearBlink() => blink.Clear();
 
     public bool HintOpen => hint.Open;
 

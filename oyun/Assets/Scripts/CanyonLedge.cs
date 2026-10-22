@@ -8,7 +8,6 @@ public static class CanyonLedge
     static readonly Material Rock = Mats.Lit(Mats.Hex("#7D4A34"), 0.12f);
     static readonly Material RockTop = Mats.Lit(Mats.Hex("#94593C"), 0.12f);
     static readonly Material Strata = Mats.Lit(Mats.Hex("#5E3424"), 0.1f);
-    static readonly Material RimRock = Mats.Lit(Mats.Hex("#5E3424"), 0.12f);
     static readonly Material PostMat = Mats.Lit(Mats.Hex("#2E2624"), 0.3f);
 
     const float StepDepth = 0.6f;
@@ -51,29 +50,12 @@ public static class CanyonLedge
         return face;
     }
 
-    // Bolum 60. z: kenarin cizgisi; pathX: patikanin kenari kestigi yer. Kenar boyunca dogal dagilmis koyu kayalar: boylari,
-    // aralari ve one/arkaya kaymalari farkli, yer yer iki-uc kaya bir arada, aralarda kucuk taslar (sira gibi gorunmesin);
-    // patikada aciklik, iki yaninda isaret diregi (ustte turuncu bant). Doner: patikanin basindaki zemin yuzeyi (yere yatik:
-    // yerel -Z yukari, +Y kanyona dogru; ok buraya).
-    public static Transform Edge(Transform parent, float z, float width, float pathX, Func<float, float, float> ground)
+    // Bolum 60. z: kenarin cizgisi; pathX: patikanin kenari kestigi yer. Patikanin iki yaninda isaret diregi (yaninda kaya yok: Enes,
+    // yarigin cevresinde kaya gorunumu istemiyor). Doner: patikanin basindaki zemin yuzeyi (yere yatik: yerel -Z yukari, +Y kanyona
+    // dogru; ok buraya).
+    public static Transform Edge(Transform parent, float z, float pathX, Func<float, float, float> ground)
     {
         var root = Parts.Empty("Iz-KanyonKenari", parent);
-        const int Rocks = 13;
-        for (int i = 0; i < Rocks; i++)
-        {
-            float x = -width * 0.5f + width * (i + 0.5f) / Rocks + 0.3f * Mathf.Sin(i * 2.9f);
-            float size = 0.12f + 0.2f * Mathf.Pow(Mathf.Abs(Mathf.Sin(i * 1.7f + 0.4f)), 2f);   // cogu kucuk, birkaci iri
-            float rz = z + 0.3f * Mathf.Sin(i * 3.7f + 1.1f);
-            if (Mathf.Abs(x - pathX) < PathMouth || CanyonRift.Covers(x, rz, z, pathX, size + 0.1f)) continue;   // patika ve yarigin agzi acik
-            var rock = Parts.Add("Kaya", root, MeshFactory.Rock(size, 640 + i), RimRock,
-                new Vector3(x, ground(x, rz) + size * 0.35f, rz));   // kayanin bir kismi gomulu
-            rock.localScale = new Vector3(1.1f + 0.4f * Mathf.Abs(Mathf.Sin(i * 2.3f)), 0.55f + 0.35f * Mathf.Abs(Mathf.Cos(i * 1.9f)), 1f);
-            rock.localRotation = Quaternion.Euler(0f, 37f * i, 0f);
-            if (i % 3 == 1) continue;
-            float px = x + 0.28f * Mathf.Cos(i * 2.1f), pz = rz - 0.15f - 0.1f * Mathf.Sin(i);   // yaninda kucuk tas
-            if (Mathf.Abs(px - pathX) < PathMouth || CanyonRift.Covers(px, pz, z, pathX, 0.12f)) continue;
-            Parts.Add("Tas", root, MeshFactory.Rock(0.06f, 660 + i), RimRock, new Vector3(px, ground(px, pz) + 0.02f, pz));
-        }
         foreach (float side in new[] { -1f, 1f })
             MarkerPost(root, new Vector3(pathX + side * PathMouth, 0f, z - 0.15f), ground);   // yarigin basinin hemen onunde
 
@@ -86,13 +68,18 @@ public static class CanyonLedge
 
     const float PathMouth = 0.42f;   // patika agzinin yari genisligi (direkler bunun kenarinda)
 
-    // Patikanin iki yanindaki isaret diregi: telefonda secilecek boyda, ustunde turuncu boya bandi
+    // Patikanin iki yanindaki isaret diregi: telefonda secilecek boyda; iki turuncu bant arasinda beyaz yansitici, tepede
+    // her isikta net amber fener (yola "kapi" gibi bakar)
+    static readonly Material ReflectorMat = Mats.Lit(Mats.Hex("#E8E2D4"), 0.4f);
+    static readonly Material LampMat = Mats.Unlit(Mats.Hex("#FFB547"));
+
     static void MarkerPost(Transform root, Vector3 pos, Func<float, float, float> ground)
     {
-        const float H = 0.7f;
+        const float H = 0.95f;
         float y = ground(pos.x, pos.z);
-        Parts.Add("Direk", root, MeshFactory.RoundedCylinder(0.055f, H, 0.012f, 12), PostMat, new Vector3(pos.x, y + H * 0.5f, pos.z));
-        Parts.Add("Bant", root, MeshFactory.RoundedCylinder(0.062f, 0.12f, 0.01f, 12), PaintMarks.PaintMat(0f),
-            new Vector3(pos.x, y + H - 0.1f, pos.z), outline: false);
+        Parts.Add("Direk", root, MeshFactory.RoundedCylinder(0.065f, H, 0.014f, 12), PostMat, new Vector3(pos.x, y + H * 0.5f, pos.z));
+        foreach (var (top, height, mat) in new[] { (H - 0.1f, 0.12f, PaintMarks.PaintMat(0f)), (H - 0.26f, 0.07f, ReflectorMat), (H - 0.42f, 0.12f, PaintMarks.PaintMat(0f)) })
+            Parts.Add("Bant", root, MeshFactory.RoundedCylinder(0.072f, height, 0.01f, 12), mat, new Vector3(pos.x, y + top, pos.z), outline: false);
+        Parts.Add("Fener", root, MeshFactory.Sphere(0.07f, 8, 12), LampMat, new Vector3(pos.x, y + H + 0.04f, pos.z), outline: false);
     }
 }

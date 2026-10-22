@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Bolum 60 yariginin aglari (bicim RiftShape'te): katmanli iki duvar, bas tarafi kapatan yuz, dip, sag duvara oyulmus patika
-// rafi, kenar kayalari, basamaklarda ve dipte dusmus kayalar, donemec kayasi. Hepsi gercek gunesin golgesini dusurur ve alir;
+// rafi, kenar kayalari, donemec kayasi (dipteki moloz kayalar duvar dibinde havada gorunuyordu: yok). Hepsi gercek gunesin golgesini dusurur ve alir;
 // derinde ortam isigi kisilir (koselere yazilan gok gorunurlugu). Malzeme FarRock: zeminle ayni isik ve ufukta ayni karisma.
 public static class RiftMeshes
 {
@@ -10,8 +10,7 @@ public static class RiftMeshes
     static readonly string[] ToneColors = { "#7A4732", "#583120", "#A06A4C" };
     const string FloorColor = "#4E2D20", PathColor = "#B07A58", LipColor = "#6E402C", UndersideColor = "#3A2219";
 
-    // trail: robotun ve Serce'nin gececegi yol (yerel); kayalar bunun uzerine konmaz
-    public static void Build(Transform root, RiftShape shape, IReadOnlyList<Vector3> trail)
+    public static void Build(Transform root, RiftShape shape)
     {
         var tones = new FlatMesh[RiftShape.Tones];
         for (int i = 0; i < tones.Length; i++) tones[i] = new FlatMesh();
@@ -35,7 +34,6 @@ public static class RiftMeshes
         Add(root, "Patika", path, PathColor);
         Add(root, "PatikaDudak", lip, LipColor);
         Add(root, "PatikaAlti", underside, UndersideColor);
-        Rocks(root, shape, trail);
     }
 
     // Yarik boyunca kesitler: gorunen kisimda sik, ufkun otesinde seyrek
@@ -156,76 +154,6 @@ public static class RiftMeshes
         };
     }
 
-    // Kenar kayalari, basamaklarda ve dipte dusmus kayalar, donemec kayasi. Her biri yuzeyine oturur (bir kismi gomulu).
-    // Kaya (merkez pos, yaricap radius) patikaya robotun/Serce'nin gecebilecegi kadar yakin mi
-    static bool OnTrail(IReadOnlyList<Vector3> trail, Vector3 pos, float radius)
-    {
-        const float Clearance = 0.45f, Height = 1.4f;
-        for (int i = 1; i < trail.Count; i++)
-            for (float u = 0f; u <= 1f; u += 0.25f)
-            {
-                var p = Vector3.Lerp(trail[i - 1], trail[i], u);
-                if (Mathf.Abs(pos.y - p.y) < Height + radius && (new Vector2(pos.x - p.x, pos.z - p.z)).magnitude < radius + Clearance) return true;
-            }
-        return false;
-    }
-
-    static void Rocks(Transform root, RiftShape shape, IReadOnlyList<Vector3> trail)
-    {
-        int seed = 900;
-        // kenarda, zeminde: kirik kenarin parcalari
-        foreach (float s in new[] { -1f, 1f })
-            for (float t = 0.8f; t < 7.5f; t += 1.3f + 0.4f * Mathf.Sin(t * 3f + s))
-            {
-                float size = 0.07f + 0.06f * Mathf.PerlinNoise(t * 2f, s + 3f);
-                if (s > 0f && t < RiftShape.LedgeReach) continue;   // patikanin agzi acik kalsin
-                float x = shape.RimX(t, s) + s * size * 0.9f, z = shape.Z(t);
-                var at = new Vector3(x, shape.Ground(x, z) + size * 0.3f, z);
-                if (!OnTrail(trail, at, size)) Rock(root, shape, at, size, seed++, 1f);
-            }
-        // genis basamaklarda: duvardan kopup basamakta kalmis kucuk kayalar
-        for (int k = 1; k < shape.LayerCount; k++)
-        {
-            if (shape.LayerStep(k) < 0.09f) continue;
-            for (int i = 0; i < 2; i++)
-            {
-                float s = (k + i) % 2 == 0 ? -1f : 1f, t = 1.5f + 2.3f * i + 0.7f * k;
-                float y = shape.LayerTopY(t) - shape.LayerTop(k);
-                if (t > 7f || y < shape.FloorY(t) + 0.3f) continue;
-                if (s > 0f && Mathf.Abs(y - shape.LedgeY(t)) < RiftShape.LedgeHeadroom + 0.2f) continue;
-                float x = 0.5f * (shape.WallX(t, s, y + 0.06f) + shape.WallX(t, s, y - 0.06f)), size = 0.06f;
-                var at = new Vector3(x, y + size * 0.25f, shape.Z(t));
-                if (!OnTrail(trail, at, size)) Rock(root, shape, at, size, seed++, 0.8f);
-            }
-        }
-        // dipte: duvarlarin dibine dokulmus moloz (patikadan uzakta)
-        for (float t = 1.2f; t < 7.8f; t += 0.55f + 0.3f * Mathf.Sin(t * 5f))
-        {
-            float s = Mathf.Sin(t * 4.1f) > 0f ? -1f : 1f;
-            if (s > 0f && t > RiftShape.LedgeReach - 0.5f) s = -1f;   // dipteki patika sag yanda
-            float size = 0.07f + 0.08f * Mathf.PerlinNoise(t * 1.7f, 8f);
-            float x = (s < 0f ? shape.FloorLeftX(t) : shape.FloorRightX(t)) - s * size * 0.8f;
-            var at = new Vector3(x, shape.FloorY(t) + size * 0.2f, shape.Z(t));
-            if (!OnTrail(trail, at, size)) Rock(root, shape, at, size, seed++, 0.9f);
-        }
-        // donemec kayasi: sol duvara yaslanmis iri, uzun kaya; patika arkasina gecer
-        if (!OnTrail(trail, shape.BendRockPoint() + Vector3.up * 0.35f, 0.3f))
-        {
-            var bend = Rock(root, shape, shape.BendRockPoint() + Vector3.up * 0.35f, 0.42f, 701, 1f);
-            bend.localScale = new Vector3(0.6f, 1.9f, 1.2f);
-            bend.localRotation = Quaternion.Euler(4f, 25f, -6f);
-        }
-    }
-
-    static Transform Rock(Transform root, RiftShape shape, Vector3 pos, float size, int seed, float tone)
-    {
-        float shade = shape.Shade(pos.z - shape.Z(0f), pos.y);
-        var mesh = FlatMesh.WithShade(MeshFactory.Rock(size, seed), shade);
-        var rock = Parts.Add("Kaya", root, mesh, RiftMat(tone >= 1f ? "#5E3424" : "#6A3C2A"), pos, outline: false);
-        rock.localRotation = Quaternion.Euler(0f, seed * 47f, 0f);
-        return rock;
-    }
-
     static void Add(Transform root, string name, FlatMesh mesh, string hex)
     {
         if (mesh.IsEmpty) return;
@@ -245,7 +173,7 @@ public static class RiftMeshes
         m.SetFloat("_VertexAO", 1f);
         m.SetFloat("_DawnShadow", 1f);
         m.SetFloat("_DeepShadow", 1f);
-        m.SetFloat("_SceneOnly", 1f);   // normal bakista yok: yerini zemindeki catlak alir (Ground.shader riftCrack)
+        m.SetFloat("_SceneOnly", 0f);   // yarik her bakista gorunur
         return m;
     }
 }

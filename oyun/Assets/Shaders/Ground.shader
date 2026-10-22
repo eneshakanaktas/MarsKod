@@ -96,46 +96,25 @@ Shader "MarsKod/Ground"
             {
                 t = q.y - _CanyonDescent.x; cx = 0.0; hw = 0.0; rim = 0.0;
                 if (_CanyonDescent.y < 0.5 || t <= 0.0 || t >= 16.0) return false;          // Length
-                cx = lerp(_CanyonDescent.z - 0.35, 0.0, smoothstep(0.0, 7.0, t));           // CenterX (HeadShift, BendLength)
+                cx = lerp(_CanyonDescent.z - 0.8, 0.0, smoothstep(0.0, 7.0, t));            // CenterX (HeadShift, BendLength)
                 float head = sqrt(saturate(t / 0.5));                                        // Head (HeadRound)
-                hw = (0.5 + 0.06 * t) * (0.6 + 0.4 * smoothstep(0.0, 1.2, t)) * head;        // HalfWidth
+                hw = 1.35 * (0.5 + 0.06 * t) * (0.6 + 0.4 * smoothstep(0.0, 1.2, t)) * head; // HalfWidth (Spread)
                 float s = q.x >= cx ? 1.0 : -1.0;
                 float jitter = head * (0.03 * (1.0 + sin(t * 2.3 + s * 1.7)) + 0.018 * (1.0 + sin(t * 5.9 + s * 4.1))
                              + 0.008 * (1.0 + sin(t * 13.1 + s * 2.9)));                   // RimJitter
-                float setback = s > 0.0 ? head * 0.3 * (1.0 - smoothstep(2.7, 3.3, t)) : 0.0;   // RimSetback (LedgeRecess, SetbackFrom/To)
+                float setback = s > 0.0 ? head * 0.8 * (1.0 - smoothstep(2.7, 3.3, t)) : 0.0;   // RimSetback (LedgeRecess, SetbackFrom/To)
                 rim = hw + jitter + setback;
                 return true;
             }
 
             // Sahne kamerasinda (60 kanyona inis, _SceneCamera > 0) zemin yarigin ustunde cizilmez: 3B yarik (RiftMeshes) gorunur.
-            // Normal bakista zemin butundur, yarik yerine riftCrack cizilir. Gecis: yarik basindan uzaga dogru acilir (RiftReveal);
+            // Yarik her bakista 3B (RiftMeshes); zemin yarigin ustunde hep kesilir (RiftReveal).
             // FarRock.shader ayni t sinirini kullanir, ikisi tamamlayicidir.
             void riftClip(float2 q)
             {
                 float t, cx, hw, rim;
                 if (!riftShape(q, t, cx, hw, rim) || t >= RiftReveal()) return;
                 clip(abs(q.x - cx) - rim);   // yarigin icinde negatif: cizilmez
-            }
-
-            // Normal bakista yarik: kanyon agzina giden ince, koyu bir catlak (yeri 3B yarigin ortasi, ama dar); sag kenarinda patikanin
-            // devami (dar bir seki). Ufka yaklastikca perspektifle daralir ve gokyuzundeki cizgiyle (canyonRiftToMouth) birlesir. sRGB.
-            float3 riftCrack(float2 q, float3 ground)
-            {
-                float aa = fwidth(q.x) + 0.01;   // dallanmadan once: turevler her pikselde ayni yoldan hesaplanir
-                float t, cx, hw, rim;
-                if (!riftShape(q, t, cx, hw, rim) || t < RiftReveal()) return ground;
-                float w = 0.5 * hw * (0.85 + 0.3 * vnoise2(float2(t * 3.0, 1.0)));          // catlak yarigin yarisi kadar dar, kenari duzensiz
-                float dx = q.x - cx + 0.05 * (vnoise2(q * 7.0) - 0.5);
-                float crack = 1.0 - smoothstep(w - aa, w + aa, abs(dx));
-                float lipRim = (1.0 - smoothstep(w, w + 0.05 + aa, abs(dx))) * (1.0 - crack);   // kenarda hafif koyu halka (yaslanmis toprak)
-                float3 dark = lerp(float3(0.20, 0.11, 0.08), float3(0.10, 0.05, 0.04), saturate(t / 3.0));   // derine dogru kararir
-                // patikanin devami: sag duvara oyulmus dar seki (basta genis, yariga indikce ince)
-                float ledgeAlong = smoothstep(0.2, 0.6, t) * (1.0 - smoothstep(4.0, 5.5, t));
-                float ledge = smoothstep(0.2 * w - aa, 0.2 * w + aa, dx) * (1.0 - smoothstep(0.9 * w - aa, 0.9 * w, dx)) * ledgeAlong;
-                float3 c = lerp(ground, ground * 0.7, lipRim);
-                c = lerp(c, dark, crack);
-                c = lerp(c, float3(0.50, 0.34, 0.25), ledge * 0.9);
-                return c;
             }
 
             // Bolum 60 (_CanyonDescent.y = 1): alanin arka kenarindan (w) baslayan genis, acik renkli patika; ustunde iki ince
@@ -145,14 +124,18 @@ Shader "MarsKod/Ground"
                 if (_CanyonDescent.y < 0.5) return ground;
                 float edgeZ = _CanyonDescent.x, pathX = _CanyonDescent.z, startZ = _CanyonDescent.w;
                 float3 pathCol = float3(0.74, 0.52, 0.38);   // zeminden belirgin acik: sikismis, acik renkli toz
-                float cx = pathX + 0.15 * sin((q.y - startZ) * 2.0);
+                float cx = pathX;   // dumduz: ustundeki ok ve direkler yolla ayni hizada
                 float dx = abs(q.x - cx);
                 float aa = fwidth(dx);                                  // uzakta kenarlar titresmesin
-                float along = smoothstep(startZ - 0.1, startZ + 0.2, q.y) * (1.0 - smoothstep(edgeZ - 0.1, edgeZ + 0.15, q.y));   // patika kenarda biter
-                float wide = (1.0 - smoothstep(0.28 - aa, 0.34 + aa, dx)) * along;
+                float endFade = 1.0 - smoothstep(edgeZ - 0.1, edgeZ + 0.15, q.y);   // patika yarigin basinda (direklerin arasi) biter
+                float along = smoothstep(startZ - 0.1, startZ + 0.2, q.y) * endFade;
+                float wide = (1.0 - smoothstep(0.30 - aa, 0.30 + aa, dx)) * along;                        // keskin kenarli yol
+                float border = (1.0 - smoothstep(0.018, 0.03 + aa, abs(dx - 0.30))) * along;               // kenarda ince koyu cizgi
                 float ruts = (1.0 - smoothstep(0.012, 0.03 + aa, abs(dx - 0.13))) * wide;   // iki tekerlek izi
-                float3 c = lerp(ground, pathCol * (0.95 + 0.1 * vnoise2(q * 6.0)), wide * 0.95);
-                return lerp(c, pathCol * 0.72, ruts * 0.6);
+                float3 c = lerp(ground, pathCol * (0.95 + 0.1 * vnoise2(q * 6.0)), wide * 0.97);
+                c = lerp(c, pathCol * 0.5, border * 0.55);
+                c = lerp(c, pathCol * 0.72, ruts * 0.6);
+                return c;
             }
 
 #if defined(MARSKOD_SADE)
@@ -412,7 +395,6 @@ Shader "MarsKod/Ground"
                 else if (MarsDunes()) a = duneSand(p, far, inArea);
                 else if (MarsCanyon()) a = canyonFloor(p, far, inArea);
                 else a = regolith(p, far, inArea);
-                a = riftCrack(p.xz, a);
 
                 // oyun alani: ayni zemin, biraz daha duzgun; kare sinirlari ince ve soluk
                 // sinirlar alanin kenarindan (-_Area) birer birim arayla; tek/cift kare sayisinda da dogru

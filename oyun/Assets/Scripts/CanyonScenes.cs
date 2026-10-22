@@ -16,6 +16,7 @@ public class CanyonScenes
     readonly Func<Cell, Vector3> cellPos;
     readonly int cols, rows;
     readonly float startYaw;                  // Oyun.StartYaw: robotun baslangic yonu (51'de kapidan cikinca)
+    const float BirdViewAbove = 4.5f, BirdMargin = 1.2f, SparrowOnScreen = 0.55f;   // 55 kus bakisi: Serce'nin ustunde ne kadar yukarida, alanin yanlarinda pay
     public string Phase { get; private set; } = "";   // goruntu denetimi hangi anda oldugunu buradan okur
 
     public CanyonScenes(Robot robot, CameraShot shot, Hud hud, Func<Cell, Vector3> cellPos, int cols, int rows, float startYaw)
@@ -69,11 +70,62 @@ public class CanyonScenes
         Phase = "son";
     }
 
+    // 55: Serce uyanir, cati boslugundan yukselir; bir an Serce'nin gozunden tam yukaridan bakis; sonra yerine ucar
+    public IEnumerator FirstFlight(Level level)
+    {
+        var sparrow = CanyonTraces.ActiveSparrow;
+        if (sparrow == null) yield break;
+        hud.StopEditing();
+        Phase = "uyanis";
+        yield return robot.TurnTo(DuneFinale.YawTowards(robot.transform.position, sparrow.transform.position), 0.5f);
+        yield return sparrow.WakeUp();
+        Phase = "kalkis";
+        robot.StartCoroutine(robot.LookUp());
+        var above = sparrow.transform.localPosition + Vector3.up * 3.2f;
+        yield return sparrow.TakeOff(above, 3f);
+        Phase = "kus";
+        shot.Begin();            // once kamera sabitlenir, sonra kart kapanir (60'taki gibi)
+        hud.SetCardVisible(false);
+        hud.Blink(0.3f);
+        yield return Tween.Wait(0.15f);
+        var (eye, fov) = BirdView(sparrow);
+        shot.Cut(eye, Quaternion.Euler(90f, 0f, 0f), fov);
+        shot.Sway = 1.5f;
+        yield return Tween.Wait(2.5f);
+        hud.Blink(0.3f);
+        yield return Tween.Wait(0.15f);
+        // Kart kamera birakilmadan once geri gelir: normal kamera alani kartin ustundeki bosluga sigdirir; kart gizliyken birakilirsa
+        // bosluk sifir sanilir ve kamera asiri uzaklasir. Yerlesim oturana kadar bekler (ekran bu sirada kararik).
+        hud.SetCardVisible(true);
+        yield return Tween.Wait(0.2f);
+        shot.Release();
+        Phase = "inis";
+        yield return sparrow.FlyTo(CanyonTraces.SparrowHover, 1.6f);
+        Phase = "son";
+    }
+
+    // 55 kus bakisi: alanin tamami (kareler, Kivilcim) ve sundurma kadrajda. Gorus acisi ekran oranindan hesaplanir (kod karti ya da
+    // klavyenin durumuna bagli degil): telefonda da bilgisayar penceresinde de ayni sey gorunur.
+    (Vector3 eye, float fov) BirdView(Sparrow sparrow)
+    {
+        var first = cellPos(new Cell(0, 0));
+        var last = cellPos(new Cell(cols - 1, rows - 1));
+        float halfWidth = Mathf.Abs(last.x - first.x) * 0.5f + BirdMargin;
+        float height = sparrow.transform.position.y + BirdViewAbove;
+        float aspect = (float)Screen.width / Mathf.Max(Screen.height, 1);
+        float fov = Mathf.Clamp(2f * Mathf.Atan(halfWidth / (height * aspect)) * Mathf.Rad2Deg, 30f, 100f);
+        // Serce ekranin ust ceyreginde, baslik yazilarinin altinda gorunsun (ekranda ust kenardan SparrowOnScreen kadar asagida)
+        float halfHeightAtSparrow = (height - sparrow.transform.position.y) * Mathf.Tan(fov * 0.5f * Mathf.Deg2Rad);
+        float z = sparrow.transform.position.z - SparrowOnScreen * halfHeightAtSparrow;
+        return (new Vector3((first.x + last.x) * 0.5f, height, z), fov);
+    }
+
     // "Tekrar" ve bolum degisimi: sahnenin degistirdigi ne varsa geri verir (Serce'yi CanyonTraces.ResetBackdrop toplar)
     public void Restore()
     {
         robot.gameObject.SetActive(true);
         hud.SetCardVisible(true);
+        hud.ClearBlink();
         shot.Release();
         Phase = "";
     }

@@ -78,7 +78,7 @@ public partial class Oyun : MonoBehaviour
 
     Camera cam;
     CameraShot shot;   // Bolge 6 sahneleri: sahne surerken kamerayi bu yonetir
-    CanyonScenes canyonScenes;   // Bolge 6 sahneleri: 60 kanyona inis (51 ve 55 sonraki gorevlerde)
+    CanyonScenes canyonScenes;   // Bolge 6 sahneleri: 60 kanyona inis, 55 Serce'nin ilk ucusu (51 sonraki gorevde)
     Material backdrop;
     BackdropCache backdropCache;
     Transform world;
@@ -517,7 +517,8 @@ public partial class Oyun : MonoBehaviour
 
         ResetRobot();
         string saved = SavedCode(level);
-        if (saved != null) hud.LoadCode(saved, SavedKinds(level));
+        if (TestSolutionsFilled && !shotsMode) hud.LoadCode(level.Solution, null);
+        else if (saved != null) hud.LoadCode(saved, SavedKinds(level));
         else hud.LoadStartCode(level.StartCode);
         code = hud.Code;
         hud.SetOpenWords(MarsKod.Dunya.Suggestions.OpenWords(levels, level.Number));
@@ -625,7 +626,9 @@ public partial class Oyun : MonoBehaviour
         Shader.SetGlobalFloat("_Horizon", photo.yMax + HorizonAboveArea);
 
         var urp = GraphicsSettings.currentRenderPipeline as UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset;
-        if (urp != null && urp.shadowDistance < d + 8f) urp.shadowDistance = d + 8f;
+        // 60'ta uzaktaki yarik da golgede olmali: menzil kisa kalirsa yarigin ici kamera yaklastikca golgelenir ("yukleniyor" gibi)
+        float shadowReach = d + (CanyonTraces.Rift != null ? 40f : 8f);
+        if (urp != null && urp.shadowDistance < shadowReach) urp.shadowDistance = shadowReach;
     }
 
     // ---- Gosteri programi ----
@@ -675,6 +678,9 @@ public partial class Oyun : MonoBehaviour
     // GECICI TEST ANAHTARI (Ragip, 2026-10-03): ekip denemesi icin butun bolumler acik.
     // Play Store'a cikmadan once false yapilmali (ILERLEME.md'de not var).
     const bool TestAllLevelsOpen = true;
+    // GECICI TEST ANAHTARI (Enes, 2026-10-22): her bolum acilinca dogru cozum kodu editorde yazili gelir (yalniz Calistir'a basilir).
+    // Play Store'a cikmadan once false yapilmali (ILERLEME.md'de not var).
+    const bool TestSolutionsFilled = true;
     bool LocksOn => forceLocks || (!shotsMode && !TestAllLevelsOpen);   // -shots modunda da kilit yok
     bool forceLocks;   // yalnizca goruntu denetimi: kilitli kartlar gercekte nasil gorunur
 
@@ -832,6 +838,7 @@ public partial class Oyun : MonoBehaviour
             if (level.Number == Bolge3SonBolum) yield return ClosingSceneBolge3();
             if (level.Number == Bolge4SonBolum) yield return ClosingSceneBolge4();
             if (level.Number == Bolge5SonBolum) yield return ClosingSceneBolge5();
+            if (level.Number == CanyonTraces.SparrowRepairLevel) yield return canyonScenes.FirstFlight(level);
             if (level.Number == CanyonTraces.LastLevel) yield return canyonScenes.Descent(level);
             if (perde1Finale)
             {

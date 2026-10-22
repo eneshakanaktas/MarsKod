@@ -9,9 +9,11 @@ public static class Scenery
 {
     const int RockShapes = 16;
 
-    // keepClear: kaya konmayacak serit (x, z dikdortgeni; ornegin Bolum 60'in patikasi). Kayalar yine sirayla uretilir,
+    // keepClear: kaya konmayacak serit (x, z dikdortgeni; ornegin Bolum 60'in patikasi) HER bolumde. Kayalar yine sirayla uretilir,
     // yalnizca bu seritte olanlar birakilir: obur kayalarin yeri ve sekli degismez.
-    public static void Build(Transform parent, Func<float, float, float> height, Vector2 areaHalf, Func<string, Material> farMat, Rect keepClear)
+    // riftZone: yalniz Bolum 60'ta kaya olmamasi gereken bolge (yarigin ustu: altinda zemin yok, kaya havada asili kalir). Bu bolgeye
+    // dusen kayalar ayri bir grupta toplanir ve doner; cagiran yalniz 60'ta gizler, diger bolumlerde kayalar eskisi gibi durur.
+    public static Transform Build(Transform parent, Func<float, float, float> height, Vector2 areaHalf, Func<string, Material> farMat, Rect keepClear, Rect riftZone)
     {
         var rng = new System.Random(7);
         float R(float a, float b) => a + (float)rng.NextDouble() * (b - a);
@@ -20,6 +22,8 @@ public static class Scenery
 
         var light = new List<CombineInstance>();
         var dark = new List<CombineInstance>();
+        var zoneLight = new List<CombineInstance>();
+        var zoneDark = new List<CombineInstance>();
         void Rock(float x, float z, float size)
         {
             // alanin icine ve hemen kenarina kaya konmaz (bolumun kayalari engeldir)
@@ -28,7 +32,8 @@ public static class Scenery
             var rot = Quaternion.Euler(R(-10, 10), R(0, 360), R(-10, 10));
             if (keepClear.Contains(new Vector2(x, z))) return;
             var m = Matrix4x4.TRS(new Vector3(x, height(x, z) + size * 0.12f, z), rot, Vector3.one * size);
-            (shape % 3 == 0 ? dark : light).Add(new CombineInstance { mesh = shapes[shape], transform = m });
+            bool inRiftZone = riftZone.Contains(new Vector2(x, z));
+            (shape % 3 == 0 ? (inRiftZone ? zoneDark : dark) : (inRiftZone ? zoneLight : light)).Add(new CombineInstance { mesh = shapes[shape], transform = m });
         }
         float Outside(float x, float z) => Mathf.Max(Mathf.Abs(x) - areaHalf.x, Mathf.Abs(z) - areaHalf.y);
 
@@ -68,12 +73,17 @@ public static class Scenery
         }
         Combined("Rocks", parent, light, farMat("#6B4034"));
         Combined("RocksDark", parent, dark, farMat("#553229"));
+        var zone = Parts.Empty("RiftZoneRocks", parent);
+        Combined("Rocks", zone, zoneLight, farMat("#6B4034"));
+        Combined("RocksDark", zone, zoneDark, farMat("#553229"));
 
         BuildProps(parent, height, farMat);
+        return zone;
     }
 
     static void Combined(string name, Transform parent, List<CombineInstance> parts, Material mat)
     {
+        if (parts.Count == 0) return;   // yarik bolgesinde hic kaya dusmediyse
         var mesh = new Mesh { name = name, indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
         mesh.CombineMeshes(parts.ToArray(), true, true);
         mesh.RecalculateBounds();

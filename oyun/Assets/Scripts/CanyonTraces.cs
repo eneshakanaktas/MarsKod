@@ -21,10 +21,14 @@ public static class CanyonTraces
     // 60'taki yarik (3B sahneleri kullanir); baska bolumlerde null
     public static CanyonRift Rift { get; private set; }
 
-    // Bolum 60'in patikasinin ve yariginin gectigi serit (alanin arkasindan kanyonun agzina): cevre kayalari buraya konmaz (Scenery).
-    // Yarigin altinda zemin yok: uzaktaki bir manzara kayasi yarigin ustune dusse koyu bosluk icinde havada asili gorunur (Enes).
-    // Serit yarigin en genis yerini (~2,3) ve kaya yaricapi payini kapsar, yarigin boyundan (Length) biraz uzundur.
+    // Bolum 60'in patikasinin gectigi serit (alanin arkasindan kanyonun agzina): cevre kayalari buraya HER bolumde konmaz (Scenery)
     public static Rect PathCorridor(Vector2 areaHalf) =>
+        Rect.MinMaxRect(-0.4f, areaHalf.y, DescentPathX + 0.6f, areaHalf.y + DescentGap + 9f);
+
+    // Yariginin ustu: yalniz Bolum 60'ta buradaki manzara kayalari gizlenir (Oyun). Yarigin altinda zemin yok: uzaktaki bir manzara
+    // kayasi yarigin ustune dusse koyu bosluk icinde havada asili gorunur (Enes). Diger bolumlerde kayalar yerinde durur.
+    // Bolge yarigin en genis yerini (~2,3) ve kaya yaricapi payini kapsar, yarigin boyundan (Length) biraz uzundur.
+    public static Rect RiftZone(Vector2 areaHalf) =>
         Rect.MinMaxRect(-3.0f, areaHalf.y, DescentPathX + 2.4f, areaHalf.y + DescentGap + CanyonRift.Length + 4f);
 
     // Bolum 53-56 acik sundurma deponun onunde gecer (zemin beton, engeller sandik)

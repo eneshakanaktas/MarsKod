@@ -78,6 +78,7 @@ public partial class Oyun : MonoBehaviour
 
     Camera cam;
     CameraShot shot;   // Bolge 6 sahneleri: sahne surerken kamerayi bu yonetir
+    Transform riftZoneRocks;     // manzara kayalarindan yarigin ustune dusenler: yalniz Bolum 60'ta gizlenir
     CanyonScenes canyonScenes;   // Bolge 6 sahneleri: 60 kanyona inis, 55 Serce'nin ilk ucusu (51 sonraki gorevde)
     Material backdrop;
     BackdropCache backdropCache;
@@ -449,8 +450,8 @@ public partial class Oyun : MonoBehaviour
 
         // Kayalar, kaya kumeleri, olcum istasyonlari, sandiklar (Scenery.cs). Alanin icindeki kayalar bolumden gelir (engel).
         // Zeminle birlikte arka plana karisirlar: zemin ufukta gokyuzune donustugu yerde havada asili kalmazlar.
-        if (!GraphicsOptions.NoScenery) Scenery.Build(board, TerrainHeight, new Vector2(AreaHalfX, AreaHalfZ), FarRockMat,
-            CanyonTraces.PathCorridor(new Vector2(AreaHalfX, AreaHalfZ)));
+        if (!GraphicsOptions.NoScenery) riftZoneRocks = Scenery.Build(board, TerrainHeight, new Vector2(AreaHalfX, AreaHalfZ), FarRockMat,
+            CanyonTraces.PathCorridor(new Vector2(AreaHalfX, AreaHalfZ)), CanyonTraces.RiftZone(new Vector2(AreaHalfX, AreaHalfZ)));
     }
 
     // inner0..inner1 arasi fine adimla; disinda outer'a kadar coarse adimla (outer = 0: disari uzanmaz)
@@ -515,6 +516,7 @@ public partial class Oyun : MonoBehaviour
         Traces.Build(level.Number, levelRoot, new Vector2(AreaHalfX, AreaHalfZ), level.Target.HasValue ? Pos(level.Target.Value) : (Vector3?)null,
             level.Ices.ConvertAll(c => Pos(c)), TerrainHeight);
 
+        if (riftZoneRocks != null) riftZoneRocks.gameObject.SetActive(level.Number != CanyonTraces.LastLevel);
         ResetRobot();
         string saved = SavedCode(level);
         if (TestSolutionsFilled && !shotsMode) hud.LoadCode(level.Solution, null);

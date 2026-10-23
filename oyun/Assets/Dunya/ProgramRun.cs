@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MarsKod.Motor;
 
 namespace MarsKod.Dunya
@@ -51,6 +52,11 @@ namespace MarsKod.Dunya
         public readonly HashSet<string> DefinedRoutines = new HashSet<string>();
         /// <summary>Her rutinin kaç kez çalıştığı (döngüden ya da başka rutinden çağrılar dahil)</summary>
         public readonly Dictionary<string, int> RoutineRuns = new Dictionary<string, int>();
+        /// <summary>Her rutinin parametre sayısı (modül düzeyinde def ile tanımlananlar)</summary>
+        public readonly Dictionary<string, int> RoutineParams = new Dictionary<string, int>();
+        /// <summary>Her rutinin çağrılarındaki değerler, çağrı başına bir metin: parametre değerleri Python görünüşüyle ve "|" ile
+        /// birleşik (örn. "3", "'East'|2"); parametresiz rutinde boş metin. Varsayılan değerler doldurulmuş hâliyle.</summary>
+        public readonly Dictionary<string, List<string>> RoutineArgs = new Dictionary<string, List<string>>();
         /// <summary>Bölümün rutin şartı karşılanmadıysa açıklaması; şart yoksa, sağlandıysa ya da kod durduysa null</summary>
         public RoutineProblem RoutineProblem;
 
@@ -98,24 +104,31 @@ namespace MarsKod.Dunya
             report.Output = interpreter?.Output ?? "";
             if (interpreter != null) ReadDefinedRoutines(report, interpreter.Globals);
             if (!report.Stopped && routines != null && !routines.IsEmpty)
-                report.RoutineProblem = routines.Check(report.DefinedRoutines, report.RoutineRuns);
+                report.RoutineProblem = routines.Check(report.DefinedRoutines, report.RoutineRuns, report.RoutineParams, report.RoutineArgs);
             report.Complete = !report.Stopped && world.Complete && report.RoutineProblem == null;
             return report;
         }
 
-        // Rutin cagrisinin ilk adimi: cerceve yeniyse o rutinin calisma sayisini bir artirir
+        // Rutin cagrisinin ilk adimi: cerceve yeniyse o rutinin calisma sayisini bir artirir ve cagrinin degerlerini yazar
+        // (govde henuz calismadigi icin parametreler cagrida verilen degerlerdir)
         static void CountCall(RunReport report, HashSet<Frame> calls, Frame frame)
         {
             if (frame?.Fn == null || !calls.Add(frame)) return;
             string name = frame.Fn.Def.Name;
             report.RoutineRuns[name] = report.RoutineRuns.TryGetValue(name, out var n) ? n + 1 : 1;
+            if (!report.RoutineArgs.TryGetValue(name, out var list)) report.RoutineArgs[name] = list = new List<string>();
+            list.Add(string.Join("|", frame.Fn.Def.Params.Select(p => Values.Repr(frame.Vars[p.Name]))));
         }
 
         // Kod bitince modul duzeyinde fonksiyon olarak duran adlar = oyuncunun def ile yazdigi rutinler
         static void ReadDefinedRoutines(RunReport report, Frame globals)
         {
             foreach (var pair in globals.Vars)
-                if (pair.Value is PyFunction) report.DefinedRoutines.Add(pair.Key);
+            {
+                if (!(pair.Value is PyFunction fn)) continue;
+                report.DefinedRoutines.Add(pair.Key);
+                report.RoutineParams[pair.Key] = fn.Def.Params.Count;
+            }
         }
 
         // Biten satira dunyada olanlari ve degiskenlerin son halini yazar

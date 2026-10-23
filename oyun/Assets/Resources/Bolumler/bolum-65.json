@@ -1,0 +1,61 @@
+{
+  "numara": 65,
+  "baslik": "Ayrılan izler",
+  "gorev": "Yol ayrımını işaretle",
+  "etiket": "BÖLGE 7 · NEHİR YATAĞI",
+  "giris": "Sol 1.090 · Küçük izler gruptan ayrılıyor",
+  "bitis": "İşaret: 4/4 · Rutin kaydedildi: kol",
+  "harita": [
+    ". . O . . .",
+    ". . O . . .",
+    ". . O . . .",
+    "O O K O O O",
+    ". R O . . .",
+    ". . O . . ."
+  ],
+  "komutlar": ["move", "pen_down", "pen_up"],
+  "parametreli_rutinler": ["kol"],
+  "parcalar": ["def kol(yon, adim):", "kol(East, 2)", "pen_down()", "pen_up()", "move(East)", "move(West)", "move(North)", "move(South)", "for i in range(3):"],
+  "konular": ["parametre", "kalemi kaldırmak", "çizim"],
+  "ipuclari": [
+    "Ortadaki kayadan dört yöne kollar açılıyor (artı işareti); kayanın içinden geçemezsin. Bir kolu çizip kalemi kaldırarak diğerinin başına yürümelisin.",
+    "Kol rutini hazır: `kol(yon, adim)` hangi yöne, kaç adım gideceğini sayıyla alır. Kollar farklı uzunlukta: batı ve güney 1 adım, doğu ve kuzey 2 adım. Kolun başı kayanın hemen yanındaki kare.",
+    "`move(North)` ile batı kolun başına geç, `kol(West, 1)`. Sonra kalemi kaldırmış hâlde kayanın üstünden dolaş: yukarı, doğuya iki adım, kuzey kolun başı. Böyle devam: her kolun arasında kalemsiz yürü."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["move(North)", "pen_down()", "move(East)", "move(East)"],
+      "aciklama": "Düz yürümek robotu kayanın içine sokar. Kalemi kaldır ve kayanın çevresinden dolaş."
+    },
+    {
+      "kod": ["def kol(yon, adim):", "    pen_down()", "    for i in range(adim):", "        move(yon)", "move(North)", "kol(West, 1)", "move(North)", "move(East)", "move(East)", "kol(North, 2)"],
+      "aciklama": "Rutinde `pen_up()` yok: kalem inik kaldı, kollar arasında yürürken de boyadı (fazladan kareler). Kolu çizdikten sonra `pen_up()` yaz."
+    },
+    {
+      "kod": ["move(North)", "pen_down()", "move(West)", "pen_up()", "move(North)", "move(East)", "move(East)", "pen_down()", "move(North)", "move(North)", "pen_up()", "move(East)", "move(South)", "move(South)", "move(South)", "pen_down()", "move(East)", "move(East)", "pen_up()", "move(South)", "move(West)", "move(West)", "move(West)", "pen_down()", "move(South)", "pen_up()"],
+      "aciklama": "Artı çıktı ama bu bölüm rutini istiyor: dört kolu tek tek yazmak yerine `kol(yon, adim)` rutinini çağır."
+    }
+  ],
+  "baslangic_kodu": ["def kol(yon, adim):", "    pen_down()", "    for i in range(adim):", "        move(yon)", "    pen_up()"],
+  "cozum": [
+    "def kol(yon, adim):",
+    "    pen_down()",
+    "    for i in range(adim):",
+    "        move(yon)",
+    "    pen_up()",
+    "move(North)",
+    "kol(West, 1)",
+    "move(North)",
+    "move(East)",
+    "move(East)",
+    "kol(North, 2)",
+    "move(East)",
+    "for i in range(3):",
+    "    move(South)",
+    "kol(East, 2)",
+    "move(South)",
+    "for i in range(3):",
+    "    move(West)",
+    "kol(South, 1)"
+  ]
+}

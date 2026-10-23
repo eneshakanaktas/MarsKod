@@ -1,0 +1,30 @@
+{
+  "bolum": 65,
+  "baslik": "KIVILCIM · KENDİNİ DENETLİYOR",
+  "sorular": [
+    {
+      "soru": "def ok(boy): satırındaki boy neyi taşır?",
+      "secenekler": ["Rutinin adını", "Rutine verilen sayıyı", "Robotun yönünü", "Kalemin rengini"],
+      "dogru": 1,
+      "aciklama": "Parantezin içindeki ad (parametre), rutin çağrılırken verilen değeri taşır: ok(3) çalışınca boy 3 olur."
+    },
+    {
+      "soru": "ok(3) ve ok(5) aynı rutini çağırıyor. İkisi arasındaki fark nedir?",
+      "secenekler": ["Hiçbir fark yok", "boy ilkinde 3, ikincisinde 5 olur", "İkincisi başka bir rutin", "İkincisi hata verir"],
+      "dogru": 1,
+      "aciklama": "Rutin aynı, değer farklı: her çağrıda boy, parantezin içine yazılan sayı olur. Parametrenin işi bu."
+    },
+    {
+      "soru": "def ok(boy): yazdın ama ok(3, 4) diye çağırdın. Ne olur?",
+      "secenekler": ["Rutin iki kez çalışır", "TypeError: rutin 1 değer bekliyor, 2 verilmiş", "3 kullanılır, 4 yok sayılır", "Hiçbir şey olmaz"],
+      "dogru": 1,
+      "aciklama": "Parantezdeki ad sayısı ile çağrıdaki değer sayısı tutmalı. Python bunu TypeError ile söyler."
+    },
+    {
+      "soru": "Rutinin sonunda pen_up() yazmayı unuttun. Rutinden sonra robot kalemsiz yürümek isterse ne olur?",
+      "secenekler": ["Hiçbir şey, kalem kendiliğinden kalkar", "Kalem inik kaldığı için yürürken de boyar", "Robot yerinden kıpırdamaz", "Rutin bir daha çalışmaz"],
+      "dogru": 1,
+      "aciklama": "Kalem, sen kaldırana kadar inik kalır. Çizgi bitince pen_up() yaz; yoksa yürüdüğün her kare boyanır."
+    }
+  ]
+}

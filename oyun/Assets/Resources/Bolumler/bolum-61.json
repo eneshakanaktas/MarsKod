@@ -1,0 +1,61 @@
+{
+  "numara": 61,
+  "baslik": "İniş pisti",
+  "gorev": "Üç çizgi çiz",
+  "etiket": "BÖLGE 7 · NEHİR YATAĞI",
+  "giris": "Sol 1.088 · Nehir yatağı: Serçe'ye iniş pisti",
+  "bitis": "İşaret: 3/3 · Rutin kaydedildi: cizgi",
+  "harita": [
+    ". . . . . .",
+    ". O O O O O",
+    ". . . . . .",
+    ". O O O O .",
+    ". . . . . .",
+    "R O O O . ."
+  ],
+  "komutlar": ["move", "pen_down", "pen_up"],
+  "parametreli_rutinler": ["cizgi"],
+  "parcalar": ["def cizgi(adim):", "cizgi(2)", "pen_down()", "pen_up()", "move(East)", "move(West)", "move(North)", "for i in range(adim):"],
+  "konular": ["parametre", "fonksiyon", "fonksiyon çağırma", "çizim"],
+  "ipuclari": [
+    "Üç çizgi var ve üçü de aynı işi yapıyor, yalnızca uzunlukları farklı (2, 3 ve 4 adım). Rutin hazır: uzunluğu rutine bir sayıyla söyleyeceksin.",
+    "`def cizgi(adim):` satırındaki `adim`, rutine verdiğin sayıyı taşır: `cizgi(2)` çalışınca `adim` 2 olur. Rutin çizgiyi çizer ve başladığı kareye geri döner.",
+    "Önce `move(East)` ile ilk çizginin başına geç, `cizgi(2)` yaz. Sonra `move(North)` iki kez, `cizgi(3)`; yine iki kez yukarı, `cizgi(4)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["move(East)", "pen_down()", "move(East)", "move(East)", "pen_up()", "move(West)", "move(West)", "move(North)", "move(North)", "pen_down()", "move(East)", "move(East)", "move(East)", "pen_up()", "move(West)", "move(West)", "move(West)", "move(North)", "move(North)", "pen_down()", "move(East)", "move(East)", "move(East)", "move(East)", "pen_up()", "move(West)", "move(West)", "move(West)", "move(West)"],
+      "aciklama": "Çizgiler çıktı ama bu bölüm rutini istiyor: aynı adımları üç kez kopyalamak yerine `cizgi(adim)` rutinini sayıyla çağır."
+    },
+    {
+      "kod": ["def cizgi():", "    pen_down()", "    for i in range(3):", "        move(East)", "    pen_up()", "    for i in range(3):", "        move(West)", "move(East)", "cizgi()", "move(North)", "move(North)", "cizgi()", "move(North)", "move(North)", "cizgi()"],
+      "aciklama": "`cizgi()` her seferinde 3 adım çiziyor; üç çizginin boyu farklı. Rutin bir sayı almalı: `def cizgi(adim):`."
+    },
+    {
+      "kod": ["move(East)", "move(East)", "move(East)"],
+      "aciklama": "Kıvılcım yürüdü ama kalemi indirmedi: `pen_down()` olmadan hiçbir kare boyanmaz."
+    },
+    {
+      "kod": ["def cizgi(adim):", "    pen_down()", "    for i in range(adim):", "        move(East)", "    for i in range(adim):", "        move(West)", "move(East)", "cizgi(2)", "move(North)", "move(North)", "cizgi(3)", "move(North)", "move(North)", "cizgi(4)"],
+      "aciklama": "Rutinde `pen_up()` yok: kalem inik kaldı, çizgiler arasında yürürken de boyadı (fazladan kareler). Çizgiden sonra `pen_up()` yaz."
+    }
+  ],
+  "baslangic_kodu": ["def cizgi(adim):", "    pen_down()", "    for i in range(adim):", "        move(East)", "    pen_up()", "    for i in range(adim):", "        move(West)"],
+  "cozum": [
+    "def cizgi(adim):",
+    "    pen_down()",
+    "    for i in range(adim):",
+    "        move(East)",
+    "    pen_up()",
+    "    for i in range(adim):",
+    "        move(West)",
+    "move(East)",
+    "cizgi(2)",
+    "move(North)",
+    "move(North)",
+    "cizgi(3)",
+    "move(North)",
+    "move(North)",
+    "cizgi(4)"
+  ]
+}

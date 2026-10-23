@@ -1,0 +1,58 @@
+{
+  "numara": 62,
+  "baslik": "İlk işaret",
+  "gorev": "İki boyda ok çiz",
+  "etiket": "BÖLGE 7 · NEHİR YATAĞI",
+  "giris": "Sol 1.088 · Serçe yukarıdan okuyacak",
+  "bitis": "İşaret: 2/2 · Rutin kaydedildi: ok",
+  "harita": [
+    ". . . . O .",
+    ". O O O O O",
+    ". . . . O .",
+    ". . O . . .",
+    "R O O O . .",
+    ". . O . . ."
+  ],
+  "komutlar": ["move", "pen_down", "pen_up"],
+  "parametreli_rutinler": ["ok"],
+  "parcalar": ["def ok(boy):", "ok(2)", "pen_down()", "pen_up()", "move(East)", "move(West)", "move(North)", "move(South)", "for i in range(boy):"],
+  "konular": ["parametre", "fonksiyon", "çizim"],
+  "ipuclari": [
+    "İki ok var: küçük olan ve büyük olan. İkisi de aynı şekil, yalnızca gövdelerinin uzunluğu farklı. Bu fark bir sayı olsun.",
+    "Rutin şöyle çalışır: kalemi indir, `boy` adım doğuya yürü (gövde), geri bir adım gel, yukarı-aşağı git (ok başı), kalemi kaldır. `def ok(boy):` ile `boy`'u kullan.",
+    "`def ok(boy):` yaz; içinde `for i in range(boy):` ile `move(East)`. Sonra `move(East)` ile ilk okun başına geç, `ok(2)`; kendini ikinci okun başına taşı, `ok(4)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def kucuk_ok():", "    pen_down()", "    for i in range(2):", "        move(East)", "    move(West)", "    move(North)", "    move(South)", "    move(South)", "    move(North)", "    pen_up()", "def buyuk_ok():", "    pen_down()", "    for i in range(4):", "        move(East)", "    move(West)", "    move(North)", "    move(South)", "    move(South)", "    move(North)", "    pen_up()", "move(East)", "kucuk_ok()", "move(West)", "move(North)", "move(North)", "move(North)", "buyuk_ok()"],
+      "aciklama": "İki ayrı rutin yazdın ama aralarındaki tek fark bir sayı. Bir rutin sayı alsın: `def ok(boy):`; küçük için `ok(2)`, büyük için `ok(4)`."
+    },
+    {
+      "kod": ["def ok(boy):", "    pen_down()", "    for i in range(boy):", "        move(East)", "    pen_up()", "    for i in range(boy):", "        move(West)", "move(East)", "ok(2)", "move(North)", "move(North)", "move(North)", "ok(4)"],
+      "aciklama": "Ok başı eksik: gövde çizildi ama okun ucundaki yukarı-aşağı kareler boyanmadı."
+    },
+    {
+      "kod": ["move(East)", "move(East)", "move(East)"],
+      "aciklama": "Kıvılcım yürüdü ama kalemi indirmedi: `pen_down()` olmadan hiçbir kare boyanmaz."
+    }
+  ],
+  "cozum": [
+    "def ok(boy):",
+    "    pen_down()",
+    "    for i in range(boy):",
+    "        move(East)",
+    "    move(West)",
+    "    move(North)",
+    "    move(South)",
+    "    move(South)",
+    "    move(North)",
+    "    pen_up()",
+    "move(East)",
+    "ok(2)",
+    "move(West)",
+    "move(North)",
+    "move(North)",
+    "move(North)",
+    "ok(4)"
+  ]
+}

@@ -190,13 +190,31 @@
     {
       "baslik": "def",
       "kelimeler": ["def"],
-      "aciklama": "Rutin (fonksiyon) tanımlar: birkaç adımı bir ada bağlarsın, sonra o adı yazdıkça adımlar çalışır. Tanımlamak çalıştırmaz, çağırmak çalıştırır. Adımlar 4 boşluk içeride yazılır; rutin, çağrılmadan önce tanımlanmalı.",
+      "aciklama": "Rutin (fonksiyon) tanımlar: birkaç adımı bir ada bağlarsın, sonra o adı yazdıkça adımlar çalışır. Tanımlamak çalıştırmaz, çağırmak çalıştırır. Adımlar 4 boşluk içeride yazılır; rutin, çağrılmadan önce tanımlanmalı. Rutin parantezin içinde bir ad (parametre) alırsa her çağrıda başka bir değerle çalışır: ok(3) ve ok(5) aynı rutindir, yalnızca boy farklıdır.",
       "ornek": [
         "def sabah_turu():",
         "    move(East)",
         "    collect()",
         "sabah_turu()   # bir kez",
-        "sabah_turu()   # bir kez daha"
+        "sabah_turu()   # bir kez daha",
+        "def ok(boy):   # rutin bir sayı da alır",
+        "    for i in range(boy):",
+        "        move(East)",
+        "ok(3)   # boy = 3",
+        "ok(5)   # boy = 5"
+      ]
+    },
+    {
+      "baslik": "pen_down / pen_up",
+      "kelimeler": ["pen_down", "pen_up"],
+      "aciklama": "Kıvılcım'ın kalemini indirir ve kaldırır. Kalem inikken bulunduğun kareyi boyar, yürüdüğün her kareyi de boyar; kalkıkken boyamadan yürürsün. Kalem başta kalkıktır. Çizgi bitince pen_up() demeyi unutma: yoksa yürürken de boyarsın.",
+      "ornek": [
+        "move(East)",
+        "pen_down()   # kalemi indir, bu kareyi boya",
+        "move(East)   # yürürken boyar",
+        "move(East)",
+        "pen_up()     # kalemi kaldır",
+        "move(East)   # boyamadan yürür"
       ]
     }
   ]

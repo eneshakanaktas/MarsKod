@@ -1,0 +1,58 @@
+{
+  "numara": 64,
+  "baslik": "Kareler",
+  "gorev": "İki kare çiz",
+  "etiket": "BÖLGE 7 · NEHİR YATAĞI",
+  "giris": "Sol 1.089 · Kayalar arasında iki kare",
+  "bitis": "İşaret: 2/2 · Rutin kaydedildi: kare",
+  "harita": [
+    ". . O O O O",
+    ". K O . . O",
+    ". . O . . O",
+    "O O O O O O",
+    "O R O . . .",
+    "O O O . . K"
+  ],
+  "komutlar": ["move", "pen_down", "pen_up"],
+  "parametreli_rutinler": ["kare", "cizgi"],
+  "parcalar": ["def kare(boy):", "kare(2)", "cizgi(East, boy)", "pen_down()", "pen_up()", "move(East)", "move(North)", "move(West)", "move(South)"],
+  "konular": ["parametre", "rutin içinde rutin", "çizim"],
+  "ipuclari": [
+    "İki kare var: küçüğün kenarı 2, büyüğün 3 adım. Bir kare dört çizgidir ve her çizgi, kenarın uzunluğu kadar adımdır. Çizgi rutini hazır.",
+    "`kare(boy)` rutini içinde `cizgi(East, boy)` gibi dört çağrı yaz: doğu, kuzey, batı, güney. `boy` sayısını olduğu gibi `cizgi`'ye ver.",
+    "Önce kalemi indir (`pen_down()`), dört `cizgi`, sonra kaldır (`pen_up()`). Robot kutunun içinden başlıyor: `move(West)`, `move(South)` ile sol alt köşeye git, `kare(2)` yaz. İkinci karenin köşesine `cizgi(East, 2)` ve `cizgi(North, 2)` ile git, `kare(3)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["move(West)", "move(South)", "pen_down()", "move(East)", "move(East)", "move(North)", "move(North)", "move(West)", "move(West)", "move(South)", "move(South)", "pen_up()", "move(East)", "move(East)", "move(North)", "move(North)", "pen_down()", "move(East)", "move(East)", "move(East)", "move(North)", "move(North)", "move(North)", "move(West)", "move(West)", "move(West)", "move(South)", "move(South)", "move(South)", "pen_up()"],
+      "aciklama": "İki kare çıktı ama bu bölüm rutinleri istiyor: dört çizgiyi iki kez yazmak yerine `kare(boy)` rutinini kullan."
+    },
+    {
+      "kod": ["def cizgi(yon, adim):", "    for i in range(adim):", "        move(yon)", "def kare():", "    pen_down()", "    cizgi(East, 2)", "    cizgi(North, 2)", "    cizgi(West, 2)", "    cizgi(South, 2)", "    pen_up()", "move(West)", "move(South)", "kare()", "cizgi(East, 2)", "cizgi(North, 2)", "kare()"],
+      "aciklama": "`kare()` her seferinde aynı küçük kareyi çiziyor. Kenarı rutine sayı olarak ver: `def kare(boy):`."
+    },
+    {
+      "kod": ["def cizgi(yon, adim):", "    for i in range(adim):", "        move(yon)", "def kare(boy):", "    cizgi(East, boy)", "    cizgi(North, boy)", "    cizgi(West, boy)", "    cizgi(South, boy)", "move(West)", "move(South)", "kare(2)", "cizgi(East, 2)", "cizgi(North, 2)", "kare(3)"],
+      "aciklama": "Kalem hiç inmedi: kare yalnızca yürüdü, hiçbir kare boyanmadı. Rutinin başına `pen_down()`, sonuna `pen_up()` koy."
+    }
+  ],
+  "baslangic_kodu": ["def cizgi(yon, adim):", "    for i in range(adim):", "        move(yon)"],
+  "cozum": [
+    "def cizgi(yon, adim):",
+    "    for i in range(adim):",
+    "        move(yon)",
+    "def kare(boy):",
+    "    pen_down()",
+    "    cizgi(East, boy)",
+    "    cizgi(North, boy)",
+    "    cizgi(West, boy)",
+    "    cizgi(South, boy)",
+    "    pen_up()",
+    "move(West)",
+    "move(South)",
+    "kare(2)",
+    "cizgi(East, 2)",
+    "cizgi(North, 2)",
+    "kare(3)"
+  ]
+}

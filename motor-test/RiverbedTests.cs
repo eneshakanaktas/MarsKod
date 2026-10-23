@@ -105,4 +105,63 @@ public class RiverbedTests
         Assert.Equal(Region.Riverbed, Regions.Of(70));
         Assert.Equal(Collectible.BluePencil, Regions.Item(Region.Riverbed));
     }
+
+    // ---- Bölüm 61-70 (dosyalar yazıldıkça denetlenir) ----
+
+    static readonly string Dir = Path.Combine(Cases.Root, "oyun", "Assets", "Resources", "Bolumler");
+
+    static Level Load(int n) => Level.Parse(File.ReadAllText(Path.Combine(Dir, "bolum-" + n + ".json")));
+
+    public static IEnumerable<object[]> Numbers() =>
+        Enumerable.Range(61, 10).Where(n => File.Exists(Path.Combine(Dir, "bolum-" + n + ".json"))).Select(n => new object[] { n });
+
+    // Perde 2 biçimi: etikette bölge adı, giriş ve bitiş kayıt damgası, büyük başlık telefonda tek satır
+    [Theory]
+    [MemberData(nameof(Numbers))]
+    public void Bolge_7_bolumu_perde_2_bicimindedir(int n)
+    {
+        var level = Load(n);
+        Assert.Equal("BÖLGE 7 · NEHİR YATAĞI", level.Label);
+        Assert.False(string.IsNullOrEmpty(level.Intro), n + ": giris yok");
+        Assert.False(string.IsNullOrEmpty(level.Outro), n + ": bitis yok");
+        Assert.True(level.Goal.Length <= 22, n + ": gorev çok uzun (" + level.Goal.Length + " harf)");
+    }
+
+    // Bölge 7'nin konusu parametre: her bölüm parametreli bir rutin ister
+    [Theory]
+    [MemberData(nameof(Numbers))]
+    public void Bolge_7_bolumu_parametreli_rutin_ister(int n)
+    {
+        Assert.NotEmpty(Load(n).Routines.ParametricNames);
+    }
+
+    // Her bölümde parametresiz çözüm (rutinsiz kopyala-yapıştır, parametresiz tanım ya da hep aynı sayı) bulunmalı ve görevi
+    // tam da rutin şartında bitirmemeli (kod durmadan çalışıp "Kod bitti, ... rutini/sayı" mesajı vermeli)
+    [Theory]
+    [MemberData(nameof(Numbers))]
+    public void Bolge_7_bolumunde_parametre_sartina_takilan_hata_ornegi_var(int n)
+    {
+        var level = Load(n);
+        Assert.Contains(level.Mistakes, m => level.Run(m.Code).RoutineProblem != null);
+    }
+
+    [Theory]
+    [MemberData(nameof(Numbers))]
+    public void Bolge_7_bolumu_cizimliyse_kalem_acik_degilse_kapali(int n)
+    {
+        var level = Load(n);
+        Assert.Equal(level.Paint.Count > 0, level.Commands.Contains("pen_down"));
+        Assert.Equal(level.Paint.Count > 0, level.Commands.Contains("pen_up"));
+    }
+
+    [Theory]
+    [MemberData(nameof(Numbers))]
+    public void Bolge_7_cozumu_en_az_iki_farkli_degerle_cagirir(int n)
+    {
+        var level = Load(n);
+        var report = level.Run(level.Solution);
+        Assert.True(report.Complete, n + ": doğru çözüm görevi bitirmiyor");
+        foreach (var name in level.Routines.ParametricNames)
+            Assert.True(report.RoutineArgs[name].Distinct().Count() >= 2, n + ": " + name + " en az iki farklı değerle çağrılmıyor");
+    }
 }

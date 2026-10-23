@@ -1,0 +1,44 @@
+{
+  "numara": 63,
+  "baslik": "Göç izleri",
+  "gorev": "İzlerin sonuna var",
+  "etiket": "BÖLGE 7 · NEHİR YATAĞI",
+  "giris": "Sol 1.089 · Kumda geniş bir grubun izleri",
+  "bitis": "Yol: 4 durak · Rutin kaydedildi: yuru",
+  "harita": [
+    ". H . . . .",
+    ". . . K . .",
+    ". . . . . .",
+    "K . K . . .",
+    ". . . . . K",
+    "R . . . . ."
+  ],
+  "komutlar": ["move"],
+  "parametreli_rutinler": ["yuru"],
+  "parcalar": ["def yuru(yon, adim):", "yuru(East, 3)", "for i in range(adim):", "move(yon)", "move(East)", "move(North)"],
+  "konular": ["parametre", "fonksiyon", "iki parametre"],
+  "ipuclari": [
+    "İzler dört parça: doğuya, kuzeye, batıya, yine kuzeye. Her parçada iki şey değişiyor: nereye gidileceği ve kaç adım. İkisini de rutine ver.",
+    "Rutin iki sayı alabilir: `def yuru(yon, adim):`. `yon` bir yön olur (`East` gibi), `adim` bir sayı. Çağırırken sırayla yaz: `yuru(East, 4)`.",
+    "`def yuru(yon, adim):` altında `for i in range(adim):` ve `move(yon)`. Sonra dört çağrı: `yuru(East, 4)`, `yuru(North, 3)`, `yuru(West, 3)`, `yuru(North, 2)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["move(East)", "move(East)", "move(East)", "move(East)", "move(North)", "move(North)", "move(North)", "move(West)", "move(West)", "move(West)", "move(North)", "move(North)"],
+      "aciklama": "Robot hedefe vardı ama bu bölüm rutini istiyor: adımları tek tek yazmak yerine `yuru(yon, adim)` rutinini çağır."
+    },
+    {
+      "kod": ["def yuru(adim):", "    for i in range(adim):", "        move(East)", "yuru(4)", "yuru(3)"],
+      "aciklama": "Bu rutin yalnızca doğuya gidiyor; izler dönüyor. Gideceği yönü de rutine ver: `def yuru(yon, adim):`."
+    }
+  ],
+  "cozum": [
+    "def yuru(yon, adim):",
+    "    for i in range(adim):",
+    "        move(yon)",
+    "yuru(East, 4)",
+    "yuru(North, 3)",
+    "yuru(West, 3)",
+    "yuru(North, 2)"
+  ]
+}

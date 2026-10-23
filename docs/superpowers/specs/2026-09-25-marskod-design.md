@@ -10,7 +10,7 @@ Telefonda oynanan, oyun oynarken **gerçek Python** öğreten bir bulmaca oyunu.
 Hedef kitle:
 - Yazılım bilgisi olmayan, sıfırdan başlayanlar.
 - Biraz bilip yazım kurallarında (syntax) kendini geliştirmek isteyenler.
-- **Yaş: 13 yaş ve altı hedef kitle değildir** (karar: 2026-09-25, Ragıp). Oyun yaş sormaz ve yaşa göre farklı davranmaz. Sebep: Çocuklara yönelik uygulamalar Google Play Aileler politikasına ve KVKK'nın veli izni kurallarına girer; bu da reklam/satın alma, veri toplama ve geliştirmeyi zorlaştırır. Mağaza kaydında hedef yaş grubu buna göre seçilecek.
+- **Yaş: hedef kitle 13 yaş ve üstüdür (genç, öğrenci, yetişkin); 13 yaş altı hedef kitle değildir** (karar: 2026-09-25, Ragıp; yazılışı 2026-10-23'te netleşti, Enes). Oyun yaş sormaz ve yaşa göre farklı davranmaz. Sebep: Çocuklara yönelik uygulamalar Google Play Aileler politikasına ve KVKK'nın veli izni kurallarına girer; bu da reklam/satın alma, veri toplama ve geliştirmeyi zorlaştırır. Mağaza kaydında hedef yaş grubu buna göre seçilecek.
 - Anlatım tonu: Tek ton; sıcak ve sade, çocuksu değil. İleride ayarlara oyuncunun kendi seçeceği "Anlatım: Eğlenceli / Sade" seçeneği eklenecek (yaşa göre değil, tercihe göre). Metin sistemi buna hazır kurulur.
 
 İlk hedef para kazanmak değil; oyun sevilirse reklam/satın alma ve pazarlama sonradan düşünülecek.

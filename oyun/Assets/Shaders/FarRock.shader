@@ -1,6 +1,8 @@
 // Alanin disina serpistirilen suslu kayalar. Isik zeminle ayni (gunes + golge + ortam + safak); uzakta ve ufka
 // yaklastikca zeminle ayni kuralla arka plana karisir (MarsFadeToBackdrop). Boylece ustunde durduklari zemin
-// gokyuzune donustugu yerde kayalar da kaybolur, havada asili kalmaz.
+// gokyuzune donustugu yerde kayalar da kaybolur, havada asili kalmaz. Bolum 60'in yarigi (RiftMeshes) iki secenegi acar:
+// derinde ortam isigi kisilir (_VertexAO, kose rengi), alcak safak isigi da gunesin golgesinde kalir (_DawnShadow) ve golge
+// tam koyudur (_DeepShadow; oyunun geri kalaninda golge %60 guctedir, derin yarigin dibi daha karanlik olmali).
 Shader "MarsKod/FarRock"
 {
     Properties
@@ -8,6 +10,11 @@ Shader "MarsKod/FarRock"
         _BaseColor ("Renk", Color) = (0.42, 0.25, 0.2, 1)
         _FogRange ("Arka plana karisma (z basla, z bit)", Vector) = (9, 19, 0, 0)
         _Area ("Oyun alani yari boyutu (x, z); toz pusu buradan olculur", Vector) = (3, 3, 0, 0)
+        _FadeBand ("Ekranda arka plana karisma bandi (ufkun alti; 0 = bolge varsayilani)", Vector) = (0, 0, 0, 0)
+        _VertexAO ("Kose renginin kirmizisi ortam isigini kisar (0 kapali)", Float) = 0
+        _DawnShadow ("Safak isigi da gunesin golgesinde kalir (0 kapali)", Float) = 0
+        _DeepShadow ("Golge tam koyu (0 = isigin kendi golge gucu)", Float) = 0
+        _SceneOnly ("1: yalniz sahne kamerasinda gorunur (normal bakista yerini zemindeki catlak alir; _SceneCamera ile yarigin basindan acilir)", Float) = 0
     }
     SubShader
     {
@@ -19,6 +26,11 @@ Shader "MarsKod/FarRock"
             float4 _BaseColor;
             float4 _FogRange;
             float4 _Area;
+            float4 _FadeBand;
+            float _VertexAO;
+            float _DawnShadow;
+            float _DeepShadow;
+            float _SceneOnly;
         CBUFFER_END
         ENDHLSL
 
@@ -40,13 +52,14 @@ Shader "MarsKod/FarRock"
             float4 _DawnDir;    // C#'tan: safak isiginin gittigi yon
             float4 _DawnColor;  // C#'tan: safak isiginin rengi (dogrusal) * siddet
 
-            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; };
+            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float4 color : COLOR; };
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
                 float3 posWS : TEXCOORD0;
                 float3 nWS : TEXCOORD1;
                 float4 screenPos : TEXCOORD2;
+                float sky : TEXCOORD3;   // gok gorunurlugu (derin yarikta az): ortam isigini kisar
             };
 
             Varyings vert (Attributes v)
@@ -56,21 +69,25 @@ Shader "MarsKod/FarRock"
                 o.nWS = TransformObjectToWorldNormal(v.normalOS);
                 o.positionCS = TransformWorldToHClip(o.posWS);
                 o.screenPos = ComputeScreenPos(o.positionCS);
+                o.sky = lerp(1.0, v.color.r, _VertexAO);
                 return o;
             }
 
             half4 frag (Varyings i) : SV_Target
             {
+                if (_SceneOnly > 0.5) clip(RiftReveal() - (i.posWS.z - _CanyonDescent.x));   // yarik acilirken henuz acilmamis uzak kisim yok
                 float3 p = i.posWS;
                 float3 n = normalize(i.nWS);
                 float2 suv = i.screenPos.xy / i.screenPos.w;
 
                 Light mainLight = GetMainLight(TransformWorldToShadowCoord(p));
-                float3 lightCol = mainLight.color * saturate(dot(n, mainLight.direction)) * mainLight.shadowAttenuation;
-                float3 dawn = _DawnColor.rgb * saturate(dot(n, -_DawnDir.xyz));
-                float3 col = MarsRegionSurface(_BaseColor.rgb, n) * (lightCol + SampleSH(n) + dawn);
+                // isigin golge gucu 0,6: golge en koyu 0,4 birakir; _DeepShadow bunu tam golgeye acar
+                float shadow = lerp(mainLight.shadowAttenuation, saturate(1.0 - (1.0 - mainLight.shadowAttenuation) / 0.6), _DeepShadow);
+                float3 lightCol = mainLight.color * saturate(dot(n, mainLight.direction)) * shadow;
+                float3 dawn = _DawnColor.rgb * saturate(dot(n, -_DawnDir.xyz)) * lerp(1.0, shadow, _DawnShadow);
+                float3 col = MarsRegionSurface(_BaseColor.rgb, n) * (lightCol + SampleSH(n) * i.sky + dawn);
                 col *= MarsVignette(suv);
-                return half4(MarsFadeToBackdrop(col, p, suv, _FogRange.xy, _Area.xy), 1.0);
+                return half4(MarsFadeToBackdropBand(col, p, suv, _FogRange.xy, _Area.xy, _FadeBand.xy), 1.0);
             }
             ENDHLSL
         }

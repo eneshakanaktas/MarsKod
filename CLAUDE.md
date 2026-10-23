@@ -19,6 +19,7 @@ Yapım planı: `docs/superpowers/plans/2026-09-25-marskod-yapim-plani.md`.
 - Bilgisayarda açmak: `oyun/calistir.bat` (paket yoksa önce üretir). Kod değişince `oyun/Build/` silinip yeniden üretilmeli.
 - Komut satırından paket: `Unity.exe -batchmode -quit -projectPath oyun -executeMethod OyunBuild.BuildWindows -logFile build.log` (Unity: `C:/Program Files/Unity/Hub/Editor/<sürüm>/Editor/`). Android: `OyunBuild.BuildAndroid` → `oyun/Build/Android/marskod.apk`. Derleme hatası `build.log` içinde `error CS` diye aranır.
 - Görsel kontrol: `oyun/Build/Win/MarsKod.exe -screen-width 450 -screen-height 975 -screen-fullscreen 0 -shots <klasör>` ekran görüntülerini alıp kapanır (hepsi ~20 dk; `-bolum 31` eklenirse bölüm görüntüleri 31'den başlar; `-bolum 50 -final` yalnızca Bölüm 50 kapanışını ~2 dk'da çeker).
+- Bölge 6 sahne denetimi (51 roket inişi, 55 Serçe'nin ilk uçuşu, 60 kanyona iniş): `oyun/Build/Win/MarsKod.exe -screen-width 450 -screen-height 975 -screen-fullscreen 0 -sahneler -shots <klasör>` ara kareleri alır, log'da `SAHNE DENETIMI: TAMAM` yazar (`-performans ac` eklenirse hafif modda). Sahneleri oyunda görmek için `-shots` olmadan aç: 51 her girişte roket inişini oynar.
 - Unity içinde: Unity Hub → Add → `oyun/` → `Assets/Scenes/Oyun` → ▶. Menü: *MarsKod*.
 - Bilgisayar klavyesi denetimi (Windows paketi üretildikten sonra): `powershell -ExecutionPolicy Bypass -File scripts/klavye-denetimi.ps1` → `KLAVYE DENETIMI: TAMAM`. Unity klavye harflerini Windows tuş mesajlarından okur; oyunun girdi sistemine sahte tuş vermek (`InputSystem.QueueTextEvent`) arayüze ulaşmaz, bu yüzden betik mesaj gönderir.
 - Motor testleri: `motor-test` klasöründe `dotnet test` (Unity gerekmez, birkaç saniye). Unity'nin kendi ortamında: menü *MarsKod > Motor denetimi* ya da `-executeMethod MotorDenetimi.Calistir` (log'da `MOTOR DENETIMI:` satırı).
@@ -49,7 +50,7 @@ Yazılan her kod SOLID ve temiz olmalı; yeni kod yazarken ve var olanı değiş
 ## Model ve efor (kritik — Enes, herkes için)
 Her işin başında önerilen "model · efor" ikilisini tek satırla ve gerekçesiyle söyle; iş türü değişince yeniden öner (gerekirse yeni sohbet).
 - **Sonnet 5 · medium** (zorlaşırsa high): planı yazılmış, net tarifli kod işleri (plan görevleri, saf C# + testler). Opus'un yarı fiyatı → kota iki kat dayanır.
-- **Opus 5.5 · medium/high**: planlama, tasarım/mimari kararı, plan yazma, zor hata (Unity görüntü sorunları gibi).
+- **Opus 5.5 · medium/high**: planlama, tasarım/mimari kararı, plan yazma, zor hata (Unity görüntü sorunları gibi) ve **görsel/3B sahne işleri** (kamera, nesne yerleşimi, hareketli sahne, "doğru görünüyor mu" kararı). Sonnet bu işlerde kesişme/ölçü/stil hatalarını kendi başına yakalayamadı (Bölge 6 · 3b), Opus daha az turda bitirir.
 - **Fable 5.1**: yalnızca Opus'un takıldığı en zor işler (Opus'un ~2,5 katı pahalı).
 - Yardımcı ajanlar: arama/okuma → Haiku 4.5; kod yazan → Sonnet 5. Aynı sohbette sık model değiştirme.
 

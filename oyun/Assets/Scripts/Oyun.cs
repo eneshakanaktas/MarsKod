@@ -12,7 +12,7 @@ using UnityEngine.Rendering.Universal;
 // robot, buzlar, arayuz). Bolumler dosyadan gelir (Resources/Bolumler/*.json): harita, gorev, ipucu, dogru cozum.
 // Kod karttaki Python kodu gercekten calisir: once motorda (Assets/Motor) ve dunya kurallarinda (Assets/Dunya)
 // aninda calistirilir, sonra olanlar satir satir animasyonla oynatilir.
-public class Oyun : MonoBehaviour
+public partial class Oyun : MonoBehaviour
 {
     // Sahne simdilik 6x6 alan ciziyor; bolum dosyalari da 6x6 (motor-test bunu denetler).
     const int Cols = 6, Rows = 6;
@@ -77,6 +77,9 @@ public class Oyun : MonoBehaviour
 
 
     Camera cam;
+    CameraShot shot;   // Bolge 6 sahneleri: sahne surerken kamerayi bu yonetir
+    Transform riftZoneRocks;     // manzara kayalarindan yarigin ustune dusenler: yalniz Bolum 60'ta gizlenir
+    CanyonScenes canyonScenes;   // Bolge 6 sahneleri: 60 kanyona inis, 55 Serce'nin ilk ucusu, 51 roketin inisi (Oyun.RoketInisi.cs)
     Material backdrop;
     BackdropCache backdropCache;
     Transform world;
@@ -240,6 +243,7 @@ public class Oyun : MonoBehaviour
 
         hud = gameObject.AddComponent<Hud>();
         hud.Build();
+        canyonScenes = new CanyonScenes(robot, shot, hud, c => Pos(c), Cols, Rows, StartYaw);
         if (GraphicsOptions.NoHud) hud.HideForMeasurement();
         FrameRateMeter.Create(System.Array.IndexOf(a, "-fps") >= 0);
         hud.RunPressed += OnRun;
@@ -300,8 +304,9 @@ public class Oyun : MonoBehaviour
         }
 
         bool finale = System.Array.IndexOf(a, "-final") >= 0;   // yalnizca Bolum 50 kapanisinin goruntuleri (~2 dk)
+        bool scenes = System.Array.IndexOf(a, "-sahneler") >= 0;   // yalnizca Bolge 6 sahnelerinin kareleri
         for (int i = 0; i < a.Length - 1; i++)
-            if (a[i] == "-shots") { shotsMode = true; LoadLevel(levelIndex); StartCoroutine(finale ? FinaleShots(a[i + 1]) : Shots(a[i + 1])); }
+            if (a[i] == "-shots") { shotsMode = true; LoadLevel(levelIndex); StartCoroutine(scenes ? SceneShots(a[i + 1]) : finale ? FinaleShots(a[i + 1]) : Shots(a[i + 1])); }
     }
 
     // Arka plan animasyonlari (ayar, bolum secme ekraninda): kapaliyken gokyuzu duraganlasir, telefon daha az yorulur
@@ -335,6 +340,7 @@ public class Oyun : MonoBehaviour
         cam.backgroundColor = Mats.Hex("#0E0B12");
         cam.fieldOfView = CameraFov;
         cam.allowMSAA = true;
+        shot = new CameraShot(cam, TerrainHeight);
 
         // Arka plan: kameraya bagli, ekrani dolduran tek kare
         backdrop = Mats.Custom("Backdrop", "MarsKod/Backdrop");
@@ -444,8 +450,8 @@ public class Oyun : MonoBehaviour
 
         // Kayalar, kaya kumeleri, olcum istasyonlari, sandiklar (Scenery.cs). Alanin icindeki kayalar bolumden gelir (engel).
         // Zeminle birlikte arka plana karisirlar: zemin ufukta gokyuzune donustugu yerde havada asili kalmazlar.
-        if (!GraphicsOptions.NoScenery) Scenery.Build(board, TerrainHeight, new Vector2(AreaHalfX, AreaHalfZ), FarRockMat,
-            CanyonTraces.PathCorridor(new Vector2(AreaHalfX, AreaHalfZ)));
+        if (!GraphicsOptions.NoScenery) riftZoneRocks = Scenery.Build(board, TerrainHeight, new Vector2(AreaHalfX, AreaHalfZ), FarRockMat,
+            CanyonTraces.PathCorridor(new Vector2(AreaHalfX, AreaHalfZ)), CanyonTraces.RiftZone(new Vector2(AreaHalfX, AreaHalfZ)));
     }
 
     // inner0..inner1 arasi fine adimla; disinda outer'a kadar coarse adimla (outer = 0: disari uzanmaz)
@@ -460,7 +466,7 @@ public class Oyun : MonoBehaviour
     }
 
     // Suslu kaya malzemesi: zeminle ayni isik ve ayni arka plana karisma (FarRock.shader)
-    static Material FarRockMat(string hex)
+    internal static Material FarRockMat(string hex)
     {
         var m = Mats.Custom("FarRock", "MarsKod/FarRock");
         m.SetColor("_BaseColor", Mats.Hex(hex));
@@ -472,6 +478,8 @@ public class Oyun : MonoBehaviour
     // Bolumu kurar: buzlar, engel kayalari, hedef kare, zemindeki buz izleri, karttaki kod ve ust baslik.
     void LoadLevel(int index)
     {
+        CancelLanding();
+        canyonScenes.Restore();
         if (program != null) StopCoroutine(program);
         program = null;
         running = false; done = false; complete = false;
@@ -509,16 +517,21 @@ public class Oyun : MonoBehaviour
         Traces.Build(level.Number, levelRoot, new Vector2(AreaHalfX, AreaHalfZ), level.Target.HasValue ? Pos(level.Target.Value) : (Vector3?)null,
             level.Ices.ConvertAll(c => Pos(c)), TerrainHeight);
 
+        if (riftZoneRocks != null) riftZoneRocks.gameObject.SetActive(level.Number != CanyonTraces.LastLevel);
         ResetRobot();
         string saved = SavedCode(level);
-        if (saved != null) hud.LoadCode(saved, SavedKinds(level));
+        if (TestSolutionsFilled && !shotsMode) hud.LoadCode(level.Solution, null);
+        else if (saved != null) hud.LoadCode(saved, SavedKinds(level));
         else hud.LoadStartCode(level.StartCode);
         code = hud.Code;
         hud.SetOpenWords(MarsKod.Dunya.Suggestions.OpenWords(levels, level.Number));
         hud.SetPieces(level.Pieces, Palette.NewPieces(levels, level.Number));
-        hud.SetLevel(level.Number, level.Label, level.Title, level.Goal, level.Ices.Count, level.Item, level.Intro);
+        bool landingDue = LandingDue;   // 51'e her girisde: giris damgasi roket indikten sonra gelir
+        hud.SetLevel(level.Number, level.Label, level.Title, level.Goal, level.Ices.Count, level.Item, landingDue ? "" : level.Intro);
         var transition = Traces.TransitionLines(level.Number);
-        if (!shotsMode && transition != null) hud.ShowTransition(transition, () => { });
+        if (landingDue) canyonScenes.PrepareLanding();
+        if (!shotsMode && transition != null) hud.ShowTransition(transition, landingDue ? (System.Action)StartLanding : () => { });
+        else if (landingDue) StartLanding();
         if (!shotsMode && level.Number == CanyonTraces.RecordingLevel && PlayerPrefs.GetInt(Kayit2Anahtari, 0) == 0)
             StartCoroutine(PlayCanyonRecording());
         hintView.Close();
@@ -541,7 +554,7 @@ public class Oyun : MonoBehaviour
 
     void LateUpdate()
     {
-        FitCamera();
+        if (shot.Active) shot.Apply(); else FitCamera();
         stars = Mathf.MoveTowards(stars, starsTarget, Time.deltaTime * 2.5f);
         Shader.SetGlobalFloat("_StarsOn", stars);
     }
@@ -619,7 +632,9 @@ public class Oyun : MonoBehaviour
         Shader.SetGlobalFloat("_Horizon", photo.yMax + HorizonAboveArea);
 
         var urp = GraphicsSettings.currentRenderPipeline as UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset;
-        if (urp != null && urp.shadowDistance < d + 8f) urp.shadowDistance = d + 8f;
+        // 60'ta uzaktaki yarik da golgede olmali: menzil kisa kalirsa yarigin ici kamera yaklastikca golgelenir ("yukleniyor" gibi)
+        float shadowReach = d + (CanyonTraces.Rift != null ? 40f : 8f);
+        if (urp != null && urp.shadowDistance < shadowReach) urp.shadowDistance = shadowReach;
     }
 
     // ---- Gosteri programi ----
@@ -669,6 +684,9 @@ public class Oyun : MonoBehaviour
     // GECICI TEST ANAHTARI (Ragip, 2026-10-03): ekip denemesi icin butun bolumler acik.
     // Play Store'a cikmadan once false yapilmali (ILERLEME.md'de not var).
     const bool TestAllLevelsOpen = true;
+    // GECICI TEST ANAHTARI (Enes, 2026-10-22): her bolum acilinca dogru cozum kodu editorde yazili gelir (yalniz Calistir'a basilir).
+    // Play Store'a cikmadan once false yapilmali (ILERLEME.md'de not var).
+    const bool TestSolutionsFilled = true;
     bool LocksOn => forceLocks || (!shotsMode && !TestAllLevelsOpen);   // -shots modunda da kilit yok
     bool forceLocks;   // yalnizca goruntu denetimi: kilitli kartlar gercekte nasil gorunur
 
@@ -733,6 +751,7 @@ public class Oyun : MonoBehaviour
 
     void ResetLevel()
     {
+        canyonScenes.Restore();
         if (program != null) StopCoroutine(program);
         program = null;
         running = false; done = false; complete = false;
@@ -825,6 +844,8 @@ public class Oyun : MonoBehaviour
             if (level.Number == Bolge3SonBolum) yield return ClosingSceneBolge3();
             if (level.Number == Bolge4SonBolum) yield return ClosingSceneBolge4();
             if (level.Number == Bolge5SonBolum) yield return ClosingSceneBolge5();
+            if (level.Number == CanyonTraces.SparrowRepairLevel) yield return canyonScenes.FirstFlight(level);
+            if (level.Number == CanyonTraces.LastLevel) yield return canyonScenes.Descent(level);
             if (perde1Finale)
             {
                 yield return Tween.Wait(Bolge5DevamBekleme);   // son kare bir sure yalniz kalir

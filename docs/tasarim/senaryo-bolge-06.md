@@ -21,7 +21,7 @@
 
 ## Bölüm 50 → 51 geçişi
 
-Bölüm 50 finalinin son karesi ("Ödev modu kapatıldı." + Kıvılcım gökyüzüne bakıyor) kalır. Final sürerken alttaki düğme gizlidir; final bitince **2,5 sn** sonra **"Devam"** belirir → `sinav-50` ("KIVILCIM · KENDİNİ DENETLİYOR") → Bölüm 51. Bölüm 51 açılırken kara ekranda: **"Yeni bölge: Kanyon girişi" / "Hedef: kanyon deposu"**. (Roketin kalkıp kanyona indiği açılış sahnesi 3. parçada; bu iki satırın yerini almaz, önüne gelir.)
+Bölüm 50 finalinin son karesi ("Ödev modu kapatıldı." + Kıvılcım gökyüzüne bakıyor) kalır. Final sürerken alttaki düğme gizlidir; final bitince **2,5 sn** sonra **"Devam"** belirir → `sinav-50` ("KIVILCIM · KENDİNİ DENETLİYOR") → Bölüm 51. Bölüm 51 açılırken kara ekranda: **"Yeni bölge: Kanyon girişi" / "Hedef: kanyon deposu"**. (Roketin kanyona indiği açılış sahnesi bu iki satırdan **sonra** gelir; 3b'de yapıldı, aşağıda.)
 
 `senaryo-bolge-05.md` öneri 7'deki "Sonraki bölüm düğmesi çıkmaz" kararı böylece güncellendi: son kare yine yalnız kalır, sonra yalnızca "Devam".
 
@@ -89,5 +89,14 @@ Enes 3a'yı beğenmedi (dev duvarlı kanyon, kutu depo, bilgisayar yazıları, h
 - **60 patikası:** zeminde + arka planda (`_CanyonDescent`, `Ground.shader` `canyonDescent`, `CanyonSky.hlsl` `canyonPathToMouth`) direklerin arasından ufuktaki kanyon ağzına perspektifle daralarak gider; yalnızca 60'ta (`CanyonTraces.ResetBackdrop` her bölümde sıfırlar).
 - **Diğer:** `ColonyRocket` küçüldü (52); `CanyonTraces.PathCorridor` patika şeridine çevre kayası koymaz.
 - **Denetim (Görev 5, 2026-10-11):** Hafif mod 51/53/60'ta zemin+beton+patika doğru; `dotnet test` 1395/1395; final denetimi (`-bolum 50 -final`) ve klavye denetimi TAMAM; Bölüm 41 ekran görüntüsü önceki bölgeye sızma olmadığını doğruladı. Görüntüler: `docs/tasarim/bolge-6-gorunus-2026-10-09/` (51-60 normal mod + 51/53 performans modu). Eski `bolge-6-gorunus-2026-10-08/` beğenilmeyen ilk deneme olarak kalıyor.
-- **3b'ye kalan:** 51 roket iniş sahnesi, 55 Serçe'nin ilk uçuşu, 60 kanyona iniş (kenarın ötesindeki derinlik), parlayan malzemeler sorunu (ayrı açık soru, bkz. ILERLEME.md).
+- **3b'ye kalan (3b'de yapıldı, aşağıda):** 51 roket iniş sahnesi, 55 Serçe'nin ilk uçuşu, 60 kanyona iniş; parlayan malzemeler sorunu hâlâ ayrı açık soru (bkz. ILERLEME.md).
+
+## Oyuna konanlar: 3b, üç hareketli sahne (2026-10-11/23, Enes; tasarım belgesi 3b)
+
+Sahnelerin akışı `CanyonScenes.cs`'te; nesneleri (yarık, Serçe, roket) yalnızca komut alır. Sahne sürerken kod kartı kapanır, kamera `CameraShot`'ta; "Tekrar" ya da bölüm değişimi sahneyi geri alır. Kıvılcım uçmaz: yalnızca boş karelerden (`GridPath`) ve patikadan yürür/süzülür.
+
+- **51 — Roketin inişi** (`Oyun.RoketInisi.cs`, `ColonyRocket`, `LandingDust`, `SkipCatcher`): "Yeni bölge: Kanyon girişi" yazılarından sonra roket ekranın üstünden alevle iner (gürleme), yavaşlar, yere oturur, toz kalkar, altında yanık iz kalır; kapak açılır, merdiven uzar, Kıvılcım kapının önünde belirip merdivenden iner ve boş karelerden başlangıç karesine yürür; sonra giriş damgası gelir. **51'e her girişte oynar** (Enes: ilk açılışta değil, her girişte); ekrana dokununca atlanır ("Tekrar" yeniden oynatmaz). Roket 51'de **kalın iniş aracı** (gövde 1,9 kat, 1,3 kat büyük, kapı Kıvılcım'ın sığacağı ölçüde: ince roketin kapısı Kıvılcım'dan 5 kat küçüktü); 52'deki küçük roket ince kaldı.
+- **55 — Serçe'nin ilk uçuşu:** gözler sırayla yanar, pervane yavaştan hızlıya, çatı deliğinden yükselir; ekran kararıp Serçe'nin gözünden kuş bakışı (2,5 sn, alan ve Kıvılcım kadrajda); kamera normale döner, Serçe 56'daki yerine uçar.
+- **60 — Kanyona iniş:** Serçe kalkar; Kıvılcım hedeften arka sıraya, direklerin arasından patikaya yürür; kamera yarığa bakar; ikisi patikadan iner (Serçe açık havada eşlik eder) ve kenardan aşağı gözden kaybolur. Yarık hep görünür, hiç kaya yok (yarığın üstüne düşen manzara kayaları yalnızca 60'ta gizlenir).
+- **Denetim:** `-sahneler` → `SAHNE DENETIMI: TAMAM` (55 ve 60'ın kare turu, 60 yarığında ölçümlü çarpışma, 51'in inişi + atlatma + "her girişte oynar" kontrolü, klavye açıkken sahne kamerası). Görüntüler: `docs/tasarim/bolge-6-sahneler-2026-10-11/`.
 

@@ -9,3 +9,6 @@ Tasarım: `docs/superpowers/specs/2026-10-08-bolge-6-design.md` §3b · Plan: `d
 - `is-defteri.md` — yardımcılı çalışma defteri (kararlar/"Ruling" satırları).
 
 Devam: `git checkout bolge6-sahneler-3b` → son commit (düzeltme turu 1, YARIM) derlenip denenmedi; önce paket üret, hata varsa düzelt, sonra `duzeltme-listesi.md`'yi bitir, görüntüyü Enes'e göstermeden önce elle ele.
+
+## Görev 3 ve düzeltme turları (Enes, 2026-10-22)
+`gorev3j-*` = son hâl (kuş bakışı 55, Serçe yakın plan, normal bakış 60, yarığa iniş 60). Aradaki ara denemeler yer tutmasın diye silindi.

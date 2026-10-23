@@ -34,6 +34,7 @@ Adım 1'de 30 kare/sn ve üstü çıkarsa 2-4'e gerek yok, yalnızca 5'i yap.
 Adım 1'in ayarıyla (Performans modu açık) şu bölümleri sırayla aç (`-bolum N` ya da bölüm listesinden), her birinde **30 sn bekle**
 ve son 3 `KARE:` satırını gönder: **Bölüm 1** (karşılaştırma için), **21** (Bölge 3), **31** (Bölge 4), **41** (Bölge 5, şimdilik Bölge 4'ün görünüşü),
 **51** (Bölge 6 kanyonu: yeni gökyüzü + zemin, roket) ve **53** (açık sundurma depo: raflar, sandıklar, çatı; en çok nesne bu bölümde).
+**Bölge 6 sahneleri (3b, 2026-10-23):** Bölüm **51**'e girince roket inişi oynar (alev, toz, kapı, Kıvılcım'ın merdivenden inişi; dokununca atlanır); **55**'i çözünce Serçe'nin ilk uçuşu, **60**'ı çözünce kanyona iniş oynar. Üçünde de sahne sürerken `KARE:` satırlarını gönder (sahne bitince son 3 satır), ve gözle bak: akıcı mı, takılma var mı, gürleme/vızıltı sesi çok yüksek ya da tiz mi, kod kartı sahne boyunca kapalı mı, klavye açıkken de sahne düzgün mü.
 Ayrıca gözle bak: Bölüm 31'de toz bulutları ve turuncu hedef halkası seçiliyor mu; Bölüm 50 kapanışı (`-bolum 50`, kod çözülünce) takılmadan akıyor mu.
 
 **Nasıl okunur:** 30 kare/sn için kare başına 33 ms'den az gerekir. `ekran karti` sayısı büyükse çizim ağır

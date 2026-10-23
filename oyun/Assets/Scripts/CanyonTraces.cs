@@ -18,9 +18,18 @@ public static class CanyonTraces
     // ResetBackdrop yazar: bolum yuklenince ve "yeniden dene"de ayni deger kalir; 60 disinda sifir.
     static Vector4 descent;
 
-    // Bolum 60'in patikasinin gectigi serit (alanin arkasindan kanyonun agzina): cevre kayalari buraya konmaz (Scenery)
+    // 60'taki yarik (3B sahneleri kullanir); baska bolumlerde null
+    public static CanyonRift Rift { get; private set; }
+
+    // Bolum 60'in patikasinin gectigi serit (alanin arkasindan kanyonun agzina): cevre kayalari buraya HER bolumde konmaz (Scenery)
     public static Rect PathCorridor(Vector2 areaHalf) =>
         Rect.MinMaxRect(-0.4f, areaHalf.y, DescentPathX + 0.6f, areaHalf.y + DescentGap + 9f);
+
+    // Yariginin ustu: yalniz Bolum 60'ta buradaki manzara kayalari gizlenir (Oyun). Yarigin altinda zemin yok: uzaktaki bir manzara
+    // kayasi yarigin ustune dusse koyu bosluk icinde havada asili gorunur (Enes). Diger bolumlerde kayalar yerinde durur.
+    // Bolge yarigin en genis yerini (~2,3) ve kaya yaricapi payini kapsar, yarigin boyundan (Length) biraz uzundur.
+    public static Rect RiftZone(Vector2 areaHalf) =>
+        Rect.MinMaxRect(-3.0f, areaHalf.y, DescentPathX + 2.4f, areaHalf.y + DescentGap + CanyonRift.Length + 4f);
 
     // Bolum 53-56 acik sundurma deponun onunde gecer (zemin beton, engeller sandik)
     public static bool IsDepot(int levelNumber) => levelNumber >= DepotFirst && levelNumber <= DepotLast;
@@ -30,6 +39,8 @@ public static class CanyonTraces
     {
         Shader.SetGlobalFloat(IndoorId, IsDepot(levelNumber) ? 1f : 0f);
         Shader.SetGlobalVector(DescentId, levelNumber == LastLevel ? descent : Vector4.zero);
+        if (ActiveSparrow != null) ActiveSparrow.ResetHome();   // sahne (60 inis) Serce'yi goturmus olabilir
+        if (ActiveRocket != null) ActiveRocket.SetLanded();     // sahne (51 inis) roketi havaya almis olabilir
     }
 
     // Bolumun izlerini kurar (Bolge 6 disinda hicbir sey). itemPositions: toplanacak drone parcalarinin yerleri
@@ -38,12 +49,14 @@ public static class CanyonTraces
         Func<float, float, float> ground)
     {
         ActiveSparrow = null;
+        ActiveRocket = null;
+        Rift = null;
         descent = Vector4.zero;
         if (levelNumber < FirstLevel || levelNumber > LastLevel) return;
         switch (levelNumber)
         {
             case FirstLevel:
-                ColonyRocket.Create(parent, OnGround(ground, -areaHalf.x + 0.8f, areaHalf.y + 1.4f), 0.7f);
+                ActiveRocket = ColonyRocket.Create(parent, OnGround(ground, -areaHalf.x + 0.8f, areaHalf.y + 1.4f), LanderScale, RocketLook.Lander);
                 MarkedRock(parent, OnGround(ground, areaHalf.x - 0.3f, areaHalf.y + 1.0f), 1.1f, 75f, levelNumber);
                 break;
             case StormLevel:
@@ -73,9 +86,10 @@ public static class CanyonTraces
                 break;
             case LastLevel:
                 // kanyona inen patika: alanin arkasindan kenara gider, kenarda asagi doner (spec 3a.2)
-                var pathHead = CanyonLedge.Edge(parent, areaHalf.y + DescentGap, areaHalf.x * 2f + 3f, DescentPathX, ground);
-                PaintMarks.Arrow(pathHead, Vector3.zero, 90f, 0.5f, fade: 0f, drips: false, seed: levelNumber);
+                var pathHead = CanyonLedge.Edge(parent, areaHalf.y + DescentGap, DescentPathX, ground);
+                PaintMarks.FilledArrow(pathHead, Vector3.zero, 90f, 0.62f, PaintMarks.PaintMat(0f));
                 ActiveSparrow = Sparrow.Create(parent, HoverSpot(areaHalf, ground), SparrowState.Flying);
+                Rift = CanyonRift.Build(parent, areaHalf.y + DescentGap, DescentPathX, ground);
                 descent = new Vector4(areaHalf.y + DescentGap, 1f, DescentPathX, areaHalf.y);
                 break;
         }
@@ -87,8 +101,14 @@ public static class CanyonTraces
 
     // Serce (55'ten sonra yanimizda): bolumde yoksa null. 3b sahneleri kullanir.
     public static Sparrow ActiveSparrow { get; private set; }
+    public static ColonyRocket ActiveRocket { get; private set; }   // 51'in inis roketi (inis sahnesi oynatir)
+    public const float LanderScale = 1.3f;                          // 51 roketi: ust yazilara degmeyecek en buyuk boyuta yakin
 
-    const int SparrowShelfLevel = 54, SparrowRepairLevel = 55, BoardLevel = 56, DatesLevel = 58;
+    const int SparrowShelfLevel = 54, BoardLevel = 56, DatesLevel = 58;
+    public const int SparrowRepairLevel = 55;
+
+    // 55'te ilk ucustan sonra Serce'nin varacagi yer (56'dakiyle ayni: alanin sag arka kosesinin ustu)
+    public static Vector3 SparrowHover { get; private set; }
 
     // Serce'nin bekledigi yer: alanin sag arka kosesinin ustu (sag ustteki pusula ve dugmelerin altina girmez)
     static Vector3 HoverSpot(Vector2 areaHalf, Func<float, float, float> ground) =>
@@ -102,6 +122,7 @@ public static class CanyonTraces
             bigHole: levelNumber == SparrowRepairLevel, ground);
         if (levelNumber == DepotFirst && itemPositions.Count > 0)
             StorageShelf.Create(parent, new Vector3(0f, 0f, itemPositions[0].z), areaHalf.x * 2f, stocked: false);
+        if (levelNumber == SparrowRepairLevel) SparrowHover = HoverSpot(areaHalf, ground);
         if (levelNumber == SparrowShelfLevel || levelNumber == SparrowRepairLevel)
             ActiveSparrow = Sparrow.Create(parent, shed.ShelfTop + Vector3.up * Sparrow.RestHeight,
                 levelNumber == SparrowShelfLevel ? SparrowState.Incomplete : SparrowState.Dormant);

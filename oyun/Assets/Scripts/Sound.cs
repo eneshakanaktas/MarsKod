@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Kisa oyun sesleri, kodla uretilir (ses dosyasi yok, paket buyumez): dugme, move, toplama, engele carpma,
-// hata, bolum sonu kutlamasi, kolonide lamba yanmasi, acilis bipi, kapanis hisirtisi ve SOS.
+// hata, bolum sonu kutlamasi, kolonide lamba yanmasi, acilis bipi, kapanis hisirtisi, SOS ve pervane vizildisi.
 // Robotun "dili" henuz yok (hikaye belirleyecek); bu sesler sade kalir.
 // Ayarlar: Enabled, PlayerPrefs("ses") ile kalici; Hud'daki hoparlor dugmesiyle acilip kapanir.
 public static class Sound
@@ -55,6 +55,8 @@ public static class Sound
     public static void Celebrate() => Play(Get("celebrate", () => Chime(new[] { 523f, 659f, 784f, 1046f }, 0.1f)), 0.7f);
     public static void Lamp() => Play(Get("lamp", () => Beep(1300f, 0.05f)), 0.35f);
     public static void Blip() => Play(Get("blip", () => Beep(520f, 0.12f)), 0.35f);
+    public static void Rotor() => Play(Get("rotor", () => Whirr(1.6f)), 0.35f);
+    public static void Rocket() => Play(Get("rocket", () => Rumble(4f)), 0.45f);
     public static void Static() => Play(Get("static", () => Hiss(1.2f)), 0.5f);
     public static void Sos() => Play(Get("sos", () => Morse("... --- ...", 880f)), 0.5f);
 
@@ -144,6 +146,45 @@ public static class Sound
             }
         }
         return MakeClip(data.ToArray(), "morse");
+    }
+
+    // Pervane vizilti: frekansi 90'dan 240 Hz'e cikan testere dalgasi + az gurultu; yukselir, sonda hafif soner (Serce uyanirken).
+    static AudioClip Whirr(float seconds)
+    {
+        int n = SampleCount(seconds);
+        var rnd = new System.Random(5);
+        var data = new float[n];
+        float phase = 0f;
+        for (int i = 0; i < n; i++)
+        {
+            float progress = i / (float)n;
+            phase += (90f + 150f * progress * progress) / SampleRate;
+            float saw = 2f * (phase - Mathf.Floor(phase)) - 1f;
+            float noise = (float)(rnd.NextDouble() * 2f - 1f) * 0.15f;
+            float rise = Mathf.Clamp01(progress * 3f);
+            float fall = progress > 0.8f ? (1f - progress) / 0.2f : 1f;
+            data[i] = (saw * 0.5f + noise) * rise * fall * 0.6f;
+        }
+        return MakeClip(data, "whirr");
+    }
+
+    // Roket gurultusu: alcak gecirgenli gurultu + 45 Hz sinus; yavasca gurler, sonda 0,5 sn'de kesilir (51'de roket inerken).
+    static AudioClip Rumble(float seconds)
+    {
+        int n = SampleCount(seconds);
+        var rnd = new System.Random(13);
+        var data = new float[n];
+        float smooth = 0f;
+        for (int i = 0; i < n; i++)
+        {
+            float t = i / (float)SampleRate;
+            smooth += 0.04f * ((float)(rnd.NextDouble() * 2f - 1f) - smooth);
+            float swell = Mathf.Clamp01(t / 0.6f);
+            float cut = Mathf.Clamp01((seconds - t) / 0.5f);
+            float wave = smooth * 6f + Mathf.Sin(2f * Mathf.PI * 45f * t) * 0.5f;
+            data[i] = Mathf.Clamp(wave, -1f, 1f) * swell * cut * 0.6f;
+        }
+        return MakeClip(data, "rumble");
     }
 
     // Hisirti: yumusatilmis gurultu, sonra soner. Kapanis sahnesinde telsizin gelmesinden once calar.

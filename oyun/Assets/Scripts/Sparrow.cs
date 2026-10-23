@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public enum SparrowState { Incomplete, Dormant, Flying }
@@ -9,19 +10,23 @@ public enum SparrowState { Incomplete, Dormant, Flying }
 // gozler yanar, pervaneler doner, hafifce suzulup yalpalar). Ileri yonu -Z (kameraya bakar).
 public class Sparrow : MonoBehaviour
 {
-    const float BodyRadius = 0.15f, Scale = 1.3f;
-    static readonly Color EyeOn = Mats.Hex("#8FF0FF") * 1.6f;
+    const float BodyRadius = 0.15f, Scale = 1.6f;
 
     Transform body;
     readonly Transform[] blades = new Transform[4];
+    readonly Renderer[] lenses = new Renderer[2];
     GameObject[] missingWhenIncomplete;
     GameObject hole;
-    Material eyeMat;
+    Material eyeOff, eyeOn;
     SparrowState state;
+    float rotorSpeed;           // 0 duruyor, 1 tam hiz (WakeUp yavastan hizliya cikarir)
     float phase;
+    Vector3 home;               // Create'teki yer ve hal: sahneler (Bolge 6) bozdugunda ResetHome geri verir
+    SparrowState homeState;
 
     // Govde (3b'deki ilk ucus sahnesi bunu yukari kaldirir)
     public Transform Body => body;
+    public Vector3 HomePosition => home;   // Create'teki yer (ResetHome'un varacagi yer)
     // Kizaklarin altindan govde merkezine yukseklik: rafa konurken
     public static float RestHeight => BodyRadius * 0.85f * Scale;
 
@@ -32,6 +37,8 @@ public class Sparrow : MonoBehaviour
         go.transform.localPosition = localPos;
         go.transform.localScale = Vector3.one * Scale;
         var sparrow = go.AddComponent<Sparrow>();
+        sparrow.home = localPos;
+        sparrow.homeState = state;
         sparrow.Build();
         sparrow.SetState(state);
         return sparrow;
@@ -43,7 +50,8 @@ public class Sparrow : MonoBehaviour
         var shell = Mats.Lit(DroneColors.Body, 0.45f);
         var dark = Mats.Lit(DroneColors.Dark, 0.35f);
         var accent = Mats.Lit(DroneColors.Accent, 0.4f);
-        eyeMat = Mats.Emissive(Mats.Hex("#20262C"), Color.black, 0.8f);
+        eyeOff = Mats.Lit(Mats.Hex("#20262C"), 0.8f);
+        eyeOn = Mats.Unlit(Mats.Hex("#8FF0FF"));   // pakette Emissive parlamiyor (ILERLEME.md acik soru); Unlit her isikta net
 
         body = Parts.Empty("Govde", transform);
         var dome = Parts.Add("Kabuk", body, MeshFactory.Sphere(BodyRadius, 12, 20), shell, Vector3.zero);
@@ -54,11 +62,13 @@ public class Sparrow : MonoBehaviour
         Parts.Add("KuyrukUcu", tail, MeshFactory.RoundedBox(new Vector3(0.092f, 0.027f, 0.03f), 0.008f), accent, new Vector3(0f, 0f, 0.045f), outline: false);
         // gaga ve gozler (kameraya bakan yuzde)
         Parts.Add("Gaga", body, MeshFactory.Sphere(0.022f, 6, 10), accent, new Vector3(0f, -0.015f, -0.165f), outline: false);
-        foreach (float x in new[] { -0.055f, 0.055f })
+        var eyeXs = new[] { -0.055f, 0.055f };
+        for (int e = 0; e < eyeXs.Length; e++)
         {
-            var socket = Parts.Add("Goz", body, MeshFactory.RoundedCylinder(0.034f, 0.03f, 0.008f, 14), dark, new Vector3(x, 0.035f, -0.148f));
+            var socket = Parts.Add("Goz", body, MeshFactory.RoundedCylinder(0.034f, 0.03f, 0.008f, 14), dark, new Vector3(eyeXs[e], 0.035f, -0.148f));
             socket.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            Parts.Add("Mercek", socket, MeshFactory.Sphere(0.02f, 8, 12), eyeMat, new Vector3(0f, 0.012f, 0f), outline: false);
+            lenses[e] = Parts.Add("Mercek", socket, MeshFactory.Sphere(0.02f, 8, 12), eyeOff, new Vector3(0f, 0.012f, 0f), outline: false)
+                .GetComponent<Renderer>();
         }
         // kizaklar
         foreach (float x in new[] { -0.075f, 0.075f })
@@ -86,28 +96,107 @@ public class Sparrow : MonoBehaviour
         hole = Parts.Add("Delik", body, MeshFactory.Sphere(0.05f, 6, 10), dark, new Vector3(0.11f, 0.05f, 0.04f), outline: false).gameObject;
         hole.transform.localScale = new Vector3(0.5f, 1f, 1.2f);
 
-        // ad: ust-on yuzde, cocuk eliyle boyanmis, hafif egik; yukaridan bakan kamera okur
-        var label = BrushPaint.Write(body, "SERÇE", new Vector3(0f, 0.108f, -0.055f), 0.065f,
-            Mats.Lit(CraterTraces.EceColor, 0.3f), seed: 11, thickness: 0.14f);
-        label.localRotation = Quaternion.Euler(52f, 0f, -7f);
+        // ad: kubbenin ust-on yuzunde koyu kirmizi boyali harfler (krem govdede uzaktan okunur). Harfler once duz cizilir, sonra
+        // kubbenin yuzeyine yapistirilir (egride ezilmesin diye dar tutulur).
+        var label = BrushPaint.Write(body, "SERÇE", NamePos, NameLetter, Mats.Lit(Mats.Hex("#B3261E"), 0.3f), seed: 11, thickness: 0.2f);
+        label.localRotation = NameTilt;
+        WrapOnDome(label, dome.localScale, 0.004f);
     }
+
+    static readonly Vector3 NamePos = new Vector3(0f, 0.115f, -0.04f);
+    static readonly Quaternion NameTilt = Quaternion.Euler(40f, 0f, -3f);
+    const float NameLetter = 0.07f;
+
+    // Yazinin koselerini kubbenin (elipsoit) yuzeyine radyal olarak iter (lift kadar disarida) ve normallerini yuzeye gore yazar
+    void WrapOnDome(Transform label, Vector3 domeScale, float lift)
+    {
+        var radii = domeScale * BodyRadius;
+        var mesh = label.GetComponent<MeshFilter>().mesh;
+        var vertices = mesh.vertices;
+        var normals = new Vector3[vertices.Length];
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            var p = label.localPosition + label.localRotation * Vector3.Scale(label.localScale, vertices[i]);
+            float k = 1f / Mathf.Sqrt(Sq(p.x / radii.x) + Sq(p.y / radii.y) + Sq(p.z / radii.z));
+            var onSurface = p * k;
+            normals[i] = new Vector3(onSurface.x / Sq(radii.x), onSurface.y / Sq(radii.y), onSurface.z / Sq(radii.z)).normalized;
+            vertices[i] = onSurface + normals[i] * lift;
+        }
+        mesh.vertices = vertices;
+        mesh.normals = normals;
+        mesh.RecalculateBounds();
+        label.localPosition = Vector3.zero;
+        label.localRotation = Quaternion.identity;
+        label.localScale = Vector3.one;
+    }
+
+    static float Sq(float x) => x * x;
 
     public void SetState(SparrowState s)
     {
         state = s;
         foreach (var go in missingWhenIncomplete) go.SetActive(s != SparrowState.Incomplete);
         hole.SetActive(s == SparrowState.Incomplete);
-        eyeMat.SetColor("_EmissionColor", s == SparrowState.Flying ? EyeOn : Color.black);
+        SetEyes(s == SparrowState.Flying ? lenses.Length : 0);
+        rotorSpeed = s == SparrowState.Flying ? 1f : 0f;
         body.localPosition = Vector3.zero;
         body.localRotation = Quaternion.identity;
     }
 
+    // Ilk litCount mercek yanar (turkuaz-beyaz), kalani sonuk
+    void SetEyes(int litCount)
+    {
+        for (int i = 0; i < lenses.Length; i++) lenses[i].sharedMaterial = i < litCount ? eyeOn : eyeOff;
+    }
+
+    // 55: gozler sirayla yanar (iki kisa bip), pervaneler yavastan hizliya (vizilti)
+    public IEnumerator WakeUp()
+    {
+        SetEyes(1); Sound.Blip();
+        yield return Tween.Wait(0.35f);
+        SetEyes(2); Sound.Blip();
+        Sound.Rotor();
+        yield return Tween.Run(1.2f, t => rotorSpeed = t * t);
+    }
+
+    // Ilk ucus: once yalpalar, sonra dengesini bulup yukselir
+    public IEnumerator TakeOff(Vector3 to, float seconds)
+    {
+        var from = transform.localPosition;
+        yield return Tween.Run(seconds, t =>
+        {
+            float wobble = (1f - t) * (1f - t);
+            transform.localPosition = Vector3.Lerp(from, to, Tween.InOutCubic(t)) + new Vector3(0.06f * wobble * Mathf.Sin(t * 31f), 0f, 0f);
+            body.localRotation = Quaternion.Euler(12f * wobble * Mathf.Sin(t * 23f), 0f, 14f * wobble * Mathf.Sin(t * 19f + 1f));
+        });
+        SetState(SparrowState.Flying);
+    }
+
+    // Sahnelerde (60 inis) yumusakca baska yere ucar; cagiran coroutine'i bekler
+    public IEnumerator FlyTo(Vector3 localPos, float seconds)
+    {
+        Vector3 from = transform.localPosition;
+        yield return Tween.Run(seconds, t => transform.localPosition = Vector3.Lerp(from, localPos, Tween.InOutCubic(t)));
+    }
+
+    // Create'teki yer ve hale doner; Serce'nin kendi calisan hareketlerini durdurur ("Tekrar", bolum degisimi)
+    public void ResetHome()
+    {
+        StopAllCoroutines();
+        gameObject.SetActive(true);
+        transform.localPosition = home;
+        SetState(homeState);
+    }
+
     void Update()
     {
+        if (rotorSpeed > 0f)
+        {
+            float spin = 1400f * rotorSpeed * Time.deltaTime;
+            foreach (var b in blades) b.Rotate(0f, spin, 0f, Space.Self);
+        }
         if (state != SparrowState.Flying) return;
         float t = Time.time + phase;
-        float spin = 1400f * Time.deltaTime;
-        foreach (var b in blades) b.Rotate(0f, spin, 0f, Space.Self);
         body.localPosition = new Vector3(0.01f * Mathf.Sin(t * 0.7f), 0.03f * Mathf.Sin(t * 2.1f), 0f);
         body.localRotation = Quaternion.Euler(3f * Mathf.Sin(t * 1.3f), 0f, 4f * Mathf.Sin(t * 0.9f + 1f));
     }

@@ -11,12 +11,13 @@ public static class BrushPaint
 
     // lines: 0..1 kutuda (x saga, y yukari) cizgi dizileri; kutunun ortasi localPos'a gelir. size: kutunun dunyadaki boyu;
     // angleDeg: kutunun donusu (0: x saga); seed: titremeyi sabitler; thickness: kutu birimiyle darbe kalinligi.
+    // jitter: darbelerin titremesi (0: duzgun, cetvelle cizilmis gibi)
     public static Transform Strokes(Transform surface, Vector2[][] lines, Vector3 localPos, float size, float angleDeg,
-        Material paint, int seed, float thickness = 0.09f)
+        Material paint, int seed, float thickness = 0.09f, float jitter = Jitter)
     {
         var centered = new List<Vector2[]>();
         foreach (var line in lines) centered.Add(Shift(line, new Vector2(-0.5f, -0.5f)));
-        return Paint(surface, "Boya", centered, localPos, size, angleDeg, paint, seed, thickness, Jitter);
+        return Paint(surface, "Boya", centered, localPos, size, angleDeg, paint, seed, thickness, jitter);
     }
 
     // lines: dogrudan yuzeyin biriminde (olceksiz, donmesiz); z: yuzeyden uzaklik. Titreme kalinlikla orantili.

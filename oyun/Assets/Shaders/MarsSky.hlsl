@@ -15,6 +15,13 @@ float _Horizon;   // ufuk: fotograf koordinatinda (asagida)
 // Bolum 60'in kanyona giden patikasi (CanyonTraces): x kenarin z'si, y 1 = acik (0: hicbir bolumde etkisi yok),
 // z patikanin x'i, w alanin arka kenari. Zemin (Ground.shader) ve arka plan (CanyonSky.hlsl) ikisi de cizer.
 float4 _CanyonDescent;
+float _SceneCamera;   // CameraShot: 0 normal kamera, 1 sahne kamerasi (arada yumusak gecis)
+// 60'ta 3B yarik her zaman gorunur (bolum acilir acilmaz yarik orada: Enes). Kamera hareketiyle yavas yavas acilmaz.
+// Yarik boyunca uzaklik t (z - baslangic) < RiftReveal ise zemin kesilir ve 3B yarik gorunur: hep (yarik boyundan uzun).
+float RiftReveal() { return 1000.0; }
+// 60'ta "sahne kamerasi" etkileri (ufuk bandi daralir, yarigin ici koyulasir) bolum acilir acilmaz tamdir: kamera yaklastikca yarik
+// "yukleniyormus" gibi degismesin. Diger bolumlerde kamera sahnesine gore yumusakca degisir.
+float RiftSceneBlend() { return _CanyonDescent.y > 0.5 ? 1.0 : _SceneCamera; }
 float4 _Picture;  // x: fotografin olcegi (1 = tam boy), y: dikey kayma (ekranin -1..1 biriminde)
 float4 _Focus;
 float4 _Sun;
@@ -985,16 +992,20 @@ float3 MarsDustHaze(float3 col, float3 posWS, float2 area)
 // Zemindeki her sey (zemin, uzaktaki kayalar) ayni kuralla arka plana karisir: once toz pusu, sonra uzaklastikca
 // (fogRange: z basla, z bit) ve ekranda cizilen ufka yaklastikca. Kamera geri cekilip zemin ekranda yukari kaysa da
 // zemin nerede gokyuzune donuyorsa ustundeki kaya da orada kaybolur (havada asili kaya kalmaz). Renkler dogrusal.
-float3 MarsFadeToBackdrop(float3 col, float3 posWS, float2 suv, float2 fogRange, float2 area)
+// band: ufkun altinda karismanin basladigi ve bittigi uzaklik (ekran yuksekligi); (0, 0) = bolgenin varsayilani.
+// Yalniz yarik (CanyonRift) kullanir: yarik ufka kadar gorunur kalir, ufkun ustunde gokyuzune karisir.
+float3 MarsFadeToBackdropBand(float3 col, float3 posWS, float2 suv, float2 fogRange, float2 area, float2 customBand)
 {
     col = MarsDustHaze(col, posWS, area);
     float distFog = smoothstep(fogRange.x, fogRange.y, posWS.z);
     // kanyonda bant dar: alanin arkasindaki zemin seridi (roket, kaya, depo burada durur) zemin olarak kalir, ufka yakinda karisir
     // kanyonda gecis yavas baslar (us 1,5): nesnelerin dibinde zayif, zeminin kivrilip bittigi cizgide (ufkun ~0,02 alti)
     // tamamlanir; yoksa orada sert bir cizgi kalir
-    float2 band = MarsCanyon() ? float2(0.085, 0.03) : float2(0.15, 0.06);
+    bool custom = customBand.x > customBand.y;
+    // sahne kamerasinda (60'ta yariga bakis) zemin ufka kadar dolu kalir: ufkun altindaki arka plan yalniz yarigin icinden gorunur
+    float2 band = custom ? customBand : (MarsCanyon() ? lerp(float2(0.085, 0.03), float2(0.035, 0.01), RiftSceneBlend()) : float2(0.15, 0.06));
     float scrFog = smoothstep(_Horizon - band.x, _Horizon - band.y, MarsPictureUV(suv).y);
-    if (MarsCanyon()) scrFog = pow(scrFog, 1.5);
+    if (MarsCanyon() && !custom) scrFog = pow(scrFog, 1.5);
     float fog = max(distFog, scrFog);
     if (fog > 0.001)
     {
@@ -1002,6 +1013,11 @@ float3 MarsFadeToBackdrop(float3 col, float3 posWS, float2 suv, float2 fogRange,
         col = lerp(col, bd, fog);
     }
     return col;
+}
+
+float3 MarsFadeToBackdrop(float3 col, float3 posWS, float2 suv, float2 fogRange, float2 area)
+{
+    return MarsFadeToBackdropBand(col, posWS, suv, fogRange, area, float2(0.0, 0.0));
 }
 
 // Cevredeki kayalarin bolgeye gore yuzu. Renkler dogrusal.

@@ -1,0 +1,60 @@
+{
+  "numara": 70,
+  "baslik": "Cevap",
+  "gorev": "Duvara ok çiz",
+  "etiket": "BÖLGE 7 · NEHİR YATAĞI",
+  "giris": "Sol 1.092 · Duvarda mavi bir çizim: KIVILCIM BENİ BUL",
+  "bitis": "Cevap: ok · Rutinler kaydedildi: ok, yuru",
+  "harita": [
+    "H . . . O .",
+    "Z O O O O O",
+    ". Z . K O .",
+    "K . O . . .",
+    "R O O O . K",
+    ". . O . . ."
+  ],
+  "komutlar": ["move", "dust_here", "wait", "pen_down", "pen_up"],
+  "toz_suresi": [1, 2],
+  "parametreli_rutinler": ["ok", "yuru"],
+  "parcalar": ["def ok(boy):", "def yuru(yon, adim):", "ok(2)", "yuru(North, 3)", "pen_down()", "pen_up()", "while dust_here():", "wait()"],
+  "konular": ["parametre", "iki parametreli rutin", "kaya, toz ve çizim birlikte"],
+  "ipuclari": [
+    "İki iş var: ok çizmek ve kalemsiz yürümek. İkisi de rutin olsun, ikisi de sayı alsın. Yolda toz var, yürüyen rutin beklemeyi de bilmeli.",
+    "`ok(boy)` ilk bölümlerdeki gibi: gövde `boy` adım, sonra ok başı. `yuru(yon, adim)` her adımdan sonra toz varsa bekler. Okları 2 ve 4 boyunda çiz; ikisinin arası kalemsiz yürüyüş.",
+    "`move(East)` ile ilk okun başına geç, `ok(2)`. `yuru(West, 1)` ve `yuru(North, 3)` ile ikinci okun başına git, `ok(4)`. Sonra `yuru(West, 4)` ve `yuru(North, 1)` ile hedefe."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def ok(boy):", "    pen_down()", "    for i in range(boy):", "        move(East)", "    move(West)", "    move(North)", "    move(South)", "    move(South)", "    move(North)", "    pen_up()", "def yuru(yon, adim):", "    for i in range(adim):", "        move(yon)", "move(East)", "ok(2)", "yuru(West, 1)", "yuru(North, 3)", "ok(4)", "yuru(West, 4)", "yuru(North, 1)"],
+      "aciklama": "Robot toz bulutuna girip beklemeden yürümek istedi, durdu. Yürüyen rutinde her adımdan sonra `while dust_here():` altında `wait()` yaz."
+    },
+    {
+      "kod": ["def ok(boy):", "    pen_down()", "    for i in range(boy):", "        move(East)", "    move(West)", "    move(North)", "    move(South)", "    move(South)", "    move(North)", "    pen_up()", "def yuru(yon, adim):", "    for i in range(adim):", "        move(yon)", "        while dust_here():", "            wait()", "move(East)", "ok(2)", "yuru(West, 1)", "yuru(North, 3)", "ok(2)", "yuru(West, 2)", "yuru(North, 1)"],
+      "aciklama": "İkinci ok da küçük çıktı: `ok(2)` iki kez yazılmış. İkinci ok büyük olmalı: `ok(4)`."
+    }
+  ],
+  "cozum": [
+    "def ok(boy):",
+    "    pen_down()",
+    "    for i in range(boy):",
+    "        move(East)",
+    "    move(West)",
+    "    move(North)",
+    "    move(South)",
+    "    move(South)",
+    "    move(North)",
+    "    pen_up()",
+    "def yuru(yon, adim):",
+    "    for i in range(adim):",
+    "        move(yon)",
+    "        while dust_here():",
+    "            wait()",
+    "move(East)",
+    "ok(2)",
+    "yuru(West, 1)",
+    "yuru(North, 3)",
+    "ok(4)",
+    "yuru(West, 4)",
+    "yuru(North, 1)"
+  ]
+}

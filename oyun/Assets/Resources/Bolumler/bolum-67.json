@@ -1,0 +1,47 @@
+{
+  "numara": 67,
+  "baslik": "Dar kanyon",
+  "gorev": "Tozlu yoldan geç",
+  "etiket": "BÖLGE 7 · NEHİR YATAĞI",
+  "giris": "Sol 1.091 · Yan kanyon: dar, kıvrımlı",
+  "bitis": "Yol: 4 durak · Rutin kaydedildi: ilerle",
+  "harita": [
+    ". H . . . .",
+    ". Z . K . .",
+    "K . K . . .",
+    "K . . Z . .",
+    ". K K K Z .",
+    "R . Z . . ."
+  ],
+  "komutlar": ["move", "dust_here", "wait"],
+  "toz_suresi": [2, 3, 1, 2],
+  "parametreli_rutinler": ["ilerle"],
+  "parcalar": ["def ilerle(yon, adim):", "ilerle(East, 3)", "for i in range(adim):", "move(yon)", "while dust_here():", "wait()"],
+  "konular": ["parametre", "döngü içinde while", "fonksiyon"],
+  "ipuclari": [
+    "Dar yol dört parçadan oluşuyor ve yolda toz bulutları var. Her parçada yön ve adım sayısı değişiyor; her adımdan sonra toz varsa beklemek gerek.",
+    "Tozun içindeyken yürüyemezsin: toz geçene kadar `while dust_here():` altında `wait()`. Bu bekleme her adımın sonunda olmalı, yani rutinin içinde.",
+    "`def ilerle(yon, adim):` altında `for i in range(adim):`; döngünün içinde `move(yon)` ve ardından `while dust_here():` ile `wait()`. Sonra dört çağrı: doğu 4, kuzey 2, batı 3, kuzey 3."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def ilerle(yon, adim):", "    for i in range(adim):", "        move(yon)", "ilerle(East, 4)", "ilerle(North, 2)", "ilerle(West, 3)", "ilerle(North, 3)"],
+      "aciklama": "Robot toz bulutuna girip beklemeden yürümek istedi, durdu. Her adımdan sonra `while dust_here():` altında `wait()` yaz."
+    },
+    {
+      "kod": ["move(East)", "while dust_here():", "    wait()", "move(East)", "while dust_here():", "    wait()", "move(East)", "while dust_here():", "    wait()", "move(East)", "while dust_here():", "    wait()", "move(North)", "while dust_here():", "    wait()", "move(North)", "while dust_here():", "    wait()", "move(West)", "while dust_here():", "    wait()", "move(West)", "while dust_here():", "    wait()", "move(West)", "while dust_here():", "    wait()", "move(North)", "while dust_here():", "    wait()", "move(North)", "while dust_here():", "    wait()", "move(North)", "while dust_here():", "    wait()"],
+      "aciklama": "Robot hedefe vardı ama bu bölüm rutini istiyor: her adımı tek tek yazmak yerine `ilerle(yon, adim)` rutinini çağır."
+    }
+  ],
+  "cozum": [
+    "def ilerle(yon, adim):",
+    "    for i in range(adim):",
+    "        move(yon)",
+    "        while dust_here():",
+    "            wait()",
+    "ilerle(East, 4)",
+    "ilerle(North, 2)",
+    "ilerle(West, 3)",
+    "ilerle(North, 3)"
+  ]
+}

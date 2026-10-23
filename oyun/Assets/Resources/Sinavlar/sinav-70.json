@@ -1,0 +1,30 @@
+{
+  "bolum": 70,
+  "baslik": "KIVILCIM · KENDİNİ DENETLİYOR",
+  "sorular": [
+    {
+      "soru": "kare(boy) rutininin içinde cizgi(East, boy) çağrılıyor. kare(3) çalışınca cizgi'ye hangi sayı gider?",
+      "secenekler": ["boy", "3", "East", "4"],
+      "dogru": 1,
+      "aciklama": "kare(3) çalışınca boy 3 olur; cizgi(East, boy) de cizgi(East, 3) gibi çalışır. Değer rutinden rutine taşınır."
+    },
+    {
+      "soru": "for i in range(1, 4): iz(i) döngüsü iz rutinini kaç kez, hangi sayılarla çağırır?",
+      "secenekler": ["3 kez: 1, 2, 3", "4 kez: 1, 2, 3, 4", "3 kez: hep 1", "4 kez: 0, 1, 2, 3"],
+      "dogru": 0,
+      "aciklama": "range(1, 4) 1'den başlar, 4'ten önce biter: 1, 2, 3. i her turda bir artar ve rutine o tur için verilir."
+    },
+    {
+      "soru": "def yuru(yon, adim): yazdın. yuru(North, 3) çağrısında yon ve adim ne olur?",
+      "secenekler": ["yon = 3, adim = North", "yon = North, adim = 3", "ikisi de North", "Hata verir"],
+      "dogru": 1,
+      "aciklama": "Değerler sırayla eşleşir: ilk değer ilk ada, ikinci değer ikinci ada."
+    },
+    {
+      "soru": "Çizim bölümünde rutini hep aynı sayıyla çağırırsan (ok(2), ok(2)) ne eksik kalır?",
+      "secenekler": ["Hiçbir şey, çalışır", "Rutinin sayı almasının amacı: her seferinde farklı boyda çizebilmek", "Python hata verir", "Kalem hiç inmez"],
+      "dogru": 1,
+      "aciklama": "Parametre, aynı işi farklı değerlerle yapmak içindir. Hep aynı değer verirsen rutine sayı almak gerekmezdi."
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "numara": 68,
+  "baslik": "Mavi kalem",
+  "gorev": "Kalemi al, E çiz",
+  "etiket": "BÖLGE 7 · NEHİR YATAĞI",
+  "giris": "Sol 1.091 · Yerde mavi bir boya kalemi",
+  "bitis": "Mavi boya kalemi: 1/1 · Rutin kaydedildi: cizgi",
+  "harita": [
+    ". . . . . .",
+    ". O O O . .",
+    ". O . . . .",
+    ". O O O . .",
+    "Q O . . . .",
+    "R O O O . ."
+  ],
+  "komutlar": ["move", "collect", "pen_down", "pen_up"],
+  "parametreli_rutinler": ["cizgi"],
+  "parcalar": ["def cizgi(yon, adim):", "cizgi(North, 4)", "collect()", "pen_down()", "pen_up()", "move(East)", "move(West)", "move(North)", "move(South)"],
+  "konular": ["parametre", "iki parametre", "toplama ve çizim"],
+  "ipuclari": [
+    "Önce yerdeki mavi kalemi al, sonra çizime geç. Çizilecek şekil bir E harfi: bir dikey çizgi ve ona bağlı üç yatay çizgi.",
+    "Dikey çizgi 4 adım kuzeye, yatay çizgilerin her biri 2 adım doğuya. Hepsi aynı işi yapıyor: bir yöne, bir uzunlukta çizgi çek. `def cizgi(yon, adim):` yaz.",
+    "`move(North)` ile kalemin üstüne çık, `collect()`. Sonra `move(South)`, `move(East)` ile E'nin alt köşesine git: `cizgi(North, 4)`. Her yatay çizgiden sonra kalemsiz geri dönüp bir sonrakinin başına geç."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def cizgi(yon, adim):", "    pen_down()", "    for i in range(adim):", "        move(yon)", "    pen_up()", "move(East)", "cizgi(North, 4)", "cizgi(East, 2)", "move(West)", "move(West)", "move(South)", "move(South)", "cizgi(East, 2)", "move(West)", "move(West)", "move(South)", "move(South)", "cizgi(East, 2)"],
+      "aciklama": "E çizildi ama mavi kalem yerde kaldı: görev kalemi almayı da istiyor, `collect()` yaz."
+    },
+    {
+      "kod": ["move(North)", "collect()", "move(South)", "move(East)", "pen_down()", "move(North)", "move(North)", "move(North)", "move(North)", "pen_up()", "pen_down()", "move(East)", "move(East)", "pen_up()", "move(West)", "move(West)", "move(South)", "move(South)", "pen_down()", "move(East)", "move(East)", "pen_up()", "move(West)", "move(West)", "move(South)", "move(South)", "pen_down()", "move(East)", "move(East)", "pen_up()"],
+      "aciklama": "Kalem alındı ve E çıktı ama bu bölüm rutini istiyor: çizgileri tek tek yazmak yerine `cizgi(yon, adim)` rutinini çağır."
+    }
+  ],
+  "cozum": [
+    "def cizgi(yon, adim):",
+    "    pen_down()",
+    "    for i in range(adim):",
+    "        move(yon)",
+    "    pen_up()",
+    "move(North)",
+    "collect()",
+    "move(South)",
+    "move(East)",
+    "cizgi(North, 4)",
+    "cizgi(East, 2)",
+    "move(West)",
+    "move(West)",
+    "move(South)",
+    "move(South)",
+    "cizgi(East, 2)",
+    "move(West)",
+    "move(West)",
+    "move(South)",
+    "move(South)",
+    "cizgi(East, 2)"
+  ]
+}

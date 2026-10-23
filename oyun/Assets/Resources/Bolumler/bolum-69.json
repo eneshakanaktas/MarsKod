@@ -1,0 +1,52 @@
+{
+  "numara": 69,
+  "baslik": "Basamaklar",
+  "gorev": "Merdiveni çiz",
+  "etiket": "BÖLGE 7 · NEHİR YATAĞI",
+  "giris": "Sol 1.092 · Duvar boyunca küçük el izleri",
+  "bitis": "İşaret: 2/2 · Rutin kaydedildi: basamak",
+  "harita": [
+    ". . . O . .",
+    ". . O O . K",
+    ". . O . . .",
+    "O O O . . .",
+    "Z . . . . .",
+    "R . . K . ."
+  ],
+  "komutlar": ["move", "dust_here", "wait", "pen_down", "pen_up"],
+  "toz_suresi": [2],
+  "parametreli_rutinler": ["cizgi", "basamak"],
+  "parcalar": ["def basamak(boy):", "basamak(2)", "cizgi(East, boy)", "pen_down()", "pen_up()", "while dust_here():", "wait()", "move(North)"],
+  "konular": ["parametre", "iki rutin", "toz"],
+  "ipuclari": [
+    "Bir basamak, doğuya `boy` kare gidip kuzeye `boy` kare çıkmak. Merdiven bir büyük (2) ve bir küçük (1) basamaktan oluşuyor. Çizgi çekmek ayrı bir iş, basamak ondan yapılıyor: iki rutin.",
+    "`cizgi(yon, adim)` kalemi indirip çizgi çeker. `basamak(boy)` içinde iki çizgi çağır: `cizgi(East, boy)` ve `cizgi(North, boy)`. İkinci basamak birincinin bittiği yerden başlar.",
+    "Önce toz: ilk adımın ardından toz varsa `while dust_here():` altında `wait()` yaz, sonra bir adım daha yukarı çık. Sonra `basamak(2)`, `basamak(1)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def cizgi(yon, adim):", "    pen_down()", "    for i in range(adim):", "        move(yon)", "    pen_up()", "def basamak(boy):", "    cizgi(East, boy)", "    cizgi(North, boy)", "move(North)", "move(North)", "basamak(2)", "basamak(1)"],
+      "aciklama": "Robot toz bulutunun içinden beklemeden yürümek istedi, durdu. Tozun içindeyken `while dust_here():` altında `wait()` yaz."
+    },
+    {
+      "kod": ["move(North)", "while dust_here():", "    wait()", "move(North)", "pen_down()", "move(East)", "move(East)", "pen_up()", "pen_down()", "move(North)", "move(North)", "pen_up()", "pen_down()", "move(East)", "pen_up()", "pen_down()", "move(North)", "pen_up()"],
+      "aciklama": "Merdiven çıktı ama bu bölüm rutinleri istiyor: çizgileri tek tek yazmak yerine `cizgi` ve `basamak` rutinlerini çağır."
+    }
+  ],
+  "cozum": [
+    "def cizgi(yon, adim):",
+    "    pen_down()",
+    "    for i in range(adim):",
+    "        move(yon)",
+    "    pen_up()",
+    "def basamak(boy):",
+    "    cizgi(East, boy)",
+    "    cizgi(North, boy)",
+    "move(North)",
+    "while dust_here():",
+    "    wait()",
+    "move(North)",
+    "basamak(2)",
+    "basamak(1)"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "numara": 66,
+  "baslik": "Büyüyen izler",
+  "gorev": "Büyüyen üç iz çiz",
+  "etiket": "BÖLGE 7 · NEHİR YATAĞI",
+  "giris": "Sol 1.090 · Büyük izler küçüklerin peşinden",
+  "bitis": "İşaret: 3/3 · Rutin kaydedildi: iz",
+  "harita": [
+    ". . . . . .",
+    ". . O . . .",
+    ". O O . . .",
+    "O O O . . .",
+    "O O O . . .",
+    "R . . . . ."
+  ],
+  "komutlar": ["move", "pen_down", "pen_up"],
+  "parametreli_rutinler": ["iz"],
+  "parcalar": ["def iz(adim):", "iz(1)", "iz(i)", "for i in range(1, 4):", "pen_down()", "pen_up()", "move(North)", "move(East)"],
+  "konular": ["parametre", "döngü değişkenini rutine vermek", "çizim"],
+  "ipuclari": [
+    "Üç iz yan yana, her biri bir öncekinden bir kare daha uzun. Bu bir döngünün işi: her turda sayı bir artıyor.",
+    "`for i in range(1, 4):` döngüsünde `i` sırayla 1, 2, 3 olur. Bu sayıyı doğrudan rutine ver: `iz(i)`. Böylece her turda rutin farklı uzunlukta çalışır.",
+    "Rutin hazır. `move(North)` ile ilk izin başına çık. Döngünün içinde önce `iz(i)`, sonra `move(East)` ile bir yan kareye geç."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["move(North)", "pen_down()", "move(North)", "pen_up()", "move(South)", "move(East)", "pen_down()", "move(North)", "move(North)", "pen_up()", "move(South)", "move(South)", "move(East)", "pen_down()", "move(North)", "move(North)", "move(North)", "pen_up()", "move(South)", "move(South)", "move(South)", "move(East)"],
+      "aciklama": "Üç iz çıktı ama bu bölüm rutini istiyor: üç kez kopyalamak yerine `iz(adim)` rutinini döngüde çağır."
+    },
+    {
+      "kod": ["def iz(adim):", "    pen_down()", "    for i in range(adim):", "        move(North)", "    pen_up()", "    for i in range(adim):", "        move(South)", "move(North)", "iz(1)", "move(East)", "iz(1)", "move(East)", "iz(1)"],
+      "aciklama": "Üç iz de aynı boyda çıktı; rutini hep 1 ile çağırdın. İzler büyüyor: döngü sayısını rutine ver, `iz(i)`."
+    }
+  ],
+  "baslangic_kodu": ["def iz(adim):", "    pen_down()", "    for i in range(adim):", "        move(North)", "    pen_up()", "    for i in range(adim):", "        move(South)"],
+  "cozum": [
+    "def iz(adim):",
+    "    pen_down()",
+    "    for i in range(adim):",
+    "        move(North)",
+    "    pen_up()",
+    "    for i in range(adim):",
+    "        move(South)",
+    "move(North)",
+    "for i in range(1, 4):",
+    "    iz(i)",
+    "    move(East)"
+  ]
+}

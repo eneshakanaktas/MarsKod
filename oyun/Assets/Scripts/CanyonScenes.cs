@@ -120,6 +120,49 @@ public class CanyonScenes
         return (new Vector3((first.x + last.x) * 0.5f, height, z), fov);
     }
 
+    const float LandingHeight = 6f;   // 51: roketin gokyuzunde belirdigi yukseklik (ekranin ustunden girer)
+
+    // 51 her yuklendiginde: bolum yuklenir yuklenmez (gecis yazilari sirasinda) roket havada, robot icinde; ekranda hicbir sey "ani belirmez"
+    public void PrepareLanding()
+    {
+        var rocket = CanyonTraces.ActiveRocket;
+        if (rocket == null) return;
+        robot.gameObject.SetActive(false);
+        rocket.SetInFlight(LandingHeight);
+    }
+
+    // 51 (her giriste): roket kanyona iner, kapi acilir, Kivilcim merdivenden inip bos karelerden baslangica gider.
+    public IEnumerator Landing(Level level)
+    {
+        var rocket = CanyonTraces.ActiveRocket;
+        if (rocket == null) yield break;
+        Phase = "ucus";
+        PrepareLanding();
+        Sound.Rocket();
+        yield return rocket.Land(4f);
+        LandingDust.Play(rocket.transform.parent, rocket.HomePosition, CanyonTraces.LanderScale);
+        Phase = "indi";
+        yield return Tween.Wait(0.6f);
+        yield return rocket.OpenDoor();
+        Phase = "kapi";
+        robot.ResetTo(rocket.DoorPoint, 180f);
+        robot.gameObject.SetActive(true);
+        yield return robot.MoveTo(rocket.LadderFoot, 0.8f);
+        var entry = GridPath.OpenInRow(cols, rows - 1, 0, GridPath.Obstacles(level, itemsTaken: false)) ?? level.Robot;
+        yield return Walk(CellsTo(level, entry, level.Robot, itemsTaken: false).ConvertAll(c => cellPos(c)), 0.4f);
+        yield return robot.TurnTo(startYaw, 0.3f);
+        Phase = "son";
+    }
+
+    // Dokununca atlanir: her sey son haline (roket yerde, kapi acik, robot baslangicta)
+    public void FinishLanding(Level level)
+    {
+        CanyonTraces.ActiveRocket?.SetLanded();
+        robot.gameObject.SetActive(true);
+        robot.ResetTo(cellPos(level.Robot), startYaw);
+        Phase = "son";
+    }
+
     // "Tekrar" ve bolum degisimi: sahnenin degistirdigi ne varsa geri verir (Serce'yi CanyonTraces.ResetBackdrop toplar)
     public void Restore()
     {

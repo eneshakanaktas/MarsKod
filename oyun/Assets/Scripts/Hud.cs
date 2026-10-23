@@ -41,6 +41,7 @@ public class Hud : MonoBehaviour
     Font fMed, fSemi, fBold, fMono;
     VisualElement root, header, card, message, runBtn, stepBtn, glossaryBtn, hintBtn, overlay;
     ScreenBlink blink;
+    SkipCatcher skip;
     GlossaryView glossary;
     HintPanel hint;
     CodeEditor editor;
@@ -135,6 +136,8 @@ public class Hud : MonoBehaviour
         root.Add(keyboard);
         root.Add(palette);
         root.Add(overlay);
+        skip = new SkipCatcher();
+        root.Add(skip);
         blink = new ScreenBlink();
         root.Add(blink);
     }
@@ -685,6 +688,11 @@ public class Hud : MonoBehaviour
     // Kisa kara kirpisma: kamera bir yerden baska yere kesilirken (55'te Serce'nin gozunden bakis)
     public void Blink(float seconds) => blink.Play(seconds);
     public void ClearBlink() => blink.Clear();
+
+    // Atlanabilir sahne (51'in roket inisi): dokununca onTap; acikken alttaki arayuze dokunulamaz
+    public void ShowSkip(Action onTap) => skip.Show(onTap);
+    public void HideSkip() => skip.Hide();
+    public bool SkipOpen => skip.Open;
 
     public bool HintOpen => hint.Open;
 

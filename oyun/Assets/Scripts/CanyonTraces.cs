@@ -40,6 +40,7 @@ public static class CanyonTraces
         Shader.SetGlobalFloat(IndoorId, IsDepot(levelNumber) ? 1f : 0f);
         Shader.SetGlobalVector(DescentId, levelNumber == LastLevel ? descent : Vector4.zero);
         if (ActiveSparrow != null) ActiveSparrow.ResetHome();   // sahne (60 inis) Serce'yi goturmus olabilir
+        if (ActiveRocket != null) ActiveRocket.SetLanded();     // sahne (51 inis) roketi havaya almis olabilir
     }
 
     // Bolumun izlerini kurar (Bolge 6 disinda hicbir sey). itemPositions: toplanacak drone parcalarinin yerleri
@@ -48,13 +49,14 @@ public static class CanyonTraces
         Func<float, float, float> ground)
     {
         ActiveSparrow = null;
+        ActiveRocket = null;
         Rift = null;
         descent = Vector4.zero;
         if (levelNumber < FirstLevel || levelNumber > LastLevel) return;
         switch (levelNumber)
         {
             case FirstLevel:
-                ColonyRocket.Create(parent, OnGround(ground, -areaHalf.x + 0.8f, areaHalf.y + 1.4f), 0.7f);
+                ActiveRocket = ColonyRocket.Create(parent, OnGround(ground, -areaHalf.x + 0.8f, areaHalf.y + 1.4f), LanderScale, RocketLook.Lander);
                 MarkedRock(parent, OnGround(ground, areaHalf.x - 0.3f, areaHalf.y + 1.0f), 1.1f, 75f, levelNumber);
                 break;
             case StormLevel:
@@ -99,6 +101,8 @@ public static class CanyonTraces
 
     // Serce (55'ten sonra yanimizda): bolumde yoksa null. 3b sahneleri kullanir.
     public static Sparrow ActiveSparrow { get; private set; }
+    public static ColonyRocket ActiveRocket { get; private set; }   // 51'in inis roketi (inis sahnesi oynatir)
+    public const float LanderScale = 1.3f;                          // 51 roketi: ust yazilara degmeyecek en buyuk boyuta yakin
 
     const int SparrowShelfLevel = 54, BoardLevel = 56, DatesLevel = 58;
     public const int SparrowRepairLevel = 55;

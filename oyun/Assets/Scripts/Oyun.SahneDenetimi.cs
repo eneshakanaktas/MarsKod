@@ -14,7 +14,9 @@ public partial class Oyun
         yield return RiftShots(dir, problems);
         yield return DescentShots(dir, problems);
         yield return FlightShots(dir, problems);
+        yield return LandingShots(dir, problems);
         yield return ShotKeyboardCheck(dir);
+        yield return LandingEveryEntryCheck(problems);
         Debug.Log("SAHNE DENETIMI: " + (problems.Count == 0 ? "TAMAM" : "HATA " + string.Join("; ", problems)));
         Application.Quit();
     }
@@ -180,6 +182,63 @@ public partial class Oyun
         else if ((sparrow.transform.localPosition - sparrow.HomePosition).sqrMagnitude > 1e-4f) problems.Add("55 Tekrar: Serce rafina donmedi");
         yield return new WaitForSeconds(0.3f);
         Cap(Path.Combine(dir, "s55-5-tekrar.png"));
+    }
+
+    // 51'in roket inisi (denetimde bolum yuklenirken oynamaz: sahne elle baslatilir): evreler gelince kare alir;
+    // sonra ucus sirasinda dokunma (atlatma) denetimi: her sey son haline gelmeli
+    IEnumerator LandingShots(string dir, List<string> problems)
+    {
+        LoadLevel(levels.FindIndex(l => l.Number == CanyonTraces.FirstLevel));
+        yield return new WaitForSeconds(1f);
+        canyonScenes.PrepareLanding();
+        StartLanding();
+        foreach (var (phase, wait, file) in new[] { ("ucus", 0.8f, "s51-1-ucus.png"), ("ucus", 1.2f, "s51-2-alcalma.png"), ("indi", 0.3f, "s51-3-indi.png"),
+                     ("kapi", 0.5f, "s51-4-kapi.png"), ("son", 0.3f, "s51-5-son.png") })
+        {
+            yield return WaitForPhase(phase, problems);
+            yield return new WaitForSeconds(wait);
+            Cap(Path.Combine(dir, file));
+            yield return new WaitForSeconds(0.4f);
+        }
+        if (hud.SkipOpen || landing != null) problems.Add("51: sahne bitti ama dokunma katmani/sahne acik kaldi");
+
+        // Atlatma: ucus evresinde dokunma
+        LoadLevel(levels.FindIndex(l => l.Number == CanyonTraces.FirstLevel));
+        yield return new WaitForSeconds(1f);
+        canyonScenes.PrepareLanding();
+        StartLanding();
+        yield return WaitForPhase("ucus", problems);
+        yield return new WaitForSeconds(0.5f);
+        if (!hud.SkipOpen) problems.Add("51 atlatma: dokunma katmani acik degil");
+        SkipLanding();
+        yield return null;
+        var rocket = CanyonTraces.ActiveRocket;
+        if (rocket == null) problems.Add("51 atlatma: roket yok");
+        else if ((rocket.transform.localPosition - rocket.HomePosition).sqrMagnitude > 1e-4f) problems.Add("51 atlatma: roket yerine oturmadi");
+        if (!robot.gameObject.activeSelf) problems.Add("51 atlatma: robot gizli kaldi");
+        if ((robot.transform.localPosition - Pos(level.Robot)).sqrMagnitude > 1e-4f) problems.Add("51 atlatma: robot baslangic karesinde degil");
+        if (canyonScenes.Phase != "son") problems.Add("51 atlatma: evre 'son' degil (" + canyonScenes.Phase + ")");
+        if (hud.SkipOpen) problems.Add("51 atlatma: dokunma katmani kapanmadi");
+        yield return new WaitForSeconds(0.3f);
+        Cap(Path.Combine(dir, "s51-6-atlatma.png"));
+        yield return new WaitForSeconds(0.4f);
+    }
+
+    // 51'in roket inisi bolume her girisde oynamali (oyun gibi, denetim modu kapali): bolum iki kez yuklenir, ikisinde de roket
+    // havada beklemeli (gecis yazilarindan sonra iner). Son kontrol: arkasindan kare alinmaz, uygulama kapanir.
+    IEnumerator LandingEveryEntryCheck(List<string> problems)
+    {
+        shotsMode = false;
+        for (int entry = 1; entry <= 2; entry++)
+        {
+            LoadLevel(levels.FindIndex(l => l.Number == CanyonTraces.FirstLevel));
+            var rocket = CanyonTraces.ActiveRocket;
+            if (rocket == null || rocket.transform.localPosition.y < rocket.HomePosition.y + 1f)
+                problems.Add("51 her giriste: " + entry + ". yuklemede roket havada beklemiyor");
+            if (robot.gameObject.activeSelf) problems.Add("51 her giriste: " + entry + ". yuklemede robot gizli degil");
+            yield return new WaitForSeconds(0.3f);
+        }
+        shotsMode = true;
     }
 
     // Serce'nin yakin plani (adi okunuyor mu): oyun kamerasi gibi onden ve yukaridan

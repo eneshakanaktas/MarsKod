@@ -79,7 +79,7 @@ public partial class Oyun : MonoBehaviour
     Camera cam;
     CameraShot shot;   // Bolge 6 sahneleri: sahne surerken kamerayi bu yonetir
     Transform riftZoneRocks;     // manzara kayalarindan yarigin ustune dusenler: yalniz Bolum 60'ta gizlenir
-    CanyonScenes canyonScenes;   // Bolge 6 sahneleri: 60 kanyona inis, 55 Serce'nin ilk ucusu (51 sonraki gorevde)
+    CanyonScenes canyonScenes;   // Bolge 6 sahneleri: 60 kanyona inis, 55 Serce'nin ilk ucusu, 51 roketin inisi (Oyun.RoketInisi.cs)
     Material backdrop;
     BackdropCache backdropCache;
     Transform world;
@@ -478,6 +478,7 @@ public partial class Oyun : MonoBehaviour
     // Bolumu kurar: buzlar, engel kayalari, hedef kare, zemindeki buz izleri, karttaki kod ve ust baslik.
     void LoadLevel(int index)
     {
+        CancelLanding();
         canyonScenes.Restore();
         if (program != null) StopCoroutine(program);
         program = null;
@@ -525,9 +526,12 @@ public partial class Oyun : MonoBehaviour
         code = hud.Code;
         hud.SetOpenWords(MarsKod.Dunya.Suggestions.OpenWords(levels, level.Number));
         hud.SetPieces(level.Pieces, Palette.NewPieces(levels, level.Number));
-        hud.SetLevel(level.Number, level.Label, level.Title, level.Goal, level.Ices.Count, level.Item, level.Intro);
+        bool landingDue = LandingDue;   // 51'e her girisde: giris damgasi roket indikten sonra gelir
+        hud.SetLevel(level.Number, level.Label, level.Title, level.Goal, level.Ices.Count, level.Item, landingDue ? "" : level.Intro);
         var transition = Traces.TransitionLines(level.Number);
-        if (!shotsMode && transition != null) hud.ShowTransition(transition, () => { });
+        if (landingDue) canyonScenes.PrepareLanding();
+        if (!shotsMode && transition != null) hud.ShowTransition(transition, landingDue ? (System.Action)StartLanding : () => { });
+        else if (landingDue) StartLanding();
         if (!shotsMode && level.Number == CanyonTraces.RecordingLevel && PlayerPrefs.GetInt(Kayit2Anahtari, 0) == 0)
             StartCoroutine(PlayCanyonRecording());
         hintView.Close();

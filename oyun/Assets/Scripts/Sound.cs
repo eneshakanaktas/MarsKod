@@ -56,6 +56,7 @@ public static class Sound
     public static void Lamp() => Play(Get("lamp", () => Beep(1300f, 0.05f)), 0.35f);
     public static void Blip() => Play(Get("blip", () => Beep(520f, 0.12f)), 0.35f);
     public static void Rotor() => Play(Get("rotor", () => Whirr(1.6f)), 0.35f);
+    public static void Rocket() => Play(Get("rocket", () => Rumble(4f)), 0.45f);
     public static void Static() => Play(Get("static", () => Hiss(1.2f)), 0.5f);
     public static void Sos() => Play(Get("sos", () => Morse("... --- ...", 880f)), 0.5f);
 
@@ -165,6 +166,25 @@ public static class Sound
             data[i] = (saw * 0.5f + noise) * rise * fall * 0.6f;
         }
         return MakeClip(data, "whirr");
+    }
+
+    // Roket gurultusu: alcak gecirgenli gurultu + 45 Hz sinus; yavasca gurler, sonda 0,5 sn'de kesilir (51'de roket inerken).
+    static AudioClip Rumble(float seconds)
+    {
+        int n = SampleCount(seconds);
+        var rnd = new System.Random(13);
+        var data = new float[n];
+        float smooth = 0f;
+        for (int i = 0; i < n; i++)
+        {
+            float t = i / (float)SampleRate;
+            smooth += 0.04f * ((float)(rnd.NextDouble() * 2f - 1f) - smooth);
+            float swell = Mathf.Clamp01(t / 0.6f);
+            float cut = Mathf.Clamp01((seconds - t) / 0.5f);
+            float wave = smooth * 6f + Mathf.Sin(2f * Mathf.PI * 45f * t) * 0.5f;
+            data[i] = Mathf.Clamp(wave, -1f, 1f) * swell * cut * 0.6f;
+        }
+        return MakeClip(data, "rumble");
     }
 
     // Hisirti: yumusatilmis gurultu, sonra soner. Kapanis sahnesinde telsizin gelmesinden once calar.

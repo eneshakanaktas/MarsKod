@@ -869,6 +869,8 @@ public partial class Oyun : MonoBehaviour
                 hud.ShowMessage("GÖREV", "Kod bitti, rapor gönderilmedi",
                     "Kodun sonuna kadar çalıştı ama anten hâlâ sayıyı bekliyor. Sonunda report() ile istenen sayıyı gönder; sayıyı bir değişkende tut.",
                     null, error: false);
+            else if (!world.Paint.Done) // cizim eksik, fazla ya da kalem hic inmedi
+                hud.ShowMessage("GÖREV", world.Paint.Problem().Title, world.Paint.Problem().Text, null, error: false);
             else
                 hud.ShowMessage("GÖREV", "Kod bitti, robot hedefte değil",
                     "Kodun sonuna kadar çalıştı ama robot işaretli kareye varmadı. Kod bittiğinde robot hedef karede durmalı: yolu adım adım say.",

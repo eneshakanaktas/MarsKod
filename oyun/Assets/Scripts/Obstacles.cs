@@ -15,6 +15,7 @@ public static class Obstacles
             case Region.Dunes:
             case Region.AntennaHill: Rock(parent, pos, index, "#8A5440", "#6E4232"); SandDrift(parent, pos, index); break;
             case Region.Canyon:
+            case Region.Riverbed: // nehir yatağının kendi kayaları gelene kadar kanyon kayaları
                 if (crate) Crates(parent, pos, index); else LayeredRock(parent, pos, index);
                 break;
             default: Rock(parent, pos, index, "#7A4A3B", "#5E3A2F"); break;

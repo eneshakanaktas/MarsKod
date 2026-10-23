@@ -91,7 +91,8 @@ public class RegionLook
             case Region.CraterField: return Crater;
             case Region.Dunes:
             case Region.AntennaHill: return Dunes; // anten tepesinin kendi gorunusu gelene kadar kum tepeleri
-            case Region.Canyon: return Canyon;
+            case Region.Canyon:
+            case Region.Riverbed: return Canyon; // nehir yatağının kendi görünüşü gelene kadar kanyon
             default: return Plain;
         }
     }

@@ -146,4 +146,113 @@ public class PaintTests
         Assert.Null(board.Problem());
         Assert.True(board.Done);
     }
+
+    // ---- World ----
+
+    // Robot (0,0); boyanacak kareler doğuda (1,0), (2,0), (3,0).
+    static World Strip(IEnumerable<string> commands = null) => new World(6, 6, new Cell(0, 0), new Cell[0],
+        commands: commands ?? new[] { "move", "pen_down", "pen_up" }, paintCells: new[] { A, B, C });
+
+    const string DrawThree = "move(East)\npen_down()\nmove(East)\nmove(East)\n";
+
+    [Fact]
+    public void Kalemle_yurumek_kareleri_boyar_ve_gorevi_bitirir()
+    {
+        var world = Strip();
+        var report = ProgramRun.Execute(DrawThree, world);
+        Assert.True(report.Complete);
+        Assert.Equal(0, world.Paint.Missing);
+        Assert.Equal(0, world.Paint.Extra);
+    }
+
+    [Fact]
+    public void Fazla_kare_boyamak_gorevi_bitirmez()
+    {
+        var world = Strip();
+        var report = ProgramRun.Execute("pen_down()\n" + DrawThree, world); // başlangıç karesi boyanacak değil
+        Assert.False(report.Complete);
+        Assert.Equal(1, world.Paint.Extra);
+        Assert.Equal(0, world.Paint.Missing);
+    }
+
+    [Fact]
+    public void Yarim_kalan_cizim_bitirmez()
+    {
+        var world = Strip();
+        var report = ProgramRun.Execute("move(East)\npen_down()\nmove(East)\n", world);
+        Assert.False(report.Complete);
+        Assert.Equal(1, world.Paint.Missing);
+    }
+
+    [Fact]
+    public void Kalem_hic_inmediyse_gorev_bitmez()
+    {
+        var world = Strip();
+        var report = ProgramRun.Execute("move(East)\nmove(East)\nmove(East)\n", world);
+        Assert.False(report.Complete);
+        Assert.False(world.Paint.EverLowered);
+    }
+
+    [Fact]
+    public void Kural_ile_duran_kod_tamam_sayilmaz()
+    {
+        var world = Strip();
+        // çizim tamam, sonra kalem kalkık alanın dışına yürür
+        var report = ProgramRun.Execute(DrawThree + "pen_up()\nmove(East)\nmove(East)\nmove(East)\n", world);
+        Assert.NotNull(report.Rule);
+        Assert.True(world.Paint.Done);
+        Assert.False(report.Complete);
+    }
+
+    [Fact]
+    public void Cizim_komutlari_cizimsiz_bolumde_kapali()
+    {
+        var world = Strip(new[] { "move" });
+        var report = ProgramRun.Execute("pen_down()\n", world);
+        Assert.Contains("Bu komut henüz açılmadı", report.Rule.Title);
+    }
+
+    [Fact]
+    public void Kalem_olaylari_kaydedilir()
+    {
+        var report = ProgramRun.Execute(DrawThree, Strip());
+        var events = report.Trace.SelectMany(t => t.Events).ToList();
+        var pen = Assert.Single(events.OfType<PenChanged>());
+        Assert.True(pen.Down);
+        Assert.Equal(A, pen.At);
+        var painted = events.OfType<Painted>().ToList();
+        Assert.Equal(new[] { A, B, C }, painted.Select(e => e.At));
+        Assert.All(painted, e => Assert.True(e.Wanted));
+    }
+
+    [Fact]
+    public void Hedef_disi_boyama_olayi_istenmedi_der()
+    {
+        var report = ProgramRun.Execute("pen_down()\n", Strip());
+        Assert.False(report.Trace.SelectMany(t => t.Events).OfType<Painted>().Single().Wanted);
+    }
+
+    [Fact]
+    public void Kalem_kalkikken_yurumek_olay_uretmez()
+    {
+        var report = ProgramRun.Execute("move(East)\nmove(East)\n", Strip());
+        Assert.Empty(report.Trace.SelectMany(t => t.Events).OfType<Painted>());
+    }
+
+    [Fact]
+    public void Ikinci_pen_down_ve_pen_up_yeni_olay_uretmez()
+    {
+        var report = ProgramRun.Execute("move(East)\npen_down()\npen_down()\npen_up()\npen_up()\n", Strip());
+        var events = report.Trace.SelectMany(t => t.Events).ToList();
+        Assert.Equal(new[] { true, false }, events.OfType<PenChanged>().Select(e => e.Down));
+        Assert.Single(events.OfType<Painted>());
+    }
+
+    [Fact]
+    public void Cizimsiz_dunya_eskisi_gibi_calisir()
+    {
+        var world = new World(6, 6, new Cell(0, 0), new[] { new Cell(1, 0) }, commands: new[] { "move", "collect" });
+        Assert.False(world.Paint.Active);
+        Assert.True(ProgramRun.Execute("move(East)\ncollect()\n", world).Complete);
+    }
 }

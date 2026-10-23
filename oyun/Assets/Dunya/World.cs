@@ -128,6 +128,20 @@ namespace MarsKod.Dunya
         public bool Correct;
     }
 
+    /// <summary>Kıvılcım kalemi indirdi ya da kaldırdı (yalnızca durum değişince).</summary>
+    public sealed class PenChanged : WorldEvent
+    {
+        public Cell At;
+        public bool Down;
+    }
+
+    /// <summary>Bir kare ilk kez boyandı; Wanted: boyanması istenen kareydi (değilse fazladan boyanmış).</summary>
+    public sealed class Painted : WorldEvent
+    {
+        public Cell At;
+        public bool Wanted;
+    }
+
     /// <summary>
     /// Oyun kuralı yüzünden durma (Python hatası değil): örn. robot alanın dışına çıkmak istedi.
     /// Oyuncunun kodu bunu yakalayamaz; çalıştırma olduğu yerde biter.
@@ -166,6 +180,8 @@ namespace MarsKod.Dunya
         public readonly BigInteger? ExpectedReport;
         /// <summary>Bu bölümde açık olan komutlar; null ise hepsi açık</summary>
         readonly HashSet<string> allowed;
+        /// <summary>Çizim (kalem, boyanacak ve boyanmış kareler); boyanacak kare yoksa etkin değildir</summary>
+        public PaintBoard Paint { get; }
 
         /// <summary>Gücü bundan az (ama 0'dan çok) olan panel çatlaktır</summary>
         public const int CrackedBelow = 50;
@@ -184,11 +200,11 @@ namespace MarsKod.Dunya
         /// <summary>Doğru sayı antene gönderildi mi (rapor istenmeyen bölümde hep true)</summary>
         public bool ReportDone => ExpectedReport == null || reported;
         bool reported;
-        /// <summary>Görev tamam mı: tüm buzlar toplandı, çatlak panel kalmadı, (istendiyse) doğru rapor gönderildi ve (hedef varsa) robot hedef karede</summary>
-        public bool Complete => IceLeft == 0 && CrackedLeft == 0 && ReportDone && OnTarget;
+        /// <summary>Görev tamam mı: tüm buzlar toplandı, çatlak panel kalmadı, (istendiyse) doğru rapor gönderildi, çizim tam (eksik de fazla da yok) ve (hedef varsa) robot hedef karede</summary>
+        public bool Complete => IceLeft == 0 && CrackedLeft == 0 && ReportDone && Paint.Done && OnTarget;
 
         /// <summary>Oyunda olan tüm komutlar (bölüm dosyasındaki "komutlar" bunlardan seçilir)</summary>
-        public static readonly string[] AllCommands = { "move", "collect", "ice_here", "rock_ahead", "panel_power", "repair", "dust_here", "wait", "cable_length", "report" };
+        public static readonly string[] AllCommands = { "move", "collect", "ice_here", "rock_ahead", "panel_power", "repair", "dust_here", "wait", "cable_length", "report", "pen_down", "pen_up" };
 
         /// <summary>Panel çatlak mı (gücü 0'dan çok, CrackedBelow'dan az)</summary>
         public static bool IsCracked(int power) => power > 0 && power < CrackedBelow;
@@ -196,8 +212,9 @@ namespace MarsKod.Dunya
         public World(int cols, int rows, Cell robot, IEnumerable<Cell> iceCells,
             IEnumerable<Cell> rockCells = null, Cell? target = null, IEnumerable<string> commands = null, IEnumerable<Cell> crystalCells = null,
             IDictionary<Cell, int> panelCells = null, IDictionary<Cell, int> dustCells = null,
-            IDictionary<Cell, int> reelCells = null, BigInteger? expectedReport = null)
+            IDictionary<Cell, int> reelCells = null, BigInteger? expectedReport = null, IEnumerable<Cell> paintCells = null)
         {
+            Paint = new PaintBoard(paintCells ?? Array.Empty<Cell>());
             Cols = cols;
             Rows = rows;
             Robot = robot;
@@ -257,6 +274,24 @@ namespace MarsKod.Dunya
             }
             Events.Add(new Moved { From = Robot, To = to, Direction = d });
             Robot = to;
+            if (Paint.Enter(to)) Events.Add(new Painted { At = to, Wanted = Paint.WantedAt(to) });
+        }
+
+        /// <summary>Kalemi indirir ve bulunduğu kareyi boyar (kalem zaten inikse yeni olay yok).</summary>
+        public void LowerPen()
+        {
+            bool changed = !Paint.PenDown;
+            bool newlyPainted = Paint.Lower(Robot);
+            if (changed) Events.Add(new PenChanged { At = Robot, Down = true });
+            if (newlyPainted) Events.Add(new Painted { At = Robot, Wanted = Paint.WantedAt(Robot) });
+        }
+
+        /// <summary>Kalemi kaldırır (kalem zaten kalkıksa yeni olay yok).</summary>
+        public void RaisePen()
+        {
+            if (!Paint.PenDown) return;
+            Paint.Raise();
+            Events.Add(new PenChanged { At = Robot, Down = false });
         }
 
         /// <summary>Bulunduğu karedeki buzu toplar. Buz varsa True döner.</summary>
@@ -456,6 +491,22 @@ namespace MarsKod.Dunya
                     NoKeywords("report", kwargs);
                     if (args.Count != 1) throw Values.PyError("TypeError", "report() takes exactly one argument (" + args.Count + " given)");
                     Report(NumberOf(args[0]));
+                    return null;
+                }),
+                ["pen_down"] = new PyBuiltin("pen_down", (args, kwargs) =>
+                {
+                    Unlocked("pen_down");
+                    NoKeywords("pen_down", kwargs);
+                    if (args.Count != 0) throw Values.PyError("TypeError", "pen_down() takes no arguments (" + args.Count + " given)");
+                    LowerPen();
+                    return null;
+                }),
+                ["pen_up"] = new PyBuiltin("pen_up", (args, kwargs) =>
+                {
+                    Unlocked("pen_up");
+                    NoKeywords("pen_up", kwargs);
+                    if (args.Count != 0) throw Values.PyError("TypeError", "pen_up() takes no arguments (" + args.Count + " given)");
+                    RaisePen();
                     return null;
                 }),
             };

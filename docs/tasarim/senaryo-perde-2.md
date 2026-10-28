@@ -71,7 +71,7 @@ Finalde Ece çantayı görür ve eşyalarını tek tek tanır. Kimse açıklamaz
 
 ## Bölge 7 — Kanyon dibi, eski nehir yatağı (Bölüm 61-70) · parametreli fonksiyonlar
 
-**Olay:** Serçe yukarıdan yolu görür, Kıvılcım aşağıda yürür; rutinler artık "nereye", "kaç kez" gibi bilgi alır (parametre). Kumda koloninin göç izleri: geniş bir grup yürüyüşü. Sonra **küçük ayak izleri gruptan ayrılır**, yan bir kanyona sapar; bir süre sonra büyük ayak izleri onları izler.
+**Olay:** Robotlar konuşmaz; koloninin dili iz bırakmaktır (Defne'nin turuncu okları → Ece'nin mavi yazısı → Kıvılcım'ın mavi oku). Kıvılcım kuma dev işaretler çizer, **Serçe yukarıdan okur**; Serçe yükseldikçe işaret büyümelidir: rutinler artık "kaç adım" gibi bilgi alır (parametre). Kumda koloninin göç izleri: geniş bir grup yürüyüşü. Sonra **küçük ayak izleri gruptan ayrılır**, yan bir kanyona sapar; bir süre sonra büyük ayak izleri onları izler. (Tasarım: `docs/superpowers/specs/2026-10-23-bolge-7-design.md`.)
 
 **Kayıt 3:**
 > "Ece yine önden koştu. Bir anlığına onu kaybettim. Sonra buldum; bir duvarın önünde, elinde boya kalemi. Ona kızamadım."
@@ -82,16 +82,16 @@ Finalde Ece çantayı görür ve eşyalarını tek tek tanır. Kimse açıklamaz
 - Nehir yatağında eski su izleri (Mars'ta gerçekten eski nehir yatakları var): Serçe'nin yukarıdan gördüğü kıvrımlar bir harita gibi.
 
 **Bölümler:**
-- 61 — Nehir yatağı; rutine bilgi verme (parametre).
-- 62 — Serçe yukarıdan, Kıvılcım aşağıdan.
-- 63 — Göç izleri: geniş bir grup.
-- 64 — Kayıt 3.
-- 65 — Küçük ayak izleri gruptan ayrılıyor.
-- 66 — Büyük ayak izleri onları izliyor.
-- 67 — Yan kanyon; dar ve kıvrımlı.
-- 68 — Yerde mavi boya kalemi (çantaya).
-- 69 — Duvar boyunca küçük el izleri.
-- 70 · Bölge finali — "KIVILCIM BENİ BUL".
+- 61 — İniş pisti: üç çizgi; `cizgi(adim)` (parametre).
+- 62 — İlk işaret: başı üçgen, gerçek bir ok (6×6); ok başının iki çizgisi aynı rutinle, iki sayıyla: `dikey(2)`, `dikey(4)`. Serçe yukarıdan okuyacak.
+- 63 — Göç izleri: geniş bir grubun yolu (çizim yok).
+- 64 — Kareler; **Kayıt 3** bölüm başında.
+- 65 — Ayrılan izler: küçük izler gruptan ayrılıyor.
+- 66 — Büyüyen izler: büyük izler küçüklerin peşinden.
+- 67 — Dar kanyon: yan kanyon, tozlu yol (çizim yok).
+- 68 — Mavi kalem: yerdeki kalem toplanır, boya mavi olur; E harfi (Ece).
+- 69 — Basamaklar: duvar boyunca küçük el izleri.
+- 70 · Bölge finali — "KIVILCIM BENİ BUL": oyuncu mavi oku yazının altına çizer.
 
 **Kapanış:** Kıvılcım duvardaki yazının önünde durur. Uzun bir sessizlik. Elini çizimin üstüne koyar. Göğsündeki çizim ile duvardaki çizim aynı elden çıkmış. Gözleri yumuşak, mavi bir ışıkla yanar.
 

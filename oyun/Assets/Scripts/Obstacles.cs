@@ -3,10 +3,11 @@ using UnityEngine;
 
 // Bolumdeki engel (haritada K): oyun kurali her bolgede ayni (gecilmez), gorunusu bolgeye gore.
 // Kod bilmeyen de "buradan gecilmez" diye okusun: kareyi dolduran iri bir parca + yaninda kucuk bir parca.
-// crate: kanyon deposunun icinde (Bolum 53-56) kaya yerine sandik.
+// Bolum icindeki yere gore: kanyon deposunun icinde (Bolum 53-56) kaya yerine sandik; dar yan kanyonda (67-70) duvardan
+// kopmus kanyon kayasi, nehir yataginda suyun yuvarlattigi taslar.
 public static class Obstacles
 {
-    public static void Create(Region region, Transform parent, Vector3 pos, int index, bool crate = false)
+    public static void Create(Region region, Transform parent, Vector3 pos, int index, int levelNumber)
     {
         switch (region)
         {
@@ -15,11 +16,36 @@ public static class Obstacles
             case Region.Dunes:
             case Region.AntennaHill: Rock(parent, pos, index, "#8A5440", "#6E4232"); SandDrift(parent, pos, index); break;
             case Region.Canyon:
-            case Region.Riverbed: // nehir yatağının kendi kayaları gelene kadar kanyon kayaları
-                if (crate) Crates(parent, pos, index); else LayeredRock(parent, pos, index);
+                if (CanyonTraces.IsDepot(levelNumber)) Crates(parent, pos, index); else LayeredRock(parent, pos, index);
+                break;
+            case Region.Riverbed:
+                if (RiverbedTraces.IsSideCanyon(levelNumber)) LayeredRock(parent, pos, index); else RiverStones(parent, pos, index);
                 break;
             default: Rock(parent, pos, index, "#7A4A3B", "#5E3A2F"); break;
         }
+    }
+
+    // Nehir yatagi: eski suyun yuvarlattigi taslar. Iri, yassi bir tas; ustunde ya da yaninda daha kucuk biri; yanda bir cakil.
+    // Diplerinde su cekilirken biriken acik renkli kurumus camur halkasi.
+    static void RiverStones(Transform parent, Vector3 p, int i)
+    {
+        var root = Parts.Empty("Obstacle", parent);
+        root.localPosition = p;
+        root.localRotation = Quaternion.Euler(0f, i * 67f + 15f, 0f);
+        var silt = Parts.Add("Camur", root, MeshFactory.Sphere(0.5f, 10, 18), Mats.Lit(Mats.Hex("#A57A60"), 0.08f), new Vector3(0f, -0.005f, 0f), outline: false);
+        silt.localScale = new Vector3(0.92f, 0.035f, 0.84f);
+        Stone(root, new Vector3(0f, 0.17f, 0f), new Vector3(0.74f, 0.42f, 0.64f), "#7A5244");                 // iri, yassi
+        bool stacked = i % 2 == 0;
+        Stone(root, stacked ? new Vector3(0.05f, 0.43f, 0.02f) : new Vector3(0.34f, 0.11f, -0.24f),
+              new Vector3(0.38f, 0.24f, 0.32f), "#9A6A55");                                                  // kucuk: ustte ya da yanda
+        Stone(root, new Vector3(-0.34f, 0.05f, -0.2f), new Vector3(0.15f, 0.1f, 0.13f), "#6A463A");    // cakil
+    }
+
+    // Yuvarlak tas: basik kure (size: tam en, boy, derinlik)
+    static void Stone(Transform parent, Vector3 centre, Vector3 size, string color)
+    {
+        var s = Parts.Add("Tas", parent, MeshFactory.Sphere(0.5f, 12, 20), Mats.Lit(Mats.Hex(color), 0.18f), centre);
+        s.localScale = size;
     }
 
     static void Rock(Transform parent, Vector3 p, int i, string bigColor, string smallColor)

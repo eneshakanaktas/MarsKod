@@ -198,14 +198,4 @@ public static class CanyonTraces
 
     // Bolge 6 acilisi: kara ekranda iki satir
     public static readonly string[] TransitionLines = { "Yeni bölge: Kanyon girişi", "Hedef: kanyon deposu" };
-
-    // Kayit 2 (Defne'nin sesi, hikaye-kitabi.md "Kayitlar"): Bolum 52 basinda, bir kez
-    public const string RecordingFile = "rutinler.ses";
-    public static readonly string[] RecordingLines =
-    {
-        "Ona ezber değil, beceri öğret.",
-        "Bir kez öğrettiğini kendisi tekrar edebilir.",
-        "Bunlara biz 'rutin' derdik.",
-        "İlki sabah turuydu; her sabah yapardı.",
-    };
 }

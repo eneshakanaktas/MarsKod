@@ -138,6 +138,63 @@ Shader "MarsKod/Ground"
                 return c;
             }
 
+            // Nehir yatagi (Bolge 7): kurumus eski nehir. Ufuktan, kanyonun kivrimindan (arka plandaki bosluk) gelir (RiverbedSky.hlsl
+            // ufkun altinda devamini cizer), alanin arkasinda saga kivrilir, alanin saginda bize dogru akar. Alanin icinden gecmez:
+            // kareler temiz kalir. Zemin alanin arkasinda cabucak kivrilip ufka karisir (gorunen derinlik ~2 birim, olculdu): kivrim orada.
+            // riverBend: 0 alanin yaninda, 1 uzakta (kanyona giden kol).
+            float riverBend(float z)
+            {
+                return smoothstep(_Area.y + 0.15, _Area.y + 2.2, z);
+            }
+
+            // Kolun ortasinin x'i: yanda kivrila kivrila, uzakta ekranin ortasina (kanyonun bosluguna) varir
+            float riverCentre(float z)
+            {
+                float side = _Area.x + 2.0 + 0.6 * sin(z * 0.36 + 4.0) + 0.2 * sin(z * 0.8 + 1.7);   // alanin saginda, kenarina degmeden
+                float far = 0.15 * sin(z * 0.5 + 1.0);
+                return lerp(side, far, riverBend(z));
+            }
+
+            // Doner: kola dik uzaklik / yari genislik (0 ortada, 1 kiyida); kivrimda da ayni genislik. along: akis boyunca uzaklik.
+            float riverChannel(float2 q, out float along)
+            {
+                along = q.y;
+                float slope = (riverCentre(q.y + 0.1) - riverCentre(q.y - 0.1)) * 5.0;
+                float halfWidth = lerp(0.85, 0.65, riverBend(q.y));   // uzaga giden kol daralir
+                return abs(q.x - riverCentre(q.y)) / sqrt(1.0 + slope * slope) / halfWidth;
+            }
+
+            // Kola uzaklik (riverChannel gibi); yan kanyonda (67-70) nehir yok: kucuk izler ana yataktan ayrilip buraya sapmisti
+            float riverbedChannel(float2 q, out float along)
+            {
+                return riverChannel(q, along) + 10.0 * MarsSideCanyon();
+            }
+
+            // Yan kanyon (67-70): ekranin kenarlarinda, duvarlarin dibinde dokulmus moloz (koyu cakil, ustu acik iri taslar). sRGB.
+            float3 sideCanyonFloor(float2 q, float3 a)
+            {
+                float k = MarsSideCanyon();
+                if (k < 0.01) return a;
+                float foot = smoothstep(_Area.x + 1.2, _Area.x + 2.6, abs(q.x) + 0.5 * (vnoise2(q * 0.9) - 0.5));
+                float3 rubble = lerp(float3(0.30, 0.19, 0.15), float3(0.47, 0.31, 0.23), vnoise2(q * 7.0));
+                float stones = smoothstep(0.62, 0.7, vnoise2(q * 3.2 + 7.0));
+                rubble = lerp(rubble, float3(0.52, 0.34, 0.25), stones * 0.7);
+                return lerp(a, rubble, foot * 0.85 * k);
+            }
+
+            // Ufka dogru kolun ince ayrintilari (catlak, dalga izi) yavasca soner; kolun kendisi (koyu tortu, kum setleri) ufka kadar gider
+            float riverFade(float z, float from, float to)
+            {
+                return 1.0 - smoothstep(_Area.y + from, _Area.y + to, z);
+            }
+
+            // Kiyidaki kum seti (0..1). Uzakta set bir pikselden inceyse genislik pikseli izler, gucu o oranda azalir: titremez.
+            float riverBank(float u)
+            {
+                float w = max(0.07, fwidth(u));
+                return exp(-pow((u - 1.03) / w, 2.0)) * (0.07 / w);
+            }
+
 #if defined(MARSKOD_SADE)
             // Performans modu (telefon): pahali gurultuler yok. Ana renk + genis lekeler + alandaki krater + yuvarlak buz lekeleri.
             float frostAt(float2 xz, float4 f)
@@ -197,6 +254,20 @@ Shader "MarsKod/Ground"
                 a = lerp(a, float3(0.54, 0.35, 0.25), plate * 0.8);   // katmanli kaya plakalari
                 a *= 1.0 + 0.14 * (vnoise2(q * 40.0) - 0.5);
                 return canyonDescent(q, depotFloor(q, a));
+            }
+            float3 riverbedFloor(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float keep = 1.0 - 0.65 * inArea;
+                float3 a = lerp(float3(0.50, 0.32, 0.23), float3(0.59, 0.38, 0.27), vnoise2(q * 0.7 + 3.0));
+                float along;
+                float u = riverbedChannel(q, along);
+                float inside = 1.0 - smoothstep(0.88, 1.0, u);
+                float bank = riverBank(u);
+                a = lerp(a, float3(0.45, 0.28, 0.21), inside * (0.75 * keep + 0.1));
+                a = lerp(a, float3(0.66, 0.45, 0.32), bank * 0.6 * keep);
+                a *= lerp(1.0, 0.72, smoothstep(5.0, 15.0, q.y));   // uzakta kanyonun dibi duvarlarin golgesinde
+                return sideCanyonFloor(q, a * (1.0 + 0.10 * (vnoise2(q * 44.0) - 0.5)));
             }
 #else
             // Krater: icte koyu (gunes arkadan, alcaktan: uzak ic duvar golgede), kenari hafif kabarik ve aydinlik,
@@ -375,6 +446,50 @@ Shader "MarsKod/Ground"
                 return canyonDescent(q, depotFloor(q, a));
             }
 
+            // Kurumus camurun catlaklari: hucre sinirlarinda ince koyu cizgi (0 hucre ici, 1 catlak)
+            float mudCracks(float2 q)
+            {
+                float2 i = floor(q), f = frac(q);
+                float d1 = 8.0, d2 = 8.0;
+                [unroll] for (int y = -1; y <= 1; y++)
+                [unroll] for (int x = -1; x <= 1; x++)
+                {
+                    float2 g = float2(x, y);
+                    float d = length(g + hash22(i + g) * 0.8 + 0.1 - f);
+                    if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) d2 = d;
+                }
+                float e = d2 - d1;
+                return 1.0 - smoothstep(0.035, 0.07 + fwidth(e), e);
+            }
+
+            // Nehir yatagi (Bolge 7): ince, acik kum; kurumus kollarin ici daha koyu ve puruzsuz tortu, ortasinda camur
+            // catlaklari ve akisa dik eski dalga izleri; kiyilarda acik renkli kum seti. Alanin icinde hepsi soluk: kareler okunsun. sRGB.
+            float3 riverbedFloor(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float detail = 1.0 - far * 0.5;
+                float keep = 1.0 - 0.65 * inArea;
+                float3 a = lerp(float3(0.50, 0.32, 0.23), float3(0.59, 0.38, 0.27), fbm(q * 0.7 + 3.0));   // ince kum
+                a *= 0.92 + 0.16 * fbm(q * 0.25 + 9.0);                           // genis lekeler
+                float along;
+                float u = riverbedChannel(q, along);
+                float fade = riverFade(q.y, 3.0, 16.0);                           // ufka dogru ince ayrintilar soner
+                float inside = 1.0 - smoothstep(0.88, 1.0, u);
+                float bank = riverBank(u);                                        // kiyidaki kum seti
+                float3 silt = float3(0.45, 0.28, 0.21) * (0.95 + 0.1 * vnoise2(q * 3.0));
+                a = lerp(a, silt, inside * (0.75 * keep + 0.05));
+                float ripple = sin(along * 9.0 + fbm(q * 1.3) * 5.0 + q.x * 0.8); // akisa dik eski dalga izleri
+                a *= 1.0 + inside * keep * detail * fade * 0.05 * ripple;
+                float cracks = mudCracks(q * 4.5) * (1.0 - smoothstep(0.3, 0.7, u)) * riverFade(q.y, 2.0, 10.0);
+                a = lerp(a, float3(0.30, 0.18, 0.13), cracks * keep * detail * 0.45);
+                a = lerp(a, float3(0.66, 0.45, 0.32), bank * 0.6 * keep);
+                a = lerp(a, a * 0.85, exp(-pow((u - 0.93) / 0.05, 2.0)) * keep * fade);   // setin kola bakan yuzu: hafif golge
+                a *= 1.0 + detail * 0.10 * (vnoise2(q * 44.0) - 0.5);           // ince taneler
+                a *= lerp(1.0, 0.72, smoothstep(5.0, 15.0, q.y));               // uzakta kanyonun dibi duvarlarin golgesinde
+                float around = detail * (1.0 - 0.6 * inArea) * (1.0 - inside);
+                return sideCanyonFloor(q, lerp(a, float3(0.24, 0.15, 0.11), smoothstep(0.90, 0.96, vnoise2(q * 15.0 + 4.0)) * around * 0.45));   // seyrek cakil
+            }
+
 #endif
 
             half4 frag (Varyings i) : SV_Target
@@ -394,6 +509,7 @@ Shader "MarsKod/Ground"
                 else if (MarsCrater()) a = craterPlain(p, far, inArea);
                 else if (MarsDunes()) a = duneSand(p, far, inArea);
                 else if (MarsCanyon()) a = canyonFloor(p, far, inArea);
+                else if (MarsRiverbed()) a = riverbedFloor(p, far, inArea);
                 else a = regolith(p, far, inArea);
 
                 // oyun alani: ayni zemin, biraz daha duzgun; kare sinirlari ince ve soluk

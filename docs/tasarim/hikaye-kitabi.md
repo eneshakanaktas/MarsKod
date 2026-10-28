@@ -101,14 +101,14 @@ Her kartta: **İster** (dışarıdan görülen amacı) · **Asıl ihtiyacı** (k
 
 ## Kayıtlar (Defne'nin sesi)
 
-Bölüm 50'den önce kayıt yok (yalnızca kısa kod geliyor; öneri 4). Perde 1'de hikâyeyi **izler** anlatır. Her kayıt telefonda 1-2 satır; uzunu "Kayıtlar" sayfasında.
+Bölüm 50'den önce kayıt yok (yalnızca kısa kod geliyor; öneri 4). Perde 1'de hikâyeyi **izler** anlatır. Her kayıt telefonda 1-2 satır; uzunu "Kayıtlar" sayfasında (oyunda: bölüm seçme ekranının üstündeki "Kayıtlar" satırı; dinlenen kayıtlar açılır, yeniden dinlenir; metinler `oyun/Assets/Scripts/Records.cs`).
 
 | # | Ne zaman | Konu (taslak) |
 |---|---|---|
 | 0 | İlk günden kilitli | Son kayıt ("Bunu duyuyorsan, ona öğretmeyi başardın…"). Finalde açılır. |
 | 1 | Bölüm 50 | "Bu bir ödev değil. Adım Defne Aras…" |
 | 2 | Bölge 6 başı (oyunda: Bölüm 52 başı, `rutinler.ses`) | Rutinler: "Ona ezber değil, beceri öğret. Bir kez öğrettiğini kendisi tekrar edebilir. Bunlara biz 'rutin' derdik. İlki sabah turuydu; her sabah yapardı." |
-| 3 | Bölge 7 | Ayak izleri: "Ece yine önden koştu. Ona kızamıyorum." |
+| 3 | Bölge 7 (oyunda: Bölüm 64 başı, `boya-kalemi.ses`) | Ayak izleri: "Ece yine önden koştu. Bir anlığına onu kaybettim. Sonra buldum; bir duvarın önünde, elinde boya kalemi. Ona kızamadım." |
 | 4 | Bölge 8 | "Ece korkuyor ama belli etmiyor. Bana benziyor." |
 | 5 | Bölge 9 | Oklar, volkan: "Okları takip et. Biz oradayız; dağın altında. Acele etme, ama durma da." |
 | 5b | Bölge 10 | Mavi yıldız: "Ece her gece o mavi yıldızı arardı. 'Orada bizi duyan biri var mı?' derdi." |

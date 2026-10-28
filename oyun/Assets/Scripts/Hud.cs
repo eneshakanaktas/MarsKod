@@ -12,7 +12,8 @@ public class Hud : MonoBehaviour
     // Calistir'in sag ucundaki ⏭: kodu bir satir ilerletir (adim adim modu)
     public event Action StepPressed;
     // Sol ustteki kitap: kod sozlugu
-    public event Action GlossaryPressed;
+    public event Action GlossaryPressed, RecordsPressed;
+    public event Action<int> RecordPicked;
     // Oyuncu kodu degistirdi (yeni kodun tamami)
     public event Action<string> CodeChanged;
     // Oyuncu kademe kutusundan yeni bir kademe secti (kalici tutulmasi icin; Tier zaten degisti)
@@ -43,6 +44,7 @@ public class Hud : MonoBehaviour
     ScreenBlink blink;
     SkipCatcher skip;
     GlossaryView glossary;
+    RecordsView records;
     HintPanel hint;
     CodeEditor editor;
     CodeKeyboard keyboard;
@@ -120,9 +122,13 @@ public class Hud : MonoBehaviour
         levelSelect.Picked += n => LevelPicked?.Invoke(n);
         levelSelect.AnimationsToggled += () => AnimationsToggled?.Invoke();
         levelSelect.PerformanceToggled += () => PerformanceToggled?.Invoke();
+        levelSelect.RecordsRequested += () => RecordsPressed?.Invoke();
         overlay.Add(levelSelect);
         glossary = new GlossaryView(fMed, fSemi, fBold, fMono, Ink, Accent, ButtonBg, Hairline);
         overlay.Add(glossary);
+        records = new RecordsView(fMed, fSemi, fBold, Ink, Accent, ButtonBg, Hairline);
+        records.Picked += n => RecordPicked?.Invoke(n);
+        overlay.Add(records);
         opening = new OpeningScene(fBold);
         overlay.Add(opening);
         recording = new RecordingScene(fMed, fMono);
@@ -422,6 +428,7 @@ public class Hud : MonoBehaviour
                 : item == Collectible.CompassPart ? new Icon(36, (p, r) => DrawCompassDot(p, r, idx < collected))
                 : item == Collectible.DronePart ? new Icon(36, (p, r) => DrawPropellerDot(p, r, idx < collected))
                 : item == Collectible.CableReel ? new Icon(36, (p, r) => DrawReelDot(p, r, idx < collected))
+                : item == Collectible.BluePencil ? new Icon(36, (p, r) => DrawPencilDot(p, r, idx < collected))
                 : new Icon(36, (p, r) => DrawIceDot(p, r, idx < collected));
             d.style.marginLeft = 10; d.style.marginRight = 10;
             Ui.Transition(d, "scale", 0.28f, EasingMode.EaseOutBack);
@@ -588,6 +595,15 @@ public class Hud : MonoBehaviour
     }
 
     public void HideGlossary() => glossary.Hide();
+
+    public void HideRecords() => records.Hide();
+
+    // "Kayıtlar" sayfasini acar; hangi kayitlarin dinlendigi Oyun.cs'ten gelir.
+    public void ShowRecords(IReadOnlyList<RecordsView.Entry> entries)
+    {
+        CloseTransient();
+        records.Show(entries);
+    }
 
     // Tam ekran bir katman acilmadan once: yazma ve acilir kutular kapanir
     void CloseTransient()
@@ -1016,6 +1032,32 @@ public class Hud : MonoBehaviour
     }
 
     // Drone parcasi: ustten gorunen halkali pervane (halka koruyucu + capraz iki pal + gobek)
+    // Kalem: capraz yatmis govde + sivri uc
+    static void DrawPencilDot(Painter2D p, Rect r, bool filled)
+    {
+        float w = r.width, h = r.height;
+        var color = filled ? BluePencil.Blue : new Color(1f, 1f, 1f, 0.5f);
+        p.lineJoin = LineJoin.Round;
+        p.lineCap = LineCap.Round;
+        p.strokeColor = color;
+        p.fillColor = color;
+        p.lineWidth = 3f;
+        p.BeginPath();   // govde: sol alttan sag uste uzun dortgen
+        p.MoveTo(new Vector2(w * 0.64f, h * 0.14f));
+        p.LineTo(new Vector2(w * 0.86f, h * 0.36f));
+        p.LineTo(new Vector2(w * 0.4f, h * 0.82f));
+        p.LineTo(new Vector2(w * 0.18f, h * 0.6f));
+        p.ClosePath();
+        if (filled) p.Fill();
+        p.Stroke();
+        p.BeginPath();   // uc
+        p.MoveTo(new Vector2(w * 0.18f, h * 0.6f));
+        p.LineTo(new Vector2(w * 0.4f, h * 0.82f));
+        p.LineTo(new Vector2(w * 0.1f, h * 0.9f));
+        p.ClosePath();
+        p.Stroke();
+    }
+
     static void DrawPropellerDot(Painter2D p, Rect r, bool filled)
     {
         float w = r.width, h = r.height;

@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 
 // Bolgenin havasi: isik renkleri, ortam isigi ve cizimlere (zemin, arka plan, kayalar) "hangi bolgedeyiz" bilgisi.
 // Manzaranin kendisini cizimler secer (MarsSky.hlsl: PlainBackdrop / PolarSky.hlsl / CraterSky.hlsl / DuneSky.hlsl,
-// Ground.shader: regolith / iceSheet / craterPlain / duneSand / canyonFloor).
+// Ground.shader: regolith / iceSheet / craterPlain / duneSand / canyonFloor / riverbedFloor; RiverbedSky.hlsl).
 // Yeni bolge: buraya bir tablo + cizimlerde _Region'a gore bir dal.
 public class RegionLook
 {
@@ -73,6 +73,32 @@ public class RegionLook
         sunDir = new Vector3(8f, 115f, 0f),
     };
 
+    // Nehir yatagi: kanyonun dibi, ayni gun batimi. Gunes bati duvarinin ardinda: dogrudan isik zayif, golge veren isik
+    // daha yuksekten (duvarlarin arasindan) gelir, golgeler kanyondakinden kisa. Her sey biraz daha serin ve los.
+    static readonly RegionLook Riverbed = new RegionLook
+    {
+        shaderRegion = 5f,
+        skyLight = "#F2CBAA", skyIntensity = 0.8f,
+        sunLight = "#FF9A60", sunIntensity = 0.38f,
+        ambientSky = "#6A6278", ambientEquator = "#664A46", ambientGround = "#2A1E1B",
+        probeBase = "#5A484E", probeTop = "#685C70",
+        skyDir = new Vector3(38f, 80f, 0f),
+        sunDir = new Vector3(8f, 115f, 0f),
+    };
+
+    // Nehir yataginin dar yan kanyonu (Bolum 67-70): duvarlar yuksek ve yakin, alcak gunes tabana inmez. Dogrudan isik zayif,
+    // golge veren isik tepeden (duvarlarin arasindan), ortam isigi serin ve los.
+    static readonly RegionLook SideCanyon = new RegionLook
+    {
+        shaderRegion = 5f,
+        skyLight = "#E6C4AE", skyIntensity = 0.68f,
+        sunLight = "#FF9A60", sunIntensity = 0.2f,
+        ambientSky = "#625C74", ambientEquator = "#5A4444", ambientGround = "#261C1A",
+        probeBase = "#524248", probeTop = "#5E566A",
+        skyDir = new Vector3(62f, 80f, 0f),
+        sunDir = new Vector3(8f, 115f, 0f),
+    };
+
     // Bolge 3 finali: oyundaki ilk gun dogumu (docs/tasarim/senaryo-bolge-03.md, kapanis). Ova safaginin aydinlanmis hali.
     static readonly RegionLook SunriseLook = new RegionLook
     {
@@ -91,11 +117,15 @@ public class RegionLook
             case Region.CraterField: return Crater;
             case Region.Dunes:
             case Region.AntennaHill: return Dunes; // anten tepesinin kendi gorunusu gelene kadar kum tepeleri
-            case Region.Canyon:
-            case Region.Riverbed: return Canyon; // nehir yatağının kendi görünüşü gelene kadar kanyon
+            case Region.Canyon: return Canyon;
+            case Region.Riverbed: return Riverbed;
             default: return Plain;
         }
     }
+
+    // Bolumun havasi: bolgeninki; bolge icinde ayri bir yerde geciyorsa (yan kanyon) onunki
+    public static RegionLook ForLevel(int levelNumber) =>
+        RiverbedTraces.IsSideCanyon(levelNumber) ? SideCanyon : For(Regions.Of(levelNumber));
 
     public void Apply(Light sky, Light sun) => Blend(this, this, 0f, sky, sun);
 

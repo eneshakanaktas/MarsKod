@@ -56,24 +56,11 @@ public partial class Oyun : MonoBehaviour
     // Defne'nin kaydi gelir (metin senaryo-perde-1.md), arayuz degisir: robotun adi, baslik, programin son satiri.
     const int Bolge5SonBolum = AntennaTraces.LastLevel;
     const string Bolge5DosyaSatiri = "Ödev 50 tamamlandı! Bir dosya geldi: ogretmene.ses";
-    const string Bolge5Dosya = "ogretmene.ses";
-    static readonly string[] Bolge5Kayit =
-    {
-        "Bu bir ödev değil.",
-        "Adım Defne Aras. Bu koloninin komutanıyım.",
-        "Bunu duyuyorsan, onu yeniden öğretecek kişi sensin.",
-        "Bir güneş fırtınası geliyor. Biz yeraltına iniyoruz, hepimiz. Uyuyacağız.",
-        "Fırtına robotumuzun belleğini silecek. Ona her şeyi baştan öğretmen gerekecek.",
-        "Kızım Ece ona Kıvılcım der. Ona iyi bak.",
-        "Yolu işaretledik. Okları takip et.",
-        "Seni tanımıyorum. Ama sana güveniyorum. Lütfen… ona öğret.",
-    };
     const string Bolge5EskiAd = "BKM-7", Bolge5YeniAd = "KIVILCIM";
     const string Bolge5Baslik = "BÖLGE 5  ·  ANTEN TEPESİ";
     const string Bolge5SonSatir = "Ödev modu kapatıldı.";
     // Perde 2'ye gecis (senaryo-bolge-06.md): finalin son karesinden bu kadar sonra "Devam" -> sinav-50 -> Bolum 51
     const float Bolge5DevamBekleme = 2.5f;
-    const string Kayit2Anahtari = "kayit2";   // Bolum 52 basindaki kayit bir kez gosterilir
 
 
     Camera cam;
@@ -89,6 +76,7 @@ public partial class Oyun : MonoBehaviour
     // Calisan gunes panelleri (saglam/catlak; kirik olanlar toplanacak oldugu icin pickups'ta)
     readonly Dictionary<Cell, SolarPanel> panels = new Dictionary<Cell, SolarPanel>();
     readonly Dictionary<Cell, DustCloud> dustClouds = new Dictionary<Cell, DustCloud>();
+    PaintTiles paintTiles;   // Bolge 7 cizimi; boyanacak kare yoksa null
     // Enerji hucresi bolumlerinde koloninin guc lambalari
     ColonyPower colonyPower;
     // Isiklar: renkleri bolgeye gore (RegionLook)
@@ -254,6 +242,8 @@ public partial class Oyun : MonoBehaviour
         hud.MenuPressed += () => hud.ShowLevelSelect(LevelEntries());
         hud.LevelPicked += PickLevel;
         hud.GlossaryPressed += () => hud.ShowGlossary(GlossaryEntries());
+        hud.RecordsPressed += () => hud.ShowRecords(RecordEntries());
+        hud.RecordPicked += n => StartCoroutine(ReplayRecording(n));
         hud.StarsToggled += () => { starsTarget = starsTarget > 0.5f ? 0f : 1f; hud.SetStars(starsTarget > 0.5f); };
 
         Sound.Init(transform);
@@ -475,6 +465,16 @@ public partial class Oyun : MonoBehaviour
         return m;
     }
 
+    // Zemine basilmis isaret malzemesi (ayak izi gibi): alttaki zemini mark kadar carpar, ufukta zeminle ayni kuralla soner (GroundMark.shader)
+    internal static Material GroundMarkMat(float mark)
+    {
+        var m = Mats.Custom("GroundMark", "MarsKod/GroundMark");
+        m.SetFloat("_Mark", mark);
+        m.SetVector("_FogRange", GroundFogRange);
+        m.SetVector("_Area", new Vector4(AreaHalfX, AreaHalfZ, 0, 0));
+        return m;
+    }
+
     // Bolumu kurar: buzlar, engel kayalari, hedef kare, zemindeki buz izleri, karttaki kod ve ust baslik.
     void LoadLevel(int index)
     {
@@ -490,7 +490,7 @@ public partial class Oyun : MonoBehaviour
         if (levelRoot != null) Destroy(levelRoot.gameObject);
         levelRoot = Parts.Empty("Level", world);
         var region = Regions.Of(level.Number);
-        RegionLook.For(region).Apply(skyLight, sunLight);
+        RegionLook.ForLevel(level.Number).Apply(skyLight, sunLight);
         pickups.Clear();
         for (int i = 0; i < level.Ices.Count; i++)
             pickups.Add(Pickups.Create(level.Item, levelRoot, Pos(level.Ices[i]), i + 1));
@@ -504,6 +504,7 @@ public partial class Oyun : MonoBehaviour
         int dustSeed = 0;
         foreach (var d in level.Dust)
             dustClouds[d.Key] = DustCloud.Create(levelRoot, Pos(d.Key), 60 + dustSeed++);
+        paintTiles = level.Paint.Count > 0 ? PaintTiles.Create(levelRoot, level.Paint, c => Pos(c), level.Number) : null;
         colonyPower.Begin(PowerLampCount);
         int frostCount = level.Item == Collectible.Ice ? level.Ices.Count : 0; // zemindeki buz izi yalnizca buzun altinda
         for (int i = 0; i < 6; i++)
@@ -512,7 +513,7 @@ public partial class Oyun : MonoBehaviour
             ground.SetVector("_Frost" + i, new Vector4(p.x, p.z, 0.45f, i < frostCount ? 1f : 0f));
         }
         for (int i = 0; i < level.Rocks.Count; i++)
-            Obstacles.Create(region, levelRoot, Pos(level.Rocks[i]), i, crate: CanyonTraces.IsDepot(level.Number));
+            Obstacles.Create(region, levelRoot, Pos(level.Rocks[i]), i, level.Number);
         target = level.Target.HasValue ? Target.Create(levelRoot, Pos(level.Target.Value)) : null;
         Traces.Build(level.Number, levelRoot, new Vector2(AreaHalfX, AreaHalfZ), level.Target.HasValue ? Pos(level.Target.Value) : (Vector3?)null,
             level.Ices.ConvertAll(c => Pos(c)), TerrainHeight);
@@ -532,24 +533,49 @@ public partial class Oyun : MonoBehaviour
         if (landingDue) canyonScenes.PrepareLanding();
         if (!shotsMode && transition != null) hud.ShowTransition(transition, landingDue ? (System.Action)StartLanding : () => { });
         else if (landingDue) StartLanding();
-        if (!shotsMode && level.Number == CanyonTraces.RecordingLevel && PlayerPrefs.GetInt(Kayit2Anahtari, 0) == 0)
-            StartCoroutine(PlayCanyonRecording());
+        var startRecord = System.Array.Find(Records.All, r => r.AtLevelStart && r.Level == level.Number);
+        if (!shotsMode && startRecord.Lines != null && PlayerPrefs.GetInt(startRecord.Key, 0) == 0)
+            StartCoroutine(PlayStartRecording(startRecord));
         hintView.Close();
     }
 
-    // Kayit 2 (Bolum 52 basi): ekran kararir, Defne'nin kaydi satir satir; bitince ekran acilir ve bolumun giris damgasi gelir.
-    IEnumerator PlayCanyonRecording()
+    // Bolum basi kayitlari (Kayit 2, 3): ekran kararir, Defne'nin kaydi satir satir; bitince ekran acilir ve bolumun giris damgasi gelir.
+    IEnumerator PlayStartRecording(Records.Record record)
+    {
+        yield return PlayRecording(record);
+        yield return Tween.Wait(1f);
+        hud.ShowIntro(level.Intro);
+    }
+
+    // Kayit sahnesi: kararan ekran, satirlar, sessizlik, ekran acilir. Dinlendi isareti "Kayıtlar" sayfasini acar.
+    IEnumerator PlayRecording(Records.Record record)
     {
         Sound.Static();
-        hud.ShowRecording(CanyonTraces.RecordingFile, CanyonTraces.RecordingLines);
+        hud.ShowRecording(record.File, record.Lines);
         while (!hud.RecordingFinished) yield return null;
-        PlayerPrefs.SetInt(Kayit2Anahtari, 1);
+        PlayerPrefs.SetInt(record.Key, 1);
         PlayerPrefs.Save();
         yield return Tween.Wait(1.2f);   // sessizlik
         Sound.Static();
         hud.HideRecording();
-        yield return Tween.Wait(1f);
-        hud.ShowIntro(level.Intro);
+    }
+
+    // "Kayıtlar" sayfasi: dinlenmis kayitlar acik, digerleri kilitli. (Eski kayitlarda: kaydin bolumu cozulduysa dinlenmis sayilir.)
+    List<RecordsView.Entry> RecordEntries()
+    {
+        var entries = new List<RecordsView.Entry>();
+        foreach (var r in Records.All)
+            entries.Add(new RecordsView.Entry
+            {
+                Number = r.Number, File = r.File, FirstLine = r.Lines[0],
+                Heard = PlayerPrefs.GetInt(r.Key, 0) == 1 || xp.LevelTotal(r.Level) > 0,
+            });
+        return entries;
+    }
+
+    IEnumerator ReplayRecording(int number)
+    {
+        yield return PlayRecording(System.Array.Find(Records.All, r => r.Number == number));
     }
 
     void LateUpdate()
@@ -760,9 +786,10 @@ public partial class Oyun : MonoBehaviour
         foreach (var pickup in pickups) pickup.Restore();
         foreach (var panel in panels.Values) panel.Restore();
         foreach (var cloud in dustClouds.Values) cloud.Restore();
+        if (paintTiles != null) paintTiles.Restore();
         colonyPower.Begin(PowerLampCount);
         Traces.ResetBackdrop(level.Number);
-        RegionLook.For(Regions.Of(level.Number)).Apply(skyLight, sunLight);   // Bolge 3 finalindeki gun dogumunu geri alir
+        RegionLook.ForLevel(level.Number).Apply(skyLight, sunLight);   // Bolge 3 finalindeki gun dogumunu geri alir
         if (nameTag != null) Destroy(nameTag.gameObject);
         if (target != null) target.Restore();
         hud.ResetView();
@@ -971,7 +998,7 @@ public partial class Oyun : MonoBehaviour
         yield return Tween.Wait(3f);
 
         Sound.Static();
-        hud.ShowRecording(Bolge5Dosya, Bolge5Kayit);
+        hud.ShowRecording(Records.First.File, Records.First.Lines);
         yield return Tween.Wait(1.2f);   // ekran karardi: robot antenin dibine gecer
         var foot = new Vector3(Pos(level.Target ?? level.Robot).x, TileTop, AreaHalfZ - 0.5f);
         yield return robot.MoveTo(foot, 0.05f);
@@ -980,6 +1007,7 @@ public partial class Oyun : MonoBehaviour
         yield return Tween.Wait(1.6f);   // sessizlik
         Sound.Static();
         hud.HideRecording();
+        PlayerPrefs.SetInt(Records.First.Key, 1);
         yield return Tween.Wait(2.2f);
 
         nameTag = NameTag.Create(levelRoot, robot);
@@ -1049,6 +1077,7 @@ public partial class Oyun : MonoBehaviour
                     colonyPower.Deliver(world.TransformPoint(Pos(level.Ices[c.IceIndex])));
                     hud.SetCollected(c.Total);
                     Traces.IceCollected(c.Total, level.Ices.Count);
+                    if (level.Item == Collectible.BluePencil && paintTiles != null) paintTiles.UseBlue();
                 }
                 yield return Tween.Wait(c.IceIndex >= 0 ? 0.4f : 0.3f);
                 break;
@@ -1081,6 +1110,13 @@ public partial class Oyun : MonoBehaviour
             case Waited w:
                 if (dustClouds.TryGetValue(w.At, out var cloud)) StartCoroutine(cloud.Thin(w.Left, w.Total));
                 yield return Tween.Wait(0.45f);
+                break;
+            case PenChanged _:
+                Sound.Tap();
+                yield return Tween.Wait(0.15f);
+                break;
+            case Painted pt:
+                if (paintTiles != null) paintTiles.Paint(pt.At);
                 break;
             case Rejected _:
                 Sound.Bump();
@@ -1537,16 +1573,29 @@ public partial class Oyun : MonoBehaviour
         yield return new WaitForSeconds(2f);
 
         // Bolum 52 basindaki Kayit 2 (oyunda bir kez gelir; burada dogrudan gosterilir)
-        LoadLevel(levels.FindIndex(l => l.Number == CanyonTraces.RecordingLevel));
-        int kayit2Before = PlayerPrefs.GetInt(Kayit2Anahtari, 0);
-        StartCoroutine(PlayCanyonRecording());
+        LoadLevel(levels.FindIndex(l => l.Number == Records.Second.Level));
+        int kayit2Before = PlayerPrefs.GetInt(Records.Second.Key, 0);
+        StartCoroutine(PlayStartRecording(Records.Second));
         yield return new WaitForSeconds(9f);
         Cap(Path.Combine(dir, "kayit-2.png"));
         while (!hud.RecordingFinished) yield return null;
         yield return new WaitForSeconds(2.6f);
         Cap(Path.Combine(dir, "bolum-52-giris.png"));
         yield return new WaitForSeconds(0.4f);   // goruntu kare sonunda alinir: sonraki ekran onu ortmesin
-        PlayerPrefs.SetInt(Kayit2Anahtari, kayit2Before);   // deneme, oyuncunun ilk dinleyisini engellemesin
+        PlayerPrefs.SetInt(Records.Second.Key, kayit2Before);   // deneme, oyuncunun ilk dinleyisini engellemesin
+
+        // "Kayıtlar" sayfasi: Kayit 1 ve 2 dinlenmis, 3 kilitli
+        int kayit1Before = PlayerPrefs.GetInt(Records.First.Key, 0);
+        PlayerPrefs.SetInt(Records.First.Key, 1);
+        PlayerPrefs.SetInt(Records.Second.Key, 1);
+        PlayerPrefs.SetInt(Records.Third.Key, 0);
+        hud.ShowRecords(RecordEntries());
+        yield return new WaitForSeconds(0.6f);
+        Cap(Path.Combine(dir, "kayitlar.png"));
+        yield return new WaitForSeconds(0.4f);
+        hud.HideRecords();
+        PlayerPrefs.SetInt(Records.First.Key, kayit1Before);
+        PlayerPrefs.SetInt(Records.Second.Key, kayit2Before);
 
         var xpBefore = xp;
         forceLocks = true; xp = new Xp();
@@ -1585,10 +1634,19 @@ public partial class Oyun : MonoBehaviour
         Application.Quit();
     }
 
+    static int LastShotLevel()
+    {
+        var a = System.Environment.GetCommandLineArgs();
+        for (int i = 0; i + 1 < a.Length; i++)
+            if (a[i] == "-son" && int.TryParse(a[i + 1], out int n)) return n;
+        return int.MaxValue;
+    }
+
     IEnumerator Shots(string dir)
     {
         Directory.CreateDirectory(dir);
         int firstLevel = levelIndex;   // -bolum N verildiyse bolum goruntuleri N'den baslar (tumu uzun suruyor)
+        int lastLevel = LastShotLevel();   // -son N verildiyse N'de biter, oyun kapanir (yalnizca bolum goruntuleri, birkac dakika)
         yield return new WaitForSeconds(2.5f);
 
         // Acilis sahnesi (gorsel kontrol icin; oyunun kendisi bunu yalnizca ilk acilista, bu bayraklar olmadan gosterir)
@@ -1601,7 +1659,7 @@ public partial class Oyun : MonoBehaviour
         while (!openingDone) yield return null; // dokunmadan dogal akisin sonunu bekler
 
         // Her bolum: bekleme, yolun ortasi, bitis (dogru cozumle)
-        for (int i = firstLevel; i < levels.Count; i++)
+        for (int i = firstLevel; i < levels.Count && levels[i].Number <= lastLevel; i++)
         {
             string b = "b" + levels[i].Number + "-";
             LoadLevel(i);
@@ -1619,6 +1677,11 @@ public partial class Oyun : MonoBehaviour
             yield return new WaitForSeconds(0.4f);
             Cap(Path.Combine(dir, b + "3-bitti.png"));
             yield return new WaitForSeconds(0.3f);
+        }
+        if (lastLevel < int.MaxValue)
+        {
+            Application.Quit();
+            yield break;
         }
         // Kirmizi kristal: kor kor toplayan baslangic kodu robotu durdurur (OYUN KURALI kutusu)
         int crystalLevel = levels.FindIndex(l => l.Crystals.Count > 0);

@@ -21,6 +21,7 @@ public static class Pickups
             case Collectible.CompassPart: return CompassPart.Create(parent, localPos, seed);
             case Collectible.DronePart: return DronePart.Create(parent, localPos, seed);
             case Collectible.CableReel: return CableReel.Create(parent, localPos, seed);
+            case Collectible.BluePencil: return BluePencil.Create(parent, localPos, seed);
             default: return Ice.Create(parent, localPos, seed);
         }
     }

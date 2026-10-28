@@ -19,7 +19,7 @@ public class LevelSelect : FullScreenPanel
     }
 
     public event Action<int> Picked; // secilen bolumun numarasi
-    public event Action AnimationsToggled, PerformanceToggled;
+    public event Action AnimationsToggled, PerformanceToggled, RecordsRequested;
 
     readonly Font fMed, fSemi, fBold;
     readonly Color ink, accent;
@@ -40,6 +40,7 @@ public class LevelSelect : FullScreenPanel
                                      () => AnimationsToggled?.Invoke()));
         Content.Add(performance.Build("Performans modu", "Açıkken oyun daha akıcı, görüntü biraz sadeleşir", fMed, fSemi, ink, accent,
                                       () => PerformanceToggled?.Invoke()));
+        Content.Add(RecordsRow());
         VisualElement current = null;
         foreach (var e in entries)
         {
@@ -52,6 +53,28 @@ public class LevelSelect : FullScreenPanel
         // (altindaki bolumler, orn. kilitli siradaki, de gorunur)
         if (current != null)
             schedule.Execute(() => Scroll.scrollOffset = new Vector2(0f, Mathf.Max(0f, current.layout.y - Scroll.layout.height * 0.3f))).StartingIn(30);
+    }
+
+    // "Kayıtlar" sayfasina giden satir (Defne'nin ses kayitlari)
+    VisualElement RecordsRow()
+    {
+        var row = new VisualElement();
+        row.style.flexDirection = FlexDirection.Row;
+        row.style.alignItems = Align.Center;
+        row.style.marginBottom = 34;
+        row.style.paddingTop = 22; row.style.paddingBottom = 22;
+        row.style.paddingLeft = 36; row.style.paddingRight = 32;
+        Ui.Radius(row, 36);
+        Ui.Border(row, 2, new Color(1f, 1f, 1f, 0.07f));
+        var texts = new VisualElement();
+        texts.style.flexGrow = 1;
+        texts.Add(Ui.Text("Kayıtlar", fSemi, 34, ink));
+        var note = Ui.Text("Defne'nin ses kayıtları", fMed, 26, new Color(ink.r, ink.g, ink.b, 0.55f));
+        note.style.marginTop = 4;
+        texts.Add(note);
+        row.Add(texts);
+        row.RegisterCallback<ClickEvent>(_ => { Sound.Tap(); RecordsRequested?.Invoke(); });
+        return row;
     }
 
     public void SetAnimations(bool on) => animations.Set(on);

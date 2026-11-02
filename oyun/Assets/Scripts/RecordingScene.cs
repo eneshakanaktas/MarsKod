@@ -1,11 +1,13 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 // Bolum 50 kapanisi: Defne'nin kaydi (senaryo-bolge-05.md, metin senaryo-perde-1.md). Ekran kararir; ustte dosya adi
 // ve ses dalgasi, ortada kaydin satirlari birer birer belirir (eskiler soluklasir). Dalga yalnizca bir satir
 // "soylenirken" kipirdar. Gercek ses yok (Ragip'in karari: once yazi); ses eklenirse dalga ona baglanir.
-// Ekrana dokununca bir sonraki satir hemen gelir; sahne atlanamaz.
+// Ekrana dokununca bir sonraki satir hemen gelir. Hikayede akisin parcasi oldugu icin atlanamaz; yalnizca Kayitlar sayfasindan
+// yeniden dinlenirken sag ustte kapat dugmesi vardir.
 public class RecordingScene : VisualElement
 {
     const long FirstLineMs = 1600;
@@ -18,14 +20,15 @@ public class RecordingScene : VisualElement
     static readonly Color Wave = Mats.Hex("#7FD8FF");
 
     readonly Label fileLabel;
-    readonly VisualElement wave, linesBox;
+    readonly VisualElement wave, linesBox, closeButton;
     readonly Font font;
-    string[] lines = new string[0];
+    IReadOnlyList<string> lines = new string[0];
     int shown;
     float speakUntil;
     IVisualElementScheduledItem nextLine, waveTick;
 
     public bool Finished { get; private set; }
+    public bool ClosedByPlayer { get; private set; }   // kapat dugmesiyle erken bitirildi
 
     public RecordingScene(Font font, Font mono)
     {
@@ -55,14 +58,40 @@ public class RecordingScene : VisualElement
         linesBox.style.alignSelf = Align.Stretch;
         Add(linesBox);
 
-        RegisterCallback<ClickEvent>(_ => { if (!Finished && shown < lines.Length) ShowLine(); });
+        closeButton = new VisualElement();
+        closeButton.style.position = Position.Absolute;
+        closeButton.style.top = Ui.SafeTop() + 44; closeButton.style.right = 44;
+        closeButton.style.width = 96; closeButton.style.height = 96;
+        Ui.Radius(closeButton, 48);
+        closeButton.style.backgroundColor = new Color(1f, 1f, 1f, 0.08f);
+        closeButton.style.alignItems = Align.Center;
+        closeButton.style.justifyContent = Justify.Center;
+        closeButton.Add(new Icon(40, FullScreenPanel.DrawClose));
+        closeButton.RegisterCallback<ClickEvent>(_ => Close());
+        closeButton.style.display = DisplayStyle.None;
+        Add(closeButton);
+
+        RegisterCallback<ClickEvent>(_ => { if (!Finished && shown < lines.Count) ShowLine(); });
     }
 
-    public void Show(string file, string[] texts)
+    // Oyuncu kaydi erken kapatti (yalnizca yeniden dinlerken): satirlar durur, kayit bitmis sayilir
+    void Close()
+    {
+        nextLine?.Pause();
+        ClosedByPlayer = true;
+        Finished = true;
+    }
+
+    public Vector2? CloseCenter() => style.display == DisplayStyle.Flex && closeButton.style.display == DisplayStyle.Flex
+        ? closeButton.worldBound.center : (Vector2?)null;
+
+    public void Show(string file, IReadOnlyList<string> texts, bool closable = false)
     {
         lines = texts;
         shown = 0;
         Finished = false;
+        ClosedByPlayer = false;
+        closeButton.style.display = closable ? DisplayStyle.Flex : DisplayStyle.None;
         speakUntil = 0f;
         fileLabel.text = file;
         linesBox.Clear();
@@ -93,7 +122,7 @@ public class RecordingScene : VisualElement
 
     void ShowLine()
     {
-        if (shown >= lines.Length) return;
+        if (shown >= lines.Count) return;
         foreach (var old in linesBox.Children()) ((Label)old).style.color = Faded;
         string text = lines[shown++];
         var label = Ui.Text(text, font, 44, Ink);
@@ -107,7 +136,7 @@ public class RecordingScene : VisualElement
         speakUntil = Time.time + text.Length * SpeakSecondsPerChar;
 
         long stay = BaseLineMs + PerCharMs * text.Length;
-        if (shown < lines.Length) Schedule(stay);
+        if (shown < lines.Count) Schedule(stay);
         else
         {
             nextLine?.Pause();

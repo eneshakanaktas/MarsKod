@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-// Bolum secme ekrani: butun ekrani kaplayan koyu katman, ustte ayar satirlari (arka plan animasyonlari, performans modu), altinda bolumler
+// Bolum secme ekrani: butun ekrani kaplayan koyu katman, ustte ayar satirlari (arka plan animasyonlari, performans modu),
+// kayit dinlenmisse "Kayitlar" satiri, altinda bolumler
 // alt alta sira sira. Yalnizca gosterir ve secileni/degisen ayari haber verir; hangi bolumun cozuldugu, kac XP getirdigi, kilitli olup olmadigi
 // Oyun.cs'ten gelir (Entry). Kilit kurali: bir onceki bolum bitirilmeden sonraki acilmaz (Oyun.LevelEntries).
 public class LevelSelect : FullScreenPanel
@@ -19,7 +20,9 @@ public class LevelSelect : FullScreenPanel
     }
 
     public event Action<int> Picked; // secilen bolumun numarasi
-    public event Action AnimationsToggled, PerformanceToggled;
+    public event Action AnimationsToggled, PerformanceToggled, RecordsPressed;
+
+    const string RecordsRowKey = "kayitlar";
 
     readonly Font fMed, fSemi, fBold;
     readonly Color ink, accent;
@@ -32,7 +35,7 @@ public class LevelSelect : FullScreenPanel
         this.ink = ink; this.accent = accent;
     }
 
-    public void Show(IReadOnlyList<Entry> entries)
+    public void Show(IReadOnlyList<Entry> entries, int recordCount)
     {
         Content.Clear();
         // Ayarlar: arka plandaki suregiden hareketler (yildizlar, dronlar, yanip sonen isiklar) + performans modu
@@ -40,6 +43,7 @@ public class LevelSelect : FullScreenPanel
                                      () => AnimationsToggled?.Invoke()));
         Content.Add(performance.Build("Performans modu", "Açıkken oyun daha akıcı, görüntü biraz sadeleşir", fMed, fSemi, ink, accent,
                                       () => PerformanceToggled?.Invoke()));
+        if (recordCount > 0) Content.Add(RecordsRow(recordCount));
         VisualElement current = null;
         foreach (var e in entries)
         {
@@ -57,6 +61,43 @@ public class LevelSelect : FullScreenPanel
     public void SetAnimations(bool on) => animations.Set(on);
     public void SetPerformance(bool on) => performance.Set(on);
 
+    // Ayar tarzi satir: baslik + kucuk not + sagda bir parca (anahtar, ok). Dokununca clicked cagrilir.
+    static VisualElement RowShell(string title, string note, VisualElement trailing, Font fMed, Font fSemi, Color ink, Action clicked)
+    {
+        var row = new VisualElement();
+        row.style.flexDirection = FlexDirection.Row;
+        row.style.alignItems = Align.Center;
+        row.style.marginBottom = 34;
+        row.style.paddingTop = 22; row.style.paddingBottom = 22;
+        row.style.paddingLeft = 36; row.style.paddingRight = 32;
+        Ui.Radius(row, 36);
+        Ui.Border(row, 2, new Color(1f, 1f, 1f, 0.07f));
+
+        var texts = new VisualElement();
+        texts.style.flexGrow = 1;
+        texts.style.flexShrink = 1;
+        texts.Add(Ui.Text(title, fSemi, 34, ink));
+        var noteText = Ui.Text(note, fMed, 26, new Color(ink.r, ink.g, ink.b, 0.55f));
+        noteText.style.marginTop = 4;
+        noteText.style.whiteSpace = WhiteSpace.Normal;
+        texts.Add(noteText);
+        row.Add(texts);
+        row.Add(trailing);
+
+        row.RegisterCallback<ClickEvent>(_ => { Sound.Tap(); clicked(); });
+        return row;
+    }
+
+    // "Kayitlar" satiri: dinlenmis kayit varsa ayarlarin altinda; dokununca Kayitlar sayfasi acilir
+    VisualElement RecordsRow(int recordCount)
+    {
+        var arrow = Ui.Text("›", fBold, 56, new Color(ink.r, ink.g, ink.b, 0.6f));
+        arrow.style.marginLeft = 24;
+        var row = RowShell("Kayıtlar", "Dinlediğin kayıtlar: " + recordCount, arrow, fMed, fSemi, ink, () => RecordsPressed?.Invoke());
+        row.userData = RecordsRowKey;
+        return row;
+    }
+
     // Ayar satiri: baslik + kucuk not + sagda ac/kapa anahtari. Satira dokununca haber verir; durumu disaridan Set ile gelir.
     class SwitchRow
     {
@@ -69,25 +110,6 @@ public class LevelSelect : FullScreenPanel
         public VisualElement Build(string title, string note, Font fMed, Font fSemi, Color ink, Color accent, Action clicked)
         {
             this.accent = accent;
-            var row = new VisualElement();
-            row.style.flexDirection = FlexDirection.Row;
-            row.style.alignItems = Align.Center;
-            row.style.marginBottom = 34;
-            row.style.paddingTop = 22; row.style.paddingBottom = 22;
-            row.style.paddingLeft = 36; row.style.paddingRight = 32;
-            Ui.Radius(row, 36);
-            Ui.Border(row, 2, new Color(1f, 1f, 1f, 0.07f));
-
-            var texts = new VisualElement();
-            texts.style.flexGrow = 1;
-            texts.style.flexShrink = 1;
-            texts.Add(Ui.Text(title, fSemi, 34, ink));
-            var noteText = Ui.Text(note, fMed, 26, new Color(ink.r, ink.g, ink.b, 0.55f));
-            noteText.style.marginTop = 4;
-            noteText.style.whiteSpace = WhiteSpace.Normal;
-            texts.Add(noteText);
-            row.Add(texts);
-
             track = new VisualElement();
             track.style.width = 120; track.style.height = 68;
             track.style.flexShrink = 0;
@@ -99,11 +121,9 @@ public class LevelSelect : FullScreenPanel
             Ui.Radius(knob, 26);
             knob.style.backgroundColor = Color.white;
             track.Add(knob);
-            row.Add(track);
             Paint();
 
-            row.RegisterCallback<ClickEvent>(_ => { Sound.Tap(); clicked(); });
-            return row;
+            return RowShell(title, note, track, fMed, fSemi, ink, clicked);
         }
 
         public void Set(bool value) { on = value; Paint(); }
@@ -122,6 +142,15 @@ public class LevelSelect : FullScreenPanel
         if (!Open) return null;
         foreach (var row in Content.Children())
             if (row.userData is int n && n == number) return row.worldBound.center;
+        return null;
+    }
+
+    // Kayitlar satirinin ortasi (panel koordinati); ekran kapaliysa ya da satir yoksa null. Deneme icin.
+    public Vector2? RecordsRowCenter()
+    {
+        if (!Open) return null;
+        foreach (var row in Content.Children())
+            if (row.userData is string key && key == RecordsRowKey) return row.worldBound.center;
         return null;
     }
 

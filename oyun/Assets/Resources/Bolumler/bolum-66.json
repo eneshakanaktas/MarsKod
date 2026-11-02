@@ -2,6 +2,9 @@
   "numara": 66,
   "baslik": "İkinci iz",
   "gorev": "kac=1 ile kısa çağır",
+  "etiket": "BÖLGE 7 · KANYON DİBİ",
+  "giris": "Sol 1.090 · İkinci iz",
+  "bitis": "Adım aralığı: 1,6 m",
   "harita": [
     "R K . . . .",
     ". . . K . .",

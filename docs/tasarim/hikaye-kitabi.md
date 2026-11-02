@@ -49,6 +49,7 @@ Oyuncu bunu parça parça öğrenir; bu bölüm yazarlar içindir.
 | ~1 yıl önce | Kıvılcım koloniye gelir (küçük bakım robotu). Kor eskir, bacağı arızalanır; hizmet dışı bırakılıp eski hangara kaldırılır. Ece sık sık Kıvılcım'la oynar; göğsüne çizimini yapar. |
 | ~7 ay + 10 gün önce | Gözlemevi dev bir güneş fırtınası görür: 10 gün sonra varacak. Defne karar verir: volkanın altındaki lav tüneli sığınağına inilecek, herkes uyku kapsüllerine girecek. |
 | Sonraki 10 gün | Hazırlık. Son gün (koloni takvimiyle **sol 861**, aynı zamanda Ece'nin 9. doğum günü) herkes sığınağa iner; O sabah Defne panel tarlasındaki bakım kulübesinde panelleri sabitlerken, her doğum gününde olduğu gibi aceleyle de olsa kızının boyunu kapı pervazına işaretler (Bölge 3 izleri). Kutuptaki iki kişilik ekip son anda alınır, araçları orada kalır. Defne kayıtlarını hazırlar, Mars Kod Okulu'na isteği bırakır, yol boyunca işaretler (boya oklar) yaptırır. Ece, Kıvılcım'a veda eder. Sığınak kapısı dışarıdan kilitlenir; Kıvılcım dışarıda kalır. |
+| Göç günü (sol 861) | Göçte Ece gruptan ayrılıp yan kanyona koştu, duvara Kıvılcım'a mesaj boyadı ("KIVILCIM BENİ BUL"); Defne peşinden gidip onu buldu, kucağında taşıyarak döndü; turkuaz kalem dönüşte düştü (Bölge 7). |
 | ~7 ay önce | Fırtına çarpar. Koloninin enerjisi çöker, enerji hücreleri ovaya saçılır, güneş panelleri kırılır, anten devrilir. Kıvılcım'ın belleği silinir, kapanır. Dünya ile bağlantı kopar. |
 | ~7 ay önce → oyun başı | Dünya'da ajans koloniyi "büyük olasılıkla kayıp" ilan eder. Mars Kod Okulu kendi kendine açık kalır. Sığınakta kapsüllerin enerjisi beklenenden hızlı azalır (fırtına bir kısmını tüketmiş). |
 | Oyun başı (Bölüm 1) | *(Bölge 3'te program bugünü sol 1.068 diye gösterir: koloni kuruluşundan bu yana ~3 yıl, inişten bu yana 207 sol ≈ 7 ay.)*  Program, Defne'nin isteğini ilk uygun öğrenciye verir: Yıldız. Kıvılcım uyanır. |
@@ -101,14 +102,14 @@ Her kartta: **İster** (dışarıdan görülen amacı) · **Asıl ihtiyacı** (k
 
 ## Kayıtlar (Defne'nin sesi)
 
-Bölüm 50'den önce kayıt yok (yalnızca kısa kod geliyor; öneri 4). Perde 1'de hikâyeyi **izler** anlatır. Her kayıt telefonda 1-2 satır; uzunu "Kayıtlar" sayfasında.
+Bölüm 50'den önce kayıt yok (yalnızca kısa kod geliyor; öneri 4). Perde 1'de hikâyeyi **izler** anlatır. Her kayıt telefonda 1-4 satır. Dinlenen kayıtlar Bölge 7'den itibaren menüdeki **Kayıtlar** sayfasında yeniden dinlenir (dinlenmemiş olan görünmez).
 
 | # | Ne zaman | Konu (taslak) |
 |---|---|---|
 | 0 | İlk günden kilitli | Son kayıt ("Bunu duyuyorsan, ona öğretmeyi başardın…"). Finalde açılır. |
 | 1 | Bölüm 50 | "Bu bir ödev değil. Adım Defne Aras…" |
 | 2 | Bölge 6 başı (oyunda: Bölüm 52 başı, `rutinler.ses`) | Rutinler: "Ona ezber değil, beceri öğret. Bir kez öğrettiğini kendisi tekrar edebilir. Bunlara biz 'rutin' derdik. İlki sabah turuydu; her sabah yapardı." |
-| 3 | Bölge 7 | Ayak izleri: "Ece yine önden koştu. Ona kızamıyorum." |
+| 3 | Bölge 7 (oyunda: Bölüm 64 başı, `izler.ses`) | Ayak izleri: "Ece yine önden koştu. Bir anlığına onu kaybettim. Sonra buldum; bir duvarın önünde, elinde boya kalemi. Ona kızamadım." |
 | 4 | Bölge 8 | "Ece korkuyor ama belli etmiyor. Bana benziyor." |
 | 5 | Bölge 9 | Oklar, volkan: "Okları takip et. Biz oradayız; dağın altında. Acele etme, ama durma da." |
 | 5b | Bölge 10 | Mavi yıldız: "Ece her gece o mavi yıldızı arardı. 'Orada bizi duyan biri var mı?' derdi." |
@@ -128,18 +129,19 @@ Bölge 16-20 için kayıt yerine **canlı konuşma** (Defne uyanık); dakikalarc
 | İki kez yanan ışık | Bölüm sonu kutlaması; Bölge 5'te antenin durum ışığı doğru raporda bir kez yeşil yanar | Bölüm 50: Kıvılcım anten ışığını ilk kez oyuncuya iki kez yakar (selam); final: Dünya'ya iki kez yakar. |
 | Saksı bitkisi | Bölüm 1 kuru | Bölge 2 yeşerir, final çiçek açmış. |
 | Koloni ışıkları | Bölge 1 tek tek yanar | Final: hepsi yanık. |
-| "Ece" yazısı (turkuaz) | Bölge 3 kulübe kapısı; Bölge 4 direk 5'in numarası ve son direkteki kurdele aynı renk | Saksı, duvarlar; final: çizime "öğretmen" yazan da o. |
+| "Ece" yazısı (turkuaz) | Bölge 3 kulübe kapısı; Bölge 4 direk 5'in numarası ve son direkteki kurdele aynı renk | Bölge 7: boya kalemi, duvarda çocuk boyunda el izleri, robot çizimi + "KIVILCIM BENİ BUL"; o anda Kıvılcım'ın gözleri turkuaz yanar. Saksı, duvarlar; final: çizime "öğretmen" yazan da o. |
 | Sinyal | Bölüm 10 telsiz | Bölüm 100'den sonra zayıflayan gösterge; Bölüm 200 kopar; final geri gelir. |
 | Mavi yıldız (Dünya) | Bölge 10 (Mars'tan Dünya parlak bir yıldız gibi görünür) | Final: Ece'nin çizdiği yıldız = Dünya = öğretmen = Yıldız (üç anlam). |
-| Kıvılcım'ın çantası | Bölge 4 kurdele (Bölüm 40, son direkten; pil çantasına bağlı); sonra boya kalemi (7), katlanmış çizim (8), oyuncak astronot (9) | Final: Ece eşyalarını tanır; katlanmış çizim açılır. |
+| Kıvılcım'ın çantası | Bölge 4 kurdele (Bölüm 40, son direkten; pil çantasına bağlı); sonra turkuaz boya kalemi (7, Bölüm 68; ucu aşınmış), katlanmış çizim (8), oyuncak astronot (9) | Final: Ece eşyalarını tanır; katlanmış çizim açılır. |
 | Geri sayan direkler | Bölge 4: işaret direkleri 9 → 1, son direk tepede anteni görür | Bölüm 50: "Yolu işaretledik. Okları takip et." |
-| D.A. notları (koddaki yorumlar) | Bölüm 9 `# sabah turu - D.A.`, Bölüm 35 (adı "Acele etme") `# toz gecene kadar bekle.` + `# acele etme. - D.A.` (iki satır) | Bölge 5 "D. ARAS" çantası (43; üçüncü not yok, ad eşyadan okunur); Bölüm 50 kayıt; Bölge 6 `sabah_turu()`. |
+| D.A. notları (koddaki yorumlar) | Bölüm 9 `# sabah turu - D.A.`, Bölüm 35 (adı "Acele etme") `# toz gecene kadar bekle.` + `# acele etme. - D.A.` (iki satır); Bölüm 62 `# serçe yukarıdan bakar, sen yürü :) - E.` (annesi "D.A.", kızı "E."; Ece'nin oyundaki ilk "sesi") | Bölge 5 "D. ARAS" çantası (43; üçüncü not yok, ad eşyadan okunur); Bölüm 50 kayıt; Bölge 6 `sabah_turu()`. |
 | Ece'nin çizimleri | Kıvılcım'ın göğsü (çiçek, kız, robot); Bölge 5 alet çantasının kapağına bantlı çizim (44: anten + el sallayan iki kişi, büyük ve küçük; küçük olan turkuaz) | Final: göğüsteki çizime yıldız eklenir. |
-| Sol 861 | Bölge 3 boy çizgisi + takvim (Ece'nin 9. doğum günü = sığınağa iniş); Bölüm 47'deki makaralar 80-60-10 m (ilk rakamlar 8-6-1; kimse söylemez) | Perde 3: sığınak kapısının kodu. |
+| Dönüş izi | Bölüm 66 (gidiş aralıklı, koşarak) | 66-69: dönüş daha derin, yanında küçük iz yok → Defne Ece'yi taşıdı; kalem dönüşte düştü. |
+| Sol 861 | Bölge 3 boy çizgisi + takvim (Ece'nin 9. doğum günü = sığınağa iniş); Bölüm 47'deki makaralar 80-60-10 m (ilk rakamlar 8-6-1; kimse söylemez) | Perde 3: sığınak kapısının kodu. Bölüm 70 duvarında dokuz çizgili pasta (kimse hatırlatmaz). |
 
 ## Yan karakterler ve adlar
 
-- **Serçe:** Kanyon deposunda bulunan drone (Bölge 6). Adını Ece vermiş, gövdesinde el yazısı. Uçar; yukarıdan yol gösterir.
+- **Serçe:** Kanyon deposunda bulunan drone (Bölge 6). Adını Ece vermiş, gövdesinde el yazısı. Uçar; yukarıdan yol gösterir. Bölge 7'den: yukarıdan izi görür; `scout()` izin yönünü döndürür (konuşma değil). "Serçe yukarıda güneşte, Kıvılcım aşağıda gölgede."
   **Görünüşü (Enes, 2026-10-08; Ragıp'a haber):** tombul, yuvarlak serçe gövdesi (krem), önde iki kamera "göz" ve küçük turuncu gaga,
   arkada kısa kuyruk, altta iki kızak; dört çapraz kolda halkalı (korumalı) pervaneler; Kıvılcım'ın yarı boyu; gövdenin üstünde
   turkuaz (`#2FC4B8`) çocuk eliyle fırçayla boyanmış "SERÇE" (`BrushPaint`). Uçarken gözleri açık mavi yanar (`Sparrow.cs`).
@@ -154,3 +156,5 @@ Bölge 16-20 için kayıt yerine **canlı konuşma** (Defne uyanık); dakikalarc
 - İnsanlar ölmez; tehlike gerçek ama kimse ölmez.
 - Defne'nin kayıtları her zaman öğrenciye (sen) konuşur, robota değil.
 - Bir şey öğretilmeden Kıvılcım onu yapamaz (yeni beceri = yeni Python konusu).
+- Ece'nin rengi turkuaz; "mavi" yalnızca Dünya'nın yıldızı (Bölge 10).
+- Bir sahnede en fazla tek okunur kelime; tek istisna Bölüm 70'teki duvar yazısı.

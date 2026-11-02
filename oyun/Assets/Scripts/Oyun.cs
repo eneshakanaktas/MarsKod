@@ -55,25 +55,13 @@ public partial class Oyun : MonoBehaviour
     // Bolge 5 finali = Perde 1 finali: docs/tasarim/senaryo-bolge-05.md "Kapanis sahnesi". Anten tam guce gecer,
     // Defne'nin kaydi gelir (metin senaryo-perde-1.md), arayuz degisir: robotun adi, baslik, programin son satiri.
     const int Bolge5SonBolum = AntennaTraces.LastLevel;
-    const string Bolge5DosyaSatiri = "Ödev 50 tamamlandı! Bir dosya geldi: ogretmene.ses";
-    const string Bolge5Dosya = "ogretmene.ses";
-    static readonly string[] Bolge5Kayit =
-    {
-        "Bu bir ödev değil.",
-        "Adım Defne Aras. Bu koloninin komutanıyım.",
-        "Bunu duyuyorsan, onu yeniden öğretecek kişi sensin.",
-        "Bir güneş fırtınası geliyor. Biz yeraltına iniyoruz, hepimiz. Uyuyacağız.",
-        "Fırtına robotumuzun belleğini silecek. Ona her şeyi baştan öğretmen gerekecek.",
-        "Kızım Ece ona Kıvılcım der. Ona iyi bak.",
-        "Yolu işaretledik. Okları takip et.",
-        "Seni tanımıyorum. Ama sana güveniyorum. Lütfen… ona öğret.",
-    };
-    const string Bolge5EskiAd = "BKM-7", Bolge5YeniAd = "KIVILCIM";
+        const string Bolge5EskiAd = "BKM-7", Bolge5YeniAd = "KIVILCIM";
     const string Bolge5Baslik = "BÖLGE 5  ·  ANTEN TEPESİ";
     const string Bolge5SonSatir = "Ödev modu kapatıldı.";
     // Perde 2'ye gecis (senaryo-bolge-06.md): finalin son karesinden bu kadar sonra "Devam" -> sinav-50 -> Bolum 51
     const float Bolge5DevamBekleme = 2.5f;
-    const string Kayit2Anahtari = "kayit2";   // Bolum 52 basindaki kayit bir kez gosterilir
+    const string RecordingsKey = "kayitlar";   // dinlenen kayitlar (Recordings katalog numaralari)
+    const string OldRecording2Key = "kayit2";   // eski kayit; artik yazilmaz, yalniz okunur
 
 
     Camera cam;
@@ -121,6 +109,7 @@ public partial class Oyun : MonoBehaviour
     Xp xp;
     // Bolum basina kac ipucu acildi (ilk insan testinde uc ipucu da bedava)
     HintLog hints;
+    RecordingLog recordings;
     readonly HintView hintView = new HintView();
     // Kod sozlugu (Resources/Sozluk/sozluk.json); dosya okunamazsa bos
     Glossary glossary = new Glossary();
@@ -253,7 +242,9 @@ public partial class Oyun : MonoBehaviour
         hud.CodeChanged += OnCodeChanged;
         hud.ResetPressed += ResetLevel;
         // Sol ustteki dugme bolum secme ekranini acar
-        hud.MenuPressed += () => hud.ShowLevelSelect(LevelEntries());
+        hud.MenuPressed += ShowMenu;
+        hud.RecordsPressed += () => { hud.HideLevelSelect(); hud.ShowRecords(RecordEntries()); };
+        hud.RecordPicked += number => StartCoroutine(ReplayRecording(Recordings.ByNumber(number)));
         hud.LevelPicked += PickLevel;
         hud.GlossaryPressed += () => hud.ShowGlossary(GlossaryEntries());
         hud.StarsToggled += () => { starsTarget = starsTarget > 0.5f ? 0f : 1f; hud.SetStars(starsTarget > 0.5f); };
@@ -279,6 +270,9 @@ public partial class Oyun : MonoBehaviour
         hud.TierChanged += SaveTier;
 
         hints = HintLog.Load(shotsMode ? "" : PlayerPrefs.GetString("ipucu", ""));
+        // Dinlenen kayitlar (Kayitlar sayfasi). Deneme goruntulerinde oyuncunun kaydi okunmaz/yazilmaz.
+        recordings = RecordingLog.Load(shotsMode ? "" : PlayerPrefs.GetString(RecordingsKey, ""));
+        if (!shotsMode) MarkOlderRecordings();
         hud.HintPressed += PressHint;
 
         // Kod yazma kademesi: kayitli tercih kalici (kademe kutusu), -kademe deneme secenegi onune gecer.
@@ -535,24 +529,62 @@ public partial class Oyun : MonoBehaviour
         if (landingDue) canyonScenes.PrepareLanding();
         if (!shotsMode && transition != null) hud.ShowTransition(transition, landingDue ? (System.Action)StartLanding : () => { });
         else if (landingDue) StartLanding();
-        if (!shotsMode && level.Number == CanyonTraces.RecordingLevel && PlayerPrefs.GetInt(Kayit2Anahtari, 0) == 0)
-            StartCoroutine(PlayCanyonRecording());
+        var startRecording = Recordings.AtStartOf(level.Number);
+        if (!shotsMode && startRecording != null && !recordings.Heard(startRecording.Number))
+            StartCoroutine(PlayLevelStartRecording(startRecording));
         hintView.Close();
     }
 
-    // Kayit 2 (Bolum 52 basi): ekran kararir, Defne'nin kaydi satir satir; bitince ekran acilir ve bolumun giris damgasi gelir.
-    IEnumerator PlayCanyonRecording()
+    // Defne'nin kaydi: ekran kararir, satir satir; bitince dinlendi sayilir, sessizlik, ekran acilir.
+    // Bolum basi kayitlari (52, 64) kullanir; Bolum 50 kapanisi kendi akisinda (robotu tasir).
+    // closable: yalnizca Kayitlar sayfasindan yeniden dinlerken; kapat dugmesiyle erken biter (sessizlik atlanir).
+    IEnumerator PlayRecording(Recording recording, bool closable = false)
     {
         Sound.Static();
-        hud.ShowRecording(CanyonTraces.RecordingFile, CanyonTraces.RecordingLines);
+        hud.ShowRecording(recording.File, recording.Lines, closable);
         while (!hud.RecordingFinished) yield return null;
-        PlayerPrefs.SetInt(Kayit2Anahtari, 1);
-        PlayerPrefs.Save();
-        yield return Tween.Wait(1.2f);   // sessizlik
+        bool closed = hud.RecordingClosedByPlayer;
+        if (!closed) MarkHeard(recording.Number);
+        yield return Tween.Wait(closed ? 0.2f : 1.2f);   // sessizlik
         Sound.Static();
         hud.HideRecording();
-        yield return Tween.Wait(1f);
+        yield return Tween.Wait(closed ? 0.6f : 1f);
+    }
+
+    // Bolum basindaki kayit (52, 64): ilk giriste bir kez; bitince bolumun giris damgasi gelir.
+    IEnumerator PlayLevelStartRecording(Recording recording)
+    {
+        yield return PlayRecording(recording);
         hud.ShowIntro(level.Intro);
+    }
+
+    void ShowMenu() => hud.ShowLevelSelect(LevelEntries(), recordings.HeardList().Count);
+
+    List<RecordsView.Entry> RecordEntries() => recordings.HeardList()
+        .Select(r => new RecordsView.Entry { Number = r.Number, Region = r.Region, File = r.File, Preview = Recordings.Preview(r) })
+        .ToList();
+
+    // Kayitlar sayfasindan yeniden dinleme: sayfa kapanir, kayit oynar, bitince sayfa yeniden acilir. Bolumun durumu degismez.
+    IEnumerator ReplayRecording(Recording recording)
+    {
+        hud.HideRecords();
+        yield return PlayRecording(recording, closable: true);
+        hud.ShowRecords(RecordEntries());
+    }
+
+    void MarkHeard(int number)
+    {
+        recordings.Mark(number);
+        if (shotsMode) return;
+        PlayerPrefs.SetString(RecordingsKey, recordings.Save());
+        PlayerPrefs.Save();
+    }
+
+    // Kayit dinleme bilgisi tutulmadan once oynayanlar: gordukleri kayitlar dinlenmis sayilir.
+    void MarkOlderRecordings()
+    {
+        if (PlayerPrefs.GetInt(OldRecording2Key, 0) == 1) recordings.Mark(2);
+        if (xp.LevelTotal(Bolge5SonBolum) > 0) recordings.Mark(1);
     }
 
     void LateUpdate()
@@ -975,16 +1007,18 @@ public partial class Oyun : MonoBehaviour
         robot.StartCoroutine(robot.LookUp());   // robotun kendi uzerinde: yeniden denemede ResetTo durdurur
         yield return antenna.PowerUp();
         yield return FlickerLights();
-        hud.SetOutro(Bolge5DosyaSatiri);
+        hud.SetOutro("Ödev 50 tamamlandı! Bir dosya geldi: " + Recordings.ByNumber(1).File);
         yield return Tween.Wait(3f);
 
         Sound.Static();
-        hud.ShowRecording(Bolge5Dosya, Bolge5Kayit);
+        var recording = Recordings.ByNumber(1);
+        hud.ShowRecording(recording.File, recording.Lines);
         yield return Tween.Wait(1.2f);   // ekran karardi: robot antenin dibine gecer
         var foot = new Vector3(Pos(level.Target ?? level.Robot).x, TileTop, AreaHalfZ - 0.5f);
         yield return robot.MoveTo(foot, 0.05f);
         yield return robot.TurnTo(DuneFinale.YawTowards(robot.transform.position, antenna.Foot), 0.05f);
         while (!hud.RecordingFinished) yield return null;
+        MarkHeard(recording.Number);
         yield return Tween.Wait(1.6f);   // sessizlik
         Sound.Static();
         hud.HideRecording();
@@ -1398,14 +1432,14 @@ public partial class Oyun : MonoBehaviour
         // shotsMode'da kilit normalde kapali (bolum-bolum tarama serbest gezsin diye); burada gecici acilir.
         var xpBefore = xp;
         forceLocks = true; xp = new Xp();
-        hud.ShowLevelSelect(LevelEntries());
+        ShowMenu();
         yield return new WaitForSeconds(0.3f);
         Cap(Path.Combine(dir, "bolum-secme-kilitli.png"));
         yield return new WaitForSeconds(0.3f);
         hud.HideLevelSelect();
         forceLocks = false; xp = xpBefore;
 
-        hud.ShowLevelSelect(LevelEntries());
+        ShowMenu();
         yield return new WaitForSeconds(0.5f);
         Cap(Path.Combine(dir, "bolum-secme.png"));
         yield return new WaitForSeconds(0.3f);
@@ -1467,6 +1501,76 @@ public partial class Oyun : MonoBehaviour
         if (problem == null && !complete) problem = "Devam sonrasi bolum bitmedi";
         Debug.Log("ADIM ADIM DENETIMI: " + (problem ?? "TAMAM"));
         yield return new WaitForSeconds(0.3f);
+    }
+
+    // ---- Kayitlar denetimi (-shots icinde): hic kayit yokken "Kayitlar" satiri gorunmez; uc kayit dinlenmisken satira, sonra
+    // Kayit 3'e fareyle tiklanir. Kayit ekrani acilirken sayfa kapanmali, kayit bitince yeniden acilmali.
+    // Sonra Kayit 3 yeniden acilir ve sag ustteki kapat dugmesiyle erken kapatilir; sayfa yine geri gelmeli.
+    // Log'da "KAYITLAR DENETIMI:" satiri; goruntuler bolum-secme-kayitli.png, kayitlar.png, kayit-3.png, kayit-3-kapat.png.
+    // Denetim, oyuncunun dinlediklerini degistirmez (shotsMode'da zaten yazilmaz).
+    IEnumerator RecordsCheck(string dir)
+    {
+        var mouse = UnityEngine.InputSystem.Mouse.current;
+        if (mouse == null) { Debug.Log("KAYITLAR DENETIMI: fare yok, atlandi"); yield break; }
+        string recordingsBefore = recordings.Save();
+        recordings = new RecordingLog();
+        LoadLevel(0);
+        ShowMenu();
+        yield return new WaitForSeconds(0.4f);
+        string problem = hud.RecordsRowScreenPoint().HasValue ? "kayit dinlenmeden Kayitlar satiri var" : null;
+        hud.HideLevelSelect();
+
+        recordings.Mark(1); recordings.Mark(2); recordings.Mark(3);
+        ShowMenu();
+        yield return new WaitForSeconds(0.5f);
+        Cap(Path.Combine(dir, "bolum-secme-kayitli.png"));
+        yield return new WaitForSeconds(0.3f);
+        var row = hud.RecordsRowScreenPoint();
+        if (problem == null && !row.HasValue) problem = "Kayitlar satiri bulunamadi";
+        if (problem == null)
+        {
+            yield return MouseClick(mouse, row.Value);
+            yield return new WaitForSeconds(0.5f);
+            Cap(Path.Combine(dir, "kayitlar.png"));
+            yield return new WaitForSeconds(0.3f);
+            var third = hud.RecordRowScreenPoint(3);
+            if (!hud.RecordsOpen) problem = "Kayitlar sayfasi acilmadi";
+            else if (!third.HasValue) problem = "Kayit 3 satiri bulunamadi";
+            else
+            {
+                yield return MouseClick(mouse, third.Value);
+                yield return new WaitForSeconds(2f);
+                Cap(Path.Combine(dir, "kayit-3.png"));
+                yield return new WaitForSeconds(0.3f);
+                if (hud.RecordsOpen) problem = "kayit oynarken sayfa acik kaldi";
+                float waited = 0f;
+                while (!hud.RecordingFinished && waited < 40f) { waited += Time.deltaTime; yield return null; }
+                if (problem == null && !hud.RecordingFinished) problem = "kayit 40 sn icinde bitmedi";
+                yield return new WaitForSeconds(4.5f);   // sessizlik + ekran acilir
+                if (problem == null && !hud.RecordsOpen) problem = "kayit bitince sayfa geri gelmedi";
+                if (problem == null) problem = hud.RecordingCloseScreenPoint().HasValue ? "kapat dugmesi kayit bitince de gorunuyor" : null;
+            }
+            // Kapat dugmesi: yeniden dinlerken erken kapatinca sayfa geri gelir
+            var again = problem == null ? hud.RecordRowScreenPoint(3) : null;
+            if (again.HasValue)
+            {
+                yield return MouseClick(mouse, again.Value);
+                yield return new WaitForSeconds(2f);
+                var close = hud.RecordingCloseScreenPoint();
+                Cap(Path.Combine(dir, "kayit-3-kapat.png"));
+                if (!close.HasValue) problem = "kapat dugmesi yok";
+                else
+                {
+                    yield return MouseClick(mouse, close.Value);
+                    yield return new WaitForSeconds(2f);
+                    if (!hud.RecordsOpen) problem = "kapatinca sayfa geri gelmedi";
+                    else if (!hud.RecordingFinished || !hud.RecordingClosedByPlayer) problem = "kapat kaydi bitirmedi";
+                }
+            }
+        }
+        Debug.Log("KAYITLAR DENETIMI: " + (problem ?? "TAMAM"));
+        hud.HideRecords();
+        recordings = RecordingLog.Load(recordingsBefore);
     }
 
     // ---- Sozluk denetimi (-shots icinde): son bolumde kitap dugmesine, sonra "range" kisayoluna fareyle tiklanir ----
@@ -1558,22 +1662,23 @@ public partial class Oyun : MonoBehaviour
         yield return new WaitForSeconds(2f);
 
         // Bolum 52 basindaki Kayit 2 (oyunda bir kez gelir; burada dogrudan gosterilir)
-        LoadLevel(levels.FindIndex(l => l.Number == CanyonTraces.RecordingLevel));
-        int kayit2Before = PlayerPrefs.GetInt(Kayit2Anahtari, 0);
-        StartCoroutine(PlayCanyonRecording());
+        var recording2 = Recordings.ByNumber(2);
+        LoadLevel(levels.FindIndex(l => l.Number == recording2.Level));
+        string recordingsBefore = recordings.Save();
+        StartCoroutine(PlayLevelStartRecording(recording2));
         yield return new WaitForSeconds(9f);
         Cap(Path.Combine(dir, "kayit-2.png"));
         while (!hud.RecordingFinished) yield return null;
         yield return new WaitForSeconds(2.6f);
         Cap(Path.Combine(dir, "bolum-52-giris.png"));
         yield return new WaitForSeconds(0.4f);   // goruntu kare sonunda alinir: sonraki ekran onu ortmesin
-        PlayerPrefs.SetInt(Kayit2Anahtari, kayit2Before);   // deneme, oyuncunun ilk dinleyisini engellemesin
+        recordings = RecordingLog.Load(recordingsBefore);   // deneme, oyuncunun ilk dinleyisini engellemesin
 
         var xpBefore = xp;
         forceLocks = true; xp = new Xp();
         for (int n = 1; n <= 48; n++) xp.Award(n, LineKind.Dugme);
         LoadLevel(levels.FindIndex(l => l.Number == 49));
-        hud.ShowLevelSelect(LevelEntries());
+        ShowMenu();
         yield return new WaitForSeconds(0.6f);
         Cap(Path.Combine(dir, "final-0-kilitli-kart.png"));
         yield return new WaitForSeconds(0.3f);
@@ -1657,6 +1762,7 @@ public partial class Oyun : MonoBehaviour
         yield return HintCheck(dir);
         yield return StepCheck(dir);
         yield return GlossaryCheck(dir);
+        yield return RecordsCheck(dir);
 
         // Kod yazarken: imlec kodun sonunda
         LoadLevel(levels.Count - 1);

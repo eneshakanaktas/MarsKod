@@ -19,6 +19,8 @@ public class Hud : MonoBehaviour
     public event Action<KeyboardTier> TierChanged;
     // Oyuncu bolum secme ekranindan bir bolum secti (bolum numarasi)
     public event Action<int> LevelPicked;
+    public event Action RecordsPressed;   // Bolumler ekranindaki "Kayitlar" satiri
+    public event Action<int> RecordPicked;   // Kayitlar sayfasindan secilen kaydin numarasi
     // Oyuncu ampule basti (hangi ipucunun gorunecegine Oyun.cs karar verir)
     public event Action HintPressed;
 
@@ -43,6 +45,7 @@ public class Hud : MonoBehaviour
     ScreenBlink blink;
     SkipCatcher skip;
     GlossaryView glossary;
+    RecordsView recordsView;
     HintPanel hint;
     CodeEditor editor;
     CodeKeyboard keyboard;
@@ -120,7 +123,11 @@ public class Hud : MonoBehaviour
         levelSelect.Picked += n => LevelPicked?.Invoke(n);
         levelSelect.AnimationsToggled += () => AnimationsToggled?.Invoke();
         levelSelect.PerformanceToggled += () => PerformanceToggled?.Invoke();
+        levelSelect.RecordsPressed += () => RecordsPressed?.Invoke();
         overlay.Add(levelSelect);
+        recordsView = new RecordsView(fMed, fSemi, fBold, Ink, ButtonBg, Hairline);
+        recordsView.Picked += n => RecordPicked?.Invoke(n);
+        overlay.Add(recordsView);
         glossary = new GlossaryView(fMed, fSemi, fBold, fMono, Ink, Accent, ButtonBg, Hairline);
         overlay.Add(glossary);
         opening = new OpeningScene(fBold);
@@ -574,11 +581,21 @@ public class Hud : MonoBehaviour
     }
 
     // Bolum secme ekranini acar; satirlar (cozuldu mu, kac XP) Oyun.cs'ten gelir. Acikken yazma ve acilir kutular kapanir.
-    public void ShowLevelSelect(IReadOnlyList<LevelSelect.Entry> entries)
+    public void ShowLevelSelect(IReadOnlyList<LevelSelect.Entry> entries, int recordCount)
     {
         CloseTransient();
-        levelSelect.Show(entries);
+        levelSelect.Show(entries, recordCount);
     }
+
+    // Kayitlar sayfasi: dinlenmis kayitlar Oyun.cs'ten gelir. Kayit oynarken sayfa kapali, bitince yeniden acilir.
+    public void ShowRecords(IReadOnlyList<RecordsView.Entry> entries)
+    {
+        CloseTransient();
+        recordsView.Show(entries);
+    }
+
+    public void HideRecords() => recordsView.Hide();
+    public bool RecordsOpen => recordsView.Open;
 
     // Kod sozlugunu acar; sayfalar ve hangi bolumde acildiklari Oyun.cs'ten gelir.
     public void ShowGlossary(IReadOnlyList<GlossaryView.Entry> entries)
@@ -605,12 +622,14 @@ public class Hud : MonoBehaviour
     public void ShowTransition(string[] texts, Action onDone) => opening.Show(texts, -1, onDone);
 
     // Bolum 50 kapanisi: kararan ekranda kaydin satirlari (RecordingScene). Bitince RecordingFinished; HideRecording ekrani acar.
-    public void ShowRecording(string file, string[] lines)
+    // closable: Kayitlar sayfasindan yeniden dinlerken sag ustte kapat dugmesi
+    public void ShowRecording(string file, IReadOnlyList<string> lines, bool closable = false)
     {
         CloseTransient();
-        recording.Show(file, lines);
+        recording.Show(file, lines, closable);
     }
     public bool RecordingFinished => recording.Finished;
+    public bool RecordingClosedByPlayer => recording.ClosedByPlayer;
     public void HideRecording() => recording.Hide();
 
     // Bolum 50 kapanisi, arayuz degisir: ustteki "ÖDEV 50" harf harf silinir, yerine yeni yazi harf harf yazilir;
@@ -768,6 +787,24 @@ public class Hud : MonoBehaviour
     }
 
     // Bolum secme ekranindaki satirin ekrandaki yeri; ekran kapaliysa null. Deneme icin.
+    public Vector2? RecordsRowScreenPoint()
+    {
+        var c = levelSelect.RecordsRowCenter();
+        return c.HasValue ? PanelToScreen(c.Value) : (Vector2?)null;
+    }
+
+    public Vector2? RecordingCloseScreenPoint()
+    {
+        var c = recording.CloseCenter();
+        return c.HasValue ? PanelToScreen(c.Value) : (Vector2?)null;
+    }
+
+    public Vector2? RecordRowScreenPoint(int number)
+    {
+        var c = recordsView.RowCenter(number);
+        return c.HasValue ? PanelToScreen(c.Value) : (Vector2?)null;
+    }
+
     public Vector2? LevelRowScreenPoint(int number)
     {
         var c = levelSelect.RowCenter(number);

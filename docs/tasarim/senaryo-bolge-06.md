@@ -17,7 +17,7 @@
 | Üst etiket | Bölgenin adı: **"BÖLGE 6 · KANYON GİRİŞİ"** (bölüm dosyasında `"etiket"`). "ÖDEV" ve bölüm numarası yazmaz; Bölüm 50 finalindeki "BÖLGE 5 · ANTEN TEPESİ" başlığının devamı. Büyük başlıkta görev (en çok 22 harf, `dotnet test` denetler). |
 | Giriş / bitiş | Cümle değil, **kayıt damgası**: `Sol 1.084 · Kanyon deposu · Raflar`, `Drone parçası: 6/9`. |
 | Sınav | Başlık **"KIVILCIM · KENDİNİ DENETLİYOR"** (sınav dosyasında `"baslik"`; 50 ve sonrası). Sorular aynı biçimde. 45 ve öncesi "Mini sınav". |
-| Kayıtlar | Var olan kayıt ekranı (`RecordingScene`): kararan ekran, dosya adı, ses dalgası, satır satır. Bir kez gösterilir; "Kayıtlar" sayfası Bölge 7'de. |
+| Kayıtlar | Var olan kayıt ekranı (`RecordingScene`): kararan ekran, dosya adı, ses dalgası, satır satır. Bölüm başında bir kez gösterilir; yeniden dinlemek menüdeki "Kayıtlar" sayfasından (Bölge 7'de yapıldı). |
 
 ## Bölüm 50 → 51 geçişi
 
@@ -27,7 +27,7 @@ Bölüm 50 finalinin son karesi ("Ödev modu kapatıldı." + Kıvılcım gökyü
 
 ## Kayıt 2 (Bölüm 52 başı)
 
-Dosya adı `rutinler.ses`. Bölüm 52 ilk kez açılınca, bölüm kurulduktan hemen sonra; bitince ekran açılır ve bölümün giriş damgası gelir. Telefonda bir kez (`kayit2` kaydı).
+Dosya adı `rutinler.ses`. Bölüm 52 ilk kez açılınca, bölüm kurulduktan hemen sonra; bitince ekran açılır ve bölümün giriş damgası gelir. Telefonda bir kez (dinlenen kayıtlar: `kayitlar`; eski `kayit2` anahtarı okunur).
 
 > Ona ezber değil, beceri öğret.
 > Bir kez öğrettiğini kendisi tekrar edebilir.

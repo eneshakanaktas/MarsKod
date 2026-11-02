@@ -210,8 +210,8 @@ Siyah ekranda tek bir sayaç: `Bağlantı yok — 1. gün`… `7. gün`… `14. 
    - Kıvılcım su basmış tünelde, öğrencinin rutinleriyle ilerliyor; bir yerde takılıyor, duruyor; sonra bir rutini kendisi seçip yoluna devam ediyor (Kayıt 9a'nın karşılığı: "ona bir şey söylemeden yaptığını göreceksin").
    - Her "sabah" karanlıkta `sabah_turu()` çalışıyor; köşede küçük bir sayaç: **14**.
    - Son oda. Dört kapsül. Kıvılcım hepsini açıyor. Sonuncusu **Ece.**
-4. **Ece ve Kıvılcım.** Ece kapsülden çıkar, Kıvılcım'ı görür. Sarılır. Sırt çantasındaki eşyaları tek tek tanır: kurdele, mavi boya kalemi, oyuncak astronot. Katlanmış çizimi açar: istasyondaki o gece kendi çizdiği resim: **dışarıda tek başına bir robot ve gökyüzünde onu izleyen küçük, mavi bir yıldız.** Ece o gece, "Kıvılcım yalnız kalmasın" diye birinin onu yukarıdan izlemesini dilemiş.
-5. Kıvılcım göğsündeki çizimi gösterir. Ece mavi boya kalemini alır ve çizime **gökyüzünde küçük bir yıldız** ekler; yanına yazar: **"öğretmen"**. Öğrencinin adının Yıldız olduğunu bilmez.
+4. **Ece ve Kıvılcım.** Ece kapsülden çıkar, Kıvılcım'ı görür. Sarılır. Sırt çantasındaki eşyaları tek tek tanır: kurdele, turkuaz boya kalemi, oyuncak astronot. Katlanmış çizimi açar: istasyondaki o gece kendi çizdiği resim: **dışarıda tek başına bir robot ve gökyüzünde onu izleyen küçük, mavi bir yıldız.** Ece o gece, "Kıvılcım yalnız kalmasın" diye birinin onu yukarıdan izlemesini dilemiş.
+5. Kıvılcım göğsündeki çizimi gösterir. Ece turkuaz boya kalemini alır ve çizime **gökyüzünde küçük bir yıldız** ekler; yanına yazar: **"öğretmen"**. Öğrencinin adının Yıldız olduğunu bilmez.
 6. **Oyuncunun notu:** Kıvılcım son programı belleğinden yansıtır; en üstte oyuncunun kendi yazdığı yorum satırı görünür (oyuncu boş bıraktıysa yalnızca `# ` ve yanıp sönen imleç). Ece okur, gülümser.
 7. İlk günden kilitli **son kayıt** açılır (Defne'nin sesi, fırtınadan önce kaydedilmiş):
    > "Bunu duyuyorsan, ona öğretmeyi başardın. Biz seni hiç görmedik, ama hepimiz sana borçluyuz. Teşekkür ederim."

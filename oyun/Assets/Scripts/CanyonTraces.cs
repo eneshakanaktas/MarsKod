@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Bolge 6 · Kanyon girisi (Bolum 51-60, fonksiyonlar): docs/tasarim/senaryo-bolge-06.md, gorunus: tasarim belgesi 3a
-// (docs/superpowers/specs/2026-10-08-bolge-6-design.md). Bolge acilisi, Bolum 52 basindaki Kayit 2 ve bolum bolum izler:
+// (docs/superpowers/specs/2026-10-08-bolge-6-design.md). Bolge acilisi ve bolum bolum izler:
 // 51-52 kanyon agzi, 53-56 acik sundurma deponun onu, 57 deponun arka avlusu, 58 alcak kaya basamagi, 59 kanyon kenarina
 // dogru, 60 kanyona inen patika. Alan disindaki her nesne zeminin gercek yuksekligine oturur (havada nesne yok).
 public static class CanyonTraces
 {
-    public const int FirstLevel = 51, RecordingLevel = 52, LastLevel = 60;
+    public const int FirstLevel = 51, LastLevel = 60;
     public const int StormLevel = 52, DepotFirst = 53, DepotLast = 56;
     public const float DescentGap = 1.5f, DescentPathX = 0.9f;   // 60: kenarin alana uzakligi; patikanin x'i (hedef sagda)
     static readonly int IndoorId = Shader.PropertyToID("_CanyonIndoor");
@@ -198,14 +198,4 @@ public static class CanyonTraces
 
     // Bolge 6 acilisi: kara ekranda iki satir
     public static readonly string[] TransitionLines = { "Yeni bölge: Kanyon girişi", "Hedef: kanyon deposu" };
-
-    // Kayit 2 (Defne'nin sesi, hikaye-kitabi.md "Kayitlar"): Bolum 52 basinda, bir kez
-    public const string RecordingFile = "rutinler.ses";
-    public static readonly string[] RecordingLines =
-    {
-        "Ona ezber değil, beceri öğret.",
-        "Bir kez öğrettiğini kendisi tekrar edebilir.",
-        "Bunlara biz 'rutin' derdik.",
-        "İlki sabah turuydu; her sabah yapardı.",
-    };
 }

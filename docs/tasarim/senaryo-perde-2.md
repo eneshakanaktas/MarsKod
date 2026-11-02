@@ -17,7 +17,7 @@ Bölge 4'te Kıvılcım, Ece'nin kurdelesini sırt çantasına taktı. Perde 2 b
 | Bölge | Eşya |
 |---|---|
 | 4 | Saç kurdelesi (Perde 1) |
-| 7 | Mavi bir boya kalemi |
+| 7 | Turkuaz bir boya kalemi (ucu aşınmış; Bölüm 68) |
 | 8 | Katlanmış bir çizim |
 | 9 | Tuza gömülü küçük bir oyuncak astronot |
 
@@ -71,14 +71,16 @@ Finalde Ece çantayı görür ve eşyalarını tek tek tanır. Kimse açıklamaz
 
 ## Bölge 7 — Kanyon dibi, eski nehir yatağı (Bölüm 61-70) · parametreli fonksiyonlar
 
-**Olay:** Serçe yukarıdan yolu görür, Kıvılcım aşağıda yürür; rutinler artık "nereye", "kaç kez" gibi bilgi alır (parametre). Kumda koloninin göç izleri: geniş bir grup yürüyüşü. Sonra **küçük ayak izleri gruptan ayrılır**, yan bir kanyona sapar; bir süre sonra büyük ayak izleri onları izler.
+> Ayrıntılı senaryo (bölüm bölüm damgalar, Kayıtlar sayfası, çelişki kontrolü): `senaryo-bolge-07.md` (2026-11-02).
+
+**Olay:** Serçe yukarıdan yolu görür, Kıvılcım aşağıda yürür; rutinler artık "nereye", "kaç kez" gibi bilgi alır (parametre). Serçe yukarıdan izi görür, `scout()` ile yönü söyler (konuşma değil). Kumda koloninin göç izleri: geniş bir grup yürüyüşü. Sonra **küçük ayak izleri gruptan ayrılır**, yan bir kanyona sapar; bir süre sonra büyük ayak izleri onları izler. **Dönüş izi:** iki çift büyük iz; dönüşte daha derin ve yanında küçük iz yok (Defne Ece'yi taşıdı; söylenmez).
 
 **Kayıt 3:**
 > "Ece yine önden koştu. Bir anlığına onu kaybettim. Sonra buldum; bir duvarın önünde, elinde boya kalemi. Ona kızamadım."
 
 **İzler ve gizli ayrıntılar:**
-- Yan kanyonda yere düşmüş **mavi boya kalemi** → Kıvılcım'ın çantasına.
-- **Bölge finali, en güçlü iz:** yan kanyonun duvarında, mavi boyayla, çocuk eliyle: bir robot çizimi ve altında **"KIVILCIM BENİ BUL"**. Ece göç sırasında robota mesaj bırakmış.
+- Yan kanyonda, dönüş izinin yanında yere düşmüş **turkuaz boya kalemi** (ucu aşınmış) → Kıvılcım'ın çantasına.
+- **Bölge finali, en güçlü iz:** yan kanyonun duvarında, turkuaz boyayla, çocuk eliyle: bir robot çizimi ve altında **"KIVILCIM BENİ BUL"**. Ece göç sırasında robota mesaj bırakmış.
 - Nehir yatağında eski su izleri (Mars'ta gerçekten eski nehir yatakları var): Serçe'nin yukarıdan gördüğü kıvrımlar bir harita gibi.
 
 **Bölümler:**
@@ -89,11 +91,11 @@ Finalde Ece çantayı görür ve eşyalarını tek tek tanır. Kimse açıklamaz
 - 65 — Küçük ayak izleri gruptan ayrılıyor.
 - 66 — Büyük ayak izleri onları izliyor.
 - 67 — Yan kanyon; dar ve kıvrımlı.
-- 68 — Yerde mavi boya kalemi (çantaya).
+- 68 — Yerde turkuaz boya kalemi (çantaya).
 - 69 — Duvar boyunca küçük el izleri.
 - 70 · Bölge finali — "KIVILCIM BENİ BUL".
 
-**Kapanış:** Kıvılcım duvardaki yazının önünde durur. Uzun bir sessizlik. Elini çizimin üstüne koyar. Göğsündeki çizim ile duvardaki çizim aynı elden çıkmış. Gözleri yumuşak, mavi bir ışıkla yanar.
+**Kapanış:** Kıvılcım duvardaki yazının önünde durur. Uzun bir sessizlik. Elini çizimin üstüne koyar. Göğsündeki çizim ile duvardaki çizim aynı elden çıkmış. Gözleri yumuşak, turkuaz bir ışıkla yanar.
 
 **Dizide:** Yıldız kaydı internete koyar; "sahte" yorumları yağar. Tek bir kişi ciddiye alır (Sezon 1 boyunca Yıldız'ın Dünya'daki yardımcısı olabilir; karar sonra).
 
@@ -220,6 +222,8 @@ Oyuncu Kıvılcım'ın **bilerek dışarıda bırakıldığını** öğrenir (bi
 - Yeni soru: **Kıvılcım bensiz yapabilir mi?** (Perde 3)
 
 ## Hikâye kitabına işlenecekler
+
+(Bölge 7'ninkiler 2026-11-02'de işlendi.)
 
 - Kayıt 5b (Bölge 10, Dünya/mavi yıldız) kayıtlar listesine eklenecek.
 - Yeni adlar: drone **Serçe**. Motif: Kıvılcım'ın çantası.

@@ -13,6 +13,25 @@ public class BolumTests
 
     static Level Load(string file) => Level.Parse(File.ReadAllText(Path.Combine(Dir, file)));
 
+    // senaryo-bolge-07.md: Perde 2 biçimi sürer
+    [Fact]
+    public void Bolge_7_bolumleri_kanyon_dibi_etiketi_ve_damga_tasir()
+    {
+        for (int n = 61; n <= 70; n++)
+        {
+            var level = Load("bolum-" + n + ".json");
+            Assert.Equal("BÖLGE 7 · KANYON DİBİ", level.Label);
+            Assert.StartsWith("Sol 1.0", level.Intro);
+            Assert.False(string.IsNullOrEmpty(level.Outro), n + ": bitis yok");
+            Assert.True(level.Goal.Length <= 22, n + ": gorev çok uzun (" + level.Goal.Length + " harf)");
+        }
+        // 64'ün damgası haritadaki çakıl sayısını söyler
+        var b64 = Load("bolum-64.json");
+        Assert.Equal("Örnek çakıl: " + b64.Ices.Count, b64.Outro);
+        // 62: Ece'nin oyundaki ilk "sesi" başlangıç kodunun ilk satırı
+        Assert.StartsWith("# serçe yukarıdan bakar, sen yürü :) - E.", Load("bolum-62.json").StartCode.Replace("\r\n", "\n"));
+    }
+
     [Theory]
     [MemberData(nameof(Files))]
     public void Bolum_denetimden_gecer(string file)

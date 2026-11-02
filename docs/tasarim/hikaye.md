@@ -8,6 +8,7 @@
 > - `hikaye-kitabi.md`: başvuru belgesi: dünyanın kuralları, mantık kararları, zaman çizelgesi, karakter kartları, kayıtlar, motifler, çelişki listesi.
 > - `senaryo-bolge-01.md`: Bölge 1 (Bölüm 1-10) bölüm bölüm ayrıntılı senaryo + oyuna yapım listesi.
 > - `senaryo-perde-1.md` … `senaryo-perde-4.md`: Bölüm 11-200 ve final (her bölge: olay, izler, kayıtlar, kapanış; her bölüm bir satır). Perdelerin sonundaki "Hikâye kitabına işlenecekler" henüz kitaba aktarılmadı.
+> **Sezonlar (Ragıp, 2026-11-02):** Oyun iki sezon: **Sezon 1 = Bölüm 1-100** (Perde 1-2), **Sezon 2 = Bölüm 101-200** (Perde 3-4). Sezon 1 mağazalara önce çıkar; Sezon 2 sonra. **Sezon 1 tek başına Python temellerini tamamlamalı** (ders yarım kalmamalı; hikâye sezon sonunda açık kalabilir). Bunun için Bölge 8-10'a üç konu eklenecek: **string** (Bölge 8, `return` ile), **iç içe döngü** (Bölge 9, listelerle), **`and/or/not`** (Bölge 10, listede dolaşmayla). Sezon 2'nin Bölge 11, 12 ve 14'ündeki bu konular boşalır; yerine ileri konular gelir (plan sonra). Video/dizi oyun mağazalara çıktıktan sonra; dizinin sezon sayısı oyunun sezonlarından ayrı düşünülebilir.
 > Eski taslak (Taslak 2, robot merkezli): git geçmişinde (commit 78d555e). Bölge kuralları: `hikaye-ve-bolgeler.md`.
 
 ## Tek cümlede

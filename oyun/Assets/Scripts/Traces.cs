@@ -5,7 +5,7 @@ using UnityEngine;
 
 // Hikaye izleri: bazi bolumlerde alanin kenarinda duran kucuk sus nesneleri (docs/tasarim/senaryo-bolge-01.md, -02.md).
 // Bulmacayi etkilemezler, yalnizca merak uyandirmak icin dururlar. Bolge 2'ninkiler PolarTraces'te, Bolge 3'unkuler CraterTraces'te,
-// Bolge 4'unkuler DuneTraces'te, Bolge 5'inkiler AntennaTraces'te, Bolge 6'ninkiler CanyonTraces'te.
+// Bolge 4'unkuler DuneTraces'te, Bolge 5'inkiler AntennaTraces'te, Bolge 6'ninkiler CanyonTraces'te, Bolge 7'ninkiler RiverBedTraces'te.
 public static class Traces
 {
     // Arka plandaki izler (MarsSky.hlsl, colonyTraces): kolonide acik kapi (Bolum 6), sera kubbesinde kuru saksi (Bolum 7).
@@ -131,7 +131,8 @@ public static class Traces
         levelNumber == CraterTraces.FirstLevel ? CraterTraces.TransitionLines :
         levelNumber == DuneTraces.FirstLevel ? DuneTraces.TransitionLines :
         levelNumber == AntennaTraces.FirstLevel ? AntennaTraces.TransitionLines :
-        levelNumber == CanyonTraces.FirstLevel ? CanyonTraces.TransitionLines : null;
+        levelNumber == CanyonTraces.FirstLevel ? CanyonTraces.TransitionLines :
+        levelNumber == RiverBedTraces.FirstLevel ? RiverBedTraces.TransitionLines : null;
 
     // Bolum 8 (ve Bolum 21-22): firtinanin izi: devrilmis gunes paneli, kuma gomulu kablo, kayalarin yanina yigilmis kum.
     public static void StormDebris(Transform parent, Vector3 p)

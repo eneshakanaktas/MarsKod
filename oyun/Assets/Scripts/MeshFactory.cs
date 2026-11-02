@@ -187,6 +187,24 @@ public static class MeshFactory
         return Flatten(smooth);
     }
 
+    // Suyun yuvarlattigi tas: puruzsuz (koseli degil) ama tam yuvarlak da degil; hafif yumrulu. Nehir yatagi kayasi ve cakili.
+    public static Mesh Cobble(float radius, int seed)
+    {
+        var mesh = Sphere(radius, 8, 14);
+        var v = mesh.vertices;
+        for (int i = 0; i < v.Length; i++)
+        {
+            Vector3 d = v[i] / radius;
+            float bump = 1f + 0.10f * Mathf.Sin(d.x * 2.1f + seed) * Mathf.Cos(d.z * 1.7f + seed * 0.7f)
+                            + 0.06f * Mathf.Sin(d.y * 3.3f + d.x * 1.3f + seed * 1.9f);
+            v[i] *= bump;
+        }
+        mesh.vertices = v;
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        return mesh;
+    }
+
     // Yukari bakan duz kare (XZ duzlemi), uv 0-1.
     public static Mesh Quad(Vector2 size)
     {

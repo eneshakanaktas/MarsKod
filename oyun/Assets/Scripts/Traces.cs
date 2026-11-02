@@ -37,6 +37,7 @@ public static class Traces
         Dune = DuneTraces.Build(levelNumber, parent, areaHalf, targetPos);
         Antenna = AntennaTraces.Build(levelNumber, parent, areaHalf);
         CanyonTraces.Build(levelNumber, parent, areaHalf, targetPos, itemPositions, groundHeight);
+        RiverBedTraces.Build(levelNumber, parent, areaHalf, groundHeight);
         tank = levelNumber == PolarTraces.TankLevel ? WaterTank.Create(parent, PolarTraces.TankPosition(areaHalf)) : null;
         ResetBackdrop(levelNumber);
         switch (levelNumber)
@@ -56,6 +57,7 @@ public static class Traces
         Shader.SetGlobalFloat(RoverHereId, PolarTraces.HasRover(levelNumber) ? 1f : 0f);
         Shader.SetGlobalFloat(LeafId, PlayerPrefs.GetInt(LeafKey, 0));
         CanyonTraces.ResetBackdrop(levelNumber);
+        RiverBedTraces.ResetBackdrop(levelNumber);
         if (rover != null) rover.Restore();
         if (tank != null) tank.Restore();
         if (Dune != null) Dune.Restore();

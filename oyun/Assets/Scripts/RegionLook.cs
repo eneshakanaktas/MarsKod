@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 
 // Bolgenin havasi: isik renkleri, ortam isigi ve cizimlere (zemin, arka plan, kayalar) "hangi bolgedeyiz" bilgisi.
 // Manzaranin kendisini cizimler secer (MarsSky.hlsl: PlainBackdrop / PolarSky.hlsl / CraterSky.hlsl / DuneSky.hlsl,
-// Ground.shader: regolith / iceSheet / craterPlain / duneSand / canyonFloor).
+// RiverSky.hlsl, Ground.shader: regolith / iceSheet / craterPlain / duneSand / canyonFloor / riverFloor).
 // Yeni bolge: buraya bir tablo + cizimlerde _Region'a gore bir dal.
 public class RegionLook
 {
@@ -73,6 +73,19 @@ public class RegionLook
         sunDir = new Vector3(8f, 115f, 0f),
     };
 
+    // Nehir yatagi (Bolge 7): sabah; gunes sagda (doguda) alcakta, dibe inmemis (RiverSky.hlsl). Alan golgede: isik yumusak, serin,
+    // yukaridan; dogrudan gunes cok zayif, sagdan alcaktan.
+    static readonly RegionLook RiverBed = new RegionLook
+    {
+        shaderRegion = 5f,
+        skyLight = "#C9C4D6", skyIntensity = 0.75f,
+        sunLight = "#FFB27A", sunIntensity = 0.2f,
+        ambientSky = "#7A7488", ambientEquator = "#6A5A5C", ambientGround = "#3A2E2C",
+        probeBase = "#625A66", probeTop = "#706C82",
+        skyDir = new Vector3(64f, 250f, 0f),
+        sunDir = new Vector3(10f, 270f, 0f),
+    };
+
     // Bolge 3 finali: oyundaki ilk gun dogumu (docs/tasarim/senaryo-bolge-03.md, kapanis). Ova safaginin aydinlanmis hali.
     static readonly RegionLook SunriseLook = new RegionLook
     {
@@ -91,8 +104,8 @@ public class RegionLook
             case Region.CraterField: return Crater;
             case Region.Dunes:
             case Region.AntennaHill: return Dunes; // anten tepesinin kendi gorunusu gelene kadar kum tepeleri
-            case Region.RiverBed: // nehir yatagi kendi gorunusu gelene kadar kanyon
             case Region.Canyon: return Canyon;
+            case Region.RiverBed: return RiverBed;
             default: return Plain;
         }
     }

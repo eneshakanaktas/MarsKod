@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-// Bolge 6 sahnelerinin goruntu denetimi (-shots <klasor> -sahneler): sahnelerin ara kareleri + SAHNE DENETIMI satiri.
+// Bolge 6 sahnelerinin ve Bolge 7 izlerinin goruntu denetimi (-shots <klasor> -sahneler): ara kareler + SAHNE DENETIMI satiri.
 public partial class Oyun
 {
     IEnumerator SceneShots(string dir)
@@ -11,6 +11,9 @@ public partial class Oyun
         Directory.CreateDirectory(dir);
         yield return new WaitForSeconds(2.5f);
         var problems = new List<string>();
+        yield return ScoutShots(dir, problems);
+        yield return CrayonCloseup(dir, problems);
+        yield return RiverBedChecks(dir, problems);
         yield return RiftShots(dir, problems);
         yield return DescentShots(dir, problems);
         yield return FlightShots(dir, problems);
@@ -19,6 +22,106 @@ public partial class Oyun
         yield return LandingEveryEntryCheck(problems);
         Debug.Log("SAHNE DENETIMI: " + (problems.Count == 0 ? "TAMAM" : "HATA " + string.Join("; ", problems)));
         Application.Quit();
+    }
+
+    // Bolge 7: 62'de scout() ani (Serce yol ayriminda, isik yerde) ve yol bitince izler; 65'te yalniz kucuk iz
+    IEnumerator ScoutShots(string dir, List<string> problems)
+    {
+        foreach (int number in new[] { 62, 65 })
+        {
+            LoadLevel(levels.FindIndex(l => l.Number == number));
+            yield return new WaitForSeconds(0.8f);
+            if (trailView == null) { problems.Add(number + "'de iz yok"); continue; }
+            SetCode(level.Solution);
+            yield return new WaitForSeconds(0.3f);
+            OnRun();
+            float waited = 0f;
+            while (!trailView.Scouting && running && waited < 5f) { waited += Time.deltaTime; yield return null; }
+            if (!trailView.Scouting) problems.Add(number + "'de scout() ani gelmedi");
+            yield return new WaitForSeconds(0.12f);
+            Cap(Path.Combine(dir, "s" + number + "-scout.png"));
+            while (running) yield return null;
+            yield return new WaitForSeconds(0.6f);
+            Cap(Path.Combine(dir, "s" + number + "-izler.png"));
+            yield return new WaitForSeconds(0.3f);
+        }
+    }
+
+    // Bolge 7 sayi denetimi: sahnede gorunen sayilar bitis damgasiyla eslesmeli (63 goc izi, 64 cakil, 69 el izleri);
+    // 68'de yerde kalem, 70'te duvar resmi ve Kivilcim'in elinin bos yeri duvarin onunde.
+    IEnumerator RiverBedChecks(string dir, List<string> problems)
+    {
+        yield return LoadRiverLevel(63);
+        var migration = RiverBedTraces.Migration != null ? RiverBedTraces.Migration.GetComponent<MigrationTrack>() : null;
+        if (migration == null) problems.Add("63'te goc izi yok");
+        else Expect(problems, 63, "İzler: " + migration.Big + " büyük, " + migration.Small + " küçük");
+        Cap(Path.Combine(dir, "s63-izler.png"));
+        yield return new WaitForSeconds(0.4f);
+
+        yield return LoadRiverLevel(64);
+        Expect(problems, 64, "Örnek çakıl: " + level.Ices.Count);
+        if (level.Item != MarsKod.Dunya.Collectible.Pebble) problems.Add("64'te toplanan cakil degil");
+
+        yield return LoadRiverLevel(RiverBedTraces.CrayonLevel);
+        if (RiverBedTraces.Crayon == null) problems.Add("68'de yerde kalem yok");
+
+        yield return LoadRiverLevel(RiverBedTraces.HandsLevel);
+        int small = CountNamed("ElIzi-Kucuk"), big = CountNamed("ElIzi-Buyuk");
+        if (small != RiverBedTraces.HandsSmall || big != RiverBedTraces.HandsBig) problems.Add("69'da el izi " + small + " kucuk, " + big + " buyuk");
+        Expect(problems, RiverBedTraces.HandsLevel, "El izi: " + small + " küçük, " + big + " büyük");
+        Cap(Path.Combine(dir, "s69-eller.png"));
+        yield return new WaitForSeconds(0.4f);
+
+        yield return LoadRiverLevel(RiverBedTraces.MuralLevel);
+        var mural = RiverBedTraces.Mural;
+        if (mural == null || RiverBedTraces.BackWallFace == null) problems.Add("70'te duvar resmi yok");
+        else if (mural.Value.RobotHand.z >= levelRoot.InverseTransformPoint(RiverBedTraces.BackWallFace.position).z)
+            problems.Add("70'te robot elinin yeri duvarin arkasinda");
+        Cap(Path.Combine(dir, "s70-duvar.png"));
+        yield return new WaitForSeconds(0.4f);
+    }
+
+    IEnumerator LoadRiverLevel(int number)
+    {
+        LoadLevel(levels.FindIndex(l => l.Number == number));
+        yield return new WaitForSeconds(0.8f);
+    }
+
+    void Expect(List<string> problems, int number, string outro)
+    {
+        if (level.Outro != outro) problems.Add(number + " bitis damgasi '" + level.Outro + "', sahne '" + outro + "'");
+    }
+
+    int CountNamed(string name)
+    {
+        int n = 0;
+        foreach (var t in levelRoot.GetComponentsInChildren<Transform>(true))
+            if (t.name == name) n++;
+        return n;
+    }
+
+    // 69: Kivilcim'in sirtinda Ece'nin kalemi (kalici karakter gorunusu); arkadan ve yukaridan yakin plan
+    IEnumerator CrayonCloseup(string dir, List<string> problems)
+    {
+        LoadLevel(levels.FindIndex(l => l.Number == RiverBedTraces.HandsLevel));
+        yield return new WaitForSeconds(0.6f);
+        robot.transform.rotation = Quaternion.identity;   // kuzeye bakar: sirti kameraya
+        var look = robot.RibbonPoint;
+        var from = look + new Vector3(0.9f, 1.9f, -3.4f);
+        shot.Begin();
+        shot.Cut(from, Quaternion.LookRotation(look - from), 24f);
+        yield return new WaitForSeconds(1.2f);
+        Cap(Path.Combine(dir, "s69-sirt-kalem.png"));
+        yield return new WaitForSeconds(0.4f);
+        shot.Release();
+        if (!HasCrayon()) problems.Add("69'da sirtta kalem yok");
+    }
+
+    bool HasCrayon()
+    {
+        foreach (var t in robot.GetComponentsInChildren<Transform>(false))
+            if (t.name == "Kalem") return true;
+        return false;
     }
 
     // 60: normal bakis, yariga bakis, Kivilcim ve Serce raftayken (boy olcusu), dibin kenarindan inmeden once ve sonra

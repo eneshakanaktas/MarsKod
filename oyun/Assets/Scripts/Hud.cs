@@ -427,7 +427,8 @@ public class Hud : MonoBehaviour
             var d = item == Collectible.EnergyCell ? new Icon(36, (p, r) => DrawCellDot(p, r, idx < collected))
                 : item == Collectible.PanelPart ? new Icon(36, (p, r) => DrawPanelDot(p, r, idx < collected))
                 : item == Collectible.CompassPart ? new Icon(36, (p, r) => DrawCompassDot(p, r, idx < collected))
-                : item == Collectible.DronePart || item == Collectible.Pebble ? new Icon(36, (p, r) => DrawPropellerDot(p, r, idx < collected))
+                : item == Collectible.DronePart ? new Icon(36, (p, r) => DrawPropellerDot(p, r, idx < collected))
+                : item == Collectible.Pebble ? new Icon(36, (p, r) => DrawPebbleDot(p, r, idx < collected))
                 : item == Collectible.CableReel ? new Icon(36, (p, r) => DrawReelDot(p, r, idx < collected))
                 : new Icon(36, (p, r) => DrawIceDot(p, r, idx < collected));
             d.style.marginLeft = 10; d.style.marginRight = 10;
@@ -1077,6 +1078,28 @@ public class Hud : MonoBehaviour
         p.BeginPath();
         p.Arc(c, w * 0.08f, Deg(0), Deg(360));
         p.Fill();
+    }
+
+    // Nehir cakili: buyuk basik yuvarlak tas + yaninda kucugu (toplaninca dolu krem, oncesinde bos cevre)
+    static void DrawPebbleDot(Painter2D p, Rect r, bool filled)
+    {
+        float w = r.width, h = r.height;
+        var color = filled ? RiverPebble.Cream : new Color(1f, 1f, 1f, 0.5f);
+        p.strokeColor = color;
+        p.fillColor = color;
+        p.lineWidth = 3f;
+        foreach (var (c, rx, ry) in new[] { (new Vector2(w * 0.42f, h * 0.56f), w * 0.26f, h * 0.18f), (new Vector2(w * 0.74f, h * 0.38f), w * 0.13f, h * 0.1f) })
+        {
+            p.BeginPath();
+            for (int k = 0; k <= 24; k++)
+            {
+                float a = k / 24f * Mathf.PI * 2f;
+                var pt = c + new Vector2(Mathf.Cos(a) * rx, Mathf.Sin(a) * ry);
+                if (k == 0) p.MoveTo(pt); else p.LineTo(pt);
+            }
+            p.ClosePath();
+            if (filled) p.Fill(); else p.Stroke();
+        }
     }
 
     // Kablo makarasi: yandan gorunen makara (iki kenar cizgisi arasinda sarili kablo)

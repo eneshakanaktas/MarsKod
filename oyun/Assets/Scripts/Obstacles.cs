@@ -14,7 +14,7 @@ public static class Obstacles
             case Region.CraterField: Rock(parent, pos, index, "#5C4C50", "#463A3F"); break;   // koyu bazalt
             case Region.Dunes:
             case Region.AntennaHill: Rock(parent, pos, index, "#8A5440", "#6E4232"); SandDrift(parent, pos, index); break;
-            case Region.RiverBed: // gecici: nehir yatagi kendi gorunusu gelene kadar kanyon
+            case Region.RiverBed: RiverBoulder(parent, pos, index); break;
             case Region.Canyon:
                 if (crate) Crates(parent, pos, index); else LayeredRock(parent, pos, index);
                 break;
@@ -47,6 +47,19 @@ public static class Obstacles
         var chip = Parts.Add("Obstacle", parent, MeshFactory.Rock(0.13f, 300 + i), Mats.Lit(Mats.Hex("#7A4A38"), 0.12f), p + new Vector3(0.3f, 0.02f, -0.22f));
         chip.localScale = new Vector3(1f, 0.6f, 1f);
         chip.localRotation = Quaternion.Euler(0, i * 37f, 0);
+    }
+
+    // Nehir yatagi: suyun yuvarlattigi iri, duzgun yuzlu, acik gri-kahve kaya (basik); yaninda kucuk yuvarlak tas.
+    static void RiverBoulder(Transform parent, Vector3 p, int i)
+    {
+        var big = Parts.Add("Obstacle", parent, MeshFactory.Cobble(0.36f, 230 + i), Mats.Lit(Mats.Hex("#AE9686"), 0.3f),
+            p + new Vector3(0.02f * Mathf.Sin(i * 1.9f), 0.15f, 0.02f * Mathf.Cos(i * 1.3f)));
+        big.localScale = new Vector3(1.05f, 0.6f, 0.9f);
+        big.localRotation = Quaternion.Euler(4f * Mathf.Sin(i * 2.1f), i * 71f + 20f, 5f * Mathf.Cos(i * 1.7f));
+        var small = Parts.Add("Obstacle", parent, MeshFactory.Cobble(0.12f, 330 + i), Mats.Lit(Mats.Hex("#C2AE9E"), 0.3f),
+            p + new Vector3(0.3f, 0.05f, -0.22f));
+        small.localScale = new Vector3(1.1f, 0.6f, 0.95f);
+        small.localRotation = Quaternion.Euler(0f, i * 37f, 0f);
     }
 
     // Kanyon deposu: kareyi dolduran iri sandik + ustunde (ya da yaninda) kucuk sandik. Soluk haki govde ve kapak, koyu metal kose seritleri,

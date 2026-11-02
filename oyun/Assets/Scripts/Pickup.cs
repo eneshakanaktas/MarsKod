@@ -19,8 +19,8 @@ public static class Pickups
             case Collectible.EnergyCell: return EnergyCell.Create(parent, localPos, seed);
             case Collectible.PanelPart: return SolarPanel.Create(parent, localPos, 0, seed);
             case Collectible.CompassPart: return CompassPart.Create(parent, localPos, seed);
-            case Collectible.DronePart:
-            case Collectible.Pebble: return DronePart.Create(parent, localPos, seed); // gecici: cakilin kendi gorunusu Bolge 7 gorunus isinde
+            case Collectible.DronePart: return DronePart.Create(parent, localPos, seed);
+            case Collectible.Pebble: return RiverPebble.Create(parent, localPos, seed);
             case Collectible.CableReel: return CableReel.Create(parent, localPos, seed);
             default: return Ice.Create(parent, localPos, seed);
         }

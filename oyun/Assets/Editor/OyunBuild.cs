@@ -44,6 +44,7 @@ public static class OyunBuild
         Make("Backdrop", "MarsKod/Backdrop", null);
         Make("Outline", "MarsKod/Outline", null);
         Make("Ring", "MarsKod/Ring", null);
+        Make("Decal", "MarsKod/Decal", null);
         Make("Ground", "MarsKod/Ground", null);
         Make("FarRock", "MarsKod/FarRock", null);
         KeepEmission();

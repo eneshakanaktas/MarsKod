@@ -7,9 +7,10 @@ public static class PowerLabel
 {
     public static IEnumerator Show(Transform parent, Vector3 localPos, int power, Color color) => Show(parent, localPos, power.ToString(), color);
 
-    public static IEnumerator Show(Transform parent, Vector3 localPos, string label, Color color)
+    // size: yazi boyu (olcumler 0.528; scout()'un yon yazisi kucuk)
+    public static IEnumerator Show(Transform parent, Vector3 localPos, string label, Color color, float size = 0.528f)
     {
-        var text = WorldText.Create(parent, label, localPos, 0.528f, color);
+        var text = WorldText.Create(parent, label, localPos, size, color);
         var go = text.gameObject;
 
         var cam = Camera.main;

@@ -13,6 +13,13 @@ public static class ChildDrawing
     static readonly Color Blue = new Color(0.33f, 0.52f, 0.85f);
     static readonly Color Brown = new Color(0.45f, 0.33f, 0.28f);
 
+    // Ece'nin cicegi, dokunun pikseliyle. 70'teki duvar resmi (WallMural) ayni cicegi bu olculerden cizer.
+    public const float FlowerX = 30f, FlowerY = 60f, StemBottom = 12f, StemTop = 52f;
+    public const int Petals = 5;
+    public const float PetalDistance = 9f, PetalRadius = 5.5f, CenterRadius = 4f;
+    public static readonly Vector4[] Leaves = { new Vector4(30f, 28f, 20f, 36f), new Vector4(30f, 34f, 40f, 40f) };   // (x0, y0, x1, y1)
+    public static float PetalAngle(int k) => k * Mathf.PI * 2f / Petals + 0.3f;
+
     // background: gogus plakasinin rengi (cizim onun ustune solgun karisir)
     public static Texture2D Create(Color background)
     {
@@ -20,15 +27,14 @@ public static class ChildDrawing
         var px = Paper(background, rng);
 
         // cicek (solda): sap, iki yaprak, bes tac yaprak, sari orta
-        Line(px, rng, 30, 12, 30, 52, Green);
-        Line(px, rng, 30, 28, 20, 36, Green);
-        Line(px, rng, 30, 34, 40, 40, Green);
-        for (int k = 0; k < 5; k++)
+        Line(px, rng, FlowerX, StemBottom, FlowerX, StemTop, Green);
+        foreach (var leaf in Leaves) Line(px, rng, leaf.x, leaf.y, leaf.z, leaf.w, Green);
+        for (int k = 0; k < Petals; k++)
         {
-            float a = k * Mathf.PI * 2f / 5f + 0.3f;
-            Circle(px, rng, 30 + Mathf.Cos(a) * 9f, 60 + Mathf.Sin(a) * 9f, 5.5f, Pink);
+            float a = PetalAngle(k);
+            Circle(px, rng, FlowerX + Mathf.Cos(a) * PetalDistance, FlowerY + Mathf.Sin(a) * PetalDistance, PetalRadius, Pink);
         }
-        Circle(px, rng, 30, 60, 4f, Yellow);
+        Circle(px, rng, FlowerX, FlowerY, CenterRadius, Yellow);
 
         // kiz (ortada): bas, uc gen etek, kollar, bacaklar, iki orgu
         Circle(px, rng, 72, 70, 7f, Brown);

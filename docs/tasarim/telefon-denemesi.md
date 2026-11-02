@@ -35,6 +35,7 @@ Adım 1'in ayarıyla (Performans modu açık) şu bölümleri sırayla aç (`-bo
 ve son 3 `KARE:` satırını gönder: **Bölüm 1** (karşılaştırma için), **21** (Bölge 3), **31** (Bölge 4), **41** (Bölge 5, şimdilik Bölge 4'ün görünüşü),
 **51** (Bölge 6 kanyonu: yeni gökyüzü + zemin, roket) ve **53** (açık sundurma depo: raflar, sandıklar, çatı; en çok nesne bu bölümde).
 **Bölge 6 sahneleri (3b, 2026-10-23):** Bölüm **51**'e girince roket inişi oynar (alev, toz, kapı, Kıvılcım'ın merdivenden inişi; dokununca atlanır); **55**'i çözünce Serçe'nin ilk uçuşu, **60**'ı çözünce kanyona iniş oynar. Üçünde de sahne sürerken `KARE:` satırlarını gönder (sahne bitince son 3 satır), ve gözle bak: akıcı mı, takılma var mı, gürleme/vızıltı sesi çok yüksek ya da tiz mi, kod kartı sahne boyunca kapalı mı, klavye açıkken de sahne düzgün mü.
+**Bölge 7 görünüşü (3a, 2026-11-03):** **61** (yeni gökyüzü + çatlak çamur zemin) ve **70** (arka duvar, duvar resmi ve yazısı, iz bölümü) için de 30 sn bekleyip son 3 `KARE:` satırını gönder; 70'te kodu çalıştırınca da (izler belirirken, Serçe süzülürken) birkaç satır. Gözle bak: gölgede robot, kaya, toz ve çakıl seçiliyor mu; 70'te "KIVILCIM BENİ BUL" telefonda okunuyor mu; 69'da duvardaki el izleri tek tek sayılabiliyor mu.
 Ayrıca gözle bak: Bölüm 31'de toz bulutları ve turuncu hedef halkası seçiliyor mu; Bölüm 50 kapanışı (`-bolum 50`, kod çözülünce) takılmadan akıyor mu.
 
 **Nasıl okunur:** 30 kare/sn için kare başına 33 ms'den az gerekir. `ekran karti` sayısı büyükse çizim ağır

@@ -137,6 +137,8 @@ public abstract class Robot : MonoBehaviour
 
     // Bolum 40 kapanisinda yakalanan kurdele (Ece'nin) sirtta durur; gorunus desteklemiyorsa bir sey yapmaz.
     public virtual void SetRibbon(bool on) { }
+    // Ece'nin kalemi sirtta (Bolum 68'den sonra)
+    public virtual void SetCrayon(bool on) { }
     // Kurdelenin ucup gelecegi nokta (dunya konumu): varsayilan robotun ustu
     public virtual Vector3 RibbonPoint => transform.position + Vector3.up * 0.5f;
 

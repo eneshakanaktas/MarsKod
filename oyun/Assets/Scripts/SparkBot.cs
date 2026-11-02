@@ -22,7 +22,7 @@ public class SparkBot : Robot
     static readonly Color EyeHappy = Mats.Hex("#6CF59A") * 1.6f;
     static readonly Color EyeUnsure = Mats.Hex("#FFA040") * 1.6f;
 
-    Transform body, head, eyeL, eyeR, ribbon;
+    Transform body, head, eyeL, eyeR, ribbon, crayon;
     readonly Transform[] ribbonTails = new Transform[2];
     readonly Transform[] shoulders = new Transform[2], elbows = new Transform[2];
     Material eyeMat, thrusterMat, beaconMat;
@@ -82,6 +82,7 @@ public class SparkBot : Robot
             Parts.Add("Led", body, MeshFactory.RoundedBox(new Vector3(0.025f, 0.012f, 0.008f), 0.003f), led, new Vector3(k * 0.04f, 0.25f, -0.152f), outline: false, castShadow: false);
 
         BuildRibbon();
+        BuildCrayon();
 
         Parts.Add("Neck", body, MeshFactory.RoundedCylinder(0.03f, 0.04f, 0.01f, 16), dark, new Vector3(0, 0.325f, 0));
     }
@@ -107,6 +108,16 @@ public class SparkBot : Robot
     }
 
     public override void SetRibbon(bool on) => ribbon.gameObject.SetActive(on);
+
+    // Ece'nin kalemi (Bolum 68'de bulunur): pil cantasinin arkasinda, kurdele dugumunun yaninda capraz. Baslangicta gizli.
+    void BuildCrayon()
+    {
+        crayon = Crayon.Create(body, new Vector3(-0.035f, 0.225f, -0.168f), 0.105f);
+        crayon.localRotation = Quaternion.Euler(0f, 0f, 32f);
+        crayon.gameObject.SetActive(false);
+    }
+
+    public override void SetCrayon(bool on) => crayon.gameObject.SetActive(on);
     public override Vector3 RibbonPoint => transform.TransformPoint(RibbonKnot + Vector3.up * 0.03f);
 
     void BuildHead(Material hull, Material dark, Material visor)

@@ -24,20 +24,46 @@ public static class BrushPaint
     public static Transform Lines(Transform surface, Vector2[][] lines, float z, Material paint, int seed, float thickness) =>
         Paint(surface, "Boya", new List<Vector2[]>(lines), new Vector3(0f, 0f, z), 1f, 0f, paint, seed, thickness, thickness * 0.25f);
 
-    // Yalnizca gereken harfler cizilir: 1 6 7 8 - A B Ç E I K M P R S (bilinmeyen harf atlanir, bosluk ilerler).
-    // localPos: yazinin ortasi; height: harf boyu.
+    // Yalnizca gereken harfler cizilir: 1 6 7 8 - A B C Ç E I İ K L M N P R S U V (bilinmeyen harf atlanir, bosluk ilerler).
+    // localPos: yazinin ortasi; height: harf boyu. childish: cocuk eli (Bolge 7 duvar yazisi): her harf farkli boyda (0,85-1,2),
+    // satir saga dogru hafif yukari kayar, harfler hafif egik, birkac harfin altinda ince boya akintisi. Varsayilan false:
+    // eski yazilar aynen kalir.
     public static Transform Write(Transform surface, string text, Vector3 localPos, float height, Material paint, int seed,
-        float angleDeg = 0f, float thickness = 0.1f)
+        float angleDeg = 0f, float thickness = 0.1f, bool childish = false)
     {
         float total = (text.Length - 1) * LetterAdvance + LetterWidth;
         var lines = new List<Vector2[]>();
+        var hand = childish ? new System.Random(seed + 7) : null;
         for (int i = 0; i < text.Length; i++)
         {
             if (!Glyphs.TryGetValue(char.ToUpperInvariant(text[i]), out var glyph)) continue;
             var offset = new Vector2(-total * 0.5f + i * LetterAdvance, -0.5f);
-            foreach (var line in glyph) lines.Add(Shift(line, offset));
+            if (hand == null)
+            {
+                foreach (var line in glyph) lines.Add(Shift(line, offset));
+                continue;
+            }
+            float scale = 0.85f + 0.35f * (float)hand.NextDouble();
+            float tilt = Rand(hand) * 9f;
+            offset.y += i * 0.015f + Rand(hand) * 0.04f;
+            foreach (var line in glyph) lines.Add(Shift(Childish(line, scale, tilt), offset));
+            if (hand.NextDouble() < 0.3)   // boya akintisi: harfin altindan asagi ince cizgi
+            {
+                float x = 0.15f + 0.3f * (float)hand.NextDouble();
+                lines.Add(Shift(new[] { new Vector2(x, 0f), new Vector2(x + 0.01f, -0.12f - 0.15f * (float)hand.NextDouble()) }, offset));
+            }
         }
         return Paint(surface, "Yazi", lines, localPos, height, angleDeg, paint, seed, thickness, Jitter);
+    }
+
+    // Harfi alt ortasindan buyutup/kucultur ve egdirir (cocuk eli)
+    static Vector2[] Childish(Vector2[] line, float scale, float tiltDeg)
+    {
+        var rotation = Quaternion.Euler(0f, 0f, tiltDeg);
+        var pivot = new Vector2(LetterWidth * 0.5f, 0f);
+        var p = new Vector2[line.Length];
+        for (int i = 0; i < line.Length; i++) p[i] = pivot + (Vector2)(rotation * (Vector3)((line[i] - pivot) * scale));
+        return p;
     }
 
     static Vector2[] Shift(Vector2[] line, Vector2 offset)
@@ -115,15 +141,21 @@ public static class BrushPaint
         ['8'] = L(P(0.30f, 0.55f, 0.12f, 0.70f, 0.15f, 0.92f, 0.30f, 1f, 0.45f, 0.92f, 0.48f, 0.70f, 0.30f, 0.55f, 0.10f, 0.35f, 0.10f, 0.12f, 0.30f, 0f, 0.50f, 0.12f, 0.50f, 0.35f, 0.30f, 0.55f)),
         ['-'] = L(P(0.10f, 0.50f, 0.45f, 0.50f)),
         ['A'] = L(P(0.05f, 0f, 0.30f, 1f, 0.55f, 0f), P(0.15f, 0.38f, 0.45f, 0.38f)),
+        ['C'] = L(P(0.52f, 0.85f, 0.38f, 1f, 0.18f, 0.95f, 0.06f, 0.70f, 0.06f, 0.30f, 0.18f, 0.05f, 0.38f, 0f, 0.52f, 0.15f)),
         ['B'] = L(P(0.08f, 0f, 0.08f, 1f, 0.35f, 1f, 0.48f, 0.88f, 0.45f, 0.66f, 0.30f, 0.55f, 0.08f, 0.55f), P(0.30f, 0.55f, 0.50f, 0.42f, 0.52f, 0.18f, 0.38f, 0f, 0.08f, 0f)),
         ['Ç'] = L(P(0.52f, 0.85f, 0.38f, 1f, 0.18f, 0.95f, 0.06f, 0.70f, 0.06f, 0.30f, 0.18f, 0.05f, 0.38f, 0f, 0.52f, 0.15f), P(0.30f, 0f, 0.33f, -0.12f, 0.24f, -0.20f)),
         ['E'] = L(P(0.50f, 1f, 0.08f, 1f, 0.08f, 0f, 0.50f, 0f), P(0.08f, 0.52f, 0.40f, 0.52f)),
         ['I'] = L(P(0.25f, 0f, 0.25f, 1f)),
+        ['İ'] = L(P(0.25f, 0f, 0.25f, 0.82f), P(0.25f, 1.02f, 0.26f, 1.08f)),
         ['K'] = L(P(0.08f, 0f, 0.08f, 1f), P(0.50f, 1f, 0.10f, 0.45f), P(0.22f, 0.58f, 0.52f, 0f)),
+        ['L'] = L(P(0.08f, 1f, 0.08f, 0f, 0.50f, 0f)),
         ['M'] = L(P(0.05f, 0f, 0.08f, 1f, 0.30f, 0.45f, 0.52f, 1f, 0.55f, 0f)),
+        ['N'] = L(P(0.08f, 0f, 0.08f, 1f, 0.50f, 0f, 0.50f, 1f)),
         ['P'] = L(P(0.08f, 0f, 0.08f, 1f, 0.35f, 1f, 0.50f, 0.88f, 0.50f, 0.68f, 0.35f, 0.55f, 0.08f, 0.55f)),
         ['R'] = L(P(0.08f, 0f, 0.08f, 1f, 0.35f, 1f, 0.50f, 0.88f, 0.50f, 0.68f, 0.35f, 0.55f, 0.08f, 0.55f), P(0.28f, 0.55f, 0.52f, 0f)),
         ['S'] = L(P(0.50f, 0.90f, 0.35f, 1f, 0.15f, 0.95f, 0.08f, 0.78f, 0.20f, 0.58f, 0.42f, 0.45f, 0.52f, 0.25f, 0.42f, 0.05f, 0.20f, 0f, 0.05f, 0.12f)),
+        ['U'] = L(P(0.08f, 1f, 0.08f, 0.25f, 0.18f, 0.04f, 0.30f, 0f, 0.42f, 0.04f, 0.50f, 0.25f, 0.50f, 1f)),
+        ['V'] = L(P(0.05f, 1f, 0.30f, 0f, 0.55f, 1f)),
     };
 
     static Vector2[][] L(params Vector2[][] lines) => lines;

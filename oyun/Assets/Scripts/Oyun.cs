@@ -82,6 +82,7 @@ public partial class Oyun : MonoBehaviour
     // Isiklar: renkleri bolgeye gore (RegionLook)
     Light skyLight, sunLight;
     Target target;
+    TrailView trailView;   // Bolge 7 iz bolumlerinde: yurudukce beliren izler, Serce'nin isigi, izin sonunda hedef
     Transform levelRoot;
     // Bolum 50 kapanisinda robotun ustundeki ad etiketi (yeniden denemede kaldirilir)
     NameTag nameTag;
@@ -513,6 +514,9 @@ public partial class Oyun : MonoBehaviour
         target = level.Target.HasValue ? Target.Create(levelRoot, Pos(level.Target.Value)) : null;
         Traces.Build(level.Number, levelRoot, new Vector2(AreaHalfX, AreaHalfZ), level.Target.HasValue ? Pos(level.Target.Value) : (Vector3?)null,
             level.Ices.ConvertAll(c => Pos(c)), TerrainHeight);
+        trailView = level.Trails.Count > 0
+            ? new TrailView(levelRoot, Pos, TerrainHeight, RiverBedTraces.ActiveSparrow, RiverBedTraces.LookFor(level.Number), this, level.Trails[0])
+            : null;
 
         if (riftZoneRocks != null) riftZoneRocks.gameObject.SetActive(level.Number != CanyonTraces.LastLevel);
         ResetRobot();
@@ -782,6 +786,7 @@ public partial class Oyun : MonoBehaviour
     {
         robot.ResetTo(Pos(level.Robot), StartYaw);
         robot.SetRibbon(level.Number > DuneTraces.LastLevel);
+        robot.SetCrayon(level.Number > RiverBedTraces.CrayonLevel);
     }
 
     void ResetLevel()
@@ -800,6 +805,7 @@ public partial class Oyun : MonoBehaviour
         RegionLook.For(Regions.Of(level.Number)).Apply(skyLight, sunLight);   // Bolge 3 finalindeki gun dogumunu geri alir
         if (nameTag != null) Destroy(nameTag.gameObject);
         if (target != null) target.Restore();
+        trailView?.Restore();
         hud.ResetView();
     }
 
@@ -814,6 +820,7 @@ public partial class Oyun : MonoBehaviour
         var world = shown.World;
         var report = shown.Report;
         trailChanged = TrailRuns.Mixed(runs);
+        trailView?.Begin(level.Trails[runs.IndexOf(shown)]);   // degisen yolda her kosu kendi izini gosterir
 
         // Bitmeyen dongude kaydin sadece basi oynatilir; uzun kayitta bos satirlarda beklenmez.
         int count = report.Halt != null && report.Halt.Reason == "steps" ? Mathf.Min(report.Trace.Count, 40) : report.Trace.Count;
@@ -858,6 +865,7 @@ public partial class Oyun : MonoBehaviour
         {
             hud.SetActiveLine(-1);
             if (target != null) target.Reach();
+            trailView?.Arrived();
             yield return Tween.Wait(0.15f);
             complete = true;
             var kind = Xp.SolutionKind(hud.Buffer);
@@ -1074,6 +1082,7 @@ public partial class Oyun : MonoBehaviour
             case Moved m:
                 Sound.Move();
                 yield return Face(m.Direction);
+                trailView?.Stepped(m.To);
                 yield return robot.MoveTo(Pos(m.To));
                 break;
             case Blocked b:
@@ -1129,10 +1138,8 @@ public partial class Oyun : MonoBehaviour
                 yield return robot.Collect();
                 yield return robot.Bump();
                 break;
-            case Scouted s: // gecici: Bolge 7 · 3a'da Serce yol ayrimina suzulup kolu isikla gosterir
-                StartCoroutine(ScanPulse.Play(levelRoot, Pos(s.At.Step(s.Direction)), true));
-                StartCoroutine(PowerLabel.Show(levelRoot, Pos(s.At), s.Direction.ToString(), Mats.Hex("#5FD4C4")));
-                yield return Tween.Wait(0.5f);
+            case Scouted s: // Serce yol ayrimina suzulur, kolu isikla gosterir
+                if (trailView != null) yield return trailView.Scouted(s.At, s.Direction);
                 break;
         }
     }

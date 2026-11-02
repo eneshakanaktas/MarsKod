@@ -138,6 +138,30 @@ Shader "MarsKod/Ground"
                 return c;
             }
 
+            // Bolge 7, 63-64 (_RiverScene = 1): eski nehrin kivrimi. Alanin arkasindan dolanir, iki yanda geri (kameraya dogru) kivrilir;
+            // kus bakisinda (3b) harita gibi okunsun diye alanin cevresinde ~8 birim surer. Doner: 0..1 kanalin icinde (1 orta cizgi).
+            float riverMeander(float2 q)
+            {
+                if (!RiverSceneIs(1.0)) return 0.0;
+                float bendX = max(abs(q.x) - (_Area.x + 1.5), 0.0);
+                float cz = _Area.y + 1.15 + 0.4 * sin(q.x * 0.5 + 0.7) - 0.32 * bendX * bendX;
+                float slope = 0.2 * cos(q.x * 0.5 + 0.7) - 0.64 * bendX * sign(q.x);
+                float d = abs(q.y - cz) / sqrt(1.0 + slope * slope);   // orta cizgiye yaklasik uzaklik
+                float halfW = 0.62 + 0.15 * sin(q.x * 0.8 + 1.3);
+                return 1.0 - smoothstep(halfW * 0.75, halfW, d);
+            }
+
+            // Kivrimin kumlu kanali: acik kum, kenarinda hafif koyu set (suyun biraktigi). Alanin icine girmez.
+            float3 riverChannel(float2 q, float3 a, float inArea)
+            {
+                float m = riverMeander(q) * (1.0 - inArea);
+                if (m <= 0.0) return a;
+                float3 sand = float3(0.82, 0.70, 0.58) * (0.95 + 0.08 * vnoise2(q * 3.0 + 5.0));
+                float bank = m * (1.0 - smoothstep(0.0, 0.35, m));   // kenar seridi
+                a = lerp(a, sand, smoothstep(0.25, 0.6, m) * 0.95);
+                return a * (1.0 - 0.28 * bank);
+            }
+
 #if defined(MARSKOD_SADE)
             // Performans modu (telefon): pahali gurultuler yok. Ana renk + genis lekeler + alandaki krater + yuvarlak buz lekeleri.
             float frostAt(float2 xz, float4 f)
@@ -197,6 +221,18 @@ Shader "MarsKod/Ground"
                 a = lerp(a, float3(0.54, 0.35, 0.25), plate * 0.8);   // katmanli kaya plakalari
                 a *= 1.0 + 0.14 * (vnoise2(q * 40.0) - 0.5);
                 return canyonDescent(q, depotFloor(q, a));
+            }
+
+            // Nehir yatagi (Bolge 7), hafif: ana renk + tek gurultuden catlak cizgileri + kivrim + seyrek cakil
+            float3 riverFloor(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float3 a = lerp(float3(0.70, 0.52, 0.40), float3(0.78, 0.59, 0.46), vnoise2(q * 0.8 + 3.0));
+                float crack = 1.0 - smoothstep(0.0, 0.03, abs(vnoise2(q * 2.4 + 11.0) - 0.5));
+                a *= 1.0 - crack * 0.2 * (1.0 - 0.85 * inArea) * (1.0 - far);
+                a *= 1.0 + 0.10 * (vnoise2(q * 40.0) - 0.5);
+                a = lerp(a, float3(0.80, 0.72, 0.64), smoothstep(0.90, 0.96, vnoise2(q * 13.0 + 4.0)) * (1.0 - 0.6 * inArea) * 0.5);
+                return riverChannel(q, a, inArea);
             }
 #else
             // Krater: icte koyu (gunes arkadan, alcaktan: uzak ic duvar golgede), kenari hafif kabarik ve aydinlik,
@@ -375,6 +411,53 @@ Shader "MarsKod/Ground"
                 return canyonDescent(q, depotFloor(q, a));
             }
 
+            // Kanyon dibi, eski nehir yatagi (Bolge 7): acik kil-krem kurumus camur. Catlak camur plakalari (cokgen hucreler, kenarlari
+            // ince koyu catlak, kenara dogru hafif kivrik ve acik), alanin disinda kivrimli eski akinti seritleri, seyrek kucuk yuvarlak
+            // cakil lekeleri; 63-64'te alanin arkasindan dolanan kivrim. Alanin icinde catlaklar soluk: kareler okunsun. sRGB.
+            float3 riverFloor(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float detail = 1.0 - far * 0.5;
+                float3 a = lerp(float3(0.70, 0.52, 0.40), float3(0.78, 0.59, 0.46), fbm(q * 0.8 + 3.0));
+                a *= 0.92 + 0.14 * fbm(q * 0.3 + 6.0);                           // genis lekeler
+
+                // catlak camur: hucrenin en yakin iki merkezine uzaklik farki kenarda 0 (Voronoi). Hucreler hafif egilip bukulur
+                // (karo gibi durmasin), catlaklarin bir kismi silik (her plaka tam ayrilmamis).
+                float2 g = (q + 0.18 * (float2(fbm(q * 1.3 + 4.0), fbm(q * 1.3 + 9.0)) - 0.5)) / 0.42;
+                float2 id = floor(g), f = frac(g);
+                float d1 = 8.0, d2 = 8.0;
+                float2 nearest = 0.0;
+                [unroll] for (int j = -1; j <= 1; j++)
+                [unroll] for (int i = -1; i <= 1; i++)
+                {
+                    float2 o = float2(i, j);
+                    float2 c = o + 0.15 + 0.7 * hash22(id + o + 17.0);
+                    float d = length(f - c);
+                    if (d < d1) { d2 = d1; d1 = d; nearest = id + o; }
+                    else if (d < d2) d2 = d;
+                }
+                float edgeDist = (d2 - d1) * 0.5;                                  // hucre kenarina uzaklik (hucre biriminde)
+                float aa = fwidth(edgeDist) * 1.2;
+                float crack = 1.0 - smoothstep(0.012, 0.026 + aa, edgeDist);
+                float curl = 1.0 - smoothstep(0.03, 0.12, edgeDist);              // plakanin kenari hafif kalkik: acik
+                float open = 0.35 + 0.65 * smoothstep(0.35, 0.65, vnoise2(q * 1.1 + 27.0));   // catlagin ne kadar acik oldugu
+                float crackAmt = (1.0 - 0.88 * inArea) * detail * (1.0 - far) * open;
+                a *= 0.96 + 0.06 * hash21(nearest + 3.0);                          // her plaka biraz farkli
+                a = lerp(a, a * 1.06 + 0.02, curl * 0.4 * crackAmt);
+                a *= 1.0 - crack * 0.38 * crackAmt;
+
+                // eski akinti seritleri (alanin disinda): yatay, kivrimli, acik
+                float flow = sin(q.y * 5.0 + fbm(q * 0.45 + 2.0) * 5.0 + q.x * 0.25);
+                float flowMask = smoothstep(0.55, 0.75, fbm(q * 0.25 + 9.0)) * (1.0 - inArea) * detail;
+                a = lerp(a, a * 1.12 + 0.03, smoothstep(0.6, 0.95, flow) * flowMask * 0.6);
+
+                a *= 1.0 + detail * 0.10 * (vnoise2(q * 42.0) - 0.5);           // ince taneler
+                // seyrek kucuk yuvarlak cakillar (acik); alanda daha seyrek: toplanan cakillarla karismasin
+                float pebble = smoothstep(0.92, 0.97, vnoise2(q * 13.0 + 4.0)) * detail * (1.0 - 0.6 * inArea);
+                a = lerp(a, float3(0.80, 0.72, 0.64), pebble * 0.55);
+                return riverChannel(q, a, inArea);
+            }
+
 #endif
 
             half4 frag (Varyings i) : SV_Target
@@ -394,6 +477,7 @@ Shader "MarsKod/Ground"
                 else if (MarsCrater()) a = craterPlain(p, far, inArea);
                 else if (MarsDunes()) a = duneSand(p, far, inArea);
                 else if (MarsCanyon()) a = canyonFloor(p, far, inArea);
+                else if (MarsRiverBed()) a = riverFloor(p, far, inArea);
                 else a = regolith(p, far, inArea);
 
                 // oyun alani: ayni zemin, biraz daha duzgun; kare sinirlari ince ve soluk

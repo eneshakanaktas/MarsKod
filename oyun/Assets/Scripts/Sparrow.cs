@@ -18,6 +18,7 @@ public class Sparrow : MonoBehaviour
     GameObject[] missingWhenIncomplete;
     GameObject hole;
     Material eyeOff, eyeOn;
+    Material shell, sunlitShell;   // krem govde; gunesteki hali (Bolge 7) ilk istendiginde kurulur
     SparrowState state;
     float rotorSpeed;           // 0 duruyor, 1 tam hiz (WakeUp yavastan hizliya cikarir)
     float phase;
@@ -47,7 +48,7 @@ public class Sparrow : MonoBehaviour
     void Build()
     {
         phase = (transform.localPosition.x + transform.localPosition.z) * 3.7f;   // goruntu turlari tekrarlanabilir kalsin
-        var shell = Mats.Lit(DroneColors.Body, 0.45f);
+        shell = Mats.Lit(DroneColors.Body, 0.45f);
         var dark = Mats.Lit(DroneColors.Dark, 0.35f);
         var accent = Mats.Lit(DroneColors.Accent, 0.4f);
         eyeOff = Mats.Lit(Mats.Hex("#20262C"), 0.8f);
@@ -142,6 +143,25 @@ public class Sparrow : MonoBehaviour
         body.localPosition = Vector3.zero;
         body.localRotation = Quaternion.identity;
     }
+
+    // Bolge 7: Serce kanyonun dibinden yukarida, sabah gunesinin vurdugu seritte ucar. Krem kabuk sicak turuncuya calar ve hafif
+    // parlar (sahnenin isigi degismez: alan golgede kalir). Bolge 6'da cagrilmaz.
+    public void SetSunlit(bool on)
+    {
+        if (on && sunlitShell == null) sunlitShell = Mats.Emissive(SunlitBody, SunGlow, 0.45f);
+        var from = on ? shell : sunlitShell;
+        var to = on ? sunlitShell : shell;
+        if (from == null || from == to) return;
+        foreach (var r in GetComponentsInChildren<Renderer>(true))
+        {
+            var mats = r.sharedMaterials;
+            if (mats.Length == 0 || mats[0] != from) continue;
+            mats[0] = to;
+            r.sharedMaterials = mats;
+        }
+    }
+
+    static readonly Color SunlitBody = Mats.Hex("#F6DCC0"), SunGlow = Mats.Hex("#5A2E12");
 
     // Ilk litCount mercek yanar (turkuaz-beyaz), kalani sonuk
     void SetEyes(int litCount)

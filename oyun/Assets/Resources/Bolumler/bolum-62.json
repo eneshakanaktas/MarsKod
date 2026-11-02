@@ -1,0 +1,49 @@
+{
+  "numara": 62,
+  "baslik": "Serçe yukarıdan",
+  "gorev": "Serçe'ye sor: 5 adım",
+  "harita": [
+    ". . K . . .",
+    ". K . . . .",
+    ". K . . K .",
+    ". . . . K .",
+    ". K K K . .",
+    "R K . . . ."
+  ],
+  "izler": [["North", "North", "East", "East", "East"]],
+  "komutlar": ["move", "scout"],
+  "rutinler": ["git"],
+  "parametre_sarti": true,
+  "parcalar": ["def git(yon):", "git(scout())", "move(yon)", "scout()", "for i in range(3):"],
+  "konular": ["fonksiyon", "parametre", "komutun sonucunu kullanmak"],
+  "ipuclari": [
+    "Aşağıdan iki kol aynı görünüyor; izleri yalnızca Serçe yukarıdan görür. Serçe 5 adımlık iz görüyor.",
+    "`scout()` Serçe'ye sorar ve izin yönünü verir (örn. `East`). Bu cevabı doğrudan rutine verebilirsin: `git(scout())`.",
+    "`def git(yon):` altına `    move(yon)`. Sonra `for i in range(5):` altına `    git(scout())`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def git(yon):", "    move(yon)", "for i in range(5):", "    git(scout)"],
+      "aciklama": "Parantezsiz scout komutun kendisidir, cevabı değil; robot ona yön diye bakar ve anlamaz. Serçe'ye sormak için scout()."
+    },
+    {
+      "kod": ["def git(yon):", "    move(yon)", "for i in range(6):", "    git(scout())"],
+      "aciklama": "İz 5 adım: altıncı soruda Serçe gösterecek yön bulamaz."
+    },
+    {
+      "kod": ["def git():", "    move(scout())", "for i in range(5):", "    git()"],
+      "aciklama": "Robot izi yürür ama git'in bilgi kutusu yok: bu bölüm Serçe'nin cevabını rutine parametre olarak vermeni istiyor."
+    }
+  ],
+  "baslangic_kodu": [
+    "# serçe yukarıdan bakar, sen yürü :) - E.",
+    "def git(yon):",
+    "    move(yon)"
+  ],
+  "cozum": [
+    "def git(yon):",
+    "    move(yon)",
+    "for i in range(5):",
+    "    git(scout())"
+  ]
+}

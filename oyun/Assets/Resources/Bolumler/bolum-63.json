@@ -1,0 +1,55 @@
+{
+  "numara": 63,
+  "baslik": "Göç izleri",
+  "gorev": "ilerle'ye sayı ver",
+  "harita": [
+    ". . . . K .",
+    ". . . . . H",
+    "K . . K . .",
+    ". . . . C .",
+    ". . K . . .",
+    "R C . . . K"
+  ],
+  "komutlar": ["move", "collect"],
+  "rutinler": ["ilerle"],
+  "parametre_sarti": true,
+  "parcalar": ["def ilerle(kac):", "for i in range(kac):", "move(East)", "move(North)", "ilerle(2)", "collect()"],
+  "konular": ["fonksiyon", "parametre", "sayı parametresi"],
+  "ipuclari": [
+    "İz doğuya hep farklı uzunlukta gidiyor: önce 1 kare, sonra 3, sonra yine 1. Aradaki kuzey adımları ana kodda kalsın.",
+    "Parametre sayı da olabilir: `def ilerle(kac):` içinde `for i in range(kac):` ile kaç adım gidileceğini kutudan alırsın.",
+    "`def ilerle(kac):`, `    for i in range(kac):`, `        move(East)`. Sonra: `ilerle(1)`, `collect()`, `move(North)`, `move(North)`, `ilerle(3)`..."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def ilerle(kac):", "    for i in range(kac):", "        move(East)", "ilerle(1)", "collect()", "move(North)", "move(North)", "ilerle(1)", "ilerle(1)", "ilerle(1)", "collect()", "move(North)", "move(North)", "ilerle(1)"],
+      "aciklama": "Robot hedefe varır ama ilerle hep aynı sayıyla (1) çağrıldı: kutuya her seferinde gereken sayıyı koy, ilerle(3) gibi."
+    },
+    {
+      "kod": ["def ilerle(kac):", "    for i in range(kac):", "        move(East)", "ilerle(kac)"],
+      "aciklama": "kac yalnızca rutinin içinde var; dışarıda Python onu tanımaz (NameError). Çağırırken sayıyı yaz: ilerle(1)."
+    },
+    {
+      "kod": ["def ilerle(kac):", "    move(East)", "ilerle(1)", "collect()", "move(North)", "move(North)", "ilerle(3)", "collect()", "move(North)", "move(North)", "ilerle(1)"],
+      "aciklama": "Rutin kac'ı hiç kullanmıyor: ilerle(3) de tek adım gider. range(kac) ile kutudaki sayı kadar yürü."
+    },
+    {
+      "kod": ["def ilerle():", "    move(East)", "ilerle()", "collect()", "move(North)", "move(North)", "ilerle()", "ilerle()", "ilerle()", "collect()", "move(North)", "move(North)", "ilerle()"],
+      "aciklama": "Robot hedefe varır ama ilerle'nin bilgi kutusu yok: kaç adım gideceğini parametreyle söyle."
+    }
+  ],
+  "cozum": [
+    "def ilerle(kac):",
+    "    for i in range(kac):",
+    "        move(East)",
+    "ilerle(1)",
+    "collect()",
+    "move(North)",
+    "move(North)",
+    "ilerle(3)",
+    "collect()",
+    "move(North)",
+    "move(North)",
+    "ilerle(1)"
+  ]
+}

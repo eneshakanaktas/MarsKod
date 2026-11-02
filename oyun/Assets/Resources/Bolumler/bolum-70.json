@@ -1,0 +1,66 @@
+{
+  "numara": 70,
+  "baslik": "İzin sonu",
+  "gorev": "7 adım, iki rutin",
+  "harita": [
+    ". K . . . .",
+    ". K . K . .",
+    ". . Z K . K",
+    "Z K . . Z .",
+    ". . 3 . . .",
+    "K . R . . K"
+  ],
+  "toz_suresi": [2, 3, 2],
+  "izler": [
+    ["North", "West", "West", "North", "North", "North", "North"],
+    ["North", "East", "East", "North", "North", "North", "North"],
+    ["North", "North", "North", "North", "North", "East", "East"]
+  ],
+  "komutlar": ["move", "scout", "dust_here", "wait", "panel_power", "repair"],
+  "rutin_sayisi": 2,
+  "parametre_sarti": true,
+  "parcalar": [
+    "def adim(yon):",
+    "def kol(yon):",
+    "move(yon)",
+    "while dust_here():",
+    "wait()",
+    "adim(yon)",
+    "kol(scout())",
+    "repair()",
+    "for i in range(2):"
+  ],
+  "konular": ["fonksiyon", "parametre", "fonksiyon içinde fonksiyon", "değişen yol"],
+  "ipuclari": [
+    "İzin başı hep aynı: bir adım kuzey, orada çatlak panel. Sonra 3 kol, her biri 2 kare; hangi yöne gittiğini yalnızca Serçe görür.",
+    "Küçük rutin bir adım atıp tozu beklesin; büyük rutin bir kolu (iki adımı) yürüsün ve yönü küçüğe aktarsın.",
+    "`def kol(yon):`, `    adim(yon)`, `    adim(yon)`. Başta `adim(North)`, `repair()`; sonra `for i in range(3):` altına `    kol(scout())`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def adim(yon):", "    move(yon)", "    while dust_here():", "        wait()", "def kol(yon):", "    adim(yon)", "    adim(yon)", "adim(North)", "repair()", "kol(West)", "kol(North)", "kol(North)"],
+      "aciklama": "Yönler elle yazıldı: bir kez çalışır ama iz değişince robot yanlış kola sapar. Her kolda Serçe'ye sor."
+    },
+    {
+      "kod": ["def adim(yon):", "    move(yon)", "    while dust_here():", "        wait()", "def kol(yon):", "    adim(yon)", "    adim(yon)", "adim(North)", "for i in range(3):", "    kol(scout())"],
+      "aciklama": "Robot izin sonuna varır ama çatlak panel onarılmadı."
+    },
+    {
+      "kod": ["def adim(yon):", "    move(yon)", "    while dust_here():", "        wait()", "adim(North)", "repair()", "for i in range(3):", "    yon = scout()", "    adim(yon)", "    adim(yon)"],
+      "aciklama": "Robot izin sonuna varır ama bu bölüm iki rutin istiyor: bir kolu yürüme işini de rutine koy."
+    }
+  ],
+  "cozum": [
+    "def adim(yon):",
+    "    move(yon)",
+    "    while dust_here():",
+    "        wait()",
+    "def kol(yon):",
+    "    adim(yon)",
+    "    adim(yon)",
+    "adim(North)",
+    "repair()",
+    "for i in range(3):",
+    "    kol(scout())"
+  ]
+}

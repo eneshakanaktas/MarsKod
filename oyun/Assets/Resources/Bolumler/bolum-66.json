@@ -1,0 +1,62 @@
+{
+  "numara": 66,
+  "baslik": "İkinci iz",
+  "gorev": "kac=1 ile kısa çağır",
+  "harita": [
+    "R K . . . .",
+    ". . . K . .",
+    ". K . . . .",
+    "C 3 . . K .",
+    ". K . C . H",
+    ". . . . . K"
+  ],
+  "komutlar": ["move", "collect", "panel_power", "repair"],
+  "rutinler": ["git"],
+  "parametre_sarti": true,
+  "parcalar": [
+    "def git(yon, kac=1):",
+    "for i in range(kac):",
+    "move(yon)",
+    "git(East)",
+    "git(South, 3)",
+    "collect()",
+    "repair()"
+  ],
+  "konular": ["fonksiyon", "varsayılan değer"],
+  "ipuclari": [
+    "Bu yolda çoğu parça tek adım, bazıları uzun. Her seferinde `git(East, 1)` yazmak yerine 1'i rutine öğretebilirsin.",
+    "Varsayılan değer: `def git(yon, kac=1):`. Sayıyı yazmazsan kac 1 olur: `git(East)`. Yazarsan onu kullanır: `git(South, 3)`.",
+    "`git(South, 3)`, `collect()`, `git(East)`, `repair()`, `git(East, 2)`, `git(South)`, `collect()`, `git(East, 2)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def git(yon, kac=1):", "    move(yon)", "git(South, 3)", "collect()", "git(East)", "repair()", "git(East, 2)", "git(South)", "collect()", "git(East, 2)"],
+      "aciklama": "Rutin kac'ı kullanmıyor: git(South, 3) de tek adım gider. for i in range(kac): ile kutudaki sayı kadar yürü."
+    },
+    {
+      "kod": ["def git(yon, kac=1):", "    for i in range(kac):", "        move(yon)", "git(South, 3)", "collect()", "git(East)", "git(East, 2)", "git(South)", "collect()", "git(East, 2)"],
+      "aciklama": "Robot hedefe varır ama yoldaki çatlak panel onarılmadı."
+    },
+    {
+      "kod": ["def git(yon, kac):", "    for i in range(kac):", "        move(yon)", "git(South, 3)", "collect()", "git(East)"],
+      "aciklama": "kac'ın varsayılan değeri yok: git(East) eksik bilgiyle çağrıldı (TypeError). Tanımda kac=1 yaz."
+    },
+    {
+      "kod": ["move(South)", "move(South)", "move(South)", "collect()", "move(East)", "repair()", "move(East)", "move(East)", "move(South)", "collect()", "move(East)", "move(East)"],
+      "aciklama": "Robot hedefe varır ama git rutini yok: yönü ve (gerekirse) sayıyı alan bir rutin yaz."
+    }
+  ],
+  "cozum": [
+    "def git(yon, kac=1):",
+    "    for i in range(kac):",
+    "        move(yon)",
+    "git(South, 3)",
+    "collect()",
+    "git(East)",
+    "repair()",
+    "git(East, 2)",
+    "git(South)",
+    "collect()",
+    "git(East, 2)"
+  ]
+}

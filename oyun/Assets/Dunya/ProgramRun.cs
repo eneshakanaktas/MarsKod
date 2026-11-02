@@ -53,6 +53,10 @@ namespace MarsKod.Dunya
         public readonly Dictionary<string, int> RoutineRuns = new Dictionary<string, int>();
         /// <summary>Bölümün rutin şartı karşılanmadıysa açıklaması; şart yoksa, sağlandıysa ya da kod durduysa null</summary>
         public RoutineProblem RoutineProblem;
+        /// <summary>Çalışan her rutinin kaç parametresi (bilgi kutusu) var</summary>
+        public readonly Dictionary<string, int> RoutineParameters = new Dictionary<string, int>();
+        /// <summary>Her rutinin çağrılırken aldığı farklı bilgiler, ilk görülme sırasıyla ("East", "South, 3"); varsayılan değerler dahil</summary>
+        public readonly Dictionary<string, List<string>> RoutineArguments = new Dictionary<string, List<string>>();
 
         public bool Stopped => Error != null || Halt != null || Rule != null;
     }
@@ -98,18 +102,36 @@ namespace MarsKod.Dunya
             report.Output = interpreter?.Output ?? "";
             if (interpreter != null) ReadDefinedRoutines(report, interpreter.Globals);
             if (!report.Stopped && routines != null && !routines.IsEmpty)
-                report.RoutineProblem = routines.Check(report.DefinedRoutines, report.RoutineRuns);
+                report.RoutineProblem = routines.Check(report);
             report.Complete = !report.Stopped && world.Complete && report.RoutineProblem == null;
             return report;
         }
 
-        // Rutin cagrisinin ilk adimi: cerceve yeniyse o rutinin calisma sayisini bir artirir
+        // Rutin cagrisinin ilk adimi: cerceve yeniyse o rutinin calisma sayisini bir artirir ve aldigi bilgileri yazar
+        // (ilk adimda parametreler cagridaki degerlerle bagli; rutin sonra onlari degistirebilir)
         static void CountCall(RunReport report, HashSet<Frame> calls, Frame frame)
         {
             if (frame?.Fn == null || !calls.Add(frame)) return;
             string name = frame.Fn.Def.Name;
             report.RoutineRuns[name] = report.RoutineRuns.TryGetValue(name, out var n) ? n + 1 : 1;
+            RecordArguments(report, name, frame);
         }
+
+        static void RecordArguments(RunReport report, string name, Frame frame)
+        {
+            var parameters = frame.Fn.Def.Params;
+            report.RoutineParameters[name] = parameters.Count;
+            var values = new List<string>(parameters.Count);
+            foreach (var p in parameters)
+                values.Add(frame.Vars.TryGetValue(p.Name, out var v) ? ArgumentText(v) : "?");
+            string text = string.Join(", ", values);
+            if (!report.RoutineArguments.TryGetValue(name, out var seen)) report.RoutineArguments[name] = seen = new List<string>();
+            if (!seen.Contains(text)) seen.Add(text);
+        }
+
+        // Yonler (metin olarak tutulur) oyuncunun yazdigi gibi: East; gerisi Python'daki gorunusu: 3, 'abc'
+        static string ArgumentText(object value) =>
+            value is string s && Enum.TryParse(s, out Direction d) && s == d.ToString() ? s : Values.Repr(value);
 
         // Kod bitince modul duzeyinde fonksiyon olarak duran adlar = oyuncunun def ile yazdigi rutinler
         static void ReadDefinedRoutines(RunReport report, Frame globals)

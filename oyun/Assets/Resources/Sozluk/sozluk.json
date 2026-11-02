@@ -190,13 +190,28 @@
     {
       "baslik": "def",
       "kelimeler": ["def"],
-      "aciklama": "Rutin (fonksiyon) tanımlar: birkaç adımı bir ada bağlarsın, sonra o adı yazdıkça adımlar çalışır. Tanımlamak çalıştırmaz, çağırmak çalıştırır. Adımlar 4 boşluk içeride yazılır; rutin, çağrılmadan önce tanımlanmalı.",
+      "aciklama": "Rutin (fonksiyon) tanımlar: birkaç adımı bir ada bağlarsın, sonra o adı yazdıkça adımlar çalışır. Tanımlamak çalıştırmaz, çağırmak çalıştırır. Adımlar 4 boşluk içeride yazılır; rutin, çağrılmadan önce tanımlanmalı. Parantezin içine bilgi kutuları (parametre) yazılabilir: def git(yon, kac=1): Çağırırken bilgiler aynı sırayla verilir: git(South, 3). kac=1 varsayılan değerdir: yazılmazsa 1 olur.",
       "ornek": [
         "def sabah_turu():",
         "    move(East)",
         "    collect()",
         "sabah_turu()   # bir kez",
-        "sabah_turu()   # bir kez daha"
+        "sabah_turu()   # bir kez daha",
+        "def git(yon, kac=1):",
+        "    for i in range(kac):",
+        "        move(yon)",
+        "git(East)       # kac = 1",
+        "git(South, 3)   # kac = 3"
+      ]
+    },
+    {
+      "baslik": "scout",
+      "kelimeler": ["scout"],
+      "aciklama": "Serçe yukarıdan bakar, izin Kıvılcım'ın durduğu kareden hangi yöne gittiğini söyler: North, East, South ya da West. Cevabı doğrudan bir rutine ya da move'a verebilir, bir değişkende de tutabilirsin. Kıvılcım izin üstünde değilse ya da iz bittiyse robot durur.",
+      "ornek": [
+        "move(scout())",
+        "yon = scout()",
+        "move(yon)"
       ]
     }
   ]

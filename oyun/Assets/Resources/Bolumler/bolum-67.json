@@ -1,0 +1,47 @@
+{
+  "numara": 67,
+  "baslik": "Yan kanyon",
+  "gorev": "8 adım: hep Serçe'ye",
+  "harita": [
+    ". . . K . .",
+    "K . . . . .",
+    ". K . Z . K",
+    ". . . . K .",
+    ". Z K . . .",
+    "R . . . . K"
+  ],
+  "toz_suresi": [3, 2],
+  "izler": [["North", "East", "North", "East", "East", "North", "North", "East"]],
+  "komutlar": ["move", "scout", "dust_here", "wait"],
+  "rutinler": ["git"],
+  "parametre_sarti": true,
+  "parcalar": ["def git(yon):", "move(yon)", "while dust_here():", "wait()", "git(scout())", "for i in range(4):"],
+  "konular": ["fonksiyon", "parametre", "döngü içinde fonksiyon"],
+  "ipuclari": [
+    "Yan kanyon kıvrım kıvrım: neredeyse her adımda yol ayrılıyor. Serçe 8 adımlık iz görüyor; her adımda ona sor.",
+    "Soruyu döngüye koy: her turda `git(scout())`. Yolda toz da var; beklemeyi rutinin içine al, her adımda kendiliğinden çalışsın.",
+    "`def git(yon):`, `    move(yon)`, `    while dust_here():`, `        wait()`. Sonra `for i in range(8):` altına `    git(scout())`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def git(yon):", "    move(yon)", "for i in range(8):", "    git(scout())"],
+      "aciklama": "Yolda toz var: rutin beklemeden yürümeye çalışır. Tozda yol görünmez; while dust_here(): ile bekle."
+    },
+    {
+      "kod": ["def git(yon):", "    move(yon)", "    while dust_here():", "        wait()", "for i in range(7):", "    git(scout())"],
+      "aciklama": "İz 8 adım: robot izin sonuna bir adım kala durur."
+    },
+    {
+      "kod": ["def git():", "    move(scout())", "    while dust_here():", "        wait()", "for i in range(8):", "    git()"],
+      "aciklama": "Robot izi yürür ama git'in bilgi kutusu yok: Serçe'nin cevabını rutine parametre olarak ver."
+    }
+  ],
+  "cozum": [
+    "def git(yon):",
+    "    move(yon)",
+    "    while dust_here():",
+    "        wait()",
+    "for i in range(8):",
+    "    git(scout())"
+  ]
+}

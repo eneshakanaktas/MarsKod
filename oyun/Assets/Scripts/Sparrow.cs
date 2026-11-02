@@ -51,7 +51,7 @@ public class Sparrow : MonoBehaviour
         var dark = Mats.Lit(DroneColors.Dark, 0.35f);
         var accent = Mats.Lit(DroneColors.Accent, 0.4f);
         eyeOff = Mats.Lit(Mats.Hex("#20262C"), 0.8f);
-        eyeOn = Mats.Unlit(Mats.Hex("#8FF0FF"));   // pakette Emissive parlamiyor (ILERLEME.md acik soru); Unlit her isikta net
+        eyeOn = Mats.Unlit(Mats.Hex("#8FF0FF"));   // Unlit: her isikta ayni net renk
 
         body = Parts.Empty("Govde", transform);
         var dome = Parts.Add("Kabuk", body, MeshFactory.Sphere(BodyRadius, 12, 20), shell, Vector3.zero);

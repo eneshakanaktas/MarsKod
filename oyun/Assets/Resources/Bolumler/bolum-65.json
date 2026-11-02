@@ -1,0 +1,57 @@
+{
+  "numara": 65,
+  "baslik": "İzler ayrılıyor",
+  "gorev": "3 kez sor, 2'şer yürü",
+  "harita": [
+    ". . . . . .",
+    ". . . K . .",
+    "K . . . . K",
+    ". K . . . .",
+    "K . . K . .",
+    "R . . . . ."
+  ],
+  "izler": [["East", "East", "North", "North", "East", "East"]],
+  "komutlar": ["move", "scout"],
+  "rutinler": ["git"],
+  "parametre_sarti": true,
+  "parcalar": [
+    "def git(yon, kac):",
+    "for i in range(kac):",
+    "move(yon)",
+    "yon = scout()",
+    "git(yon, 2)",
+    "for i in range(3):"
+  ],
+  "konular": ["fonksiyon", "parametre", "değişken"],
+  "ipuclari": [
+    "İz her yol ayrımından sonra 2 kare düz gidiyor; 3 yol ayrımı var. Her ayrımda Serçe'ye bir kez sor.",
+    "Serçe'nin cevabını bir değişkene koyabilirsin: `yon = scout()`. Sonra o değişkeni rutine ver: `git(yon, 2)`. Değişkenin adı parametrenin adıyla aynı olmak zorunda değil.",
+    "`def git(yon, kac):` + `for` ile `move(yon)`. Sonra `for i in range(3):` altına `    yon = scout()` ve `    git(yon, 2)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def git(yon, kac):", "    for i in range(kac):", "        move(yon)", "for i in range(3):", "    git(yon, 2)", "    yon = scout()"],
+      "aciklama": "Önce sor, sonra yürü: ilk turda yon daha boş (NameError)."
+    },
+    {
+      "kod": ["def git(yon, kac):", "    for i in range(kac):", "        move(yon)", "yon = scout()", "for i in range(3):", "    git(yon, 2)"],
+      "aciklama": "Serçe'ye yalnızca bir kez soruldu: robot hep ilk yöne gider ve alanın dışına çıkar. Her yol ayrımında yeniden sor."
+    },
+    {
+      "kod": ["def git(yon, kac):", "    for i in range(kac):", "        move(yon)", "for i in range(3):", "    yon = scout", "    git(yon, 2)"],
+      "aciklama": "Parantezsiz scout Serçe'ye sormaz; değişkene komutun kendisi girer, robot onu yön diye anlamaz."
+    },
+    {
+      "kod": ["def git():", "    for i in range(2):", "        move(scout())", "for i in range(3):", "    git()"],
+      "aciklama": "Robot izi yürür ama git'in bilgi kutusu yok: yönü ve adım sayısını parametreyle ver."
+    }
+  ],
+  "cozum": [
+    "def git(yon, kac):",
+    "    for i in range(kac):",
+    "        move(yon)",
+    "for i in range(3):",
+    "    yon = scout()",
+    "    git(yon, 2)"
+  ]
+}

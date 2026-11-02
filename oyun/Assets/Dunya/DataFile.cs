@@ -61,6 +61,12 @@ namespace MarsKod.Dunya
             throw new DataFormatError("\"" + key + "\" boş olmayan bir metin olmalı (çift tırnak içinde).");
         }
 
+        public static bool Flag(Dictionary<string, object> d, string key)
+        {
+            if (Field(d, key) is bool b) return b;
+            throw new DataFormatError("\"" + key + "\" true ya da false olmalı (tırnaksız).");
+        }
+
         public static List<string> TextList(Dictionary<string, object> d, string key)
         {
             if (Field(d, key) is List<object> list && list.All(x => x is string))

@@ -1,5 +1,5 @@
 # Bölüm çözümleri (test için)
-Her bölümün doğru çözümü; `bolum-NN.json` içindeki çözümle aynıdır (oluşturuldu: 2026-10-22).
+Her bölümün doğru çözümü; `bolum-NN.json` içindeki çözümle aynıdır (oluşturuldu: 2026-10-22; 61-70: 2026-11-02).
 
 ## Bölüm 1
 ```python
@@ -722,4 +722,136 @@ asagi()
 for i in range(3):
     doguya()
 asagi()
+```
+
+## Bölüm 61
+```python
+def git(yon):
+    move(yon)
+    while dust_here():
+        wait()
+git(South)
+git(South)
+collect()
+git(East)
+git(East)
+git(South)
+git(South)
+collect()
+git(East)
+git(East)
+```
+
+## Bölüm 62
+```python
+def git(yon):
+    move(yon)
+for i in range(5):
+    git(scout())
+```
+
+## Bölüm 63
+```python
+def ilerle(kac):
+    for i in range(kac):
+        move(East)
+ilerle(1)
+collect()
+move(North)
+move(North)
+ilerle(3)
+collect()
+move(North)
+move(North)
+ilerle(1)
+```
+
+## Bölüm 64
+```python
+def git(yon, kac):
+    for i in range(kac):
+        move(yon)
+        while dust_here():
+            wait()
+git(South, 2)
+collect()
+git(East, 3)
+collect()
+git(South, 3)
+git(East, 2)
+```
+
+## Bölüm 65
+```python
+def git(yon, kac):
+    for i in range(kac):
+        move(yon)
+for i in range(3):
+    yon = scout()
+    git(yon, 2)
+```
+
+## Bölüm 66
+```python
+def git(yon, kac=1):
+    for i in range(kac):
+        move(yon)
+git(South, 3)
+collect()
+git(East)
+repair()
+git(East, 2)
+git(South)
+collect()
+git(East, 2)
+```
+
+## Bölüm 67
+```python
+def git(yon):
+    move(yon)
+    while dust_here():
+        wait()
+for i in range(8):
+    git(scout())
+```
+
+## Bölüm 68
+```python
+def git(yon, kac):
+    for i in range(kac):
+        move(yon)
+def kol(yon):
+    git(yon, 2)
+    git(North, 1)
+for i in range(3):
+    kol(scout())
+```
+
+## Bölüm 69
+```python
+def adim(yon):
+    move(yon)
+    while dust_here():
+        wait()
+adim(scout())
+adim(scout())
+repair()
+for i in range(5):
+    adim(scout())
+```
+
+## Bölüm 70
+```python
+def adim(yon):
+    move(yon)
+    while dust_here():
+        wait()
+def kol(yon):
+    adim(yon)
+    adim(yon)
+adim(North)
+repair()
+for i in range(3):
+    kol(scout())
 ```

@@ -114,6 +114,8 @@ public partial class Oyun : MonoBehaviour
     bool running, done, complete;
     // Adim adim modu: her satirdan sonra ⏭ basisini bekler (stepRequested: bir satir daha calissin)
     bool stepMode, stepRequested;
+    int trailTurn;       // degisen yolda her Calistir'da siradaki iz oynatilir (TrailRuns.Pick)
+    bool trailChanged;   // son kosuda kod bir izde calisip digerinde takildi: mesajin basinda soylenir
     float stars = 1f, starsTarget = 1f;
     // Kademe basina XP; kademe kutusundaki ✓ ve bolum sonu XP (Gorev 9) bunu kullanir.
     Xp xp;
@@ -484,6 +486,7 @@ public partial class Oyun : MonoBehaviour
         program = null;
         running = false; done = false; complete = false;
         stepMode = false; stepRequested = false;
+        trailTurn = 0;
         levelIndex = index;
         level = levels[index];
 
@@ -774,8 +777,11 @@ public partial class Oyun : MonoBehaviour
         running = true;
         hud.SetRunning(true);
         hud.HideMessage();
-        var world = level.CreateWorld();
-        var report = ProgramRun.Execute(code, world, routines: level.Routines);
+        var runs = level.RunTrails(code);
+        var shown = TrailRuns.Pick(runs, trailTurn++);
+        var world = shown.World;
+        var report = shown.Report;
+        trailChanged = TrailRuns.Mixed(runs);
 
         // Bitmeyen dongude kaydin sadece basi oynatilir; uzun kayitta bos satirlarda beklenmez.
         int count = report.Halt != null && report.Halt.Reason == "steps" ? Mathf.Min(report.Trace.Count, 40) : report.Trace.Count;
@@ -856,21 +862,25 @@ public partial class Oyun : MonoBehaviour
         {
             hud.SetActiveLine(-1);
             if (world.Complete && report.RoutineProblem != null) // robot isi yapti ama bolumun istedigi rutin yok
-                hud.ShowMessage("GÖREV", report.RoutineProblem.Title, report.RoutineProblem.Text, null, error: false);
+                ShowFailure("GÖREV", report.RoutineProblem.Title, report.RoutineProblem.Text, null, error: false);
             else if (world.IceLeft > 0)
-                hud.ShowMessage("GÖREV", "Kod bitti, " + Collectibles.PluralName(level.Item) + " bitmedi",
+                ShowFailure("GÖREV", "Kod bitti, " + Collectibles.PluralName(level.Item) + " bitmedi",
                     "Kodun sonuna kadar çalıştı ama " + world.IceLeft + " " + Collectibles.Name(level.Item) + " daha toplanmayı bekliyor. Robot yalnızca kodda yazanı yapar: eksik adımı bul.",
                     null, error: false);
             else if (world.CrackedLeft > 0)
-                hud.ShowMessage("GÖREV", "Kod bitti, çatlak panel kaldı",
+                ShowFailure("GÖREV", "Kod bitti, çatlak panel kaldı",
                     "Kodun sonuna kadar çalıştı ama " + world.CrackedLeft + " çatlak panel daha onarılmayı bekliyor (turuncu ışıklı olanlar). Robot yalnızca kodda yazanı yapar: hangi paneli atladığını bul.",
                     null, error: false);
             else if (!world.ReportDone)
-                hud.ShowMessage("GÖREV", "Kod bitti, rapor gönderilmedi",
+                ShowFailure("GÖREV", "Kod bitti, rapor gönderilmedi",
                     "Kodun sonuna kadar çalıştı ama anten hâlâ sayıyı bekliyor. Sonunda report() ile istenen sayıyı gönder; sayıyı bir değişkende tut.",
                     null, error: false);
+            else if (level.Trails.Count > 0)
+                ShowFailure("GÖREV", "Kod bitti, iz bitmedi",
+                    "Kodun sonuna kadar çalıştı ama Kıvılcım izin sonuna varmadı. Serçe izin kaç adım olduğunu görevde söylüyor: ona o kadar sor.",
+                    null, error: false);
             else
-                hud.ShowMessage("GÖREV", "Kod bitti, robot hedefte değil",
+                ShowFailure("GÖREV", "Kod bitti, robot hedefte değil",
                     "Kodun sonuna kadar çalıştı ama robot işaretli kareye varmadı. Kod bittiğinde robot hedef karede durmalı: yolu adım adım say.",
                     null, error: false);
             robot.ShowPuzzled();
@@ -1085,6 +1095,11 @@ public partial class Oyun : MonoBehaviour
                 yield return robot.Collect();
                 yield return robot.Bump();
                 break;
+            case Scouted s: // gecici: Bolge 7 · 3a'da Serce yol ayrimina suzulup kolu isikla gosterir
+                StartCoroutine(ScanPulse.Play(levelRoot, Pos(s.At.Step(s.Direction)), true));
+                StartCoroutine(PowerLabel.Show(levelRoot, Pos(s.At), s.Direction.ToString(), Mats.Hex("#5FD4C4")));
+                yield return Tween.Wait(0.5f);
+                break;
         }
     }
 
@@ -1094,15 +1109,23 @@ public partial class Oyun : MonoBehaviour
         Sound.Error();
         if (report.Rule != null)
         {
-            hud.ShowMessage("OYUN KURALI", report.Rule.Title, report.Rule.Text, null, error: true);
+            ShowFailure("OYUN KURALI", report.Rule.Title, report.Rule.Text, null, error: true);
             return;
         }
         var ex = report.Error != null ? Explain.ExplainError(report.Error) : Explain.ExplainHalt(report.Halt);
         string text = ex.Hint != null ? ex.Text + "\n<b>İpucu:</b> " + ex.Hint : ex.Text;
         if (report.Error != null)
-            hud.ShowMessage("PYTHON HATASI", ex.Title, text, report.Error.Type + ": " + report.Error.Message, error: true);
+            ShowFailure("PYTHON HATASI", ex.Title, text, report.Error.Type + ": " + report.Error.Message, error: true);
         else
-            hud.ShowMessage(report.Halt.Kind == "limit" ? "DURDURULDU" : "HENÜZ YOK", ex.Title, text, null, error: true);
+            ShowFailure(report.Halt.Kind == "limit" ? "DURDURULDU" : "HENÜZ YOK", ex.Title, text, null, error: true);
+    }
+
+    const string TrailChangedNote = "Serçe bu sefer başka bir kol gördü.";
+
+    // Kod bir izde calisip bu izde takildiysa oyuncu yolun degistigini bilsin
+    void ShowFailure(string header, string title, string text, string detail, bool error)
+    {
+        hud.ShowMessage(header, title, trailChanged ? TrailChangedNote + " " + text : text, detail, error);
     }
 
     // ---- Oyuncunun kodu ----

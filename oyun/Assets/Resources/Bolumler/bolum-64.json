@@ -1,0 +1,63 @@
+{
+  "numara": 64,
+  "baslik": "Kayıt 3",
+  "gorev": "git'e yön ve sayı ver",
+  "harita": [
+    "R . K . . .",
+    "Z . . . K .",
+    "C . Z C . .",
+    ". K . . . .",
+    ". . K Z . K",
+    "K . . . . H"
+  ],
+  "toz_suresi": [3, 2, 2],
+  "komutlar": ["move", "collect", "dust_here", "wait"],
+  "rutinler": ["git"],
+  "parametre_sarti": true,
+  "parcalar": [
+    "def git(yon, kac):",
+    "for i in range(kac):",
+    "move(yon)",
+    "while dust_here():",
+    "wait()",
+    "git(South, 2)",
+    "collect()"
+  ],
+  "konular": ["fonksiyon", "iki parametre", "parametre sırası"],
+  "ipuclari": [
+    "Yol dört düz parçadan oluşuyor: güneye 2, doğuya 3, güneye 3, doğuya 2. Her parçada hem yön hem uzunluk değişiyor.",
+    "Rutin iki bilgi alabilir: `def git(yon, kac):`. Çağırırken sıra aynı olmalı: önce yön, sonra sayı: `git(South, 2)`.",
+    "`def git(yon, kac):`, `    for i in range(kac):`, `        move(yon)`, `        while dust_here():`, `            wait()`. Sonra `git(South, 2)`, `collect()`, `git(East, 3)`..."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def git(yon, kac):", "    for i in range(kac):", "        move(yon)", "        while dust_here():", "            wait()", "git(2, South)"],
+      "aciklama": "Sıra karıştı: yon'a 2, kac'a South gitti; range bir sayı ister (TypeError). Tanımdaki sırayla ver: git(South, 2)."
+    },
+    {
+      "kod": ["def git(yon, kac):", "    for i in range(kac):", "        move(yon)", "        while dust_here():", "            wait()", "git(South)"],
+      "aciklama": "İki kutu var, biri boş kaldı: Python kac'ın eksik olduğunu söyler (TypeError)."
+    },
+    {
+      "kod": ["def git(yon, kac):", "    for i in range(kac):", "        move(yon)", "    while dust_here():", "        wait()", "git(South, 2)", "collect()", "git(East, 3)", "collect()", "git(South, 3)", "git(East, 2)"],
+      "aciklama": "Toz beklemesi döngünün dışında kaldı: robot tozlu karede durmadan yürümeye çalışır. Beklemeyi her adımın içine al."
+    },
+    {
+      "kod": ["move(South)", "while dust_here():", "    wait()", "move(South)", "collect()", "move(East)", "move(East)", "while dust_here():", "    wait()", "move(East)", "collect()", "move(South)", "move(South)", "while dust_here():", "    wait()", "move(South)", "move(East)", "move(East)"],
+      "aciklama": "Robot hedefe varır ama git rutini yok: yön ve uzunluğu parametre olarak alan bir rutin yaz."
+    }
+  ],
+  "cozum": [
+    "def git(yon, kac):",
+    "    for i in range(kac):",
+    "        move(yon)",
+    "        while dust_here():",
+    "            wait()",
+    "git(South, 2)",
+    "collect()",
+    "git(East, 3)",
+    "collect()",
+    "git(South, 3)",
+    "git(East, 2)"
+  ]
+}

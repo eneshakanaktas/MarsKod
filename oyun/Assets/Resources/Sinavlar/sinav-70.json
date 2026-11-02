@@ -1,0 +1,24 @@
+{
+  "bolum": 70,
+  "baslik": "KIVILCIM · KENDİNİ DENETLİYOR",
+  "sorular": [
+    {
+      "soru": "def git(yon, kac=1): tanımlıyken git(North) çağrılırsa kac kaçtır?",
+      "secenekler": ["0", "Hata verir", "1", "North"],
+      "dogru": 2,
+      "aciklama": "kac=1 varsayılan değerdir: çağrıda sayı yazılmazsa 1 olur."
+    },
+    {
+      "soru": "def git(yon): tanımlı. Kod: isaret = scout() ve sonra git(isaret). Çalışır mı?",
+      "secenekler": ["Evet: değer kutuya girer, değişkenin adı önemli değil", "Hayır, değişkenin adı da yon olmalı", "NameError verir", "Yalnızca isaret East ise"],
+      "dogru": 0,
+      "aciklama": "Rutine değişkenin adı değil değeri gider. Rutinin içinde o değerin adı yon'dur."
+    },
+    {
+      "soru": "Yol her denemede değişiyorsa move(North), move(East)... diye yönleri ezberlemek neden işe yaramaz?",
+      "secenekler": ["move yavaş çalışır", "İşe yarar, yollar hep aynıdır", "move yön almaz", "Bir yolda doğru, öteki yolda yanlış olur; yönü her seferinde Serçe'ye sormak gerekir"],
+      "dogru": 3,
+      "aciklama": "Kod ne yazıyorsa onu yapar. Değişen dünyada doğru kod soru sorar ve cevaba göre davranır."
+    }
+  ]
+}

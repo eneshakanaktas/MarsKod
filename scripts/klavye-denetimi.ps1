@@ -20,14 +20,16 @@ using System.Runtime.InteropServices;
 public static class Tus {
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     public static extern bool PostMessageW(IntPtr h, uint msg, IntPtr w, IntPtr l);
+    [DllImport("user32.dll")]
+    public static extern bool SetForegroundWindow(IntPtr h);
 }
 "@
 $WM_KEYDOWN = 0x100; $WM_KEYUP = 0x101; $WM_CHAR = 0x102
 
 $oyun = Start-Process $exe -ArgumentList @("-screen-width", "450", "-screen-height", "975", "-screen-fullscreen", "0",
-    "-logFile", "`"$log`"", "-shots", "`"$Klasor`"", "-bolum", "50", "-klavyedenetimi") -PassThru
+    "-logFile", "`"$log`"", "-shots", "`"$Klasor`"", "-bolum", "70", "-klavyedenetimi") -PassThru
 
-# Oyun once bolum goruntulerini alir (-bolum 50: yalnizca Bolum 50; hepsi ~20 dk surer), sonra koda tiklayip hazir dosyasini yazar
+# Oyun once bolum goruntulerini alir (-bolum 70: son bolum, yalnizca Bolum 70; hepsi ~30 dk surer), sonra koda tiklayip hazir dosyasini yazar
 $son = (Get-Date).AddMinutes(10)
 while (-not (Test-Path $hazir)) {
     if ((Get-Date) -gt $son -or $oyun.HasExited) { throw "Oyun klavye denetimine gelmedi" }
@@ -35,6 +37,9 @@ while (-not (Test-Path $hazir)) {
 }
 $oyun.Refresh()
 $h = $oyun.MainWindowHandle
+# Unity pencere on planda degilken girdiyi atlayabilir: tuslardan once oyunu on plana alir
+[Tus]::SetForegroundWindow($h) | Out-Null
+Start-Sleep -Milliseconds 500
 
 function Bas([int]$vk, [int]$ch = 0) {
     [Tus]::PostMessageW($h, $WM_KEYDOWN, [IntPtr]$vk, [IntPtr]1) | Out-Null

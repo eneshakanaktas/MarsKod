@@ -46,11 +46,26 @@ public static class OyunBuild
         Make("Ring", "MarsKod/Ring", null);
         Make("Ground", "MarsKod/Ground", null);
         Make("FarRock", "MarsKod/FarRock", null);
+        KeepEmission();
+    }
+
+    static string MaterialPath(string name) => $"Assets/Resources/Materials/{name}.mat";
+
+    // Paket, malzeme dosyalarinda yazili olmayan secenekleri (keyword) icermez: _EMISSION dosyada yoksa Mats.Emissive'in
+    // oyunda acmasi ise yaramaz, parlayan nesneler (enerji hucresi, buz, lambalar...) pakette sonuk kalir.
+    // Dosya bir gun yeniden yazilip secenek silinirse diye her kurulumda denetlenir.
+    static void KeepEmission()
+    {
+        var m = AssetDatabase.LoadAssetAtPath<Material>(MaterialPath("LitEmissive"));
+        if (m == null || m.IsKeywordEnabled("_EMISSION")) return;
+        m.EnableKeyword("_EMISSION");
+        EditorUtility.SetDirty(m);
+        Debug.Log("[OyunBuild] LitEmissive: _EMISSION yeniden acildi.");
     }
 
     static void Make(string name, string shader, System.Action<Material> init)
     {
-        string path = $"Assets/Resources/Materials/{name}.mat";
+        string path = MaterialPath(name);
         if (AssetDatabase.LoadAssetAtPath<Material>(path) != null) return;
         var s = Shader.Find(shader);
         if (s == null) throw new System.Exception("Shader bulunamadi: " + shader);

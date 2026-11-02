@@ -14,6 +14,7 @@ public static class Obstacles
             case Region.CraterField: Rock(parent, pos, index, "#5C4C50", "#463A3F"); break;   // koyu bazalt
             case Region.Dunes:
             case Region.AntennaHill: Rock(parent, pos, index, "#8A5440", "#6E4232"); SandDrift(parent, pos, index); break;
+            case Region.RiverBed: // gecici: nehir yatagi kendi gorunusu gelene kadar kanyon
             case Region.Canyon:
                 if (crate) Crates(parent, pos, index); else LayeredRock(parent, pos, index);
                 break;

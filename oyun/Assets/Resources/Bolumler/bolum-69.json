@@ -1,0 +1,66 @@
+{
+  "numara": 69,
+  "baslik": "El izleri",
+  "gorev": "7 adım, yol değişir",
+  "harita": [
+    "K . K . . K",
+    ". Z . . K .",
+    ". K Z . . K",
+    "2 . . K . .",
+    "Z . . . . K",
+    "R K . . . ."
+  ],
+  "toz_suresi": [2, 3, 2],
+  "izler": [
+    ["North", "North", "East", "East", "North", "East", "East"],
+    ["North", "North", "North", "North", "East", "East", "East"],
+    ["North", "North", "East", "South", "East", "East", "East"]
+  ],
+  "komutlar": ["move", "scout", "dust_here", "wait", "panel_power", "repair"],
+  "rutin_sayisi": 1,
+  "parametre_sarti": true,
+  "parcalar": [
+    "def adim(yon):",
+    "move(yon)",
+    "while dust_here():",
+    "wait()",
+    "adim(scout())",
+    "repair()",
+    "for i in range(5):"
+  ],
+  "konular": ["fonksiyon", "parametre", "değişen yol"],
+  "ipuclari": [
+    "İz her denemede değişebilir ama hep 7 adım. İlk iki adım her izde aynı yerden geçer: orada çatlak bir panel var.",
+    "Rutinin adını sen seç; yönü parametre olarak alsın, tozu kendisi beklesin. Paneli rutinin içinde değil, ikinci adımdan sonra bir kez onar.",
+    "Rutin: `move(yon)` + `while dust_here(): wait()`. Sonra iki kez `adim(scout())`, `repair()`, `for i in range(5):` altına `adim(scout())`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def adim(yon):", "    move(yon)", "    while dust_here():", "        wait()", "adim(North)", "adim(North)", "repair()", "adim(East)", "adim(East)", "adim(North)", "adim(East)", "adim(East)"],
+      "aciklama": "Yönler elle yazıldı: bir kez çalışır ama iz değişince robot yanlış kola sapar. Her adımda Serçe'ye sor."
+    },
+    {
+      "kod": ["def adim(yon):", "    move(yon)", "    while dust_here():", "        wait()", "    repair()", "for i in range(7):", "    adim(scout())"],
+      "aciklama": "repair() rutinin içinde her adımda çalışır: panel olmayan karede robot durur. Paneli yalnızca bulunduğu yerde onar."
+    },
+    {
+      "kod": ["def adim(yon):", "    move(yon)", "adim(scout())", "adim(scout())", "repair()", "for i in range(5):", "    adim(scout())"],
+      "aciklama": "İlk adımda toz var: rutin beklemeden yürümeye çalışır."
+    },
+    {
+      "kod": ["def adim():", "    move(scout())", "    while dust_here():", "        wait()", "adim()", "adim()", "repair()", "for i in range(5):", "    adim()"],
+      "aciklama": "Robot izi yürür ama rutinin bilgi kutusu yok: Serçe'nin cevabını parametre olarak ver."
+    }
+  ],
+  "cozum": [
+    "def adim(yon):",
+    "    move(yon)",
+    "    while dust_here():",
+    "        wait()",
+    "adim(scout())",
+    "adim(scout())",
+    "repair()",
+    "for i in range(5):",
+    "    adim(scout())"
+  ]
+}

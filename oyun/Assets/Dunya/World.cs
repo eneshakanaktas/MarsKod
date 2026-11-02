@@ -128,6 +128,13 @@ namespace MarsKod.Dunya
         public bool Correct;
     }
 
+    /// <summary>Serçe yukarıdan baktı ve izin bu kareden gittiği yönü söyledi (scout()).</summary>
+    public sealed class Scouted : WorldEvent
+    {
+        public Cell At;
+        public Direction Direction;
+    }
+
     /// <summary>
     /// Oyun kuralı yüzünden durma (Python hatası değil): örn. robot alanın dışına çıkmak istedi.
     /// Oyuncunun kodu bunu yakalayamaz; çalıştırma olduğu yerde biter.
@@ -164,6 +171,8 @@ namespace MarsKod.Dunya
         readonly Dictionary<Cell, int> reels;
         /// <summary>Antenin report() ile beklediği sayı; null ise bu bölümde rapor istenmez</summary>
         public readonly BigInteger? ExpectedReport;
+        /// <summary>Serçe'nin gördüğü iz; yoksa null (scout() çalışmaz)</summary>
+        readonly Trail trail;
         /// <summary>Bu bölümde açık olan komutlar; null ise hepsi açık</summary>
         readonly HashSet<string> allowed;
 
@@ -188,15 +197,16 @@ namespace MarsKod.Dunya
         public bool Complete => IceLeft == 0 && CrackedLeft == 0 && ReportDone && OnTarget;
 
         /// <summary>Oyunda olan tüm komutlar (bölüm dosyasındaki "komutlar" bunlardan seçilir)</summary>
-        public static readonly string[] AllCommands = { "move", "collect", "ice_here", "rock_ahead", "panel_power", "repair", "dust_here", "wait", "cable_length", "report" };
+        public static readonly string[] AllCommands = { "move", "collect", "ice_here", "rock_ahead", "panel_power", "repair", "dust_here", "wait", "cable_length", "report", "scout" };
 
         /// <summary>Panel çatlak mı (gücü 0'dan çok, CrackedBelow'dan az)</summary>
         public static bool IsCracked(int power) => power > 0 && power < CrackedBelow;
 
+        // İz verilirse hedef izin son karesidir.
         public World(int cols, int rows, Cell robot, IEnumerable<Cell> iceCells,
             IEnumerable<Cell> rockCells = null, Cell? target = null, IEnumerable<string> commands = null, IEnumerable<Cell> crystalCells = null,
             IDictionary<Cell, int> panelCells = null, IDictionary<Cell, int> dustCells = null,
-            IDictionary<Cell, int> reelCells = null, BigInteger? expectedReport = null)
+            IDictionary<Cell, int> reelCells = null, BigInteger? expectedReport = null, Trail trail = null)
         {
             Cols = cols;
             Rows = rows;
@@ -210,7 +220,8 @@ namespace MarsKod.Dunya
             dustTotal = new Dictionary<Cell, int>(dust);
             reels = reelCells == null ? new Dictionary<Cell, int>() : new Dictionary<Cell, int>(reelCells);
             ExpectedReport = expectedReport;
-            Target = target;
+            Target = target ?? trail?.End;
+            this.trail = trail;
             allowed = commands == null ? null : new HashSet<string>(commands);
         }
 
@@ -348,6 +359,21 @@ namespace MarsKod.Dunya
             reported = true;
         }
 
+        /// <summary>Serçe'ye sorar: izin robotun durduğu kareden gittiği yön. Robot izde değilse ya da iz bittiyse robot durur (oyun kuralı).</summary>
+        public Direction Scout()
+        {
+            int i = trail == null ? -1 : trail.IndexOf(Robot);
+            if (i < 0)
+                throw new GameRuleStop("Serçe izi göremiyor",
+                    "Kıvılcım izin üstünde değil, Serçe ona yön gösteremez; robot bu yüzden durdu. Bu bir oyun kuralı, Python hatası değil: izden ayrılma, her yol ayrımında scout() ile sor ve cevabı kullan.");
+            if (i == trail.Steps.Count)
+                throw new GameRuleStop("İz burada bitiyor",
+                    "Kıvılcım izin son karesinde; Serçe gösterecek yön bulamadı, robot bu yüzden durdu. Bu bir oyun kuralı, Python hatası değil: iz kaç adımsa Serçe'ye o kadar sor.");
+            var direction = trail.Steps[i];
+            Events.Add(new Scouted { At = Robot, Direction = direction });
+            return direction;
+        }
+
         /// <summary>Bulunduğu karedeki panelin gücü (0-100; panel yoksa 0). Değiştirmez, yalnızca ölçer.</summary>
         public int PanelPower()
         {
@@ -457,6 +483,13 @@ namespace MarsKod.Dunya
                     if (args.Count != 1) throw Values.PyError("TypeError", "report() takes exactly one argument (" + args.Count + " given)");
                     Report(NumberOf(args[0]));
                     return null;
+                }),
+                ["scout"] = new PyBuiltin("scout", (args, kwargs) =>
+                {
+                    Unlocked("scout");
+                    NoKeywords("scout", kwargs);
+                    if (args.Count != 0) throw Values.PyError("TypeError", "scout() takes no arguments (" + args.Count + " given)");
+                    return Scout().ToString(); // yönler metin olarak tutulur: move(scout()) doğrudan çalışır
                 }),
             };
             // Yönler şimdilik metin olarak tutulur: print(East) -> East

@@ -102,6 +102,11 @@ public class BolumTests
         Assert.Equal(Collectible.DronePart, Regions.Item(Region.Canyon));
         Assert.Equal(Collectible.DronePart, Collectibles.Marks['D']);
         Assert.Equal("drone parçası", Collectibles.Name(Collectible.DronePart));
+        Assert.Equal(Region.RiverBed, Regions.Of(61));
+        Assert.Equal(Region.RiverBed, Regions.Of(70));
+        Assert.Equal(Collectible.Pebble, Regions.Item(Region.RiverBed));
+        Assert.Equal(Collectible.Pebble, Collectibles.Marks['C']);
+        Assert.Equal("çakıl", Collectibles.Name(Collectible.Pebble));
     }
 
     // ---- dosya biçimi ----
@@ -284,6 +289,23 @@ public class BolumTests
         var level = Level.Parse(Mini.Replace("\"komutlar\"", "\"rutin_sayisi\": 2, \"komutlar\""));
         Assert.Equal(2, level.Routines.MinCount);
         Assert.True(Level.Parse(Mini).Routines.IsEmpty);
+    }
+
+    [Fact]
+    public void Parametre_sarti_okunur()
+    {
+        var level = Level.Parse(Mini.Replace("\"komutlar\"", "\"rutinler\": [\"git\"], \"parametre_sarti\": true, \"komutlar\""));
+        Assert.True(level.Routines.NeedsParameters);
+        Assert.False(Level.Parse(Mini).Routines.NeedsParameters);
+    }
+
+    [Theory]
+    [InlineData("\"parametre_sarti\": true, ", "rutin şartıyla birlikte")]
+    [InlineData("\"rutinler\": [\"git\"], \"parametre_sarti\": 1, ", "true ya da false")]
+    public void Bozuk_parametre_sarti_anlasilir_mesaj_verir(string field, string expected)
+    {
+        var e = Assert.Throws<DataFormatError>(() => Level.Parse(Mini.Replace("\"komutlar\"", field + "\"komutlar\"")));
+        Assert.Contains(expected, e.Message);
     }
 
     [Theory]

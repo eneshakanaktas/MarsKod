@@ -1,0 +1,58 @@
+{
+  "numara": 61,
+  "baslik": "Nehir yatağı",
+  "gorev": "git rutinine yön ver",
+  "harita": [
+    "R . . K . .",
+    "Z K . . . .",
+    "C . Z . K .",
+    ". K . . . .",
+    ". . C Z H .",
+    ". . . . . K"
+  ],
+  "toz_suresi": [2, 3, 2],
+  "komutlar": ["move", "collect", "dust_here", "wait"],
+  "rutinler": ["git"],
+  "parametre_sarti": true,
+  "parcalar": ["def git(yon):", "git(South)", "git(East)", "move(yon)", "while dust_here():", "wait()", "collect()"],
+  "konular": ["fonksiyon", "parametre"],
+  "ipuclari": [
+    "Bölge 6'nın sonunda iki rutin yazmıştın: biri güneye, biri doğuya bir adım + toz beklemesi. İkisi aynı iş, yalnızca yön farklı.",
+    "Rutine bir bilgi kutusu (parametre) ekle: `def git(yon):`. Çağırırken kutuya yönü koyarsın: `git(South)`, `git(East)`. Rutinin içinde `move(yon)`.",
+    "`def git(yon):` altına `    move(yon)`, `    while dust_here():`, `        wait()`. Sonra: `git(South)`, `git(South)`, `collect()`, `git(East)`..."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def git():", "    move(South)", "    while dust_here():", "        wait()", "git(South)", "git(South)"],
+      "aciklama": "Tanımda bilgi kutusu yok ama çağrıda yön veriliyor: Python git'in bilgi almadığını söyler (TypeError). Tanıma kutuyu ekle: def git(yon):"
+    },
+    {
+      "kod": ["def git(yon):", "    move(yon)", "    while dust_here():", "        wait()", "git()", "git()"],
+      "aciklama": "Tanımda kutu var ama çağrıda boş bırakılmış: Python yon'un eksik olduğunu söyler (TypeError). git(South) gibi yönü ver."
+    },
+    {
+      "kod": ["def asagi():", "    move(South)", "    while dust_here():", "        wait()", "def doguya():", "    move(East)", "    while dust_here():", "        wait()", "asagi()", "asagi()", "collect()", "doguya()", "doguya()", "asagi()", "asagi()", "collect()", "doguya()", "doguya()"],
+      "aciklama": "Robot hedefe varır ama iki ayrı rutin aynı işi yapıyor: bu bölüm yönü parametre olarak alan tek bir git rutini istiyor."
+    }
+  ],
+  "baslangic_kodu": [
+    "def git(yon):",
+    "    move(yon)"
+  ],
+  "cozum": [
+    "def git(yon):",
+    "    move(yon)",
+    "    while dust_here():",
+    "        wait()",
+    "git(South)",
+    "git(South)",
+    "collect()",
+    "git(East)",
+    "git(East)",
+    "git(South)",
+    "git(South)",
+    "collect()",
+    "git(East)",
+    "git(East)"
+  ]
+}

@@ -1,7 +1,9 @@
 // Rutin şartı (Bölge 6'dan itibaren, fonksiyonlar): bölüm, oyuncunun belli adımları def ile bir rutine koymasını
 // isteyebilir. Şart yalnızca dünyaya bakmaz, koda bakar: rutin tanımlı mı, kaç kez çalıştı. Tek kez çalışan şey
 // rutin sayılmaz (rutin tekrar kullanmak içindir). Bölüm dosyasında: "rutinler" (adlar), "rutin_sayisi" (adı serbest).
+// Bölge 7'den itibaren parametre şartı da olabilir ("parametre_sarti"): rutin bilgi almalı ve en az iki farklı bilgiyle çağrılmalı.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -26,21 +28,28 @@ namespace MarsKod.Dunya
         /// <summary>Adı serbest: en az kaç farklı rutin (adlı olanlar dahil)</summary>
         public readonly int MinCount;
 
-        public RoutineRule(IEnumerable<string> names, int minCount)
+        /// <summary>Parametre şartında bir rutinin en az kaç farklı bilgiyle çağrılması gerekir</summary>
+        public const int MinDistinctArguments = 2;
+
+        /// <summary>Parametre şartı: şarta giren her rutin parametre almalı ve farklı bilgilerle çağrılmalı</summary>
+        public readonly bool NeedsParameters;
+
+        public RoutineRule(IEnumerable<string> names, int minCount, bool needsParameters = false)
         {
             Names = names.ToList();
             MinCount = minCount;
+            NeedsParameters = needsParameters;
         }
 
         public bool IsEmpty => Names.Count == 0 && MinCount == 0;
 
-        /// <summary>defined: oyuncunun def ile tanımladığı rutinler; runs: her rutinin kaç kez çalıştığı.
-        /// Şart sağlandıysa null.</summary>
-        public RoutineProblem Check(ICollection<string> defined, IReadOnlyDictionary<string, int> runs)
+        /// <summary>Kodun çalışma kaydına bakar: rutinler tanımlı mı, kaç kez çalıştı, (istendiyse) bilgi aldı mı. Şart sağlandıysa null.</summary>
+        public RoutineProblem Check(RunReport report)
         {
+            var defined = report.DefinedRoutines;
             foreach (var name in Names)
             {
-                int n = Runs(runs, name);
+                int n = Runs(report, name);
                 if (!defined.Contains(name))
                     return new RoutineProblem
                     {
@@ -59,9 +68,16 @@ namespace MarsKod.Dunya
                         Title = "Kod bitti, " + name + " yalnızca " + n + " kez çalıştı",
                         Text = "Rutin tekrar kullanmak içindir: aynı işi her gerektiğinde `" + name + "()` yazarak çağır.",
                     };
+                var parameterProblem = ParameterProblem(report, name);
+                if (parameterProblem != null) return parameterProblem;
             }
-            int used = defined.Count(name => Runs(runs, name) >= MinRuns);
+            var repeated = defined.Where(name => Runs(report, name) >= MinRuns).OrderBy(name => name, StringComparer.Ordinal).ToList();
+            int used = repeated.Count(name => ParameterProblem(report, name) == null);
             if (used < MinCount)
+            {
+                // tekrar eden rutin var ama bilgi almıyor: oyuncuya asıl eksiği söyle
+                var parameterProblem = repeated.Select(name => ParameterProblem(report, name)).FirstOrDefault(p => p != null);
+                if (parameterProblem != null) return parameterProblem;
                 return MinCount == 1
                     ? new RoutineProblem
                     {
@@ -73,9 +89,30 @@ namespace MarsKod.Dunya
                         Title = "Kod bitti, " + MinCount + " rutin gerekiyor",
                         Text = "Bu bölümde en az " + MinCount + " ayrı rutin isteniyor; her biri en az iki kez çalışmalı. Tekrar eden adım gruplarını bul, her birine bir ad ver.",
                     };
+            }
             return null;
         }
 
-        static int Runs(IReadOnlyDictionary<string, int> runs, string name) => runs.TryGetValue(name, out var n) ? n : 0;
+        /// <summary>Parametre şartı açıksa: rutin en az bir parametre almalı ve en az iki farklı bilgiyle çağrılmalı.</summary>
+        RoutineProblem ParameterProblem(RunReport report, string name)
+        {
+            if (!NeedsParameters) return null;
+            if (!report.RoutineParameters.TryGetValue(name, out int count) || count == 0)
+                return new RoutineProblem
+                {
+                    Title = "Kod bitti, " + name + " parametresiz",
+                    Text = "`" + name + "` rutininin parametresi yok. Rutine her çağrıda ne yapacağını söylemek için `def " + name + "(yon):` gibi bir bilgi kutusu ekle.",
+                };
+            var seen = report.RoutineArguments[name];
+            if (seen.Count < MinDistinctArguments)
+                return new RoutineProblem
+                {
+                    Title = "Kod bitti, " + name + " hep aynı bilgiyle",
+                    Text = "`" + name + "` hep aynı bilgiyle çağrıldı (`" + seen[0] + "`). Parametre, rutine her seferinde farklı bilgi vermek içindir.",
+                };
+            return null;
+        }
+
+        static int Runs(RunReport report, string name) => report.RoutineRuns.TryGetValue(name, out var n) ? n : 0;
     }
 }

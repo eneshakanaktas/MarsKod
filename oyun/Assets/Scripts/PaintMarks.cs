@@ -42,7 +42,6 @@ public static class PaintMarks
 
     // fade: 0 taze (parlak: golgedeki kizil kayada da secilsin) .. 1 gunes yemis, kayaya karismis.
     // Isiktan etkilenmez (Unlit): kayalarin cogu gunesin karsisinda, golgede; isikli boya orada sonuk kahveye donuyordu.
-    // (Parlayan malzeme pakette parlamiyor: Mats.Emissive'in _EMISSION'i pakete girmiyor, ILERLEME.md acik sorular.)
     static readonly Color FreshInShade = Mats.Hex("#E9783A");   // gunes almayan yuzde taze boyanin gorunen rengi
     static readonly Color BleachedInShade = Mats.Hex("#80503E");   // gunes yemis: kayanin rengine karismis
     public static Material PaintMat(float fade) =>

@@ -1,0 +1,60 @@
+{
+  "numara": 68,
+  "baslik": "Boya kalemi",
+  "gorev": "9 adım, yol değişir",
+  "harita": [
+    "K . . . . K",
+    ". . K . . .",
+    ". . . K . .",
+    ". . . . . K",
+    ". . . . . .",
+    ". . R . . K"
+  ],
+  "izler": [
+    ["East", "East", "North", "West", "West", "North", "East", "East", "North"],
+    ["West", "West", "North", "East", "East", "North", "West", "West", "North"]
+  ],
+  "komutlar": ["move", "scout"],
+  "rutin_sayisi": 2,
+  "parametre_sarti": true,
+  "parcalar": [
+    "def git(yon, kac):",
+    "def kol(yon):",
+    "for i in range(kac):",
+    "move(yon)",
+    "git(yon, 2)",
+    "git(North, 1)",
+    "kol(scout())",
+    "for i in range(3):"
+  ],
+  "konular": ["fonksiyon", "parametre", "fonksiyon içinde fonksiyon", "değişen yol"],
+  "ipuclari": [
+    "Bu iz her denemede değişebilir: kod ezberle değil, Serçe'nin cevabıyla yürümeli. İz 3 koldan oluşuyor: her kol 2 kare yana, 1 kare kuzeye.",
+    "Bir rutin, aldığı bilgiyi başka bir rutine aktarabilir: `def kol(yon):` içinde `git(yon, 2)`. Böylece iki rutin yazarsın: git ve kol.",
+    "`def kol(yon):`, `    git(yon, 2)`, `    git(North, 1)`. Sonra `for i in range(3):` altına `    kol(scout())`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def git(yon, kac):", "    for i in range(kac):", "        move(yon)", "def kol(yon):", "    git(yon, 2)", "    git(North, 1)", "kol(East)", "kol(West)", "kol(East)"],
+      "aciklama": "Yönler elle yazıldı: bir kez çalışır ama iz değişince robot yanlış kola sapar. Her kolda Serçe'ye sor."
+    },
+    {
+      "kod": ["def git(yon, kac):", "    for i in range(kac):", "        move(yon)", "def kol(yon):", "    git(yon, 2)", "    git(North, 1)", "yon = scout()", "for i in range(3):", "    kol(yon)"],
+      "aciklama": "Serçe'ye yalnızca bir kez soruldu: robot hep aynı yana gider ve alanın dışına çıkar."
+    },
+    {
+      "kod": ["def git(yon, kac):", "    for i in range(kac):", "        move(yon)", "for i in range(3):", "    git(scout(), 2)", "    git(North, 1)"],
+      "aciklama": "Robot izi yürür ama bu bölüm iki rutin istiyor: kolu yürüme işini de bir rutine koy."
+    }
+  ],
+  "cozum": [
+    "def git(yon, kac):",
+    "    for i in range(kac):",
+    "        move(yon)",
+    "def kol(yon):",
+    "    git(yon, 2)",
+    "    git(North, 1)",
+    "for i in range(3):",
+    "    kol(scout())"
+  ]
+}

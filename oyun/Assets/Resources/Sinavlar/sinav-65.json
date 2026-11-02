@@ -1,0 +1,30 @@
+{
+  "bolum": 65,
+  "baslik": "KIVILCIM · KENDİNİ DENETLİYOR",
+  "sorular": [
+    {
+      "soru": "def git(yon): satırında yon nedir?",
+      "secenekler": ["Bir oyun komutu", "Rutine çağrılırken verilen bilgiyi tutan kutu (parametre)", "Her zaman East", "Bir hata"],
+      "dogru": 1,
+      "aciklama": "yon bir parametredir: git(South) çağrılınca rutinin içinde yon South olur, git(East) çağrılınca East."
+    },
+    {
+      "soru": "def git(yon, kac): tanımlıyken git(3, East) yazılırsa ne olur?",
+      "secenekler": ["Robot doğuya 3 adım gider", "Python sırayı kendisi düzeltir", "Bilgiler sırayla dağıtılır: yon 3, kac East olur; range(kac) hata verir", "Robot 3 kez döner"],
+      "dogru": 2,
+      "aciklama": "Bilgiler tanımdaki sırayla kutulara girer. Önce yön, sonra sayı: git(East, 3)."
+    },
+    {
+      "soru": "def git(yon): tanımlıyken git() yazarsan ne olur?",
+      "secenekler": ["TypeError: yon için bilgi verilmedi", "Robot yerinde durur, hata yok", "Robot rastgele bir yöne gider", "git iki kez çalışır"],
+      "dogru": 0,
+      "aciklama": "Kutusu olan rutin bilgi bekler; boş çağrılırsa Python eksik bilgiyi söyler (missing 1 required positional argument)."
+    },
+    {
+      "soru": "git(scout()) satırında önce ne olur?",
+      "secenekler": ["git çalışır, sonra scout", "İkisi aynı anda", "scout git'in içinde çalışır", "scout() Serçe'ye sorar; gelen yön git'e verilir"],
+      "dogru": 3,
+      "aciklama": "Parantezin içi önce çalışır: Serçe'nin cevabı (örn. East) git'in kutusuna girer."
+    }
+  ]
+}

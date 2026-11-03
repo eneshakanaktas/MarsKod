@@ -170,7 +170,7 @@ public partial class Oyun
     }
 
     // 70'in finali: her iz sonundan ayri baslatilir; ilkinden kareler. Sahne boyunca robotun hicbir parcasi duvara, kosedeki direge ya da kaya
-    // karesine girmemeli; eller aninda avuc duvardaki bos yerde; sonda gozler turkuaz. Sonra atlama, sahne ortasinda "Tekrar" ve normal akis.
+    // karesine girmemeli; cizim basinda avuc duvardaki bos yerde, eller aninda Kivilcim'in eli duvarda cizili; sonda gozler turkuaz. Sonra atlama, sahne ortasinda "Tekrar" ve normal akis.
     IEnumerator FinaleShots70(string dir, List<string> problems)
     {
         yield return LoadRiverLevel(RiverBedTraces.MuralLevel);
@@ -184,9 +184,10 @@ public partial class Oyun
             robot.ResetTo(Pos(level.Trails[i].End), 0f);
             StartCoroutine(riverScenes.Finale(level));
             var shots = i == 0
-                ? new[] { ("yol", 0.8f, "s70-1-yol.png"), ("okuma", 0.5f, "s70-2-duvar.png"), ("sessizlik", 1f, "s70-3-sessizlik.png"), ("eller", 0.5f, "s70-4-eller.png"),
+                ? new[] { ("yol", 0.8f, "s70-1-yol.png"), ("okuma", 0.5f, "s70-2-duvar.png"), ("sessizlik", 1f, "s70-3-sessizlik.png"),
+                    ("cizim", 0f, "s70-4a-el.png"), ("cizim", 2.6f, "s70-4b-cizim.png"), ("eller", 0.5f, "s70-4c-eller.png"),
                     ("donus", 0.8f, "s70-5-donus.png"), ("cicekler", 1.8f, "s70-6-cicekler.png"), ("gozler", 1.5f, "s70-7-gozler.png"), ("son", 0.5f, "s70-8-son.png") }
-                : new[] { ("eller", 0f, ""), ("son", 0f, "") };
+                : new[] { ("cizim", 0f, ""), ("eller", 0f, ""), ("son", 0f, "") };
             string label = "70 iz " + (i + 1) + ": ";
             float t = 0f;
             bool onRock = false;
@@ -200,7 +201,8 @@ public partial class Oyun
                     yield return null;
                 }
                 if (riverScenes.Phase != phase) { problems.Add(label + phase + " evresi gelmedi"); break; }
-                if (phase == "eller") CheckPalm(label, problems);
+                if (phase == "cizim" && file != "s70-4b-cizim.png") CheckPalm(label, problems);
+                if (phase == "eller" && !riverScenes.OwnHandDrawn) problems.Add(label + "Kivilcim'in eli duvarda cizilmedi");
                 yield return new WaitForSeconds(wait);
                 if (file != "") Cap(Path.Combine(dir, file));
                 yield return new WaitForSeconds(file != "" ? 0.4f : 0f);
@@ -214,13 +216,13 @@ public partial class Oyun
         yield return FinaleSkipAndUndo(dir, problems);
     }
 
-    // eller aninda avuc duvardaki bos yerde mi. Kivilcim havada suzulur (govde +-4 cm iner kalkar): dikeyde pay buna gore
+    // Cizim basinda avuc duvardaki bos yerde mi (kol hedefe kurulur: suzulurken de el yerinde kalir)
     void CheckPalm(string label, List<string> problems)
     {
-        var palm = robot.transform.position + robot.transform.rotation * robot.PalmReach;
+        if (!(robot is SparkBot spark)) return;
+        var palm = spark.LeftPalm;
         var spot = levelRoot.TransformPoint(RiverBedTraces.Mural.Value.RobotHand);
-        var off = palm - spot;
-        if (new Vector2(off.x, off.z).magnitude > 0.03f || Mathf.Abs(off.y) > 0.07f) problems.Add(label + "avuc " + palm.ToString("F2") + ", duvardaki bos yer " + spot.ToString("F2"));
+        if ((palm - spot).magnitude > 0.03f) problems.Add(label + "avuc " + palm.ToString("F2") + ", duvardaki bos yer " + spot.ToString("F2"));
     }
 
     bool EceEyesOn() =>
@@ -257,6 +259,7 @@ public partial class Oyun
         if (riverScenes.Phase != "son") problems.Add("70 atlama: evre 'son' degil (" + riverScenes.Phase + ")");
         if (hud.SkipOpen) problems.Add("70 atlama: dokunma katmani kapanmadi");
         if (!EceEyesOn()) problems.Add("70 atlama: gozler turkuaz degil");
+        if (!riverScenes.OwnHandDrawn) problems.Add("70 atlama: Kivilcim'in eli duvarda cizilmedi");
         yield return new WaitForSeconds(0.4f);
         Cap(Path.Combine(dir, "s70-10-atlama.png"));
         yield return new WaitForSeconds(0.4f);
@@ -265,12 +268,14 @@ public partial class Oyun
         yield return LoadRiverLevel(RiverBedTraces.MuralLevel);
         SetCode(level.Solution);
         OnRun();
+        yield return WaitForPhase("yol", problems, RiverPhase);   // once kod calisir (her bekleme en fazla 40 sn)
         yield return WaitForPhase("eller", problems, RiverPhase);
         yield return WaitForPhase("cicekler", problems, RiverPhase);
         ResetLevel();
         yield return null;
         CheckRiverRestored("70", problems);
         if (EceEyesOn()) problems.Add("70 Tekrar: gozler turkuaz kaldi");
+        if (CountNamed(OwnHandPrint.Name) != 0) problems.Add("70 Tekrar: Kivilcim'in duvardaki eli silinmedi");
         Sound.Tap();   // sessizlikten sonra ses yine calisiyor (hata vermemeli)
         yield return new WaitForSeconds(1f);
         if (riverScenes.Phase != "") problems.Add("70 Tekrar: sahne durmadi (" + riverScenes.Phase + ")");

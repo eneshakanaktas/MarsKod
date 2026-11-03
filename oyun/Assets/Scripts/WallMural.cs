@@ -4,7 +4,7 @@ using UnityEngine;
 // Bolum 70: yan kanyonun arka duvarinda Ece'nin turkuaz kalemle cizdigi resim (spec 3a.4, K5). Soldan saga: Kivilcim'a benzeyen
 // cocuk cizimi robot (kare bas, iki goz, anten, el sallar); iki satir cocuk eli yazi "KIVILCIM / BENİ BUL" (oyundaki tek okunur
 // yazi istisnasi); gogusteki cizimin ayni cicegi; dokuz mumlu kucuk pasta; 69'daki dizinin sonu gibi bir kucuk ve bir buyuk el
-// cevresi, yanlarinda robot eli icin bos yer (3b'de Kivilcim elini oraya koyar). Yazi telefonda okunacak boyda.
+// cevresi, yanlarinda robot eli icin bos yer (3b'de Kivilcim elini oraya koyup cevresini cizer: OwnHandPrint). Yazi telefonda okunacak boyda.
 public static class WallMural
 {
     // Yuzeyin yerel XY'sinde (x saga, y yukari; 0 = duvarin ortasinin zemini)
@@ -50,6 +50,10 @@ public static class WallMural
         return new Spots(ToParent(wallFace, RobotHandAt), ToParent(wallFace, center), ToParent(wallFace, RobotAt),
             ToParent(wallFace, SmallHandAt), ToParent(wallFace, BigHandAt), ToParent(wallFace, bloom));
     }
+
+    // Kivilcim'in 70 finalinde bos yere cizdigi kendi eli (yuzeyin biriminde): avucu cizginin ortasinda (Spots.RobotHand)
+    public static Vector2[] RobotHandOutline() =>
+        HandTrace.Outline(RobotHandAt - new Vector2(0f, HandTrace.RobotSize * 0.45f), Hand.Robot, -3f);
 
     static Vector3 Lifted(Vector2 at) => new Vector3(at.x, at.y, CrayonMarks.Lift);
 

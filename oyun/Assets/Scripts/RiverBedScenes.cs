@@ -126,14 +126,23 @@ public class RiverBedScenes
         return walker.CellAt(robot.transform.localPosition);
     }
 
-    // 70 final "KIVILCIM BENI BUL" (spec 3b.3): ruzgar yukselirken Kivilcim bos karelerden duvara, el izlerinin sagina yurur; kamera
-    // duvara doner, yazi okunur; ruzgar bir anda kesilir (K6), sessizlik; Kivilcim sol elini duvara koyar, uc el yan yana (K3: iz kalmaz).
-    // Sonra cicegin soluna gecip sirtini duvara verir: gogsundeki cicek ile duvardaki cicek ayni karede (K4); gozleri turkuaza doner (K5),
-    // Serce duvarin ustunde gunese cikar; son kare kalir (K8).
+    // 70 final "KIVILCIM BENI BUL" (spec 3b.3): ruzgar yukselirken Kivilcim bos karelerden duvara, el izlerinin yanindaki bos yerin onune
+    // yurur; kamera duvara doner, yazi okunur; ruzgar bir anda kesilir (K6), sessizlik; Kivilcim sol elini bos yere koyar, sirtindaki
+    // kalemle elinin cevresini cizer (K3, Ragip 2026-11-03: iz kalir), geri cekilir: uc el yan yana. Sonra cicegin sagina gecip sirtini
+    // duvara verir: gogsundeki cicek ile duvardaki cicek ayni karede (K4); gozleri turkuaza doner (K5: yalniz 70 sonunda), Serce duvarin
+    // ustunde gunese cikar; son kare kalir (K8).
     // Duvar kareleri hafif yukaridan: dik ekranda gorus acisi genis, alcak kamerada yakindaki kayalar on planda dev gorunur
     const float WallShotHalfWidth = 2.1f, WallShotDistance = 4f, WallShotRise = 2.2f;     // yazi + robot cizimi
     const float PanShotHalfWidth = 1.3f, PanShotDistance = 3f, PanShotRise = 1.8f;        // cicek, pasta, eller, Kivilcim
-    // Uc el ve Kivilcim: onden-soldan (Kivilcim sagda, gri kolu koyu duvarin onunde secilir; govdesi el izlerini kapatmaz)
+    // Iki eli ancak gogsunun onunde bulusur: Kivilcim bos yerin tam onunde durur. Son adimi yandan atar (onden gelse sol kolu kosedeki
+    // direge degerdi).
+    static readonly Vector3 LastStepFrom = new Vector3(0.4f, 0f, 0f);
+    // Kivilcim elini cizerken: soldan, duvara yakin (onden bakinca govdesi elleri kapatir); kalemli el, duvardaki el, yandaki el izleri
+    static readonly Vector3 DrawShotLook = new Vector3(-0.05f, 0.05f, -0.15f), DrawShotFrom = new Vector3(-1.2f, 0.45f, -0.55f);
+    const float DrawShotHalfWidth = 0.5f, TraceSeconds = 3f;
+    // Cizdikten sonra robot geri ve saga cekilir: govdesi uc eli kapatmaz
+    static readonly Vector3 StepBack = new Vector3(0.45f, 0f, -0.55f);
+    // Uc el ve Kivilcim: onden-soldan (Kivilcim sagda, govdesi el izlerini kapatmaz)
     static readonly Vector3 HandsShotFromHands = new Vector3(-0.8f, 0.75f, -2.1f);
     const float HandsShotHalfWidth = 1.0f;
     // Iki cicek: Kivilcim duvardaki cicegin saginda (solunda dursa son karede yaziyi kapatir), sirti duvarda, cicek sag omzunun ustunde;
@@ -155,8 +164,10 @@ public class RiverBedScenes
         Phase = "yol";
         yield return robot.Calm();
         if (sparrow != null) sparrow.StartCoroutine(walker.Follow(sparrow, 0.4f, 1.4f));
-        yield return WalkViaBackRow(level, StandFor(mural.RobotHand));
+        var stand = StandFor(mural.RobotHand);
+        yield return WalkViaBackRow(level, stand + LastStepFrom);
         yield return robot.TurnTo(0f, 0.4f);
+        yield return robot.MoveTo(stand, 0.6f);
         if (sparrow != null)
         {
             sparrow.StopAllCoroutines();
@@ -176,14 +187,24 @@ public class RiverBedScenes
         yield return WallShot(Vector3.Lerp(mural.Flower, mural.RobotHand, 0.5f), PanShotHalfWidth, PanShotDistance, PanShotRise, 2f);
 
         Phase = "el";
-        robot.StartCoroutine(robot.PalmOnWall(true));
+        robot.StartCoroutine(robot.PalmOnWall(robot.transform.parent.TransformPoint(mural.RobotHand)));
+        var drawing = mural.RobotHand + DrawShotLook;
+        yield return shot.MoveTo(drawing + DrawShotFrom, drawing, 1.5f, CameraShot.FovToFit(DrawShotHalfWidth, DrawShotFrom.magnitude));
+
+        Phase = "cizim";   // K3: Kivilcim kendi elini Ece'nin ona biraktigi bos yere cizer
+        ownHand?.Clear();
+        ownHand = new OwnHandPrint(RiverBedTraces.BackWallFace);
+        yield return robot.TraceHand(ownHand.Path(), ownHand.DrawTo, TraceSeconds);
+        yield return robot.PalmOnWall(null);
+
+        Phase = "geri";    // bir adim geri ve yana: uc el yan yana gorunur
         var hands = Vector3.Lerp(mural.SmallHand, mural.RobotHand, 0.6f);
+        robot.StartCoroutine(robot.MoveTo(robot.transform.localPosition + StepBack, 0.8f));
         yield return shot.MoveTo(hands + HandsShotFromHands, hands, 1.5f, CameraShot.FovToFit(HandsShotHalfWidth, HandsShotFromHands.magnitude));
         Phase = "eller";
         yield return Tween.Wait(2f);
 
         Phase = "donus";
-        yield return robot.PalmOnWall(false);
         yield return WalkViaBackRow(level, FlowerStand(mural));
         yield return robot.TurnTo(180f, 0.5f);   // kameraya doner, sirti duvarda
 
@@ -247,6 +268,10 @@ public class RiverBedScenes
     public const string FinaleSeenKey = "final_70";   // PlayerPrefs: ilk izleyis bitti mi
     Coroutine finale;
     bool finaleDone, skipRequested;
+    OwnHandPrint ownHand;   // Kivilcim'in duvara cizdigi eli; "Tekrar" siler
+
+    // Denetim: Kivilcim'in eli duvarda tam cizildi mi
+    public bool OwnHandDrawn => ownHand != null && ownHand.Complete;
 
     public IEnumerator FinaleWithSkip(Level level)
     {
@@ -286,6 +311,8 @@ public class RiverBedScenes
         var mural = RiverBedTraces.Mural.Value;
         robot.ResetTo(FlowerStand(mural), 180f);   // robotun yarim kalan hareketleri durur
         robot.StartCoroutine(robot.EceEyes(0f));
+        ownHand ??= new OwnHandPrint(RiverBedTraces.BackWallFace);
+        ownHand.DrawAll();
         var sparrow = RiverBedTraces.ActiveSparrow;
         if (sparrow != null)
         {
@@ -305,6 +332,8 @@ public class RiverBedScenes
     {
         if (finale != null) host.StopCoroutine(finale);
         finale = null;
+        ownHand?.Clear();
+        ownHand = null;
         RiverBedTraces.ReturnCrayon();   // 68: elde ya da sirtta kalmis kalem yere (sirttaki kalemi Oyun.ResetRobot kaldirir)
         robot.gameObject.SetActive(true);
         hud.SetCardVisible(true);

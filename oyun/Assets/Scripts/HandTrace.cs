@@ -18,6 +18,10 @@ public static class HandTrace
         return CrayonMarks.Draw(wallFace, name, new[] { Outline(at, hand, angleDeg) }, seed, Thickness);
     }
 
+    // Cizginin bir parcasi (Bolum 70: Kivilcim kendi elini cizdikce belirir); ayni kalinlikta
+    public static Transform DrawPart(Transform surface, Vector2[] part, int seed) =>
+        CrayonMarks.Draw(surface, "Parca", new[] { part }, seed, Thickness);
+
     // Elin cevresi yuzeyin biriminde (baska cizimlerle tek agda birlesmek icin)
     public static Vector2[] Outline(Vector2 at, Hand hand, float angleDeg)
     {

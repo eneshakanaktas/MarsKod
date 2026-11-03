@@ -144,10 +144,17 @@ public abstract class Robot : MonoBehaviour
     // Gozler yumusakca Ece'nin rengine (turkuaz) doner (70 sonu); seconds 0 ise hemen. ResetTo eski renge dondurur.
     public virtual IEnumerator EceEyes(float seconds) { yield break; }
 
-    // Sol elini onundeki duvara koyar (on) ya da indirir (Bolum 70). Varsayilan bir sey yapmaz.
-    public virtual IEnumerator PalmOnWall(bool on) { yield break; }
-    // Kol duvara uzanmisken avucun robota gore yeri (robotun yonunde, dunya olcusunde); robotun duracagi yer buradan hesaplanir
-    public virtual Vector3 PalmReach => new Vector3(-0.3f, 0.5f, 0.45f);
+    // Sol elini onundeki duvarda spot'a (dunya konumu) koyar; null ise indirir (Bolum 70). Varsayilan bir sey yapmaz.
+    public virtual IEnumerator PalmOnWall(Vector3? spot) { yield break; }
+    // Duvara konan avucun robota gore yeri (robotun yonunde, dunya olcusunde); robotun duracagi yer buradan hesaplanir
+    public virtual Vector3 PalmReach => new Vector3(0f, 0f, 0.3f);
+    // Duvardaki elinin cevresini sirtindaki kalemle cizer (Bolum 70): kalemin ucu outline (dunya konumlari) boyunca gider, her noktaya
+    // varinca reached(i). Varsayilan: cizgi hemen biter.
+    public virtual IEnumerator TraceHand(IReadOnlyList<Vector3> outline, System.Action<int> reached, float seconds)
+    {
+        for (int i = 0; i < outline.Count; i++) reached(i);
+        yield break;
+    }
 
     // Yerdeki nesneyi alip sirtina takar (Bolum 68 kalemi). Varsayilan: nesne kaybolur, sirttaki kalem gorunur.
     public virtual IEnumerator TakeToBack(Transform item) { item.gameObject.SetActive(false); SetCrayon(true); yield break; }

@@ -1,29 +1,30 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using MarsKod.Dunya;
 using UnityEngine;
 
 // Bolge 6'nin sahneleri (spec 3b): 60 kanyona inis (simdi), 55 Serce'nin ilk ucusu, 51 roketin inisi. Akis burada; nesneler
 // (yarik, Serce, roket) yalnizca komut alir. Kamera sahne surerken CameraShot'ta; Restore her seyi geri verir.
-// Kivilcim ucmaz: yalnizca bos karelerden (GridPath) ve patikadan yurur.
+// Kivilcim ucmaz: yalnizca bos karelerden (SceneWalker) ve patikadan yurur.
 public class CanyonScenes
 {
     readonly Robot robot;
     readonly CameraShot shot;
     readonly Hud hud;                         // 55 ve 51'in ekran gecisleri
+    readonly SceneWalker walker;              // bos karelerden yurume, Serce'nin eslik etmesi
     readonly Func<Cell, Vector3> cellPos;
     readonly int cols, rows;
     readonly float startYaw;                  // Oyun.StartYaw: robotun baslangic yonu (51'de kapidan cikinca)
     const float BirdViewAbove = 4.5f, BirdMargin = 1.2f, SparrowOnScreen = 0.55f;   // 55 kus bakisi: Serce'nin ustunde ne kadar yukarida, alanin yanlarinda pay
     public string Phase { get; private set; } = "";   // goruntu denetimi hangi anda oldugunu buradan okur
 
-    public CanyonScenes(Robot robot, CameraShot shot, Hud hud, Func<Cell, Vector3> cellPos, int cols, int rows, float startYaw)
+    public CanyonScenes(Robot robot, CameraShot shot, Hud hud, SceneWalker walker, Func<Cell, Vector3> cellPos, int cols, int rows, float startYaw)
     {
         this.robot = robot;
         this.shot = shot;
         this.hud = hud;
+        this.walker = walker;
         this.cellPos = cellPos;
         this.cols = cols;
         this.rows = rows;
@@ -45,10 +46,10 @@ public class CanyonScenes
         shot.Begin();
         hud.SetCardVisible(false);
         Phase = "yol";
-        var walk = CellsTo(level, level.Target ?? level.Robot, ExitCell(level), itemsTaken: true).ConvertAll(c => cellPos(c));
+        var walk = walker.CellsTo(level, level.Target ?? level.Robot, ExitCell(level), itemsTaken: true);
         walk.Add(rift.Trail[0]);
-        if (sparrow != null) sparrow.StartCoroutine(Follow(sparrow, 0.5f));
-        yield return Walk(walk, 0.45f);
+        if (sparrow != null) sparrow.StartCoroutine(walker.Follow(sparrow, 0.5f, 1.1f));
+        yield return walker.Walk(walk, 0.45f);
         Phase = "bakis";
         yield return shot.MoveTo(rift.ViewPoint, rift.ViewTarget, 3f, CanyonRift.ViewFov);
         Phase = "inis";
@@ -112,8 +113,7 @@ public class CanyonScenes
         var last = cellPos(new Cell(cols - 1, rows - 1));
         float halfWidth = Mathf.Abs(last.x - first.x) * 0.5f + BirdMargin;
         float height = sparrow.transform.position.y + BirdViewAbove;
-        float aspect = (float)Screen.width / Mathf.Max(Screen.height, 1);
-        float fov = Mathf.Clamp(2f * Mathf.Atan(halfWidth / (height * aspect)) * Mathf.Rad2Deg, 30f, 100f);
+        float fov = CameraShot.FovToFit(halfWidth, height);
         // Serce ekranin ust ceyreginde, baslik yazilarinin altinda gorunsun (ekranda ust kenardan SparrowOnScreen kadar asagida)
         float halfHeightAtSparrow = (height - sparrow.transform.position.y) * Mathf.Tan(fov * 0.5f * Mathf.Deg2Rad);
         float z = sparrow.transform.position.z - SparrowOnScreen * halfHeightAtSparrow;
@@ -148,8 +148,8 @@ public class CanyonScenes
         robot.ResetTo(rocket.DoorPoint, 180f);
         robot.gameObject.SetActive(true);
         yield return robot.MoveTo(rocket.LadderFoot, 0.8f);
-        var entry = GridPath.OpenInRow(cols, rows - 1, 0, GridPath.Obstacles(level, itemsTaken: false)) ?? level.Robot;
-        yield return Walk(CellsTo(level, entry, level.Robot, itemsTaken: false).ConvertAll(c => cellPos(c)), 0.4f);
+        var entry = walker.OpenInRow(level, rows - 1, 0, itemsTaken: false) ?? level.Robot;
+        yield return walker.Walk(walker.CellsTo(level, entry, level.Robot, itemsTaken: false), 0.4f);
         yield return robot.TurnTo(startYaw, 0.3f);
         Phase = "son";
     }
@@ -173,17 +173,6 @@ public class CanyonScenes
         Phase = "";
     }
 
-    // Serce robotun biraz onunde ve ustunde kalir (yol gosterir gibi)
-    IEnumerator Follow(Sparrow sparrow, float lead)
-    {
-        while (true)
-        {
-            var target = robot.transform.localPosition + robot.transform.forward * lead + Vector3.up * 1.1f;
-            sparrow.transform.localPosition = Vector3.Lerp(sparrow.transform.localPosition, target, 1f - Mathf.Exp(-Time.deltaTime * 3f));
-            yield return null;
-        }
-    }
-
     // Yarikta Serce robotun yaninda, acik havada kalir (rafin sacaginin ve duvarin icine girmez)
     IEnumerator FollowBeside(Sparrow sparrow, CanyonRift rift)
     {
@@ -195,27 +184,6 @@ public class CanyonScenes
         }
     }
 
-    // Noktadan noktaya: once doner, sonra yurur (hiz birim basina)
-    IEnumerator Walk(IReadOnlyList<Vector3> points, float secondsPerUnit)
-    {
-        foreach (var p in points)
-        {
-            var from = robot.transform.localPosition;
-            if ((p - from).sqrMagnitude < 1e-4f) continue;
-            yield return robot.TurnTo(DuneFinale.YawTowards(from, p), 0.2f);
-            yield return robot.MoveTo(p, Vector3.Distance(from, p) * secondsPerUnit);
-        }
-    }
-
-    // Bos karelerden yol; yoksa (engeller kapatmis) robot dogrudan son kareye konur: sahne takilmaz
-    List<Cell> CellsTo(Level level, Cell from, Cell to, bool itemsTaken)
-    {
-        var path = GridPath.Find(cols, rows, from, to, GridPath.Obstacles(level, itemsTaken));
-        return path ?? new List<Cell> { to };
-    }
-
     Cell ExitCell(Level level) =>
-        GridPath.OpenInRow(cols, rows - 1, ColNear(CanyonTraces.DescentPathX), GridPath.Obstacles(level, itemsTaken: true)) ?? level.Target ?? level.Robot;
-
-    int ColNear(float x) => Mathf.Clamp(Mathf.RoundToInt(x + (cols - 1) * 0.5f), 0, cols - 1);
+        walker.OpenInRow(level, rows - 1, walker.ColNear(CanyonTraces.DescentPathX), itemsTaken: true) ?? level.Target ?? level.Robot;
 }

@@ -1,12 +1,16 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-// Bolge 6 sahnelerinin ve Bolge 7 izlerinin goruntu denetimi (-shots <klasor> -sahneler): ara kareler + SAHNE DENETIMI satiri.
+// Bolge 6 ve Bolge 7 sahnelerinin, Bolge 7 izlerinin goruntu denetimi (-shots <klasor> -sahneler): ara kareler + SAHNE DENETIMI satiri.
 public partial class Oyun
 {
-    IEnumerator SceneShots(string dir)
+    // riverOnly (-bolge7): yalnizca Bolge 7 (sahne uzerinde calisirken hizli tur). Bolge 6 denetimleri 3b'den once calisir: yarik cakisma
+    // denetimi robotun bostaki kipirtisinin (kol, kurdele, govde) o anki haliyle olcer ve yarikta pay birkac santim; once calisan denetimler
+    // degisince kipirtinin baska haline denk gelip hata verebiliyor (ILERLEME.md, 2026-11-03).
+    IEnumerator SceneShots(string dir, bool riverOnly)
     {
         Directory.CreateDirectory(dir);
         yield return new WaitForSeconds(2.5f);
@@ -14,13 +18,19 @@ public partial class Oyun
         yield return ScoutShots(dir, problems);
         yield return CrayonCloseup(dir, problems);
         yield return RiverBedChecks(dir, problems);
-        yield return RiftShots(dir, problems);
-        yield return DescentShots(dir, problems);
-        yield return FlightShots(dir, problems);
-        yield return LandingShots(dir, problems);
-        yield return ShotKeyboardCheck(dir);
-        yield return LandingEveryEntryCheck(problems);
-        Debug.Log("SAHNE DENETIMI: " + (problems.Count == 0 ? "TAMAM" : "HATA " + string.Join("; ", problems)));
+        if (!riverOnly)
+        {
+            yield return RiftShots(dir, problems);
+            yield return DescentShots(dir, problems);
+            yield return FlightShots(dir, problems);
+            yield return LandingShots(dir, problems);
+            yield return ShotKeyboardCheck(dir);
+        }
+        yield return BirdViewShots(dir, problems);
+        yield return CrayonShots(dir, problems);
+        yield return FinaleShots70(dir, problems);
+        if (!riverOnly) yield return LandingEveryEntryCheck(problems);
+        Debug.Log("SAHNE DENETIMI" + (riverOnly ? " (yalniz Bolge 7)" : "") + ": " + (problems.Count == 0 ? "TAMAM" : "HATA " + string.Join("; ", problems)));
         Application.Quit();
     }
 
@@ -79,6 +89,242 @@ public partial class Oyun
             problems.Add("70'te robot elinin yeri duvarin arkasinda");
         Cap(Path.Combine(dir, "s70-duvar.png"));
         yield return new WaitForSeconds(0.4f);
+    }
+
+    // 63'un kus bakisi: dogru cozum, klavye acik bitis (sahne basinda kapanmali); evreler gelince kare. Sonra kus aninda "Tekrar".
+    IEnumerator BirdViewShots(string dir, List<string> problems)
+    {
+        yield return LoadRiverLevel(RiverBedTraces.BirdViewLevel);
+        SetCode(level.Solution);
+        OnRun();
+        yield return new WaitForSeconds(0.5f);
+        hud.FocusCode(0, 0);
+        foreach (var (phase, wait, file) in new[] { ("kalkis", 0.5f, "s63-1-kalkis.png"), ("kus", 1.2f, "s63-2-kus.png"), ("son", 0.5f, "s63-3-son.png") })
+        {
+            yield return WaitForPhase(phase, problems, RiverPhase);
+            yield return new WaitForSeconds(wait);
+            Cap(Path.Combine(dir, file));
+            yield return new WaitForSeconds(0.4f);
+        }
+
+        yield return LoadRiverLevel(RiverBedTraces.BirdViewLevel);
+        SetCode(level.Solution);
+        OnRun();
+        yield return WaitForPhase("kus", problems, RiverPhase);
+        ResetLevel();
+        yield return null;
+        CheckRiverRestored("63", problems);
+    }
+
+    // 68'in kalem sahnesi: her iz sonundan (yol her kosuda baska yerde biter) ayri baslatilir; ilkinden kareler. Yuruyuste robot kaya
+    // karesine girmemeli; sonunda yerdeki kalem gizli, sirttaki gorunur. Sonra normal akistan bir kez ve alis aninda "Tekrar".
+    IEnumerator CrayonShots(string dir, List<string> problems)
+    {
+        yield return LoadRiverLevel(RiverBedTraces.CrayonLevel);
+        for (int i = 0; i < level.Trails.Count; i++)
+        {
+            yield return LoadRiverLevel(RiverBedTraces.CrayonLevel);
+            var blocked = MarsKod.Dunya.GridPath.Obstacles(level, itemsTaken: true);
+            var walker = new SceneWalker(robot, c => Pos(c), Cols, Rows);
+            robot.ResetTo(Pos(level.Trails[i].End), 0f);
+            StartCoroutine(riverScenes.TakeCrayon(level));
+            var shots = i == 0 ? new[] { ("yol", 0.6f, "s68-1-yol.png"), ("alis", 1.5f, "s68-2-alis.png"), ("alis", 0.15f, "s68-2b-omuz.png"), ("sirt", 0.3f, "s68-3-sirt.png"), ("son", 0.5f, "s68-4-son.png") }
+                : new[] { ("son", 0f, "") };
+            float t = 0f;
+            bool onRock = false;
+            foreach (var (phase, wait, file) in shots)
+            {
+                for (; riverScenes.Phase != phase && t < 40f; t += Time.deltaTime)
+                {
+                    onRock |= blocked.Contains(walker.CellAt(robot.transform.localPosition));
+                    yield return null;
+                }
+                if (riverScenes.Phase != phase) { problems.Add("68 iz " + (i + 1) + ": " + phase + " evresi gelmedi"); break; }
+                if (file == "") continue;
+                yield return new WaitForSeconds(wait);
+                Cap(Path.Combine(dir, file));
+                yield return new WaitForSeconds(0.4f);
+            }
+            if (onRock) problems.Add("68 iz " + (i + 1) + ": robot yuruyuste kaya karesine girdi");
+            if (RiverBedTraces.Crayon == null || RiverBedTraces.Crayon.gameObject.activeSelf) problems.Add("68 iz " + (i + 1) + ": yerdeki kalem gizlenmedi");
+            if (!HasCrayon()) problems.Add("68 iz " + (i + 1) + ": sirtta kalem yok");
+        }
+
+        yield return LoadRiverLevel(RiverBedTraces.CrayonLevel);
+        SetCode(level.Solution);
+        OnRun();
+        yield return WaitForPhase("son", problems, RiverPhase);
+
+        yield return LoadRiverLevel(RiverBedTraces.CrayonLevel);
+        var crayon = RiverBedTraces.Crayon;
+        var home = crayon.localPosition;
+        SetCode(level.Solution);
+        OnRun();
+        yield return WaitForPhase("alis", problems, RiverPhase);
+        yield return new WaitForSeconds(1.2f);   // kalem elde
+        ResetLevel();
+        yield return null;
+        CheckRiverRestored("68", problems);
+        if (!crayon.gameObject.activeSelf || crayon.parent != levelRoot || (crayon.localPosition - home).sqrMagnitude > 1e-6f) problems.Add("68 Tekrar: kalem yerine donmedi");
+        if (HasCrayon()) problems.Add("68 Tekrar: sirtta kalem kaldi");
+    }
+
+    // 70'in finali: her iz sonundan ayri baslatilir; ilkinden kareler. Sahne boyunca robotun hicbir parcasi duvara, kosedeki direge ya da kaya
+    // karesine girmemeli; eller aninda avuc duvardaki bos yerde; sonda gozler turkuaz. Sonra atlama, sahne ortasinda "Tekrar" ve normal akis.
+    IEnumerator FinaleShots70(string dir, List<string> problems)
+    {
+        yield return LoadRiverLevel(RiverBedTraces.MuralLevel);
+        int trails = level.Trails.Count;
+        for (int i = 0; i < trails; i++)
+        {
+            yield return LoadRiverLevel(RiverBedTraces.MuralLevel);
+            var blocked = MarsKod.Dunya.GridPath.Obstacles(level, itemsTaken: true);
+            var walker = new SceneWalker(robot, c => Pos(c), Cols, Rows);
+            var solids = TemporaryColliders(levelRoot, "Iz-KayaDuvar", world, "Post");
+            robot.ResetTo(Pos(level.Trails[i].End), 0f);
+            StartCoroutine(riverScenes.Finale(level));
+            var shots = i == 0
+                ? new[] { ("yol", 0.8f, "s70-1-yol.png"), ("okuma", 0.5f, "s70-2-duvar.png"), ("sessizlik", 1f, "s70-3-sessizlik.png"), ("eller", 0.5f, "s70-4-eller.png"),
+                    ("donus", 0.8f, "s70-5-donus.png"), ("cicekler", 1.8f, "s70-6-cicekler.png"), ("gozler", 1.5f, "s70-7-gozler.png"), ("son", 0.5f, "s70-8-son.png") }
+                : new[] { ("eller", 0f, ""), ("son", 0f, "") };
+            string label = "70 iz " + (i + 1) + ": ";
+            float t = 0f;
+            bool onRock = false;
+            string hit = null;
+            foreach (var (phase, wait, file) in shots)
+            {
+                for (; riverScenes.Phase != phase && t < 60f; t += Time.deltaTime)
+                {
+                    onRock |= blocked.Contains(walker.CellAt(robot.transform.localPosition));
+                    hit ??= PartInside(robot.GetComponentsInChildren<Renderer>(), solids);
+                    yield return null;
+                }
+                if (riverScenes.Phase != phase) { problems.Add(label + phase + " evresi gelmedi"); break; }
+                if (phase == "eller") CheckPalm(label, problems);
+                yield return new WaitForSeconds(wait);
+                if (file != "") Cap(Path.Combine(dir, file));
+                yield return new WaitForSeconds(file != "" ? 0.4f : 0f);
+            }
+            hit ??= PartInside(robot.GetComponentsInChildren<Renderer>(), solids);
+            if (onRock) problems.Add(label + "robot yuruyuste kaya karesine girdi");
+            if (hit != null) problems.Add(label + "robot icine giriyor: " + hit);
+            if (!EceEyesOn()) problems.Add(label + "sonda gozler turkuaz degil");
+            foreach (var c in solids) Destroy(c);
+        }
+        yield return FinaleSkipAndUndo(dir, problems);
+    }
+
+    // eller aninda avuc duvardaki bos yerde mi. Kivilcim havada suzulur (govde +-4 cm iner kalkar): dikeyde pay buna gore
+    void CheckPalm(string label, List<string> problems)
+    {
+        var palm = robot.transform.position + robot.transform.rotation * robot.PalmReach;
+        var spot = levelRoot.TransformPoint(RiverBedTraces.Mural.Value.RobotHand);
+        var off = palm - spot;
+        if (new Vector2(off.x, off.z).magnitude > 0.03f || Mathf.Abs(off.y) > 0.07f) problems.Add(label + "avuc " + palm.ToString("F2") + ", duvardaki bos yer " + spot.ToString("F2"));
+    }
+
+    bool EceEyesOn() =>
+        robot is SparkBot spark && ((Vector4)(spark.EyeColor - CraterTraces.EceColor)).magnitude < 0.05f;
+
+    // 70 normal akistan (kutlama -> sahne -> son), atlama (ilk izleyisten sonra dokununca son kare) ve cicekler aninda "Tekrar".
+    // Oyuncunun "final izlendi" kaydi denetimden sonra eski haline doner.
+    IEnumerator FinaleSkipAndUndo(string dir, List<string> problems)
+    {
+        int seenBefore = PlayerPrefs.GetInt(RiverBedScenes.FinaleSeenKey, 0);
+        PlayerPrefs.SetInt(RiverBedScenes.FinaleSeenKey, 0);
+
+        yield return LoadRiverLevel(RiverBedTraces.MuralLevel);
+        SetCode(level.Solution);
+        OnRun();
+        yield return WaitForPhase("yol", problems, RiverPhase);
+        if (hud.SkipOpen) problems.Add("70 ilk izleyis: atlama katmani acik (atlanamamali)");
+        yield return WaitForPhase("son", problems, RiverPhase);
+        yield return new WaitForSeconds(0.5f);
+        Cap(Path.Combine(dir, "s70-9-normal-son.png"));
+        yield return new WaitForSeconds(0.4f);
+        if (!EceEyesOn()) problems.Add("70 normal akis: sonda gozler turkuaz degil");
+
+        PlayerPrefs.SetInt(RiverBedScenes.FinaleSeenKey, 1);
+        yield return LoadRiverLevel(RiverBedTraces.MuralLevel);
+        SetCode(level.Solution);
+        OnRun();
+        yield return WaitForPhase("yol", problems, RiverPhase);
+        yield return new WaitForSeconds(0.5f);
+        if (!hud.SkipOpen) problems.Add("70 atlama: dokunma katmani acik degil");
+        riverScenes.SkipFinale();
+        yield return null;
+        yield return null;
+        if (riverScenes.Phase != "son") problems.Add("70 atlama: evre 'son' degil (" + riverScenes.Phase + ")");
+        if (hud.SkipOpen) problems.Add("70 atlama: dokunma katmani kapanmadi");
+        if (!EceEyesOn()) problems.Add("70 atlama: gozler turkuaz degil");
+        yield return new WaitForSeconds(0.4f);
+        Cap(Path.Combine(dir, "s70-10-atlama.png"));
+        yield return new WaitForSeconds(0.4f);
+
+        PlayerPrefs.SetInt(RiverBedScenes.FinaleSeenKey, 0);
+        yield return LoadRiverLevel(RiverBedTraces.MuralLevel);
+        SetCode(level.Solution);
+        OnRun();
+        yield return WaitForPhase("eller", problems, RiverPhase);
+        yield return WaitForPhase("cicekler", problems, RiverPhase);
+        ResetLevel();
+        yield return null;
+        CheckRiverRestored("70", problems);
+        if (EceEyesOn()) problems.Add("70 Tekrar: gozler turkuaz kaldi");
+        Sound.Tap();   // sessizlikten sonra ses yine calisiyor (hata vermemeli)
+        yield return new WaitForSeconds(1f);
+        if (riverScenes.Phase != "") problems.Add("70 Tekrar: sahne durmadi (" + riverScenes.Phase + ")");
+
+        PlayerPrefs.SetInt(RiverBedScenes.FinaleSeenKey, seenBefore);
+        PlayerPrefs.Save();
+    }
+
+    // Adi verilen nesnelerin agaclarindaki her aga gecici MeshCollider (cakisma denetimi icin); denetim bitince silinir
+    List<MeshCollider> TemporaryColliders(Transform root, string name, Transform otherRoot, string otherName)
+    {
+        var made = new List<MeshCollider>();
+        foreach (var (under, wanted) in new[] { (root, name), (otherRoot, otherName) })
+            foreach (var t in under.GetComponentsInChildren<Transform>())
+            {
+                if (t.name != wanted) continue;
+                foreach (var mf in t.GetComponentsInChildren<MeshFilter>())
+                {
+                    var c = mf.gameObject.AddComponent<MeshCollider>();
+                    c.sharedMesh = mf.sharedMesh;
+                    made.Add(c);
+                }
+            }
+        Physics.SyncTransforms();
+        return made;
+    }
+
+    // Parcalardan biri (kutusu biraz kucultulerek) katilardan birine giriyorsa "kati <- parca"; yoksa null. Ince parcalar (golge, itici) sayilmaz.
+    static string PartInside(Renderer[] parts, List<MeshCollider> solids)
+    {
+        Physics.SyncTransforms();
+        foreach (var part in parts)
+        {
+            if (!part.enabled || !part.gameObject.activeInHierarchy) continue;
+            var b = part.bounds;
+            if (b.extents.y < 0.03f || part.name == "Thruster") continue;
+            foreach (var other in Physics.OverlapBox(b.center, b.extents * 0.8f))
+                if (other is MeshCollider mc && solids.Contains(mc)) return other.name + " <- " + part.name;
+        }
+        return null;
+    }
+
+    // Bolge 7 sahnesinin ortasinda "Tekrar": kamera serbest, kart gorunur, kirpisma/atlama kapali, robot baslangicta ve gorunur, Serce evinde
+    void CheckRiverRestored(string label, List<string> problems)
+    {
+        string p = label + " Tekrar: ";
+        if (shot.Active) problems.Add(p + "sahne kamerasi birakilmadi");
+        if (!hud.CardVisible) problems.Add(p + "kod karti gizli kaldi");
+        if (hud.SkipOpen) problems.Add(p + "atlama katmani acik kaldi");
+        if (!robot.gameObject.activeSelf) problems.Add(p + "robot gizli kaldi");
+        if ((robot.transform.localPosition - Pos(level.Robot)).sqrMagnitude > 1e-4f) problems.Add(p + "robot baslangic karesinde degil");
+        var sparrow = RiverBedTraces.ActiveSparrow;
+        if (sparrow == null || !sparrow.gameObject.activeSelf) problems.Add(p + "Serce yok ya da gizli");
+        else if ((sparrow.transform.localPosition - sparrow.HomePosition).sqrMagnitude > 1e-4f) problems.Add(p + "Serce evine donmedi");
     }
 
     IEnumerator LoadRiverLevel(int number)
@@ -357,15 +603,18 @@ public partial class Oyun
         shot.Release();
     }
 
-    // Sahnenin evresi gelene kadar bekler (en cok 40 sn)
-    IEnumerator WaitForPhase(string phase, List<string> problems)
+    // Sahnenin evresi gelene kadar bekler (en cok 40 sn). current: hangi sahnenin evresi (verilmezse Bolge 6)
+    IEnumerator WaitForPhase(string phase, List<string> problems, Func<string> current = null)
     {
-        for (float t = 0f; canyonScenes.Phase != phase; t += Time.deltaTime)
+        current ??= () => canyonScenes.Phase;
+        for (float t = 0f; current() != phase; t += Time.deltaTime)
         {
-            if (t > 40f) { problems.Add(phase + " evresi gelmedi (su an: '" + canyonScenes.Phase + "')"); yield break; }
+            if (t > 40f) { problems.Add(phase + " evresi gelmedi (su an: '" + current() + "')"); yield break; }
             yield return null;
         }
     }
+
+    string RiverPhase() => riverScenes.Phase;
 
     IEnumerator PoseOnTrail(CanyonRift rift, int index, string dir, string file)
     {

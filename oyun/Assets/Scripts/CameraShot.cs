@@ -85,6 +85,14 @@ public class CameraShot
         Release();
     }
 
+    // Ekran oranina gore yatayda halfWidth'i 'distance' uzakliktan sigdiran gorus acisi (55 ve 63 kus bakisi, 70 duvar). Kod karti ya da
+    // klavyenin durumuna bagli degil: telefonda da bilgisayar penceresinde de ayni sey gorunur.
+    public static float FovToFit(float halfWidth, float distance)
+    {
+        float aspect = (float)Screen.width / Mathf.Max(Screen.height, 1);
+        return Mathf.Clamp(2f * Mathf.Atan(halfWidth / (distance * aspect)) * Mathf.Rad2Deg, 30f, 100f);
+    }
+
     // Aninda birakir ("Tekrar", bolum degisimi, 55'teki kirpisma donusu)
     public void Release()
     {

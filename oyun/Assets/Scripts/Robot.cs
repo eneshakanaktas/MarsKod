@@ -139,8 +139,23 @@ public abstract class Robot : MonoBehaviour
     public virtual void SetRibbon(bool on) { }
     // Ece'nin kalemi sirtta (Bolum 68'den sonra)
     public virtual void SetCrayon(bool on) { }
+    // Kutlamadan sonra sakinlesir: kollar iner, gozler eski rengine doner (Bolge 7 sahnelerinin basi). Varsayilan bir sey yapmaz.
+    public virtual IEnumerator Calm() { yield break; }
+    // Gozler yumusakca Ece'nin rengine (turkuaz) doner (70 sonu); seconds 0 ise hemen. ResetTo eski renge dondurur.
+    public virtual IEnumerator EceEyes(float seconds) { yield break; }
+
+    // Sol elini onundeki duvara koyar (on) ya da indirir (Bolum 70). Varsayilan bir sey yapmaz.
+    public virtual IEnumerator PalmOnWall(bool on) { yield break; }
+    // Kol duvara uzanmisken avucun robota gore yeri (robotun yonunde, dunya olcusunde); robotun duracagi yer buradan hesaplanir
+    public virtual Vector3 PalmReach => new Vector3(-0.3f, 0.5f, 0.45f);
+
+    // Yerdeki nesneyi alip sirtina takar (Bolum 68 kalemi). Varsayilan: nesne kaybolur, sirttaki kalem gorunur.
+    public virtual IEnumerator TakeToBack(Transform item) { item.gameObject.SetActive(false); SetCrayon(true); yield break; }
     // Kurdelenin ucup gelecegi nokta (dunya konumu): varsayilan robotun ustu
     public virtual Vector3 RibbonPoint => transform.position + Vector3.up * 0.5f;
+
+    // Gogusteki cocuk ciziminin ortasi (dunya konumu): 70'te iki cicek ayni karede
+    public virtual Vector3 ChestPoint => transform.position + Vector3.up * 0.45f + transform.forward * 0.15f;
 
     // Basinin tepesi (dunya konumu): Bolum 50'deki ad etiketi bunun ustunde durur
     public virtual Vector3 HeadTop => transform.position + Vector3.up * 0.8f;

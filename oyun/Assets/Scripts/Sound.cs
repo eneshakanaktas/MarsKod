@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Kisa oyun sesleri, kodla uretilir (ses dosyasi yok, paket buyumez): dugme, move, toplama, engele carpma,
-// hata, bolum sonu kutlamasi, kolonide lamba yanmasi, acilis bipi, kapanis hisirtisi, SOS ve pervane vizildisi.
+// hata, bolum sonu kutlamasi, kolonide lamba yanmasi, acilis bipi, kapanis hisirtisi, SOS, pervane vizildisi, ruzgar (70 finali).
 // Robotun "dili" henuz yok (hikaye belirleyecek); bu sesler sade kalir.
 // Ayarlar: Enabled, PlayerPrefs("ses") ile kalici; Hud'daki hoparlor dugmesiyle acilip kapanir.
 public static class Sound
@@ -59,6 +59,11 @@ public static class Sound
     public static void Rocket() => Play(Get("rocket", () => Rumble(4f)), 0.45f);
     public static void Static() => Play(Get("static", () => Hiss(1.2f)), 0.5f);
     public static void Sos() => Play(Get("sos", () => Morse("... --- ...", 880f)), 0.5f);
+    // 70 finali (K6): Kivilcim duvara yururken ruzgar yavasca yukselir; yazi okununca Hush onu bir anda keser (tam sessizlik)
+    public static void Wind() => Play(Get("wind", () => Breeze(12f)), 0.3f);
+
+    // Calan her sesi aninda keser; sonraki sesler normal calar
+    public static void Hush() { if (source != null) source.Stop(); }
 
     // ---- uretim ----
 
@@ -185,6 +190,27 @@ public static class Sound
             data[i] = Mathf.Clamp(wave, -1f, 1f) * swell * cut * 0.6f;
         }
         return MakeClip(data, "rumble");
+    }
+
+    // Ruzgar: cok yumusatilmis (alcak) gurultu; ara ara hafifce yukselip alcalir (esinti), 2 sn'de yukselir, sonra sabit; sonda soner.
+    static AudioClip Breeze(float seconds)
+    {
+        int n = SampleCount(seconds);
+        var rnd = new System.Random(17);
+        var data = new float[n];
+        float smooth = 0f, smoother = 0f;
+        for (int i = 0; i < n; i++)
+        {
+            float t = i / (float)SampleRate;
+            float noise = (float)(rnd.NextDouble() * 2f - 1f);
+            smooth += 0.06f * (noise - smooth);
+            smoother += 0.3f * (smooth - smoother);
+            float gust = 0.65f + 0.35f * Mathf.Sin(t * 1.3f) * Mathf.Sin(t * 0.47f + 1f);
+            float swell = Mathf.SmoothStep(0f, 1f, t / 2f);
+            float fade = Mathf.Clamp01((seconds - t) / 1f);
+            data[i] = Mathf.Clamp(smoother * 5f, -1f, 1f) * gust * swell * fade;
+        }
+        return MakeClip(data, "breeze");
     }
 
     // Hisirti: yumusatilmis gurultu, sonra soner. Kapanis sahnesinde telsizin gelmesinden once calar.

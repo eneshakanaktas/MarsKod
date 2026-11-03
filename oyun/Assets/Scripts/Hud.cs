@@ -704,6 +704,7 @@ public class Hud : MonoBehaviour
         if (!visible) editor.StopEditing();
         card.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
     }
+    public bool CardVisible => card.style.display != DisplayStyle.None;
 
     // Kisa kara kirpisma: kamera bir yerden baska yere kesilirken (55'te Serce'nin gozunden bakis)
     public void Blink(float seconds) => blink.Play(seconds);

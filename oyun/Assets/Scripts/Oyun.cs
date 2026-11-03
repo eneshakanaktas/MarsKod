@@ -68,6 +68,7 @@ public partial class Oyun : MonoBehaviour
     CameraShot shot;   // Bolge 6 sahneleri: sahne surerken kamerayi bu yonetir
     Transform riftZoneRocks;     // manzara kayalarindan yarigin ustune dusenler: yalniz Bolum 60'ta gizlenir
     CanyonScenes canyonScenes;   // Bolge 6 sahneleri: 60 kanyona inis, 55 Serce'nin ilk ucusu, 51 roketin inisi (Oyun.RoketInisi.cs)
+    RiverBedScenes riverScenes;  // Bolge 7 sahneleri: 63 kus bakisi, 68 kalem, 70 final
     Material backdrop;
     BackdropCache backdropCache;
     Transform world;
@@ -235,7 +236,9 @@ public partial class Oyun : MonoBehaviour
 
         hud = gameObject.AddComponent<Hud>();
         hud.Build();
-        canyonScenes = new CanyonScenes(robot, shot, hud, c => Pos(c), Cols, Rows, StartYaw);
+        var walker = new SceneWalker(robot, c => Pos(c), Cols, Rows);
+        canyonScenes = new CanyonScenes(robot, shot, hud, walker, c => Pos(c), Cols, Rows, StartYaw);
+        riverScenes = new RiverBedScenes(this, robot, shot, hud, walker, new Vector2(AreaHalfX, AreaHalfZ), () => !shotsMode);
         if (GraphicsOptions.NoHud) hud.HideForMeasurement();
         FrameRateMeter.Create(System.Array.IndexOf(a, "-fps") >= 0);
         hud.RunPressed += OnRun;
@@ -301,9 +304,10 @@ public partial class Oyun : MonoBehaviour
         }
 
         bool finale = System.Array.IndexOf(a, "-final") >= 0;   // yalnizca Bolum 50 kapanisinin goruntuleri (~2 dk)
-        bool scenes = System.Array.IndexOf(a, "-sahneler") >= 0;   // yalnizca Bolge 6 sahnelerinin kareleri
+        bool scenes = System.Array.IndexOf(a, "-sahneler") >= 0;   // yalnizca Bolge 6 ve 7 sahnelerinin kareleri
+        bool riverOnly = System.Array.IndexOf(a, "-bolge7") >= 0;  // -sahneler ile: yalnizca Bolge 7 (~2 dk)
         for (int i = 0; i < a.Length - 1; i++)
-            if (a[i] == "-shots") { shotsMode = true; LoadLevel(levelIndex); StartCoroutine(scenes ? SceneShots(a[i + 1]) : finale ? FinaleShots(a[i + 1]) : Shots(a[i + 1])); }
+            if (a[i] == "-shots") { shotsMode = true; LoadLevel(levelIndex); StartCoroutine(scenes ? SceneShots(a[i + 1], riverOnly) : finale ? FinaleShots(a[i + 1]) : Shots(a[i + 1])); }
     }
 
     // Arka plan animasyonlari (ayar, bolum secme ekraninda): kapaliyken gokyuzu duraganlasir, telefon daha az yorulur
@@ -477,6 +481,7 @@ public partial class Oyun : MonoBehaviour
     {
         CancelLanding();
         canyonScenes.Restore();
+        riverScenes.Restore();
         if (program != null) StopCoroutine(program);
         program = null;
         running = false; done = false; complete = false;
@@ -792,6 +797,7 @@ public partial class Oyun : MonoBehaviour
     void ResetLevel()
     {
         canyonScenes.Restore();
+        riverScenes.Restore();
         if (program != null) StopCoroutine(program);
         program = null;
         running = false; done = false; complete = false;
@@ -892,6 +898,9 @@ public partial class Oyun : MonoBehaviour
             if (level.Number == Bolge5SonBolum) yield return ClosingSceneBolge5();
             if (level.Number == CanyonTraces.SparrowRepairLevel) yield return canyonScenes.FirstFlight(level);
             if (level.Number == CanyonTraces.LastLevel) yield return canyonScenes.Descent(level);
+            if (level.Number == RiverBedTraces.BirdViewLevel) yield return riverScenes.BirdView(level);
+            if (level.Number == RiverBedTraces.CrayonLevel) yield return riverScenes.TakeCrayon(level);
+            if (level.Number == RiverBedTraces.MuralLevel) yield return riverScenes.FinaleWithSkip(level);
             if (perde1Finale)
             {
                 yield return Tween.Wait(Bolge5DevamBekleme);   // son kare bir sure yalniz kalir

@@ -8,7 +8,7 @@ using UnityEngine;
 public static class RiverBedTraces
 {
     public const int FirstLevel = 61, LastLevel = 70;
-    public const int CrayonLevel = 68, HandsLevel = 69, MuralLevel = 70;
+    public const int BirdViewLevel = 63, CrayonLevel = 68, HandsLevel = 69, MuralLevel = 70;   // 63, 68, 70: 3b sahneleri (RiverBedScenes)
     public const int HandsSmall = 7, HandsBig = 1;   // 69 damgasi "El izi: 7 kucuk, 1 buyuk"
     static readonly int SceneId = Shader.PropertyToID("_RiverScene");
 
@@ -26,6 +26,8 @@ public static class RiverBedTraces
     // 68: yerdeki kalem (3b sahnesi alir); 70: duvar resminin yerleri; baska bolumlerde null
     public static Transform Crayon { get; private set; }
     public static WallMural.Spots? Mural { get; private set; }
+    // 70: Serce'nin finalde konacagi yer, arka duvarin ustunde gunesli seritte (pasta ile eller arasinin ustu: yaziyi ve Kivilcim'i kapatmaz)
+    public static Vector3 MuralPerch { get; private set; }
 
     // 63-64: goc izi (3b kus bakisi ve sayi denetimi icin); baska bolumlerde null
     public static Transform Migration { get; private set; }
@@ -72,7 +74,12 @@ public static class RiverBedTraces
         Migration = RiverStoryTracks.Build(levelNumber, parent, areaHalf, ground);
         if (levelNumber == CrayonLevel) Crayon = GroundCrayon(parent, areaHalf, ground);
         if (levelNumber == HandsLevel) HandRow(BackWallFace);
-        if (levelNumber == MuralLevel) Mural = WallMural.Paint(BackWallFace, 700);
+        if (levelNumber == MuralLevel)
+        {
+            Mural = WallMural.Paint(BackWallFace, 700);
+            float x = Mural.Value.Flower.x + 1.1f, z = areaHalf.y + BackWallGap + 0.1f;
+            MuralPerch = new Vector3(x, ground(x, z) + BackWallHeight + 0.45f, z);
+        }
     }
 
     // 65-66: yan kanyonun agzi sag arkada (izin gittigi yon, dogu), arka planda (RiverSky.hlsl RIVER_MOUTH). Agzin iki yaninda
@@ -99,7 +106,21 @@ public static class RiverBedTraces
         float x = -(areaHalf.x + 0.22f), z = 0.4f;
         var crayon = global::Crayon.Create(parent, new Vector3(x, ground(x, z) + CrayonLength * 0.12f, z), CrayonLength);
         crayon.localRotation = Quaternion.Euler(0f, 62f, 0f);
+        crayonHome = (parent, crayon.localPosition, crayon.localRotation);
         return crayon;
+    }
+
+    static (Transform parent, Vector3 position, Quaternion rotation) crayonHome;
+
+    // 68: kalem ilk yerine, yere doner (3b sahnesi onu Kivilcim'in eline almis ya da gizlemis olabilir); baska bolumlerde bir sey yapmaz
+    public static void ReturnCrayon()
+    {
+        if (Crayon == null) return;
+        Crayon.SetParent(crayonHome.parent, false);
+        Crayon.localPosition = crayonHome.position;
+        Crayon.localRotation = crayonHome.rotation;
+        Crayon.localScale = Vector3.one;
+        Crayon.gameObject.SetActive(true);
     }
 
     const float CrayonLength = 0.22f;

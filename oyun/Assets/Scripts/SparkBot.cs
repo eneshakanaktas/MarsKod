@@ -17,14 +17,19 @@ public class SparkBot : Robot
     static readonly Vector3 ArmReach = new Vector3(70f, 6f, 10f);
     static readonly Vector3 ArmRaised = new Vector3(150f, 35f, 10f);
     static readonly Vector3 ArmShrug = new Vector3(15f, 40f, 105f);
+    static readonly Vector3 ArmPickup = new Vector3(55f, 4f, 8f);           // egilince eli yere degsin (govde PickupLean kadar one egik)
+    static readonly Vector3 ArmOverShoulder = new Vector3(165f, 10f, 70f);  // sag kol omzun ustunden sirta (goruntude ayarlandi)
+    const float PickupLean = 34f;
+    static readonly Vector3 ArmToWall = new Vector3(68f, 4f, 14f);           // sol kol one, avuc onundeki duvara (Bolum 70; goruntude ayarlandi)
 
     static readonly Color EyeCalm = Mats.Hex("#FFE3A0") * 1.6f;     // sicak kivilcim rengi
     static readonly Color EyeHappy = Mats.Hex("#6CF59A") * 1.6f;
     static readonly Color EyeUnsure = Mats.Hex("#FFA040") * 1.6f;
+    static readonly Color EyeEce = CraterTraces.EceColor;            // 70 sonu: Ece'nin turkuazi (1,6 kat parlaklikta beyaza doyuyordu)
 
     Transform body, head, eyeL, eyeR, ribbon, crayon;
     readonly Transform[] ribbonTails = new Transform[2];
-    readonly Transform[] shoulders = new Transform[2], elbows = new Transform[2];
+    readonly Transform[] shoulders = new Transform[2], elbows = new Transform[2], hands = new Transform[2];
     Material eyeMat, thrusterMat, beaconMat;
     Color eyeColor;
     Vector3 arms = ArmRest;   // kollarin su anki durusu (SetArms)
@@ -70,7 +75,7 @@ public class SparkBot : Robot
         var tex = ChildDrawing.Create(plate);
         drawing.SetTexture("_BaseMap", tex);
         drawing.SetTexture("_EmissionMap", tex);
-        var chest = Parts.Add("Drawing", body, MeshFactory.Quad(new Vector2(0.16f, 0.12f)), drawing, new Vector3(0, 0.215f, 0.0855f), outline: false, castShadow: false);
+        var chest = Parts.Add("Drawing", body, MeshFactory.Quad(new Vector2(0.16f, 0.12f)), drawing, ChestAt, outline: false, castShadow: false);
         // dokunun ustu yukari, sol yani robota bakanin solu
         chest.localRotation = Quaternion.AngleAxis(180f, Vector3.forward) * Quaternion.AngleAxis(90f, Vector3.right);
 
@@ -86,6 +91,8 @@ public class SparkBot : Robot
 
         Parts.Add("Neck", body, MeshFactory.RoundedCylinder(0.03f, 0.04f, 0.01f, 16), dark, new Vector3(0, 0.325f, 0));
     }
+
+    static readonly Vector3 ChestAt = new Vector3(0, 0.215f, 0.0855f);   // gogusteki cizimin yeri
 
     // Ece'nin kurdelesi (Bolum 40'tan sonra): pil cantasinin ustunde dugum, arkaya sarkan iki uc. Baslangicta gizli.
     static readonly Vector3 RibbonKnot = new Vector3(0.06f, 0.305f, -0.15f);
@@ -119,6 +126,7 @@ public class SparkBot : Robot
 
     public override void SetCrayon(bool on) => crayon.gameObject.SetActive(on);
     public override Vector3 RibbonPoint => transform.TransformPoint(RibbonKnot + Vector3.up * 0.03f);
+    public override Vector3 ChestPoint => transform.TransformPoint(ChestAt);
 
     void BuildHead(Material hull, Material dark, Material visor)
     {
@@ -148,7 +156,7 @@ public class SparkBot : Robot
         elbow.localPosition = new Vector3(0, -0.095f, 0);
         Parts.Add("Forearm", elbow, MeshFactory.RoundedCylinder(0.021f, 0.075f, 0.01f, 12), metal, new Vector3(0, -0.04f, 0));
         Parts.Add("Cuff", elbow, MeshFactory.RoundedCylinder(0.024f, 0.015f, 0.005f, 12), safety, new Vector3(0, -0.075f, 0), outline: false);
-        Parts.Add("Hand", elbow, MeshFactory.RoundedBox(new Vector3(0.042f, 0.048f, 0.034f), 0.014f), dark, new Vector3(0, -0.105f, 0));
+        hands[side] = Parts.Add("Hand", elbow, MeshFactory.RoundedBox(new Vector3(0.042f, 0.048f, 0.034f), 0.014f), dark, new Vector3(0, -0.105f, 0));
         shoulders[side] = shoulder;
         elbows[side] = elbow;
     }
@@ -157,12 +165,15 @@ public class SparkBot : Robot
     void SetArms(Vector3 pose)
     {
         arms = pose;
-        for (int side = 0; side < 2; side++)
-        {
-            float sx = side == 0 ? -1f : 1f;
-            shoulders[side].localRotation = Quaternion.Euler(-pose.x, 0, sx * pose.y);
-            elbows[side].localRotation = Quaternion.Euler(-pose.z, 0, 0);
-        }
+        for (int side = 0; side < 2; side++) SetArm(side, pose);
+    }
+
+    // Tek kol (side 0 sol, 1 sag)
+    void SetArm(int side, Vector3 pose)
+    {
+        float sx = side == 0 ? -1f : 1f;
+        shoulders[side].localRotation = Quaternion.Euler(-pose.x, 0, sx * pose.y);
+        elbows[side].localRotation = Quaternion.Euler(-pose.z, 0, 0);
     }
 
     IEnumerator ArmsTo(Vector3 from, Vector3 to, float dur)
@@ -233,6 +244,108 @@ public class SparkBot : Robot
     }
 
     public override void GlanceAtCamera(bool on) => headYawTarget = on ? 32f : 0f;
+
+    // Gozlerin su anki rengi (goruntu denetimi)
+    public Color EyeColor => eyeColor;
+
+    public override IEnumerator Calm()
+    {
+        GlanceAtCamera(false);
+        var from = arms;
+        SetEyes(EyeCalm, 0f);
+        yield return Tween.Run(0.4f, t =>
+        {
+            float e = Tween.InOutCubic(t);
+            SetArms(Vector3.Lerp(from, ArmRest, e));
+            lift = 0f;
+            beaconBoost = 0f;
+        });
+        posing = false;
+    }
+
+    public override IEnumerator EceEyes(float seconds)
+    {
+        var from = eyeColor;
+        if (seconds > 0f) yield return Tween.Run(seconds, t => eyeColor = Color.Lerp(from, EyeEce, Tween.InOutCubic(t)));
+        SetEyes(EyeEce, 0f);
+    }
+
+    // Bolum 70: sol elini yavasca duvara koyar, basini hafifce ona eger; on = false kolu indirir
+    public override IEnumerator PalmOnWall(bool on)
+    {
+        posing = true;
+        GlanceAtCamera(false);
+        Vector3 from = on ? ArmRest : ArmToWall, to = on ? ArmToWall : ArmRest;
+        yield return Tween.Run(0.7f, t =>
+        {
+            float e = Tween.InOutCubic(t);
+            SetArm(0, Vector3.Lerp(from, to, e));
+            SetArm(1, ArmRest);
+            tilt = 7f * (on ? e : 1f - e);
+        });
+        if (!on) posing = false;
+    }
+
+    // Avucun (sol elin uc yuzu) duvara uzanmis kol durusunda robota gore yeri: kol bir an o duruma konup olculur
+    public override Vector3 PalmReach
+    {
+        get
+        {
+            var left = shoulders[0].localRotation;
+            var elbow = elbows[0].localRotation;
+            SetArm(0, ArmToWall);
+            var palm = hands[0].TransformPoint(new Vector3(0f, -0.024f, 0f));
+            shoulders[0].localRotation = left;
+            elbows[0].localRotation = elbow;
+            return Quaternion.Inverse(transform.rotation) * (palm - transform.position);
+        }
+    }
+
+    // Bolum 68: one egilir, sag eliyle yerdeki kalemi alir, kolunu omzunun ustunden gecirip kalemi sirtina, kurdelenin yanina takar.
+    // Yerdeki nesne sonunda gizlenip eski yerine (ebeveynine) birakilir: "Tekrar" onu yine yere koyabilsin.
+    public override IEnumerator TakeToBack(Transform item)
+    {
+        posing = true;
+        GlanceAtCamera(false);
+        var home = item.parent;
+        yield return Tween.Run(0.4f, t =>
+        {
+            float e = Tween.InOutCubic(t);
+            lean = PickupLean * e;
+            nod = 20f * e;   // basi kaleme bakar
+            SetArms(Vector3.Lerp(ArmRest, ArmPickup, e));
+        });
+        // kalem ele gelir (son birkac santim), sonra ele baglanir
+        var hand = hands[1];
+        Vector3 fromPos = item.position;
+        Quaternion fromRot = item.rotation;
+        yield return Tween.Run(0.15f, t => item.SetPositionAndRotation(Vector3.Lerp(fromPos, hand.position, t), fromRot));
+        item.SetParent(hand, true);
+        yield return Tween.Run(0.6f, t =>
+        {
+            float e = Tween.InOutCubic(t);
+            lean = PickupLean * (1f - e);
+            nod = 20f * (1f - e);
+            SetArm(0, Vector3.Lerp(ArmPickup, ArmRest, e));
+            SetArm(1, Vector3.Lerp(ArmPickup, ArmOverShoulder, e));
+        });
+        // elden sirttaki yerine kayar
+        fromPos = item.position;
+        fromRot = item.rotation;
+        yield return Tween.Run(0.25f, t =>
+        {
+            float e = Tween.InOutCubic(t);
+            item.SetPositionAndRotation(Vector3.Lerp(fromPos, crayon.position, e), Quaternion.Slerp(fromRot, crayon.rotation, e));
+        });
+        item.gameObject.SetActive(false);
+        item.SetParent(home, true);
+        SetCrayon(true);
+        yield return Tween.Run(0.3f, t => SetArm(1, Vector3.Lerp(ArmOverShoulder, ArmRest, Tween.InOutCubic(t))));
+        lean = 0f;
+        nod = 0f;
+        arms = ArmRest;
+        posing = false;
+    }
 
     // Kameraya (oyuncuya) doner, gozleri yesil gulumser, kollarini kaldirip iki kez zipar, anten isigini iki kez yakar.
     public override IEnumerator Celebrate()

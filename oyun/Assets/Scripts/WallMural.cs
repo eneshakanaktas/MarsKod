@@ -20,11 +20,15 @@ public static class WallMural
     static readonly Vector2 SmallHandAt = new Vector2(2.75f, 0.5f), BigHandAt = new Vector2(3.08f, 0.46f), RobotHandAt = new Vector2(3.45f, 0.5f);
     const float Line = 0.026f;   // cizimlerin kalinligi (yazi kendi kalinliginda)
 
-    // Kivilcim'in elini koyacagi bos yer ve yazinin ortasi (duvarin kuruldugu bolum kokunun yerel konumu); 3b kamerasi ve sahnesi icin
+    // Resmin yerleri (duvarin kuruldugu bolum kokunun yerel konumu, duvarin biraz onu); 3b kamerasi ve sahnesi icin: Kivilcim'in elini
+    // koyacagi bos yer, yazinin ortasi, robot ciziminin ortasi, kucuk ve buyuk el izi, cicegin tac yapraklari
     public readonly struct Spots
     {
-        public readonly Vector3 RobotHand, TextCenter;
-        public Spots(Vector3 robotHand, Vector3 textCenter) { RobotHand = robotHand; TextCenter = textCenter; }
+        public readonly Vector3 RobotHand, TextCenter, Drawing, SmallHand, BigHand, Flower;
+        public Spots(Vector3 robotHand, Vector3 textCenter, Vector3 drawing, Vector3 smallHand, Vector3 bigHand, Vector3 flower)
+        {
+            RobotHand = robotHand; TextCenter = textCenter; Drawing = drawing; SmallHand = smallHand; BigHand = bigHand; Flower = flower;
+        }
     }
 
     public static Spots Paint(Transform wallFace, int seed)
@@ -42,7 +46,9 @@ public static class WallMural
         HandTrace.Draw(wallFace, BigHandAt, Hand.Big, 4f, seed + 4);
 
         var center = (TopLineAt + BottomLineAt) * 0.5f;
-        return new Spots(ToParent(wallFace, RobotHandAt), ToParent(wallFace, center));
+        var bloom = FlowerAt + new Vector2(0f, FlowerHeight * 0.75f);
+        return new Spots(ToParent(wallFace, RobotHandAt), ToParent(wallFace, center), ToParent(wallFace, RobotAt),
+            ToParent(wallFace, SmallHandAt), ToParent(wallFace, BigHandAt), ToParent(wallFace, bloom));
     }
 
     static Vector3 Lifted(Vector2 at) => new Vector3(at.x, at.y, CrayonMarks.Lift);

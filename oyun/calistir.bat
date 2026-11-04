@@ -16,8 +16,17 @@ if errorlevel 1 goto hata
 git pull origin main
 if errorlevel 1 goto hata
 
-rem 3) Eski paketi sil, yenisini uret.
-if exist "Build\Win" rmdir /s /q "Build\Win"
+rem 3) Eski paketi yedege al (uretim basarisiz olursa geri koyariz), yenisini uret.
+if exist "Build\Win-eski" rmdir /s /q "Build\Win-eski"
+if exist "Build\Win" move "Build\Win" "Build\Win-eski" >nul
+
+rem Unity lisansi icin Unity Hub acik olmali (kapaliysa kendimiz aciyoruz).
+tasklist /fi "imagename eq Unity Hub.exe" | find /i "Unity Hub.exe" >nul
+if errorlevel 1 (
+  echo Unity Hub aciliyor, 20 saniye bekleniyor...
+  explorer.exe "shell:AppsFolder\UnityTechnologies.UnityHub_2vrhnee42bhxm!UnityHub"
+  timeout /t 20 /nobreak >nul
+)
 
 rem Kurulu Unity 6 surumunu bul (6000.6.0f1, 6000.6.3f1 vb. hangisi varsa).
 set UNITY=
@@ -31,10 +40,17 @@ echo Paket uretiliyor, lutfen bekleyin (dal degisince ilk seferde 10-20 dk sureb
 %UNITY% -batchmode -quit -projectPath "%~dp0." -executeMethod OyunBuild.BuildWindows -logFile build.log
 
 if not exist "Build\Win\MarsKod.exe" (
-  echo Paket uretilemedi. Ayrinti: build.log  ^(Unity acik olabilir, kapatip tekrar dene^)
+  echo Paket uretilemedi. Ayrinti: build.log  ^(Unity Editor acik olabilir ya da lisans hatasi: Unity Hub'a giris yap^)
+  if exist "Build\Win-eski" (
+    echo Eski paket geri konuyor...
+    if exist "Build\Win" rmdir /s /q "Build\Win"
+    move "Build\Win-eski" "Build\Win" >nul
+    start "" "Build\Win\MarsKod.exe" -screen-width 450 -screen-height 975 -screen-fullscreen 0
+  )
   pause
   exit /b 1
 )
+if exist "Build\Win-eski" rmdir /s /q "Build\Win-eski"
 
 rem 4) Oyunu ac.
 start "" "Build\Win\MarsKod.exe" -screen-width 450 -screen-height 975 -screen-fullscreen 0

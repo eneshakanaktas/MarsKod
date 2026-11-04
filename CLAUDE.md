@@ -64,3 +64,10 @@ Kökteki `ILERLEME.md`'yi oturum başında oku; her önemli adımdan sonra ve ot
 4. Çalışırken ILERLEME.md'yi yerelde güncel tut (girdilere kişinin adını yaz). Push etme.
 5. Kapanış (gün biterken VEYA yeni sohbete geçilirken; sıra değişmez): ÖNCE ILERLEME.md'ye günün özetini adıyla yaz; üstteki "En son (özet)" bölümünü güncelle, başlıklardaki "commit edilmedi" etiketlerini "GitHub'a yüklendi" yap (commit numarası YAZMA: dosya kendi commit'inin numarasını bilemez; numara `git log`'da durur, ayrı "commit numarası" commit'i atma) → SONRA tek commit (kod + ILERLEME.md birlikte) + push → "GitHub'a yüklendi" diye onayla. ILERLEME.md'yi commit'ten sonra yazmak yanlıştır: o yazı GitHub'a gitmez. Push hata verirse (başkası önce yüklediyse) pull + birleştir, sonra tekrar push; çözemezsen kullanıcıya açıkla.
 Kişi "bitti" demeden oturumu bırakacak gibiyse (vedalaşma vb.) push'u hatırlat.
+
+## Çakışmayı önleme (kritik — iki kişi aynı bölgeyi iki kez yapmasın)
+Bölge 7'yi Enes ayrı dalda, Ragıp `main`'de ayrı ayrı yaptı; haberleri yoktu. Bir daha olmasın:
+1. **Büyük işe başlamadan önce sahiplen:** yeni bir bölge, mekanik ya da sahne yapılacaksa, ilk iş `ILERLEME.md`'nin en üstüne tek satır yaz: "[Kim] [tarih]: Bölge X / [iş] üzerinde çalışıyor (dal: `...`)". Bunu **hemen `main`'e** commit + push et (yalnızca bu satır; kod beklemez). Sahiplenmeden önce `ILERLEME.md`'de başkasının aynı işi sahiplenip sahiplenmediğine bak; sahiplenmişse dur, kişiye sor.
+2. **Ayrı dalda çalışan iş görünür kalsın:** dal `main`'e girmese bile, her kapanışta `main`'deki `ILERLEME.md`'ye kısa not düşülür (hangi dal, ne yapıldı, tasarım belgesi nerede). Tasarım belgeleri (spec/plan) erken `main`'e alınır; oyunda görünecek kod dalda bekleyebilir.
+3. **Oturum başında (Claude):** `git pull` sonrası yalnızca bulunduğun dalı değil `git branch -r` ve `main`'deki `ILERLEME.md`'yi de kontrol et. Başka birinin aynı konuda dalı/sahiplenmesi varsa, işe başlamadan kullanıcıya söyle.
+4. Çakışma yine de çıkarsa sessizce birleştirme/yeniden yapma: iki tasarımı kullanıcıya göster, ilgili kişilerle karar verilsin.

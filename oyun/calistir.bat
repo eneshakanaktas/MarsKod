@@ -1,20 +1,28 @@
 @echo off
-rem MarsKod: GitHub'daki EN GUNCEL oyunu (main dali) ceker, paketi yeniden uretir ve telefon boyutunda acar.
-rem Unity penceresi aciksa paket uretilemez: once Unity'yi kapat.
+rem MarsKod: oyunu telefon boyutunda acar. Paket guncelse hemen acar; GitHub'da yeni is varsa ya da kod degistiyse once yeniden uretir.
+rem Paket uretilirken Unity penceresi acik olmamali, Unity Hub acik ve giris yapilmis olmali.
 cd /d "%~dp0"
 
-rem 1) Kaydedilmemis degisiklik varsa dur (yanlislikla ezmeyelim).
-git diff --quiet
-if errorlevel 1 goto kirli
-git diff --cached --quiet
-if errorlevel 1 goto kirli
-
-rem 2) main dalina gec ve guncelle.
-git fetch origin
+rem 1) Kaydedilmis degisiklik yoksa main'e gec ve GitHub'daki yeni isleri cek. Varsa dokunma (yarim isi ezmeyelim).
+git fetch origin >nul 2>&1
+git diff --quiet HEAD
+if errorlevel 1 goto atla_cek
 git checkout main
 if errorlevel 1 goto hata
 git pull origin main
 if errorlevel 1 goto hata
+:atla_cek
+
+rem 2) Paket guncel mi? Eksikse, koddan farkliysa ya da kod kaydedilmeden degistiyse yeniden uretilir.
+set NEEDBUILD=
+if not exist "Build\Win\MarsKod.exe" set NEEDBUILD=1
+git diff --quiet HEAD -- Assets ProjectSettings
+if errorlevel 1 set NEEDBUILD=1
+for /f %%H in ('git rev-parse HEAD') do set HEADID=%%H
+set BUILTID=
+if exist "Build\Win\commit.txt" set /p BUILTID=<"Build\Win\commit.txt"
+if not "%BUILTID%"=="%HEADID%" set NEEDBUILD=1
+if not defined NEEDBUILD goto ac
 
 rem 3) Eski paketi yedege al (uretim basarisiz olursa geri koyariz), yenisini uret.
 if exist "Build\Win-eski" rmdir /s /q "Build\Win-eski"
@@ -36,7 +44,7 @@ if not defined UNITY (
   pause
   exit /b 1
 )
-echo Paket uretiliyor, lutfen bekleyin (dal degisince ilk seferde 10-20 dk surebilir)...
+echo Paket uretiliyor, lutfen bekleyin. 10-20 dk surebilir, pencereyi kapatmayin...
 %UNITY% -batchmode -quit -projectPath "%~dp0." -executeMethod OyunBuild.BuildWindows -logFile build.log
 
 if not exist "Build\Win\MarsKod.exe" (
@@ -50,16 +58,14 @@ if not exist "Build\Win\MarsKod.exe" (
   pause
   exit /b 1
 )
+rem Paketin hangi kodla uretildigini yaz: sonraki acilista kod ayniysa bekletmeden acilir.
+>"Build\Win\commit.txt" echo %HEADID%
 if exist "Build\Win-eski" rmdir /s /q "Build\Win-eski"
 
+:ac
 rem 4) Oyunu ac.
 start "" "Build\Win\MarsKod.exe" -screen-width 450 -screen-height 975 -screen-fullscreen 0
 exit /b 0
-
-:kirli
-echo Bu klasorde kaydedilmemis degisiklik var. Once commit et ya da Claude'a "kaydet" de.
-pause
-exit /b 1
 
 :hata
 echo Git hata verdi. Ekrandaki mesaji Claude'a goster.

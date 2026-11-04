@@ -20,6 +20,11 @@ public static class WallMural
     static readonly Vector2 SmallHandAt = new Vector2(2.75f, 0.5f), BigHandAt = new Vector2(3.08f, 0.46f), RobotHandAt = new Vector2(3.45f, 0.5f);
     const float Line = 0.026f;   // cizimlerin kalinligi (yazi kendi kalinliginda)
 
+    // Duvarin bu resim icin korunan bolgesi (RiverWall.Guard): resmin kapladigi aralikta duvar yuzu one cikmaz; yazinin aralikta tepe,
+    // en yuksek harfin ustunden (cocuk eli: harf 1,2 kat, 2 derece egim) pay birakarak yazinin ustunde kalir.
+    public static RiverWall.Guard WallGuard =>
+        new RiverWall.Guard(flatFrom: -2.7f, flatTo: 3.8f, tallFrom: -1.8f, tallTo: 1.6f, minTop: TopLineAt.y + LetterHeight * 0.6f + 0.15f);
+
     // Resmin yerleri (duvarin kuruldugu bolum kokunun yerel konumu, duvarin biraz onu); 3b kamerasi ve sahnesi icin: Kivilcim'in elini
     // koyacagi bos yer, yazinin ortasi, robot ciziminin ortasi, kucuk ve buyuk el izi, cicegin tac yapraklari
     public readonly struct Spots

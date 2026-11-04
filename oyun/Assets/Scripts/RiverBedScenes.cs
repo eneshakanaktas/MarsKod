@@ -136,12 +136,14 @@ public class RiverBedScenes
     const float PanShotHalfWidth = 1.3f, PanShotDistance = 3f, PanShotRise = 1.8f;        // cicek, pasta, eller, Kivilcim
     // Iki eli ancak gogsunun onunde bulusur: Kivilcim bos yerin tam onunde durur. Son adimi yandan atar (onden gelse sol kolu kosedeki
     // direge degerdi).
-    static readonly Vector3 LastStepFrom = new Vector3(0.4f, 0f, 0f);
+    // (0,4'te sag eli alanin sagindaki yan kanat duvarina giriyordu: denetimde el x=4,23, kanat yuzu ~4,24)
+    static readonly Vector3 LastStepFrom = new Vector3(0.2f, 0f, 0f);
     // Kivilcim elini cizerken: soldan, duvara yakin (onden bakinca govdesi elleri kapatir); kalemli el, duvardaki el, yandaki el izleri
     static readonly Vector3 DrawShotLook = new Vector3(-0.05f, 0.05f, -0.15f), DrawShotFrom = new Vector3(-1.2f, 0.45f, -0.55f);
     const float DrawShotHalfWidth = 0.5f, TraceSeconds = 3f;
-    // Cizdikten sonra robot geri ve saga cekilir: govdesi uc eli kapatmaz
-    static readonly Vector3 StepBack = new Vector3(0.45f, 0f, -0.55f);
+    // Cizdikten sonra robot geri ve saga cekilir: govdesi uc eli kapatmaz. Yana adim kisa: 0,45'te sag eli alanin sagindaki yan
+    // kanat duvarina giriyordu (denetim: Govde <- Hand, el x=4,23, kanat yuzu ~4,24)
+    static readonly Vector3 StepBack = new Vector3(0.25f, 0f, -0.55f);
     // Uc el ve Kivilcim: onden-soldan (Kivilcim sagda, govdesi el izlerini kapatmaz)
     static readonly Vector3 HandsShotFromHands = new Vector3(-0.8f, 0.75f, -2.1f);
     const float HandsShotHalfWidth = 1.0f;

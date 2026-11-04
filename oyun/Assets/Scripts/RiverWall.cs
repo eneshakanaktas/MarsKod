@@ -20,6 +20,20 @@ public static class RiverWall
     static readonly float[] LayerSetback = { 0f, 0.03f, 0.11f, 0.02f, 0.05f, 0.04f, 0.06f };
     static readonly Layer[] LayerLook = { Layer.Body, Layer.Band, Layer.Hollow, Layer.Body, Layer.Band, Layer.Body, Layer.Sunlit };
 
+    // Duvara resim/yazi konacak bolge (Bolum 70 duvar resmi): duvar yuzu orada one cikmaz (el ve kalem katmana girmesin) ve
+    // yazinin oldugu aralikta tepe en az MinTop yukseklikte kalir (engebeli ust kenar yazinin altina dusup yaziyi tasin disina cikarmasin).
+    // x'ler duvarin yerel x'inde, MinTop kokun y'sinde (on yuzun y'siyle ayni); sinirlarda GuardFade kadar yumusak gecis.
+    public readonly struct Guard
+    {
+        public readonly float FlatFrom, FlatTo, TallFrom, TallTo, MinTop;
+        public Guard(float flatFrom, float flatTo, float tallFrom, float tallTo, float minTop)
+        {
+            FlatFrom = flatFrom; FlatTo = flatTo; TallFrom = tallFrom; TallTo = tallTo; MinTop = minTop;
+        }
+    }
+
+    const float GuardFade = 0.35f;     // korumali bolgenin kenarinda yumusak gecis boyu
+
     const float Depth = 0.24f;         // duvarin tepesinin derinligi (yukaridan bakan kamera tepeyi ince serit gorur)
     const float SegmentLength = 0.16f; // ust kenarin kiriklari ve zemine oturma bu aralikla
     const float BlockLength = 0.7f;    // ust kenardaki kirik bloklarin boyu
@@ -28,7 +42,7 @@ public static class RiverWall
     // (0: on yuz kameraya, -Z'ye bakar); sunlit: ust serit gunes alir (yuksek duvar). Doner: on yuzun duzlemi (yerel -Z kameraya
     // bakar, y = 0 zeminin ortadaki yuksekligi); el izleri ve duvar resmi buraya konur.
     public static Transform Build(Transform parent, Vector3 baseCenter, float length, float height, float yawDeg, bool sunlit, int seed,
-        Func<float, float, float> ground)
+        Func<float, float, float> ground, Guard? guard = null)
     {
         var root = Parts.Empty("Iz-KayaDuvar", parent);
         var rotation = Quaternion.Euler(0f, yawDeg, 0f);
@@ -41,6 +55,13 @@ public static class RiverWall
         {
             var w = baseCenter + rotation * new Vector3(lx, 0f, 0f);
             return ground(w.x, w.z) - baseY - 0.06f;
+        }
+
+        // katmanin one/arkaya kaymasi; korumali bolgede hicbir katman duvar yuzunden one cikmaz
+        float SetbackAt(float x, int layer)
+        {
+            float s = Setback(x, layer, seed);
+            return guard.HasValue ? Mathf.Lerp(s, Mathf.Max(s, 0f), GuardWeight(x, guard.Value.FlatFrom, guard.Value.FlatTo)) : s;
         }
 
         var meshes = new FlatMesh[4];
@@ -59,14 +80,20 @@ public static class RiverWall
                 float h0 = height * LayerShare[k] * Wobble(x0, k, seed), h1 = height * LayerShare[k] * Wobble(x1, k, seed);
                 if (top) { h0 += TopProfile(x0, seed) * height; h1 += TopProfile(x1, seed) * height; }
                 h0 *= t0; h1 *= t1;
-                float z0 = Setback(x0, k, seed), z1 = Setback(x1, k, seed);
+                if (top && guard.HasValue)   // tepe, yazinin altinda kalmasin: katmanin ustu en az MinTop'a ulasir
+                {
+                    var g = guard.Value;
+                    h0 = Mathf.Max(h0, GuardWeight(x0, g.TallFrom, g.TallTo) * (g.MinTop - f0 - y0));
+                    h1 = Mathf.Max(h1, GuardWeight(x1, g.TallFrom, g.TallTo) * (g.MinTop - f1 - y1));
+                }
+                float z0 = SetbackAt(x0, k), z1 = SetbackAt(x1, k);
                 var a = new Vector3(x0, f0 + y0, z0);
                 var b = new Vector3(x1, f1 + y1, z1);
                 var cTop = new Vector3(x1, f1 + y1 + h1, z1);
                 var dTop = new Vector3(x0, f0 + y0 + h0, z0);
                 meshes[(int)(top ? topLook : LayerLook[k])].Quad(a, b, cTop, dTop, Vector3.back);
                 // katmanin ustu: bir ustteki katman geride duruyorsa basamak gorunur (en ustte duvarin tepesi, gunes alir)
-                float n0 = top ? Depth : Setback(x0, k + 1, seed), n1 = top ? Depth : Setback(x1, k + 1, seed);
+                float n0 = top ? Depth : SetbackAt(x0, k + 1), n1 = top ? Depth : SetbackAt(x1, k + 1);
                 meshes[(int)(top ? topLook : LayerLook[k])].Quad(dTop, cTop, new Vector3(x1, cTop.y, Mathf.Max(n1, z1)),
                     new Vector3(x0, dTop.y, Mathf.Max(n0, z0)), Vector3.up);
                 y0 += h0; y1 += h1;
@@ -83,6 +110,10 @@ public static class RiverWall
         face.localPosition = new Vector3(0f, 0f, -0.01f);
         return face;
     }
+
+    // Korumali aralikta 1, disinda GuardFade boyunca yumusakca 0
+    static float GuardWeight(float x, float from, float to) =>
+        Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(1f - Mathf.Max(from - x, x - to, 0f) / GuardFade));
 
     // duvarin yan ucu: on yuzden arkaya kapatir
     static void EndCap(FlatMesh mesh, float x, float floor, float top, float side)

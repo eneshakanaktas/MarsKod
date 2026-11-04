@@ -18,7 +18,7 @@ Windows "Bilinmeyen yayıncı" uyarısı verirse **Daha fazla bilgi → Yine de 
 
 Gereken: Windows 10/11 (64 bit). Ayrı bir kurulum yoktur, klasörü silince oyun kalkar.
 
-**Android telefon:** `paketler/` klasöründeki `.apk` dosyası telefona kurulur ([kurulum adımları](paketler/BENIOKU.md)). Oradaki paket eskidir (2 Ekim, 15 bölüm). Güncel Android paketi, Windows sürümü gibi Releases sayfasına konulacaktır.
+**Android telefon:** Güncel Android paketi henüz yok; hazır olunca Windows sürümü gibi Releases sayfasına konulacaktır (eski deneme paketleri temizlendi, istenirse yeniden üretilir: `OyunBuild.BuildAndroid`).
 
 **Oyunu geliştirmek isteyenler** için: `oyun/` klasörünü Unity Hub ile açmak gerekir (aşağıda "Geliştiriciler için").
 
@@ -74,7 +74,6 @@ Ayrıntılı günlük ilerleme: [ILERLEME.md](ILERLEME.md).
 | `oyun/Assets/Resources/Bolumler/` | 60 bölümün dosyaları |
 | `motor-test/` | Otomatik testler |
 | `docs/` | Tasarım belgeleri, hikâye, bölge senaryoları, ekran görüntüleri |
-| `paketler/` | Telefona kurulan eski deneme paketleri |
 | `prototipler/`, `arsiv/` | Eski denemeler (dokunulmaz) |
 
 Önemli belgeler:

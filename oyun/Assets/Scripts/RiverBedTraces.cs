@@ -69,7 +69,7 @@ public static class RiverBedTraces
         switch (SceneOf(levelNumber))
         {
             case Scene.SideMouth: SideCanyonMouth(parent, areaHalf, ground); break;
-            case Scene.BackWall: BackWallFace = SideCanyon(parent, areaHalf, ground); break;
+            case Scene.BackWall: BackWallFace = SideCanyon(parent, areaHalf, ground, levelNumber == MuralLevel ? WallMural.WallGuard : (RiverWall.Guard?)null); break;
         }
         Migration = RiverStoryTracks.Build(levelNumber, parent, areaHalf, ground);
         if (levelNumber == CrayonLevel) Crayon = GroundCrayon(parent, areaHalf, ground);
@@ -92,9 +92,9 @@ public static class RiverBedTraces
 
     // 67-70: yan kanyonun ici. Alanin arkasinda tek duvar; iki yanda ekranin kenarinda kesilen alcak kanatlar (dar, kivrimli kanyon).
     // Doner: arka duvarin on yuzu.
-    static Transform SideCanyon(Transform parent, Vector2 areaHalf, Func<float, float, float> ground)
+    static Transform SideCanyon(Transform parent, Vector2 areaHalf, Func<float, float, float> ground, RiverWall.Guard? muralGuard)
     {
-        var face = RiverWall.Build(parent, new Vector3(0f, 0f, areaHalf.y + BackWallGap), areaHalf.x * 2f + 2f, BackWallHeight, 0f, true, 670, ground);
+        var face = RiverWall.Build(parent, new Vector3(0f, 0f, areaHalf.y + BackWallGap), areaHalf.x * 2f + 2f, BackWallHeight, 0f, true, 670, ground, muralGuard);
         foreach (float side in new[] { -1f, 1f })
             RiverWall.Build(parent, new Vector3(side * (areaHalf.x + 1.7f), 0f, areaHalf.y - 0.4f), 3.2f, 0.7f, side * 68f, false, 671 + (int)side, ground);
         return face;

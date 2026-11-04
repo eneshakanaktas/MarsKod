@@ -197,7 +197,7 @@ public partial class Oyun
                 for (; riverScenes.Phase != phase && t < 60f; t += Time.deltaTime)
                 {
                     onRock |= blocked.Contains(walker.CellAt(robot.transform.localPosition));
-                    hit ??= PartInside(robot.GetComponentsInChildren<Renderer>(), solids);
+                    hit ??= PartInside(robot.GetComponentsInChildren<Renderer>(), solids, riverScenes.Phase);
                     yield return null;
                 }
                 if (riverScenes.Phase != phase) { problems.Add(label + phase + " evresi gelmedi"); break; }
@@ -207,7 +207,7 @@ public partial class Oyun
                 if (file != "") Cap(Path.Combine(dir, file));
                 yield return new WaitForSeconds(file != "" ? 0.4f : 0f);
             }
-            hit ??= PartInside(robot.GetComponentsInChildren<Renderer>(), solids);
+            hit ??= PartInside(robot.GetComponentsInChildren<Renderer>(), solids, riverScenes.Phase);
             if (onRock) problems.Add(label + "robot yuruyuste kaya karesine girdi");
             if (hit != null) problems.Add(label + "robot icine giriyor: " + hit);
             if (!EceEyesOn()) problems.Add(label + "sonda gozler turkuaz degil");
@@ -304,7 +304,7 @@ public partial class Oyun
     }
 
     // Parcalardan biri (kutusu biraz kucultulerek) katilardan birine giriyorsa "kati <- parca"; yoksa null. Ince parcalar (golge, itici) sayilmaz.
-    static string PartInside(Renderer[] parts, List<MeshCollider> solids)
+    static string PartInside(Renderer[] parts, List<MeshCollider> solids, string phase = "")
     {
         Physics.SyncTransforms();
         foreach (var part in parts)
@@ -313,7 +313,8 @@ public partial class Oyun
             var b = part.bounds;
             if (b.extents.y < 0.03f || part.name == "Thruster") continue;
             foreach (var other in Physics.OverlapBox(b.center, b.extents * 0.8f))
-                if (other is MeshCollider mc && solids.Contains(mc)) return other.name + " <- " + part.name;
+                if (other is MeshCollider mc && solids.Contains(mc))
+                    return "evre " + phase + ": " + other.name + " <- " + part.name + " (el/parca yeri " + b.center.ToString("0.00") + ", duvar " + other.bounds.center.ToString("0.00") + ")";
         }
         return null;
     }

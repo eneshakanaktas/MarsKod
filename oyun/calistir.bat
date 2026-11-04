@@ -40,7 +40,7 @@ echo Paket uretiliyor, lutfen bekleyin (dal degisince ilk seferde 10-20 dk sureb
 %UNITY% -batchmode -quit -projectPath "%~dp0." -executeMethod OyunBuild.BuildWindows -logFile build.log
 
 if not exist "Build\Win\MarsKod.exe" (
-  echo Paket uretilemedi. Ayrinti: build.log. En sik sebep: Unity Hub'da hesaba giris yapilmamis (lisans). Hub'i ac, giris yap, tekrar dene.
+  echo Paket uretilemedi. Ayrinti: build.log. En sik sebep: Unity Hub'da hesaba giris yapilmamis. Hub'i ac, giris yap, tekrar dene.
   if exist "Build\Win-eski" (
     echo Eski paket geri konuyor...
     if exist "Build\Win" rmdir /s /q "Build\Win"

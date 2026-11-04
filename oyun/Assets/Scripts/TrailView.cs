@@ -26,6 +26,8 @@ public class TrailView
     const float ScoutHeight = 1.1f, ScoutAside = 0.8f, GlideTime = 0.3f, LightWait = 0.35f, ReturnTime = 0.8f;
     static readonly Color LabelColor = ScoutLight.Sun;   // K1-K2: yon yazisi kucuk, gunes renginde
     const float LabelSize = 0.3f;
+    const float UncoverSeconds = 0.9f;                     // izlerin kum acilirken belirme suresi
+    const float SandReach = 2.2f, SandScale = 0.25f, SandSeconds = 0.8f;   // yayilma 2,2: kum robotun govdesinin altindan yanlara dogru savrulur (govdenin arkasinda kalmasin)   // izleri ortaya cikaran kucuk kum bulutu
 
     readonly Transform root;
     readonly Func<Cell, Vector3> pos;
@@ -41,6 +43,9 @@ public class TrailView
 
     // Serce yol ayriminin ustunde, isik yerde (denetim karesi icin)
     public bool Scouting { get; private set; }
+
+    // Bu kosuda kum acilarak belirmis iz grubu sayisi (goruntu denetimi "yeni iz belirdi" anini bununla yakalar)
+    public int Uncovered { get; private set; }
 
     public TrailView(Transform levelRoot, Func<Cell, Vector3> pos, Func<float, float, float> ground, Sparrow sparrow, TrailLook look,
         MonoBehaviour runner, Trail first)
@@ -59,6 +64,7 @@ public class TrailView
     {
         if (prints != null) UnityEngine.Object.Destroy(prints.gameObject);
         groups.Clear();
+        Uncovered = 0;
         trail = shown;
         prints = Parts.Empty("OynananIz", root);
         var path = Path(shown);
@@ -79,10 +85,23 @@ public class TrailView
     }
 
     // Kivilcim bu kareye basti: izde ise oraya giden izler yumusakca belirir
+    // Izler robotun degil, izin sahiplerinin (Ece ve Defne): robotun itici gucu ustlerindeki kumu savurunca ortaya cikar. Ilk
+    // kez basilan karede, robot oraya varinca, robotun altinda kucuk bir kum bulutu kalkar, izler kum acilirken yavasca belirir (arkada birden belirmesin).
     public void Stepped(Cell at)
     {
         int i = trail.IndexOf(at);
-        if (i > 0) groups[i].Show();
+        if (i <= 0 || groups[i].gameObject.activeSelf) return;
+        groups[i].Show(UncoverSeconds);
+        Uncovered++;
+        var under = pos(trail.Cells[i]);   // robotun durdugu karenin ortasi: kum robotun altindan savrulur
+        under.y = ground(under.x, under.z);
+        LandingDust.Play(root, under, SandReach, SandScale, SandSeconds);
+    }
+
+    // Denetim: izin butun izleri belirmis gibi gosterir (sahne denetimi robotu iz sonuna isinlar; gercekte kod kosarken belirmis olurdu)
+    public void RevealAll()
+    {
+        foreach (var g in groups) g.ShowNow();
     }
 
     // Serce yol ayriminin ustune suzulur, kolu isikla gosterir; donusu arkada baslar (beklenmez). Pes pese scout()'ta

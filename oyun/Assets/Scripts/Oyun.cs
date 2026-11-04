@@ -1091,8 +1091,8 @@ public partial class Oyun : MonoBehaviour
             case Moved m:
                 Sound.Move();
                 yield return Face(m.Direction);
-                trailView?.Stepped(m.To);
                 yield return robot.MoveTo(Pos(m.To));
+                trailView?.Stepped(m.To);   // robot yeni kareye varinca: kum onun altinda savrulur, izler o zaman belirir
                 break;
             case Blocked b:
                 Sound.Bump();

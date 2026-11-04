@@ -11,14 +11,19 @@ public class LandingDust : MonoBehaviour
     Transform[] puffs;
     float[] angles, sizes, reaches;   // reaches: her yumagin yayilma orani (halka degil, dolgun bulut olsun)
     float reach;   // yayilma payi: buyuk roket daha genis toz kaldirir
+    float scale = 1f;          // yumaklarin boyu ve yayilmasi: kucuk toz (iz belirirken) icin < 1
+    float seconds = Seconds;   // bulutun omru
 
-    public static void Play(Transform parent, Vector3 localPos, float reach = 1f)
+    // scale ve seconds yalnizca kucuk, kisa toz icin (Bolge 7'de iz ortaya cikarken kum savrulur); roket inisi varsayilanlari kullanir
+    public static void Play(Transform parent, Vector3 localPos, float reach = 1f, float scale = 1f, float seconds = Seconds)
     {
         var go = new GameObject("Inis-Tozu");
         go.transform.SetParent(parent, false);
         go.transform.localPosition = localPos;
         var dust = go.AddComponent<LandingDust>();
         dust.reach = reach;
+        dust.scale = scale;
+        dust.seconds = seconds;
         dust.Build();
         dust.StartCoroutine(dust.Animate());
     }
@@ -37,16 +42,16 @@ public class LandingDust : MonoBehaviour
             reaches[i] = 0.3f + 0.7f * (float)rnd.NextDouble();
             puffs[i] = Parts.Add("Yumak", transform, mesh, mat, Vector3.zero, outline: false, castShadow: false);
             angles[i] = (i + (float)rnd.NextDouble() * 0.6f) / PuffCount * Mathf.PI * 2f;
-            sizes[i] = 0.3f + (float)rnd.NextDouble() * 0.2f;   // buyuk, ust uste binen yumaklar: tek bir toz bulutu
+            sizes[i] = (0.3f + (float)rnd.NextDouble() * 0.2f) * scale;   // buyuk, ust uste binen yumaklar: tek bir toz bulutu
         }
     }
 
     IEnumerator Animate()
     {
-        yield return Tween.Run(Seconds, t =>
+        yield return Tween.Run(seconds, t =>
         {
-            float radius = Mathf.Lerp(StartRadius, EndRadius, Tween.OutCubic(t)) * reach;
-            float rise = 0.15f * Mathf.Sin(t * Mathf.PI);   // yere yakin kalir, hafifce yukselip alcalir
+            float radius = Mathf.Lerp(StartRadius, EndRadius, Tween.OutCubic(t)) * reach * scale;
+            float rise = 0.15f * Mathf.Sin(t * Mathf.PI) * scale;   // yere yakin kalir, hafifce yukselip alcalir
             float size = Mathf.Sin(Mathf.Min(t * 3f, 1f) * Mathf.PI * 0.5f) * (1f - Tween.InCubic(t));   // ilk uc'te buyur, sonra kucul
             for (int i = 0; i < PuffCount; i++)
             {

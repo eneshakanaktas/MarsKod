@@ -50,6 +50,12 @@ public partial class Oyun
             if (!trailView.Scouting) problems.Add(number + "'de scout() ani gelmedi");
             yield return new WaitForSeconds(0.12f);
             Cap(Path.Combine(dir, "s" + number + "-scout.png"));
+            // izler robotun degil, izin sahiplerinin: kum acilirken belirir. Bir sonraki yeni iz belirdiginde (kum bulutu ve belirmekte
+            // olan izler) kare al
+            int seen = trailView.Uncovered;
+            for (float w = 0f; trailView.Uncovered == seen && running && w < 8f; w += Time.deltaTime) yield return null;
+            yield return new WaitForSeconds(0.25f);
+            Cap(Path.Combine(dir, "s" + number + "-kum.png"));
             while (running) yield return null;
             yield return new WaitForSeconds(0.6f);
             Cap(Path.Combine(dir, "s" + number + "-izler.png"));
@@ -127,6 +133,7 @@ public partial class Oyun
             var blocked = MarsKod.Dunya.GridPath.Obstacles(level, itemsTaken: true);
             var walker = new SceneWalker(robot, c => Pos(c), Cols, Rows);
             robot.ResetTo(Pos(level.Trails[i].End), 0f);
+            trailView?.RevealAll();   // gercekte kod kosarken belirmis olurdu: sahne kamerasinda da gorunmeli
             StartCoroutine(riverScenes.TakeCrayon(level));
             var shots = i == 0 ? new[] { ("yol", 0.6f, "s68-1-yol.png"), ("alis", 1.5f, "s68-2-alis.png"), ("alis", 0.15f, "s68-2b-omuz.png"), ("sirt", 0.3f, "s68-3-sirt.png"), ("son", 0.5f, "s68-4-son.png") }
                 : new[] { ("son", 0f, "") };
@@ -182,6 +189,7 @@ public partial class Oyun
             var walker = new SceneWalker(robot, c => Pos(c), Cols, Rows);
             var solids = TemporaryColliders(levelRoot, "Iz-KayaDuvar", world, "Post");
             robot.ResetTo(Pos(level.Trails[i].End), 0f);
+            trailView?.RevealAll();   // gercekte kod kosarken belirmis olurdu: sahne kamerasinda da gorunmeli
             StartCoroutine(riverScenes.Finale(level));
             var shots = i == 0
                 ? new[] { ("yol", 0.8f, "s70-1-yol.png"), ("okuma", 0.5f, "s70-2-duvar.png"), ("sessizlik", 1f, "s70-3-sessizlik.png"),
@@ -240,7 +248,7 @@ public partial class Oyun
         OnRun();
         yield return WaitForPhase("yol", problems, RiverPhase);
         if (hud.SkipOpen) problems.Add("70 ilk izleyis: atlama katmani acik (atlanamamali)");
-        yield return WaitForPhase("son", problems, RiverPhase);
+        yield return WaitForPhase("son", problems, RiverPhase, limit: 90f);   // final ~36-45 sn surer: 40 sn sinir yuklu turda dar kaliyordu
         yield return new WaitForSeconds(0.5f);
         Cap(Path.Combine(dir, "s70-9-normal-son.png"));
         yield return new WaitForSeconds(0.4f);
@@ -610,12 +618,12 @@ public partial class Oyun
     }
 
     // Sahnenin evresi gelene kadar bekler (en cok 40 sn). current: hangi sahnenin evresi (verilmezse Bolge 6)
-    IEnumerator WaitForPhase(string phase, List<string> problems, Func<string> current = null)
+    IEnumerator WaitForPhase(string phase, List<string> problems, Func<string> current = null, float limit = 40f)
     {
         current ??= () => canyonScenes.Phase;
         for (float t = 0f; current() != phase; t += Time.deltaTime)
         {
-            if (t > 40f) { problems.Add(phase + " evresi gelmedi (su an: '" + current() + "')"); yield break; }
+            if (t > limit) { problems.Add(phase + " evresi gelmedi (su an: '" + current() + "')"); yield break; }
             yield return null;
         }
     }

@@ -11,7 +11,7 @@ Claude'un önerisi, Ragıp'ın kararı. Hikâyenin geri kalanı bunlara dayanır
 2. **Kıvılcım neden dışarıda kaldı:** Sığınak kapısı fırtınaya karşı dışarıdan kilitlenir ve ancak dışarıdan açılabilir. Defne, Kıvılcım'ı bilerek dışarıda bıraktı: bir gün kapıyı açacak olan o.
 3. **Kor neden hatırlıyor:** Hizmet dışı bırakılınca kalın duvarlı eski hangara kondu; duvarlar fırtınanın ışınımını kesti, belleği sağlam kaldı. Kıvılcım ise yüzeydeydi.
 4. **Bölüm 1-49'da kod nasıl ulaşıyor, Defne'nin kaydı neden Bölüm 50'de geliyor:** Kıvılcım'ın küçük yedek alıcısı yörüngedeki eski bir eğitim uydusu üzerinden yalnızca kısa kod alabilir (ödevler). Ses kayıtları büyük veri; büyük anten onarılınca (Bölüm 50) ilk kez gelir.
-5. **Ece, Defne'nin kızı.** "Ece korkuyor ama belli etmiyor" kaydı bir annenin sesi olur; Defne'nin cesur sakinliğinin altındaki korku. (Bugünkü taslakta ikisi arasında bağ yoktu.)
+5. **Ece, Defne'nin kızı** (tam adı Ece Aras; Enes, 2026-11-09). "Ece korkuyor ama belli etmiyor" kaydı bir annenin sesi olur; Defne'nin cesur sakinliğinin altındaki korku. (Bugünkü taslakta ikisi arasında bağ yoktu.)
 6. **Koloni 24 kişi**, fırtınadan bu yana geçen süre (oyun başında) 7 ay; kapsüllerin enerjisi normalde 18 ay yeterdi ama fırtına bir kısmını tüketti.
 7. **Kutuptaki yardım sinyali:** Fırtına geldiğinde kutupta olan iki kişilik araştırma ekibinin aracı. Ekip son anda alınıp sığınağa götürüldü; araç orada kaldı ve otomatik sinyali hâlâ çalıyor (insanlar ölmez kuralı).
 

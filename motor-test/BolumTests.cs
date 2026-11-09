@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using MarsKod.Dunya;
 
 namespace MotorTest;
@@ -126,6 +127,45 @@ public class BolumTests
         Assert.Equal(Collectible.Pebble, Regions.Item(Region.RiverBed));
         Assert.Equal(Collectible.Pebble, Collectibles.Marks['C']);
         Assert.Equal("çakıl", Collectibles.Name(Collectible.Pebble));
+        Assert.Equal(Region.Station, Regions.Of(71));
+        Assert.Equal(Region.Station, Regions.Of(80));
+        Assert.Equal(Collectible.DataCard, Regions.Item(Region.Station));
+        Assert.Equal(Collectible.DataCard, Collectibles.Marks['V']);
+        Assert.Equal("veri kartı", Collectibles.Name(Collectible.DataCard));
+    }
+
+    // Spec tutarlılık 1: Bölge 8'den itibaren çözüm ve başlangıç kodu yalnızca o bölüme kadar açılmış Python kelimelerini kullanır
+    [Theory]
+    [MemberData(nameof(Files))]
+    public void Cozum_yalnizca_acilmis_kelimeleri_kullanir(string file)
+    {
+        var level = Load(file);
+        if (level.Number < 71) return;
+        var all = Directory.GetFiles(Dir, "*.json").Select(f => Level.Parse(File.ReadAllText(f))).ToList();
+        var open = new HashSet<string>(Suggestions.OpenWords(all, level.Number));
+        foreach (var word in PythonWordsIn(level.Solution + "\n" + level.StartCode))
+            Assert.True(open.Contains(word), level.Number + ": \"" + word + "\" henüz açılmadı (python_kelimeleri)");
+    }
+
+    // Metinleri ve yorumları çıkarıp kalan adlardan Python kelimesi olanlar
+    static IEnumerable<string> PythonWordsIn(string code)
+    {
+        var bare = Regex.Replace(code, "\"[^\"\\n]*\"|'[^'\\n]*'|#.*", "");
+        return Regex.Matches(bare, @"[A-Za-z_]\w*").Select(m => m.Value).Where(Suggestions.IsPythonWord).Distinct();
+    }
+
+    // Spec tutarlılık 3: acemi düğmeleri çözümü kurabilmeli. Her çözüm satırı ya başlangıç kodunda ya parcalar'da
+    // (sayılar farklı olabilir: oyuncu sayıyı düğmede değiştirir; metin değiştirilemez)
+    [Theory]
+    [MemberData(nameof(Files))]
+    public void Parcalar_cozumu_kurar(string file)
+    {
+        var level = Load(file);
+        if (level.Number < 71) return;
+        string Norm(string line) => Regex.Replace(line.Trim(), @"\d+", "#");
+        var known = new HashSet<string>(level.StartCode.Split('\n').Concat(level.Pieces).Select(Norm));
+        foreach (var line in level.Solution.Split('\n').Where(l => l.Trim().Length > 0))
+            Assert.True(known.Contains(Norm(line)), level.Number + ": \"" + line.Trim() + "\" düğmelerle kurulamıyor");
     }
 
     // ---- dosya biçimi ----
@@ -217,6 +257,64 @@ public class BolumTests
     }
 
     // ---- denetleyici yanlışı yakalar ----
+
+    // Spec tutarlılık 4 ve 6: 77'nin 24 kişisi 78'in ilk 24 satırı; 78'in son iki satırı senaryodaki gibi, harfi harfine
+    [Fact]
+    public void Bolum_77_ve_78_listesi_tutarli()
+    {
+        var people = Load("bolum-77.json").Screen.Rows.Select(r => (string)r.Input).ToList();
+        var all = Load("bolum-78.json").Screen.Rows.Select(r => (string)r.Input).ToList();
+        Assert.Equal(24, people.Count);
+        Assert.Equal(26, all.Count);
+        Assert.Equal(people, all.Take(24));
+        Assert.All(people, p => Assert.EndsWith(" — kapsül: hazır", p));
+        Assert.Equal("BKM-7   — dışarıda — görev: KAPI", all[24]);
+        Assert.Equal("KOR     — hizmet dışı — hangar", all[25]);
+        var senaryo = File.ReadAllText(Path.Combine(Cases.Root, "docs", "tasarim", "senaryo-perde-2.md"));
+        Assert.Contains(all[24], senaryo);
+        Assert.Contains(all[25], senaryo);
+    }
+
+    // Spec kod çözme bölümleri (Bölge 8): B 72, 77, 78 · C 76, 80; C'de 3 not
+    [Fact]
+    public void Bolge_8_kod_cozme_bolumleri()
+    {
+        foreach (var n in new[] { 72, 77, 78 }) Assert.NotNull(Load("bolum-" + n + ".json").Screen);
+        foreach (var n in new[] { 76, 80 }) Assert.Equal(3, Load("bolum-" + n + ".json").Notes.Count);
+        Assert.Contains("read_note", Load("bolum-76.json").Commands);
+        Assert.DoesNotContain("read_note", Load("bolum-75.json").Commands);   // yeni komut yeni Python konusuyla aynı bölümde açılmaz
+    }
+
+    // Ekran bulmacası bu bölümlerde ilk kez görünüyor (72) ya da yeni bir yük biniyor (78: uzun, kayan liste): bilgi kartı olmalı
+    [Theory]
+    [InlineData(72)]
+    [InlineData(78)]
+    public void Ekran_bulmacasinin_yeni_bolumleri_bilgi_karti_tasir(int number)
+    {
+        var info = Load("bolum-" + number + ".json").Info;
+        Assert.NotNull(info);
+        Assert.InRange(info.Paragraphs.Count, 2, 4);
+        string text = info.Title + string.Join("", info.Paragraphs);
+        foreach (var glyph in new[] { "✓", "✗", "→" }) Assert.DoesNotContain(glyph, text);   // kartın yazı tipinde bu işaretler yok
+    }
+
+    // Görev yalnızca report() ile bitebilir (Bölüm 74: toplanacak yok, antene toplam gönderilir)
+    [Fact]
+    public void Yalniz_rapor_gorevi_olan_bolum_okunur()
+    {
+        var level = Level.Parse("{\"numara\": 74, \"baslik\": \"a\", \"gorev\": \"b\", \"harita\": [\". . R\", \". . .\"], \"komutlar\": [\"move\", \"report\"], \"rapor\": 3, "
+            + "\"konular\": [\"x\"], \"ipuclari\": [\"x\"], \"cozum\": [\"report(3)\"]}");
+        Assert.True(level.Run(level.Solution).Complete);
+        Assert.False(level.Run("report(4)\n").Complete);
+    }
+
+    // "return sayi * 3" tek başına fonksiyon dışında geçersizdir; düğme olarak geçerli sayılmalı
+    [Fact]
+    public void Return_parcasi_gecerli_sayilir()
+    {
+        var level = Level.Parse(LevelJson.Screen(", \"parcalar\": [\"def iki_kat(sayi):\", \"return sayi * 3\"]"));
+        Assert.Empty(LevelCheck.Problems(level));
+    }
 
     [Fact]
     public void Denetleyici_bitmeyen_cozumu_yakalar()
@@ -318,9 +416,19 @@ public class BolumTests
         Assert.False(Level.Parse(Mini).Routines.NeedsParameters);
     }
 
+    [Fact]
+    public void Donus_sarti_okunur()
+    {
+        var level = Level.Parse(Mini.Replace("\"komutlar\"", "\"rutinler\": [\"git\"], \"donus_sarti\": true, \"komutlar\""));
+        Assert.True(level.Routines.NeedsReturn);
+        Assert.False(Level.Parse(Mini).Routines.NeedsReturn);
+    }
+
     [Theory]
     [InlineData("\"parametre_sarti\": true, ", "rutin şartıyla birlikte")]
     [InlineData("\"rutinler\": [\"git\"], \"parametre_sarti\": 1, ", "true ya da false")]
+    [InlineData("\"donus_sarti\": true, ", "rutin şartıyla birlikte")]
+    [InlineData("\"rutinler\": [\"git\"], \"donus_sarti\": 1, ", "true ya da false")]
     public void Bozuk_parametre_sarti_anlasilir_mesaj_verir(string field, string expected)
     {
         var e = Assert.Throws<DataFormatError>(() => Level.Parse(Mini.Replace("\"komutlar\"", field + "\"komutlar\"")));

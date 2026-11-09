@@ -1,5 +1,5 @@
 # Bölüm çözümleri (test için)
-Her bölümün doğru çözümü; `bolum-NN.json` içindeki çözümle aynıdır (oluşturuldu: 2026-10-22; 61-70: 2026-11-02).
+Her bölümün doğru çözümü; `bolum-NN.json` içindeki çözümle aynıdır (oluşturuldu: 2026-10-22; 61-70: 2026-11-02; 71-80: 2026-11-09).
 
 ## Bölüm 1
 ```python
@@ -854,4 +854,123 @@ adim(North)
 repair()
 for i in range(3):
     kol(scout())
+```
+
+## Bölüm 71
+```python
+def koridor():
+    return 3
+for i in range(koridor()):
+    move(North)
+collect()
+for i in range(koridor()):
+    move(East)
+collect()
+```
+
+## Bölüm 72
+```python
+def uyanma_kodu(sayi):
+    return sayi * 2
+```
+
+## Bölüm 73
+```python
+def catlak_mi():
+    return panel_power() < 50
+for i in range(5):
+    move(East)
+    if catlak_mi():
+        repair()
+```
+
+## Bölüm 74
+```python
+def tara(yon):
+    toplam = 0
+    for i in range(4):
+        move(yon)
+        toplam += panel_power()
+    return toplam
+alt = tara(East)
+move(North)
+ust = tara(West)
+report(alt + ust)
+```
+
+## Bölüm 75
+```python
+rota = "KKDDDKKB"   # çizimin altındaki yazı
+for harf in rota:
+    if harf == "K":
+        move(North)
+    elif harf == "D":
+        move(East)
+    elif harf == "B":
+        move(West)
+```
+
+## Bölüm 76
+```python
+def yon(harf):
+    if harf == "K":
+        return North
+    elif harf == "G":
+        return South
+    elif harf == "D":
+        return East
+    elif harf == "B":
+        return West
+for harf in read_note():
+    move(yon(harf))
+```
+
+## Bölüm 77
+```python
+def aras_mi(satir):
+    return "Aras" in satir
+```
+
+## Bölüm 78
+```python
+def disarida_mi(satir):
+    return "dışarıda" in satir
+```
+
+## Bölüm 79
+```python
+kayit = "MMTMMTMTMMTMAAAAAA"   # KOR: M maden, T taşıma, A arıza
+def kac_kez(metin, harf):
+    sayac = 0
+    for h in metin:
+        if h == harf:
+            sayac += 1
+    return sayac
+move(North)
+move(North)
+collect()
+for i in range(3):
+    move(East)
+collect()
+move(East)
+move(East)
+report(len(kayit) - kac_kez(kayit, "A"))
+```
+
+## Bölüm 80
+```python
+def yon(harf):
+    if harf == "K":
+        return North
+    elif harf == "G":
+        return South
+    elif harf == "D":
+        return East
+    elif harf == "B":
+        return West
+for harf in read_note():
+    if harf == "V":
+        collect()
+    else:
+        move(yon(harf))
 ```

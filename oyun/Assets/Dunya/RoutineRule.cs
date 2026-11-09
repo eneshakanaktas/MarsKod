@@ -2,6 +2,7 @@
 // isteyebilir. Şart yalnızca dünyaya bakmaz, koda bakar: rutin tanımlı mı, kaç kez çalıştı. Tek kez çalışan şey
 // rutin sayılmaz (rutin tekrar kullanmak içindir). Bölüm dosyasında: "rutinler" (adlar), "rutin_sayisi" (adı serbest).
 // Bölge 7'den itibaren parametre şartı da olabilir ("parametre_sarti"): rutin bilgi almalı ve en az iki farklı bilgiyle çağrılmalı.
+// Bölge 8'den itibaren dönüş şartı da olabilir ("donus_sarti"): rutin cevabını `return` ile vermeli; o zaman bir kez çalışması yeter.
 
 using System;
 using System.Collections.Generic;
@@ -34,11 +35,18 @@ namespace MarsKod.Dunya
         /// <summary>Parametre şartı: şarta giren her rutin parametre almalı ve farklı bilgilerle çağrılmalı</summary>
         public readonly bool NeedsParameters;
 
-        public RoutineRule(IEnumerable<string> names, int minCount, bool needsParameters = false)
+        /// <summary>Dönüş şartı: şarta giren her rutin cevabını değer veren bir return ile vermeli</summary>
+        public readonly bool NeedsReturn;
+
+        /// <summary>Bir rutinin sayılması için kaç kez çalışması gerekir: değer döndüren rutinin cevabı kullanılır, bir kez yeter</summary>
+        public int RequiredRuns => NeedsReturn ? 1 : MinRuns;
+
+        public RoutineRule(IEnumerable<string> names, int minCount, bool needsParameters = false, bool needsReturn = false)
         {
             Names = names.ToList();
             MinCount = minCount;
             NeedsParameters = needsParameters;
+            NeedsReturn = needsReturn;
         }
 
         public bool IsEmpty => Names.Count == 0 && MinCount == 0;
@@ -62,22 +70,22 @@ namespace MarsKod.Dunya
                         Title = "Kod bitti, " + name + " hiç çalışmadı",
                         Text = "Rutini tanımlamak onu çalıştırmaz. Tanımdan sonra `" + name + "()` yazarak çağır.",
                     };
-                if (n < MinRuns)
+                if (n < RequiredRuns)
                     return new RoutineProblem
                     {
                         Title = "Kod bitti, " + name + " yalnızca " + n + " kez çalıştı",
                         Text = "Rutin tekrar kullanmak içindir: aynı işi her gerektiğinde `" + name + "()` yazarak çağır.",
                     };
-                var parameterProblem = ParameterProblem(report, name);
-                if (parameterProblem != null) return parameterProblem;
+                var ruleProblem = RuleProblem(report, name);
+                if (ruleProblem != null) return ruleProblem;
             }
-            var repeated = defined.Where(name => Runs(report, name) >= MinRuns).OrderBy(name => name, StringComparer.Ordinal).ToList();
-            int used = repeated.Count(name => ParameterProblem(report, name) == null);
+            var repeated = defined.Where(name => Runs(report, name) >= RequiredRuns).OrderBy(name => name, StringComparer.Ordinal).ToList();
+            int used = repeated.Count(name => RuleProblem(report, name) == null);
             if (used < MinCount)
             {
-                // tekrar eden rutin var ama bilgi almıyor: oyuncuya asıl eksiği söyle
-                var parameterProblem = repeated.Select(name => ParameterProblem(report, name)).FirstOrDefault(p => p != null);
-                if (parameterProblem != null) return parameterProblem;
+                // tekrar eden rutin var ama bilgi almıyor ya da cevap vermiyor: oyuncuya asıl eksiği söyle
+                var ruleProblem = repeated.Select(name => RuleProblem(report, name)).FirstOrDefault(p => p != null);
+                if (ruleProblem != null) return ruleProblem;
                 return MinCount == 1
                     ? new RoutineProblem
                     {
@@ -91,6 +99,20 @@ namespace MarsKod.Dunya
                     };
             }
             return null;
+        }
+
+        /// <summary>Rutinin parametre ya da dönüş şartındaki eksiği; ikisi de sağlandıysa null</summary>
+        RoutineProblem RuleProblem(RunReport report, string name) => ParameterProblem(report, name) ?? ReturnProblem(report, name);
+
+        /// <summary>Dönüş şartı açıksa: rutinin içinde değer veren bir return olmalı (kodun yazısından okunur)</summary>
+        RoutineProblem ReturnProblem(RunReport report, string name)
+        {
+            if (!NeedsReturn || report.ReturningRoutines.Contains(name)) return null;
+            return new RoutineProblem
+            {
+                Title = "Kod bitti, " + name + " cevap vermiyor",
+                Text = "`" + name + "` içinde değer veren bir `return` yok: rutin iş yapıyor ama cevabını vermiyor. Cevabı `return` ile ver (örn. `return 3`); `print` ekrana yazar, cevap vermez.",
+            };
         }
 
         /// <summary>Parametre şartı açıksa: rutin en az bir parametre almalı ve en az iki farklı bilgiyle çağrılmalı.</summary>

@@ -1,0 +1,80 @@
+{
+  "numara": 77,
+  "baslik": "24 kişilik liste",
+  "gorev": "Listede Aras'ları bul",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . R . . .",
+    ". . . . . ."
+  ],
+  "ekran": {
+    "fonksiyon": "aras_mi",
+    "satirlar": [
+      {"girdi": "Defne Aras — kapsül: hazır", "cevap": true, "gorunur": true},
+      {"girdi": "Ece Aras — kapsül: hazır", "cevap": true},
+      {"girdi": "Kerem Yalın — kapsül: hazır", "cevap": false, "gorunur": true},
+      {"girdi": "Selin Toprak — kapsül: hazır", "cevap": false},
+      {"girdi": "Murat Ekinci — kapsül: hazır", "cevap": false},
+      {"girdi": "Leyla Ekinci — kapsül: hazır", "cevap": false},
+      {"girdi": "Can Ekinci — kapsül: hazır", "cevap": false},
+      {"girdi": "Zeynep Uçar — kapsül: hazır", "cevap": false},
+      {"girdi": "Ali Rıza Demir — kapsül: hazır", "cevap": false},
+      {"girdi": "Nur Demir — kapsül: hazır", "cevap": false},
+      {"girdi": "Baran Kaya — kapsül: hazır", "cevap": false},
+      {"girdi": "Elif Kaya — kapsül: hazır", "cevap": false},
+      {"girdi": "Hakan Sezer — kapsül: hazır", "cevap": false},
+      {"girdi": "Derya Öztürk — kapsül: hazır", "cevap": false},
+      {"girdi": "Emre Bulut — kapsül: hazır", "cevap": false},
+      {"girdi": "Aylin Bulut — kapsül: hazır", "cevap": false},
+      {"girdi": "Deniz Bulut — kapsül: hazır", "cevap": false},
+      {"girdi": "Tarık Erdem — kapsül: hazır", "cevap": false},
+      {"girdi": "Gül Şahin — kapsül: hazır", "cevap": false},
+      {"girdi": "Okan Akın — kapsül: hazır", "cevap": false},
+      {"girdi": "Melis Aydın — kapsül: hazır", "cevap": false},
+      {"girdi": "Burak Tan — kapsül: hazır", "cevap": false},
+      {"girdi": "Seda Koç — kapsül: hazır", "cevap": false},
+      {"girdi": "Orhan Usta — kapsül: hazır", "cevap": false}
+    ]
+  },
+  "komutlar": [],
+  "parcalar": ["def aras_mi(satir):", "return \"Aras\" in satir"],
+  "konular": ["metin", "in", "True/False döndüren fonksiyon"],
+  "ipuclari": [
+    "İstasyonun bilgisayarı sığınaktaki 24 kişinin satırını tek tek soruyor. Satırında `Aras` geçen için `True`, diğerleri için `False`.",
+    "`in` metnin içinde arar: `\"Aras\" in satir` satırda Aras geçiyorsa `True`, geçmiyorsa `False`. Büyük-küçük harf önemli: `aras` başka bir kelimedir.",
+    "`def aras_mi(satir):` altına `    return \"Aras\" in satir`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def aras_mi(satir):", "    if satir == \"Defne Aras — kapsül: hazır\":", "        return True", "    return False"],
+      "aciklama": "Görev kartındaki satır doğru ama listede başka bir Aras daha var: tek satırı ezberlemek yetmez, satırın içinde ara."
+    },
+    {
+      "kod": ["def aras_mi(satir):", "    return \"aras\" in satir"],
+      "aciklama": "Küçük harfle aras listede hiç geçmiyor: in harfleri birebir arar, A ile a farklıdır."
+    },
+    {
+      "kod": ["def aras_mi(satir):", "    if \"Aras\" in satir:", "        return True"],
+      "aciklama": "Aras olmayan satırlarda fonksiyon hiçbir şey döndürmez (None); ekran False bekliyordu. Kalan yol için de return yaz."
+    },
+    {
+      "kod": ["def aras_mi(satir):", "    return True"],
+      "aciklama": "Herkese True diyor: ekran yalnızca Aras'ları bekliyordu."
+    },
+    {
+      "kod": ["def aras_mi(satir):", "    print(\"Aras\" in satir)"],
+      "aciklama": "Cevap ekrana yazılır ama verilmez: ekran None alır. print değil return."
+    }
+  ],
+  "baslangic_kodu": [
+    "def aras_mi(satir):",
+    "    return False"
+  ],
+  "cozum": [
+    "def aras_mi(satir):",
+    "    return \"Aras\" in satir"
+  ]
+}

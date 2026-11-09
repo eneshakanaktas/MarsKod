@@ -15,6 +15,7 @@ public static class Obstacles
             case Region.Dunes:
             case Region.AntennaHill: Rock(parent, pos, index, "#8A5440", "#6E4232"); SandDrift(parent, pos, index); break;
             case Region.RiverBed: RiverBoulder(parent, pos, index); break;
+            case Region.Station: Crates(parent, pos, index); break;   // gecici: istasyonda engeller kasa/dolap
             case Region.Canyon:
                 if (crate) Crates(parent, pos, index); else LayeredRock(parent, pos, index);
                 break;

@@ -44,7 +44,7 @@ public class TrailTests
     public void Ezber_cozum_bir_izde_takilir()
     {
         var level = Level.Parse(Fork);
-        var runs = level.RunTrails("move(North)\nmove(North)\n");
+        var runs = level.RunVersions("move(North)\nmove(North)\n");
         Assert.True(runs[0].Report.Complete);
         Assert.False(runs[1].Report.Complete);
         Assert.False(level.Run("move(North)\nmove(North)\n").Complete);
@@ -55,10 +55,10 @@ public class TrailTests
     public void Basarisiz_iz_secilir_hepsi_tamamsa_sirayla()
     {
         var level = Level.Parse(Fork);
-        var bad = level.RunTrails("move(North)\nmove(North)\n");
+        var bad = level.RunVersions("move(North)\nmove(North)\n");
         Assert.Same(bad[1], TrailRuns.Pick(bad, 0));
         Assert.Same(bad[1], TrailRuns.Pick(bad, 7));
-        var good = level.RunTrails(level.Solution);
+        var good = level.RunVersions(level.Solution);
         Assert.Same(good[0], TrailRuns.Pick(good, 0));
         Assert.Same(good[1], TrailRuns.Pick(good, 1));
         Assert.Same(good[0], TrailRuns.Pick(good, 2));
@@ -70,7 +70,7 @@ public class TrailTests
     {
         var level = Level.Parse(Fork.Replace("\"izler\": [[\"North\", \"North\"], [\"East\", \"East\"]],", "").Replace("\"scout\"", "\"collect\"")
             .Replace("\"R . . . . .\"", "\"R . . . . H\""));
-        Assert.Single(level.RunTrails("move(East)\n"));
+        Assert.Single(level.RunVersions("move(East)\n"));
     }
 
     [Fact]

@@ -44,7 +44,7 @@ namespace MarsKod.Dunya
         public GameRuleStop Rule;
         /// <summary>Durmanın olduğu satır (1'den başlar); düzgün bittiyse ya da bilinmiyorsa null</summary>
         public int? StopLine;
-        /// <summary>Görev tamamlandı mı: kod durmadan bitti ve görev yerine geldi. Kod hatayla ya da oyun kuralıyla durduysa
+        /// <summary>Görev tamamlandı mı: kod durmadan bitti ve görev yerine geldi (ekran varsa bütün cevaplar doğru). Kod hatayla ya da oyun kuralıyla durduysa
         /// görev yerine gelmiş olsa bile tamam sayılmaz (örn. son buzu toplayıp alanın dışına çıkmak isteyen kod yanlıştır).</summary>
         public bool Complete;
         /// <summary>Oyuncunun def ile yazdığı (modül düzeyindeki) rutinler</summary>
@@ -57,6 +57,12 @@ namespace MarsKod.Dunya
         public readonly Dictionary<string, int> RoutineParameters = new Dictionary<string, int>();
         /// <summary>Her rutinin çağrılırken aldığı farklı bilgiler, ilk görülme sırasıyla ("East", "South, 3"); varsayılan değerler dahil</summary>
         public readonly Dictionary<string, List<string>> RoutineArguments = new Dictionary<string, List<string>>();
+        /// <summary>def ile yazılan rutinlerden içinde değer veren return olanlar (kodun yazısından okunur)</summary>
+        public readonly HashSet<string> ReturningRoutines = new HashSet<string>();
+        /// <summary>Ekran bulmacasında fonksiyonun her satıra verdiği cevap, satır sırasıyla (ekran yoksa boş)</summary>
+        public readonly List<ScreenAnswer> ScreenAnswers = new List<ScreenAnswer>();
+        /// <summary>Ekran bulmacasında yanlış/eksik cevap; ekran yoksa, hepsi doğruysa ya da kod durduysa null</summary>
+        public RoutineProblem ScreenProblem;
 
         public bool Stopped => Error != null || Halt != null || Rule != null;
     }
@@ -66,7 +72,7 @@ namespace MarsKod.Dunya
         /// <summary>Oyunda bir çalıştırmanın en fazla adımı (bitmeyen döngü bu sınırda durur)</summary>
         public const int DefaultMaxSteps = 20000;
 
-        public static RunReport Execute(string source, World world, int maxSteps = DefaultMaxSteps, RoutineRule routines = null)
+        public static RunReport Execute(string source, World world, int maxSteps = DefaultMaxSteps, RoutineRule routines = null, ScreenPuzzle screen = null)
         {
             var report = new RunReport();
             Interpreter interpreter = null;
@@ -77,15 +83,22 @@ namespace MarsKod.Dunya
             try
             {
                 var module = Parser.Parse(source);
+                ReadReturningRoutines(report, module);
                 interpreter = new Interpreter(new InterpreterOptions { MaxSteps = maxSteps, Externals = world.Commands() });
-                foreach (var step in interpreter.Run(module))
+                // Her adim: onceki satiri kapat, yenisini kayda ac. Ekran cagrilari da ayni yoldan gecer (hata, adim siniri, rutin sayimi).
+                void Follow(IEnumerable<Step> steps)
                 {
-                    Flush(world, current, frame);
-                    current = new TraceEntry { Line = step.Line };
-                    frame = step.Frame;
-                    CountCall(report, calls, step.Frame);
-                    report.Trace.Add(current);
+                    foreach (var step in steps)
+                    {
+                        Flush(world, current, frame);
+                        current = new TraceEntry { Line = step.Line };
+                        frame = step.Frame;
+                        CountCall(report, calls, step.Frame);
+                        report.Trace.Add(current);
+                    }
                 }
+                Follow(interpreter.Run(module));
+                if (screen != null) AskScreen(screen, interpreter, report, Follow);
             }
             catch (Exception e) when (e is PythonException || e is UnsupportedFeature || e is ExecutionLimit)
             {
@@ -103,8 +116,33 @@ namespace MarsKod.Dunya
             if (interpreter != null) ReadDefinedRoutines(report, interpreter.Globals);
             if (!report.Stopped && routines != null && !routines.IsEmpty)
                 report.RoutineProblem = routines.Check(report);
-            report.Complete = !report.Stopped && world.Complete && report.RoutineProblem == null;
+            if (report.Stopped) report.ScreenProblem = null;
+            report.Complete = !report.Stopped && world.Complete && report.RoutineProblem == null && report.ScreenProblem == null;
             return report;
+        }
+
+        // Ekran bulmacasi: oyuncunun fonksiyonu her satirin girdisiyle ayni yorumlayicida cagrilir. Cagri satiri,
+        // fonksiyonun def satirina denk gelsin diye o kadar bos satirla baslar: cagrinin kendi hatasi (ornegin bilgi
+        // kutusu eksik: TypeError) oyuncuya def satirinda gorunur; fonksiyonun icindeki hatalar zaten kendi satirinda.
+        static void AskScreen(ScreenPuzzle screen, Interpreter interpreter, RunReport report, Action<IEnumerable<Step>> follow)
+        {
+            if (!(interpreter.Globals.Vars.TryGetValue(screen.Function, out var value) && value is PyFunction function))
+            {
+                report.ScreenProblem = screen.MissingFunction();
+                return;
+            }
+            string call = new string('\n', function.Def.Line - 1) + ScreenPuzzle.AnswerName + " = " + screen.Function + "(" + ScreenPuzzle.InputName + ")\n";
+            var vars = interpreter.Globals.Vars;
+            foreach (var row in screen.Rows)
+            {
+                vars[ScreenPuzzle.InputName] = row.Input;
+                follow(interpreter.Run(Parser.Parse(call)));
+                vars.TryGetValue(ScreenPuzzle.AnswerName, out var actual);
+                vars.Remove(ScreenPuzzle.InputName);
+                vars.Remove(ScreenPuzzle.AnswerName);
+                report.ScreenAnswers.Add(new ScreenAnswer { Row = row, Actual = actual, Correct = ScreenPuzzle.SameAnswer(row.Expected, actual) });
+            }
+            report.ScreenProblem = screen.ProblemOf(report.ScreenAnswers);
         }
 
         // Rutin cagrisinin ilk adimi: cerceve yeniyse o rutinin calisma sayisini bir artirir ve aldigi bilgileri yazar
@@ -123,14 +161,14 @@ namespace MarsKod.Dunya
             report.RoutineParameters[name] = parameters.Count;
             var values = new List<string>(parameters.Count);
             foreach (var p in parameters)
-                values.Add(frame.Vars.TryGetValue(p.Name, out var v) ? ArgumentText(v) : "?");
+                values.Add(frame.Vars.TryGetValue(p.Name, out var v) ? ValueText(v) : "?");
             string text = string.Join(", ", values);
             if (!report.RoutineArguments.TryGetValue(name, out var seen)) report.RoutineArguments[name] = seen = new List<string>();
             if (!seen.Contains(text)) seen.Add(text);
         }
 
         // Yonler (metin olarak tutulur) oyuncunun yazdigi gibi: East; gerisi Python'daki gorunusu: 3, 'abc'
-        static string ArgumentText(object value) =>
+        public static string ValueText(object value) =>
             value is string s && Enum.TryParse(s, out Direction d) && s == d.ToString() ? s : Values.Repr(value);
 
         // Kod bitince modul duzeyinde fonksiyon olarak duran adlar = oyuncunun def ile yazdigi rutinler
@@ -138,6 +176,29 @@ namespace MarsKod.Dunya
         {
             foreach (var pair in globals.Vars)
                 if (pair.Value is PyFunction) report.DefinedRoutines.Add(pair.Key);
+        }
+
+        // Modul duzeyindeki her def: govdesinde deger veren bir return var mi (if/for/while icleri dahil)
+        static void ReadReturningRoutines(RunReport report, Module module)
+        {
+            foreach (var stmt in module.Body)
+                if (stmt is FunctionDef def && Returns(def.Body)) report.ReturningRoutines.Add(def.Name);
+        }
+
+        // Ic ice tanimli rutine inilmez: onun cevabi distakinin cevabi degildir. Bos return sayilmaz.
+        static bool Returns(IEnumerable<Stmt> body)
+        {
+            foreach (var stmt in body)
+            {
+                switch (stmt)
+                {
+                    case Return r when r.Value != null: return true;
+                    case If i when Returns(i.Body) || Returns(i.OrElse): return true;
+                    case For f when Returns(f.Body) || Returns(f.OrElse): return true;
+                    case While w when Returns(w.Body) || Returns(w.OrElse): return true;
+                }
+            }
+            return false;
         }
 
         // Biten satira dunyada olanlari ve degiskenlerin son halini yazar

@@ -1,0 +1,58 @@
+{
+  "numara": 71,
+  "baslik": "İstasyon kapısı",
+  "gorev": "2 veri kartı topla",
+  "harita": [
+    ". . . . . .",
+    "K . . . . .",
+    "V . . V K .",
+    ". . . . . .",
+    ". K . . . .",
+    "R . . . . ."
+  ],
+  "komutlar": ["move", "collect"],
+  "rutinler": ["koridor"],
+  "donus_sarti": true,
+  "parcalar": ["def koridor():", "return 2", "for i in range(koridor()):", "move(North)", "move(East)", "collect()"],
+  "python_kelimeleri": ["return"],
+  "konular": ["return", "değer döndüren rutin"],
+  "ipuclari": [
+    "Koridorlar hep aynı uzunlukta. `koridor()` bu uzunluğu biliyor: `panel_power()` gibi, sorunca cevap veren bir rutin.",
+    "`return 3` rutinin cevabıdır: `koridor()` yazılan yere 3 gelir. Bu yüzden `range(koridor())` 3 tur döner.",
+    "Kuzey koridorundan sonra `collect()`; sonra `for i in range(koridor()):` altına `    move(East)`, en sonda yine `collect()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def koridor():", "    print(3)", "for i in range(koridor()):", "    move(North)", "collect()", "for i in range(koridor()):", "    move(East)", "collect()"],
+      "aciklama": "print 3'ü ekrana yazar ama cevap vermez: koridor() None (hiçbir şey) olur, range(None) çalışmaz. Cevabı return ile ver."
+    },
+    {
+      "kod": ["def koridor():", "    return 3", "for i in range(koridor):", "    move(North)", "collect()"],
+      "aciklama": "Parantezsiz koridor rutinin kendisidir, cevabı değil; range bir sayı ister. Cevabı almak için koridor()."
+    },
+    {
+      "kod": ["def koridor():", "    return 4", "for i in range(koridor()):", "    move(North)", "collect()", "for i in range(koridor()):", "    move(East)", "collect()"],
+      "aciklama": "Koridor 3 adım: dördüncü adımda robot kayaya çarpar. return'ün verdiği sayı her çağrıda kullanılır; yanlışsa hepsi yanlış olur."
+    },
+    {
+      "kod": ["def koridor():", "    return 3", "for i in range(koridor()):", "    move(North)", "collect()", "for i in range(koridor()):", "    move(East)"],
+      "aciklama": "Robot ikinci kartın üstünde ama collect() unutuldu."
+    }
+  ],
+  "baslangic_kodu": [
+    "def koridor():",
+    "    return 3",
+    "for i in range(koridor()):",
+    "    move(North)"
+  ],
+  "cozum": [
+    "def koridor():",
+    "    return 3",
+    "for i in range(koridor()):",
+    "    move(North)",
+    "collect()",
+    "for i in range(koridor()):",
+    "    move(East)",
+    "collect()"
+  ]
+}

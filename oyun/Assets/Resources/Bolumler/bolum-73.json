@@ -1,0 +1,56 @@
+{
+  "numara": 73,
+  "baslik": "Duvardaki çizimler",
+  "gorev": "Çatlak panelleri onar",
+  "harita": [
+    ". . . . . .",
+    "R 7 3 8 2 6",
+    ". . . . . .",
+    ". . K . . .",
+    ". . . . K .",
+    ". . . . . ."
+  ],
+  "komutlar": ["move", "panel_power", "repair"],
+  "rutinler": ["catlak_mi"],
+  "donus_sarti": true,
+  "parcalar": ["def catlak_mi():", "return panel_power() < 30", "for i in range(5):", "move(East)", "if catlak_mi():", "repair()"],
+  "python_kelimeleri": ["True", "False"],
+  "konular": ["return", "True/False döndüren rutin"],
+  "ipuclari": [
+    "Duvar boyunca 5 panel var, ikisi çatlak (gücü 50'den az). Ana kod hazır; ona soruyu soran `catlak_mi()` rutini eksik.",
+    "Karşılaştırma kendisi bir cevaptır: `panel_power() < 50` ya `True` ya `False` olur. Rutin bu cevabı `return` ile verir, `if` onu kullanır.",
+    "Ana kodun üstüne: `def catlak_mi():` ve altına `    return panel_power() < 50`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def catlak_mi():", "    print(panel_power() < 50)", "for i in range(5):", "    move(East)", "    if catlak_mi():", "        repair()"],
+      "aciklama": "catlak_mi() True/False'u ekrana yazar ama cevap vermez: if None'a bakar, None yanlış sayılır ve hiçbir panel onarılmaz."
+    },
+    {
+      "kod": ["def catlak_mi():", "    return panel_power() > 50", "for i in range(5):", "    move(East)", "    if catlak_mi():", "        repair()"],
+      "aciklama": "Soru ters: rutin sağlam panel için True der, robot sağlam paneli onarmaya kalkıp durur."
+    },
+    {
+      "kod": ["def catlak_mi():", "    return panel_power() < 50", "for i in range(5):", "    move(East)", "    if catlak_mi:", "        repair()"],
+      "aciklama": "Parantezsiz catlak_mi rutinin kendisidir, cevabı değil; if onu hep doğru sayar ve robot sağlam paneli de onarmaya kalkar."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(East)", "    if panel_power() < 50:", "        repair()"],
+      "aciklama": "Paneller onarılır ama bu bölüm soruyu bir rutine koymanı istiyor: catlak_mi()."
+    }
+  ],
+  "baslangic_kodu": [
+    "for i in range(5):",
+    "    move(East)",
+    "    if catlak_mi():",
+    "        repair()"
+  ],
+  "cozum": [
+    "def catlak_mi():",
+    "    return panel_power() < 50",
+    "for i in range(5):",
+    "    move(East)",
+    "    if catlak_mi():",
+    "        repair()"
+  ]
+}

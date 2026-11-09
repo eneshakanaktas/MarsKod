@@ -104,6 +104,7 @@ public class RegionLook
             case Region.CraterField: return Crater;
             case Region.Dunes:
             case Region.AntennaHill: return Dunes; // anten tepesinin kendi gorunusu gelene kadar kum tepeleri
+            case Region.Station: // istasyonun ic mekan gorunusu gelene kadar kanyon
             case Region.Canyon: return Canyon;
             case Region.RiverBed: return RiverBed;
             default: return Plain;

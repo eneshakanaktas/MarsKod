@@ -60,6 +60,7 @@ public partial class Oyun : MonoBehaviour
     const string Bolge5SonSatir = "Ödev modu kapatıldı.";
     // Perde 2'ye gecis (senaryo-bolge-06.md): finalin son karesinden bu kadar sonra "Devam" -> sinav-50 -> Bolum 51
     const float Bolge5DevamBekleme = 2.5f;
+    static string InfoKey(Level l) => "bilgi-" + l.Number;   // bilgi karti bu bolumde goruldu (1)
     const string RecordingsKey = "kayitlar";   // dinlenen kayitlar (Recordings katalog numaralari)
     const string OldRecording2Key = "kayit2";   // eski kayit; artik yazilmaz, yalniz okunur
 
@@ -105,7 +106,7 @@ public partial class Oyun : MonoBehaviour
     // Adim adim modu: her satirdan sonra ⏭ basisini bekler (stepRequested: bir satir daha calissin)
     bool stepMode, stepRequested;
     int trailTurn;       // degisen yolda her Calistir'da siradaki iz oynatilir (TrailRuns.Pick)
-    bool trailChanged;   // son kosuda kod bir izde calisip digerinde takildi: mesajin basinda soylenir
+    bool versionChanged;   // son kosuda kod bir izde/notta calisip digerinde takildi: mesajin basinda soylenir
     float stars = 1f, starsTarget = 1f;
     // Kademe basina XP; kademe kutusundaki ✓ ve bolum sonu XP (Gorev 9) bunu kullanir.
     Xp xp;
@@ -251,6 +252,12 @@ public partial class Oyun : MonoBehaviour
         hud.RecordPicked += number => StartCoroutine(ReplayRecording(Recordings.ByNumber(number)));
         hud.LevelPicked += PickLevel;
         hud.GlossaryPressed += () => hud.ShowGlossary(GlossaryEntries());
+        hud.InfoSeen += () =>   // bilgi karti ilk kez kapandi: bir daha kendiliginden acilmasin
+        {
+            if (shotsMode) return;
+            PlayerPrefs.SetInt(InfoKey(level), 1);
+            PlayerPrefs.Save();
+        };
         hud.StarsToggled += () => { starsTarget = starsTarget > 0.5f ? 0f : 1f; hud.SetStars(starsTarget > 0.5f); };
 
         Sound.Init(transform);
@@ -534,6 +541,8 @@ public partial class Oyun : MonoBehaviour
         hud.SetPieces(level.Pieces, Palette.NewPieces(levels, level.Number));
         bool landingDue = LandingDue;   // 51'e her girisde: giris damgasi roket indikten sonra gelir
         hud.SetLevel(level.Number, level.Label, level.Title, level.Goal, level.Ices.Count, level.Item, landingDue ? "" : level.Intro);
+        if (level.Screen != null) hud.ShowScreen(level.Screen); else hud.HideScreen();
+        hud.SetInfo(level.Info, seen: !shotsMode && PlayerPrefs.GetInt(InfoKey(level), 0) == 1);   // gorulmediyse kart kendiliginden acilir
         var transition = Traces.TransitionLines(level.Number);
         if (landingDue) canyonScenes.PrepareLanding();
         if (!shotsMode && transition != null) hud.ShowTransition(transition, landingDue ? (System.Action)StartLanding : () => { });
@@ -812,6 +821,7 @@ public partial class Oyun : MonoBehaviour
         if (nameTag != null) Destroy(nameTag.gameObject);
         if (target != null) target.Restore();
         trailView?.Restore();
+        if (level.Screen != null) hud.ShowScreen(level.Screen); else hud.HideScreen();
         hud.ResetView();
     }
 
@@ -821,11 +831,11 @@ public partial class Oyun : MonoBehaviour
         running = true;
         hud.SetRunning(true);
         hud.HideMessage();
-        var runs = level.RunTrails(code);
+        var runs = level.RunVersions(code);
         var shown = TrailRuns.Pick(runs, trailTurn++);
         var world = shown.World;
         var report = shown.Report;
-        trailChanged = TrailRuns.Mixed(runs);
+        versionChanged = TrailRuns.Mixed(runs);
         trailView?.Begin(level.Trails[runs.IndexOf(shown)]);   // degisen yolda her kosu kendi izini gosterir
 
         // Bitmeyen dongude kaydin sadece basi oynatilir; uzun kayitta bos satirlarda beklenmez.
@@ -858,6 +868,16 @@ public partial class Oyun : MonoBehaviour
         }
         stepMode = false;
         robot.GlanceAtCamera(false);
+
+        if (level.Screen != null)   // ekran bulmacasi: cevaplar satir satir ekrana dusur
+        {
+            hud.ClearScreen();
+            foreach (var answer in report.ScreenAnswers)
+            {
+                hud.AddScreenAnswer(answer);
+                yield return Tween.Wait(0.08f);
+            }
+        }
 
         if (report.Stopped)
         {
@@ -910,7 +930,9 @@ public partial class Oyun : MonoBehaviour
         else
         {
             hud.SetActiveLine(-1);
-            if (world.Complete && report.RoutineProblem != null) // robot isi yapti ama bolumun istedigi rutin yok
+            if (report.ScreenProblem != null)
+                ShowFailure("EKRAN", report.ScreenProblem.Title, report.ScreenProblem.Text, null, error: false);
+            else if (world.Complete && report.RoutineProblem != null) // robot isi yapti ama bolumun istedigi rutin yok
                 ShowFailure("GÖREV", report.RoutineProblem.Title, report.RoutineProblem.Text, null, error: false);
             else if (world.IceLeft > 0)
                 ShowFailure("GÖREV", "Kod bitti, " + Collectibles.PluralName(level.Item) + " bitmedi",
@@ -927,6 +949,10 @@ public partial class Oyun : MonoBehaviour
             else if (level.Trails.Count > 0)
                 ShowFailure("GÖREV", "Kod bitti, iz bitmedi",
                     "Kodun sonuna kadar çalıştı ama Kıvılcım izin sonuna varmadı. Serçe izin kaç adım olduğunu görevde söylüyor: ona o kadar sor.",
+                    null, error: false);
+            else if (level.Notes.Count > 0)
+                ShowFailure("GÖREV", "Kod bitti, notun sonuna varmadı",
+                    "Kodun sonuna kadar çalıştı ama Kıvılcım notun gösterdiği yere varmadı. Notun her harfi bir adım: harfleri sırayla yürü.",
                     null, error: false);
             else
                 ShowFailure("GÖREV", "Kod bitti, robot hedefte değil",
@@ -1150,6 +1176,10 @@ public partial class Oyun : MonoBehaviour
             case Scouted s: // Serce yol ayrimina suzulur, kolu isikla gosterir
                 if (trailView != null) yield return trailView.Scouted(s.At, s.Direction);
                 break;
+            case NoteRead n: // gecici: Bolge 8 · 3a'da robot kagit notu kaldirip okur
+                StartCoroutine(PowerLabel.Show(levelRoot, Pos(n.At), n.Text, Mats.Hex("#E8E0C8")));
+                yield return Tween.Wait(0.6f);
+                break;
         }
     }
 
@@ -1170,12 +1200,12 @@ public partial class Oyun : MonoBehaviour
             ShowFailure(report.Halt.Kind == "limit" ? "DURDURULDU" : "HENÜZ YOK", ex.Title, text, null, error: true);
     }
 
-    const string TrailChangedNote = "Serçe bu sefer başka bir kol gördü.";
+    string VersionChangedNote => level.Notes.Count > 0 ? "Bu denemede not başka bir yol yazıyor." : "Serçe bu sefer başka bir kol gördü.";
 
-    // Kod bir izde calisip bu izde takildiysa oyuncu yolun degistigini bilsin
+    // Kod bir izde/notta calisip bu sefer takildiysa oyuncu yolun degistigini bilsin
     void ShowFailure(string header, string title, string text, string detail, bool error)
     {
-        hud.ShowMessage(header, title, trailChanged ? TrailChangedNote + " " + text : text, detail, error);
+        hud.ShowMessage(header, title, versionChanged ? VersionChangedNote + " " + text : text, detail, error);
     }
 
     // ---- Oyuncunun kodu ----
@@ -1747,6 +1777,17 @@ public partial class Oyun : MonoBehaviour
         {
             string b = "b" + levels[i].Number + "-";
             LoadLevel(i);
+            if (levels[i].Info != null)   // bilgi karti: bolume girince kart, "Anladim"dan sonra i dugmesini gosteren balon
+            {
+                yield return new WaitForSeconds(0.6f);
+                Cap(Path.Combine(dir, b + "0a-bilgi-karti.png"));
+                yield return new WaitForSeconds(0.3f);   // goruntu kare sonunda alinir: kapatmadan once bekle
+                hud.CloseInfo();
+                yield return new WaitForSeconds(0.6f);
+                Cap(Path.Combine(dir, b + "0b-bilgi-balonu.png"));
+                yield return new WaitForSeconds(0.3f);
+                hud.HideInfoBubble();
+            }
             yield return new WaitForSeconds(0.8f);
             Cap(Path.Combine(dir, b + "0-baslangic-kodu.png"));
             yield return new WaitForSeconds(0.3f);

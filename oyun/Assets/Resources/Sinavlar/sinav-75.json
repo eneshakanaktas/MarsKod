@@ -1,0 +1,30 @@
+{
+  "bolum": 75,
+  "baslik": "KIVILCIM · KENDİNİ DENETLİYOR",
+  "sorular": [
+    {
+      "soru": "def iki_kat(s): altında return s * 2 yazıyor. sonuc = iki_kat(4) satırından sonra sonuc kaçtır?",
+      "secenekler": ["4", "8", "None", "s * 2"],
+      "dogru": 1,
+      "aciklama": "return'ün verdiği cevap çağrının yerine gelir: iki_kat(4) 8 olur, değişken onu tutar."
+    },
+    {
+      "soru": "def f(): altında yalnızca print(5) var. x = f() satırından sonra x nedir?",
+      "secenekler": ["5", "\"5\"", "None", "Hata verir"],
+      "dogru": 2,
+      "aciklama": "print ekrana 5 yazar ama cevap vermez. return'süz fonksiyon None (hiçbir şey) döndürür."
+    },
+    {
+      "soru": "Ekran bir fonksiyonun cevabını bekliyor. Hangisi cevap verir?",
+      "secenekler": ["print(6)", "return 6", "6 yazıp bırakmak", "report(6)"],
+      "dogru": 1,
+      "aciklama": "Cevabı yalnızca return verir. print yazar, report antene gönderir."
+    },
+    {
+      "soru": "def buyuk_mu(x): altında if x > 5: ve onun altında return True var, başka satır yok. buyuk_mu(3) nedir?",
+      "secenekler": ["False", "True", "None", "3"],
+      "dogru": 2,
+      "aciklama": "x 5'ten büyük değil, return'e hiç gelinmez: fonksiyon None döndürür. Kalan yol için de return False yaz."
+    }
+  ]
+}

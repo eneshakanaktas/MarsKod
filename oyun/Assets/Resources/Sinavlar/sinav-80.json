@@ -1,0 +1,30 @@
+{
+  "bolum": 80,
+  "baslik": "KIVILCIM · KENDİNİ DENETLİYOR",
+  "sorular": [
+    {
+      "soru": "\"4\" == 4 sonucu nedir?",
+      "secenekler": ["True", "False", "Hata verir", "4"],
+      "dogru": 1,
+      "aciklama": "Tırnaklı \"4\" bir metin, tırnaksız 4 bir sayı: Python ikisini eşit saymaz."
+    },
+    {
+      "soru": "harf = \"K\" ile harf == \"K\" arasındaki fark nedir?",
+      "secenekler": ["Fark yok", "İkisi de karşılaştırır", "= ad verir, == karşılaştırıp True/False verir", "== ad verir, = karşılaştırır"],
+      "dogru": 2,
+      "aciklama": "Tek eşittir değeri bir ada bağlar; iki eşittir iki değer aynı mı diye sorar."
+    },
+    {
+      "soru": "len(\"KOR\") kaçtır?",
+      "secenekler": ["1", "2", "3", "KOR"],
+      "dogru": 2,
+      "aciklama": "len metnin kaç harf olduğunu verir: K, O, R."
+    },
+    {
+      "soru": "\"dış\" in \"KOR — hizmet dışı — hangar\" sonucu nedir?",
+      "secenekler": ["True", "False", "Hata verir", "dış"],
+      "dogru": 0,
+      "aciklama": "in metnin içinde arar: \"dışı\" kelimesinin başında \"dış\" var. Bu yüzden 78'de kelimenin tamamı aranır: \"dışarıda\"."
+    }
+  ]
+}

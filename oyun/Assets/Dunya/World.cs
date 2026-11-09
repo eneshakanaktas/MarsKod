@@ -135,6 +135,13 @@ namespace MarsKod.Dunya
         public Direction Direction;
     }
 
+    /// <summary>Robot read_note() ile durduğu yerdeki notu okudu.</summary>
+    public sealed class NoteRead : WorldEvent
+    {
+        public Cell At;
+        public string Text;
+    }
+
     /// <summary>
     /// Oyun kuralı yüzünden durma (Python hatası değil): örn. robot alanın dışına çıkmak istedi.
     /// Oyuncunun kodu bunu yakalayamaz; çalıştırma olduğu yerde biter.
@@ -173,6 +180,8 @@ namespace MarsKod.Dunya
         public readonly BigInteger? ExpectedReport;
         /// <summary>Serçe'nin gördüğü iz; yoksa null (scout() çalışmaz)</summary>
         readonly Trail trail;
+        /// <summary>Robotun okuyacağı not (Bölge 8); yoksa null</summary>
+        readonly string note;
         /// <summary>Bu bölümde açık olan komutlar; null ise hepsi açık</summary>
         readonly HashSet<string> allowed;
 
@@ -197,7 +206,7 @@ namespace MarsKod.Dunya
         public bool Complete => IceLeft == 0 && CrackedLeft == 0 && ReportDone && OnTarget;
 
         /// <summary>Oyunda olan tüm komutlar (bölüm dosyasındaki "komutlar" bunlardan seçilir)</summary>
-        public static readonly string[] AllCommands = { "move", "collect", "ice_here", "rock_ahead", "panel_power", "repair", "dust_here", "wait", "cable_length", "report", "scout" };
+        public static readonly string[] AllCommands = { "move", "collect", "ice_here", "rock_ahead", "panel_power", "repair", "dust_here", "wait", "cable_length", "report", "scout", "read_note" };
 
         /// <summary>Panel çatlak mı (gücü 0'dan çok, CrackedBelow'dan az)</summary>
         public static bool IsCracked(int power) => power > 0 && power < CrackedBelow;
@@ -206,7 +215,7 @@ namespace MarsKod.Dunya
         public World(int cols, int rows, Cell robot, IEnumerable<Cell> iceCells,
             IEnumerable<Cell> rockCells = null, Cell? target = null, IEnumerable<string> commands = null, IEnumerable<Cell> crystalCells = null,
             IDictionary<Cell, int> panelCells = null, IDictionary<Cell, int> dustCells = null,
-            IDictionary<Cell, int> reelCells = null, BigInteger? expectedReport = null, Trail trail = null)
+            IDictionary<Cell, int> reelCells = null, BigInteger? expectedReport = null, Trail trail = null, string note = null)
         {
             Cols = cols;
             Rows = rows;
@@ -222,6 +231,7 @@ namespace MarsKod.Dunya
             ExpectedReport = expectedReport;
             Target = target ?? trail?.End;
             this.trail = trail;
+            this.note = note;
             allowed = commands == null ? null : new HashSet<string>(commands);
         }
 
@@ -359,6 +369,16 @@ namespace MarsKod.Dunya
             reported = true;
         }
 
+        /// <summary>Robotun durduğu yerdeki notu okur (yazısını verir). Not yoksa robot durur (oyun kuralı).</summary>
+        public string ReadNote()
+        {
+            if (note == null)
+                throw new GameRuleStop("Burada okunacak not yok",
+                    "Kıvılcım'ın okuyabileceği bir not yok, robot bu yüzden durdu. Bu bir oyun kuralı, Python hatası değil.");
+            Events.Add(new NoteRead { At = Robot, Text = note });
+            return note;
+        }
+
         /// <summary>Serçe'ye sorar: izin robotun durduğu kareden gittiği yön. Robot izde değilse ya da iz bittiyse robot durur (oyun kuralı).</summary>
         public Direction Scout()
         {
@@ -491,6 +511,13 @@ namespace MarsKod.Dunya
                     if (args.Count != 0) throw Values.PyError("TypeError", "scout() takes no arguments (" + args.Count + " given)");
                     return Scout().ToString(); // yönler metin olarak tutulur: move(scout()) doğrudan çalışır
                 }),
+                ["read_note"] = new PyBuiltin("read_note", (args, kwargs) =>
+                {
+                    Unlocked("read_note");
+                    NoKeywords("read_note", kwargs);
+                    if (args.Count != 0) throw Values.PyError("TypeError", "read_note() takes no arguments (" + args.Count + " given)");
+                    return ReadNote();
+                }),
             };
             // Yönler şimdilik metin olarak tutulur: print(East) -> East
             foreach (Direction d in Enum.GetValues(typeof(Direction))) commands[d.ToString()] = d.ToString();
@@ -504,6 +531,9 @@ namespace MarsKod.Dunya
             var open = new List<string>();
             foreach (var c in AllCommands)
                 if (allowed.Contains(c)) open.Add(c + "()");
+            if (open.Count == 0)
+                throw new GameRuleStop("Bu bölümde robotun komutu yok",
+                    name + "() gerçek bir oyun komutu ama bu bölümde robot yürümüyor: iş ekranda. Ekranın sorduğu fonksiyonu yaz; onu ekran çağırır.");
             throw new GameRuleStop("Bu komut henüz açılmadı",
                 name + "() gerçek bir oyun komutu ama bu bölümde henüz kullanılamıyor; ilerideki bölümlerde açılacak. Bu bölümde kullanabileceklerin: "
                 + string.Join(", ", open) + ".");
@@ -526,6 +556,12 @@ namespace MarsKod.Dunya
         {
             if (value is string s && Enum.TryParse(s, out Direction d) && s == d.ToString())
                 return d;
+            if (NoteLetters.IsDirectionLetter(value))
+                throw new GameRuleStop("move yön ister, harf değil",
+                    "move(\"" + value + "\") çalışmaz: \"" + value + "\" nottaki bir harf, yön değil. Komutlar İngilizce yön ister: North, East, South, West. Harfi önce yöne çeviren rutinine ver: move(yon(harf)).");
+            if (value == null)
+                throw new GameRuleStop("Yön yerine None geldi",
+                    "move() bir yön bekliyordu ama None (hiçbir şey) geldi. Çoğu zaman bir rutinin return etmediği yoldan gelir: harfi yöne çeviren rutin bu harf için bir şey döndürmüyor olabilir (bir harf unutulmuş ya da print yazılmış).");
             throw new GameRuleStop("Bilinmeyen yön",
                 "move() bir yön ister: North (kuzey), East (doğu), South (güney) ya da West (batı). Parantezin içine bunlardan birini yaz, örn. move(East).");
         }

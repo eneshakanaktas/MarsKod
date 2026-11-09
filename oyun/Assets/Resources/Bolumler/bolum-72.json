@@ -1,0 +1,71 @@
+{
+  "numara": 72,
+  "baslik": "Bilgisayarlar uyanıyor",
+  "gorev": "6 bilgisayarı uyandır",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . R . . .",
+    ". . . . . ."
+  ],
+  "bilgi": {
+    "baslik": "İstasyonun bilgisayarı sana soru soruyor",
+    "metin": [
+      "Bu bölümde robot yürümüyor. Ekranda bir tablo var: her satırda bir bilgisayarın söylediği sayı duruyor, cevap yeri boş.",
+      "Cevabı sen yazmıyorsun; cevabı bulan kodu yazıyorsun. `def uyanma_kodu(sayi):` bir sayı alır, `return` ile cevabı geri verir. Çalıştır'a basınca bilgisayar her satırı sırayla senin koduna sorar: doğruysa yeşil, yanlışsa kırmızı işaret çıkar.",
+      "Başta yalnızca birkaç örnek görünür. Bilgisayar başka sayıları da soracak, o yüzden örnekleri ezberlemek yetmez: kuralı yaz."
+    ]
+  },
+  "ekran": {
+    "fonksiyon": "uyanma_kodu",
+    "satirlar": [
+      {"girdi": 3, "cevap": 6, "gorunur": true},
+      {"girdi": 10, "cevap": 20, "gorunur": true},
+      {"girdi": 7, "cevap": 14},
+      {"girdi": 0, "cevap": 0},
+      {"girdi": 25, "cevap": 50},
+      {"girdi": 1, "cevap": 2}
+    ]
+  },
+  "komutlar": [],
+  "parcalar": ["def uyanma_kodu(sayi):", "return sayi * 3"],
+  "python_kelimeleri": ["print"],
+  "konular": ["return", "parametre", "ekran bulmacası"],
+  "ipuclari": [
+    "Robot yürümüyor, işi ekran yapar: her bilgisayar bir sayı söyler, ekran `uyanma_kodu(sayı)` diye sorar. Cevap sayının iki katı (3 için 6).",
+    "Parametre girdiyi alır, `return` cevabı geri verir. `print` ekrana yazar ama cevap vermez: ekran o zaman `None` (hiçbir şey) alır.",
+    "`def uyanma_kodu(sayi):` altına `    return sayi * 2`. Fonksiyonu sen çağırmazsın, ekran her bilgisayar için çağırır."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def uyanma_kodu(sayi):", "    if sayi == 3:", "        return 6", "    if sayi == 10:", "        return 20"],
+      "aciklama": "Görev kartındaki iki örnek doğru ama ekran başka sayılar da soruyor (7, 25...): ezberlenen cevap yetmez, kuralı yaz."
+    },
+    {
+      "kod": ["def uyanma_kodu(sayi):", "    print(sayi * 2)"],
+      "aciklama": "Doğru sayı ekrana yazılır ama ekran cevap olarak None alır: print yazar, return cevap verir."
+    },
+    {
+      "kod": ["def uyanma_kodu(sayi):", "    return sayi + 2"],
+      "aciklama": "3 için 5 verir: iki katı, 2 eklemek değil. sayi * 2."
+    },
+    {
+      "kod": ["def uyandir(sayi):", "    return sayi * 2"],
+      "aciklama": "Ekran uyanma_kodu adlı fonksiyonu arıyor; ad harfi harfine aynı olmalı."
+    },
+    {
+      "kod": ["def uyanma_kodu():", "    return 6"],
+      "aciklama": "Fonksiyonun bilgi kutusu (parametre) yok ama ekran ona bir sayı veriyor: Python hata verir (TypeError). def uyanma_kodu(sayi):"
+    }
+  ],
+  "baslangic_kodu": [
+    "def uyanma_kodu(sayi):",
+    "    print(sayi * 2)"
+  ],
+  "cozum": [
+    "def uyanma_kodu(sayi):",
+    "    return sayi * 2"
+  ]
+}

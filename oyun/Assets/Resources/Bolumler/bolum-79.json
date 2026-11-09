@@ -1,0 +1,76 @@
+{
+  "numara": 79,
+  "baslik": "Hizmet dışı",
+  "gorev": "Kor kaç hafta çalıştı?",
+  "harita": [
+    ". . . . . .",
+    ". K . . K .",
+    ". . . . . .",
+    "V . . V . H",
+    ". K . K . .",
+    "R . . . . ."
+  ],
+  "komutlar": ["move", "collect", "report"],
+  "rapor": 12,
+  "rutinler": ["kac_kez"],
+  "donus_sarti": true,
+  "parcalar": ["def kac_kez(metin, harf):", "sayac = 0", "for h in metin:", "if h == harf:", "sayac += 1", "return sayac", "len(kayit)", "report(len(kayit) - kac_kez(kayit, \"A\"))"],
+  "python_kelimeleri": ["len"],
+  "konular": ["metin", "harf sayma", "len", "return"],
+  "ipuclari": [
+    "Kayıtta her harf bir hafta: M maden, T taşıma, A arıza. Kor arızasız haftalarda çalıştı; anten o sayıyı bekliyor.",
+    "Harf saymak: sayaç kur, metnin harflerinde dolaş, harf eşleşince sayacı büyüt, sonunda sayacı `return` et. `len(kayit)` metnin kaç harf olduğunu verir.",
+    "`def kac_kez(metin, harf):` içinde `sayac = 0`, `for h in metin:`, `if h == harf:`, `sayac += 1`, en sonda `return sayac`. Hangar kapısında: `report(len(kayit) - kac_kez(kayit, \"A\"))`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["kayit = \"MMTMMTMTMMTMAAAAAA\"   # KOR: M maden, T taşıma, A arıza", "def kac_kez(metin, harf):", "    for h in metin:", "        sayac = 0", "        if h == harf:", "            sayac += 1", "    return sayac", "move(North)", "move(North)", "collect()", "for i in range(3):", "    move(East)", "collect()", "move(East)", "move(East)", "report(len(kayit) - kac_kez(kayit, \"A\"))"],
+      "aciklama": "sayac her harfte sıfırlanıyor: rutin en çok 1 sayar. sayac = 0 döngüden önce."
+    },
+    {
+      "kod": ["kayit = \"MMTMMTMTMMTMAAAAAA\"   # KOR: M maden, T taşıma, A arıza", "def kac_kez(metin, harf):", "    sayac = 0", "    for h in metin:", "        if h == harf:", "            sayac += 1", "        return sayac", "move(North)", "move(North)", "collect()", "for i in range(3):", "    move(East)", "collect()", "move(East)", "move(East)", "report(len(kayit) - kac_kez(kayit, \"A\"))"],
+      "aciklama": "return döngünün içinde: rutin ilk harfe bakıp cevap verir. return'ü for ile aynı hizaya al."
+    },
+    {
+      "kod": ["kayit = \"MMTMMTMTMMTMAAAAAA\"   # KOR: M maden, T taşıma, A arıza", "def kac_kez(metin, harf):", "    sayac = 0", "    for h in metin:", "        if h == A:", "            sayac += 1", "    return sayac", "move(North)", "move(North)", "collect()", "for i in range(3):", "    move(East)", "collect()", "move(East)", "move(East)", "report(len(kayit) - kac_kez(kayit, \"A\"))"],
+      "aciklama": "Tırnaksız A bir değişken adıdır (NameError); rutin zaten aranacak harfi harf kutusunda alıyor: h == harf."
+    },
+    {
+      "kod": ["kayit = \"MMTMMTMTMMTMAAAAAA\"   # KOR: M maden, T taşıma, A arıza", "def kac_kez(metin, harf):", "    sayac = 0", "    for h in metin:", "        if h == harf:", "            sayac += 1", "    return sayac", "move(North)", "move(North)", "collect()", "for i in range(3):", "    move(East)", "collect()", "move(East)", "move(East)", "report(kac_kez(kayit, \"A\"))"],
+      "aciklama": "Bu, Kor'un arızalı kaldığı hafta sayısı. Soru çalıştığı haftalar: toplam haftadan arızalıları çıkar."
+    },
+    {
+      "kod": ["kayit = \"MMTMMTMTMMTMAAAAAA\"   # KOR: M maden, T taşıma, A arıza", "def kac_kez(metin, harf):", "    sayac = 0", "    for h in metin:", "        if h == harf:", "            sayac += 1", "    return sayac", "move(North)", "move(North)", "collect()", "for i in range(3):", "    move(East)", "collect()", "move(East)", "move(East)", "report(len(kayit))"],
+      "aciklama": "len bütün haftaları sayar, arızalı haftalar da içinde."
+    }
+  ],
+  "baslangic_kodu": [
+    "kayit = \"MMTMMTMTMMTMAAAAAA\"   # KOR: M maden, T taşıma, A arıza",
+    "move(North)",
+    "move(North)",
+    "collect()",
+    "for i in range(3):",
+    "    move(East)",
+    "collect()",
+    "move(East)",
+    "move(East)"
+  ],
+  "cozum": [
+    "kayit = \"MMTMMTMTMMTMAAAAAA\"   # KOR: M maden, T taşıma, A arıza",
+    "def kac_kez(metin, harf):",
+    "    sayac = 0",
+    "    for h in metin:",
+    "        if h == harf:",
+    "            sayac += 1",
+    "    return sayac",
+    "move(North)",
+    "move(North)",
+    "collect()",
+    "for i in range(3):",
+    "    move(East)",
+    "collect()",
+    "move(East)",
+    "move(East)",
+    "report(len(kayit) - kac_kez(kayit, \"A\"))"
+  ]
+}

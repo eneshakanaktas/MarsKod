@@ -1,5 +1,5 @@
-// Göç izi (Bölge 7): robotun başlangıç karesinden adım adım yönler. İzi yalnızca Serçe yukarıdan görür; scout()
-// robotun durduğu karede izin bir sonraki yönünü söyler. Hedef izin son karesidir. Bölüm dosyasında: "izler".
+// Kareden kareye yön listesi: Bölge 7'de Serçe'nin gördüğü göç izi (scout() izin sonraki yönünü söyler; "izler"),
+// Bölge 8'de notun yolu (Level.NoteRoutes; "notlar"). Hedef yolun son karesidir.
 
 using System.Collections.Generic;
 using System.Linq;

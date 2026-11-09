@@ -1,0 +1,64 @@
+{
+  "numara": 76,
+  "baslik": "Katlanmış çizim",
+  "gorev": "Notu oku, yürü",
+  "harita": [
+    ". . . . . .",
+    ". . . . K .",
+    ". . K . . .",
+    ". . . . . .",
+    ". K . . . K",
+    "R . . . . ."
+  ],
+  "notlar": ["KKKKKD", "DDDKKKKKB", "KKKDGDDDDKKK"],
+  "komutlar": ["move", "read_note"],
+  "rutinler": ["yon"],
+  "donus_sarti": true,
+  "parcalar": ["elif harf == \"G\":", "elif harf == \"D\":", "elif harf == \"B\":", "return South", "return East", "return West", "for harf in read_note():", "move(yon(harf))"],
+  "konular": ["return", "metin", "read_note", "değişen not"],
+  "ipuclari": [
+    "Nottaki harfler Türkçe: K kuzey → `North`, G güney → `South`, D doğu → `East`, B batı → `West`. Not her denemede başka bir yol yazabilir: ezberleme, oku.",
+    "`read_note()` notu metin olarak verir. Harfi yöne çeviren bir rutin yaz: harfi alır, yönü `return` ile verir. Sonra `move(yon(harf))`.",
+    "`def yon(harf):` / `    if harf == \"K\":` / `        return North`; G, D, B için `elif`. Sonra `for harf in read_note():` / `    move(yon(harf))`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "for harf in \"KKKKKD\":", "    move(yon(harf))"],
+      "aciklama": "İlk notun yazısı koda elle kopyalandı: bir kez çalışır ama not değişince robot yanlış yere gider. Her seferinde read_note() ile oku."
+    },
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return West", "    elif harf == \"B\":", "        return East", "for harf in read_note():", "    move(yon(harf))"],
+      "aciklama": "Doğu ile batı karışmış: D doğu, yani East; B batı, yani West."
+    },
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "for harf in read_note():", "    if harf == \"K\":", "        move(\"K\")"],
+      "aciklama": "move bir yön ister (North, East...), nottaki harf değil: \"K\" bir harftir. Harfi yöne çeviren rutini kullan: move(yon(harf))."
+    },
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "for harf in read_note():", "    move(yon(harf))"],
+      "aciklama": "G (güney) unutulmuş: o harf için yon hiçbir şey döndürmez (None), move yön bulamaz. Dört harfin hepsini çevir."
+    },
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        print(North)", "    elif harf == \"G\":", "        print(South)", "    elif harf == \"D\":", "        print(East)", "    elif harf == \"B\":", "        print(West)", "for harf in read_note():", "    move(yon(harf))"],
+      "aciklama": "yon yönü ekrana yazıyor ama cevap vermiyor: move None alır. print değil return."
+    }
+  ],
+  "baslangic_kodu": [
+    "def yon(harf):",
+    "    if harf == \"K\":",
+    "        return North"
+  ],
+  "cozum": [
+    "def yon(harf):",
+    "    if harf == \"K\":",
+    "        return North",
+    "    elif harf == \"G\":",
+    "        return South",
+    "    elif harf == \"D\":",
+    "        return East",
+    "    elif harf == \"B\":",
+    "        return West",
+    "for harf in read_note():",
+    "    move(yon(harf))"
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "numara": 75,
+  "baslik": "Dışarıda tek robot",
+  "gorev": "Çizimdeki yolu yürü",
+  "harita": [
+    ". . . . . .",
+    ". K H . K .",
+    ". . K . . .",
+    ". . . . . .",
+    ". . . . . .",
+    "R K . . . ."
+  ],
+  "komutlar": ["move"],
+  "parcalar": ["for harf in rota:", "if harf == \"K\":", "elif harf == \"D\":", "elif harf == \"B\":", "move(North)", "move(East)", "move(West)"],
+  "python_kelimeleri": ["str"],
+  "konular": ["metin", "metinde dolaşma", "=="],
+  "ipuclari": [
+    "Nottaki harfler Türkçe: K kuzey → `North`, G güney → `South`, D doğu → `East`, B batı → `West`.",
+    "Tırnak içindeki yazı bir metindir. `for harf in rota:` metnin harflerini sırayla verir; `harf == \"K\"` harfin K olup olmadığına bakar (`=` değil, `==`).",
+    "Döngünün içinde: `if harf == \"K\":` / `    move(North)`, sonra `elif harf == \"D\":` / `    move(East)`; B için de aynısı."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["rota = \"KKDDDKKB\"   # çizimin altındaki yazı", "for harf in rota:", "    if harf == \"K\":", "        move(North)", "    elif harf == \"D\":", "        move(West)", "    elif harf == \"B\":", "        move(East)"],
+      "aciklama": "Doğu ile batı karışmış: D doğu, yani East; B batı, yani West. Robot alanın sınırına çarpar."
+    },
+    {
+      "kod": ["rota = \"KKDDDKKB\"   # çizimin altındaki yazı", "for harf in rota:", "    if harf == K:", "        move(North)"],
+      "aciklama": "Tırnaksız K bir değişken adıdır, harf değil: Python onu tanımaz (NameError). Harf tırnak içinde yazılır: \"K\"."
+    },
+    {
+      "kod": ["rota = \"KKDDDKKB\"   # çizimin altındaki yazı", "for harf in rota:", "    move(harf)"],
+      "aciklama": "move bir yön ister (North, East...), harf değil. Harfi önce yöne çevir."
+    },
+    {
+      "kod": ["rota = \"KKDDDKKB\"   # çizimin altındaki yazı", "for harf in \"rota\":", "    if harf == \"K\":", "        move(North)", "    elif harf == \"D\":", "        move(East)", "    elif harf == \"B\":", "        move(West)"],
+      "aciklama": "\"rota\" tırnak içinde: değişken değil, r-o-t-a harflerinden oluşan yeni bir metin. Hiçbir harf K, D ya da B değil; robot kıpırdamaz."
+    },
+    {
+      "kod": ["rota = \"KKDDDKKB\"   # çizimin altındaki yazı", "for harf in rota:", "    if harf = \"K\":", "        move(North)"],
+      "aciklama": "Tek = bir değere ad verir; karşılaştırma iki eşittir ister: harf == \"K\" (SyntaxError)."
+    }
+  ],
+  "baslangic_kodu": [
+    "rota = \"KKDDDKKB\"   # çizimin altındaki yazı",
+    "for harf in rota:",
+    "    if harf == \"K\":",
+    "        move(North)"
+  ],
+  "cozum": [
+    "rota = \"KKDDDKKB\"   # çizimin altındaki yazı",
+    "for harf in rota:",
+    "    if harf == \"K\":",
+    "        move(North)",
+    "    elif harf == \"D\":",
+    "        move(East)",
+    "    elif harf == \"B\":",
+    "        move(West)"
+  ]
+}

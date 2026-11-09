@@ -30,11 +30,13 @@
     {
       "baslik": "for",
       "kelimeler": ["for", "in"],
-      "aciklama": "Bir işi istediğin kadar tekrarlatır. Altındaki girintili (4 boşluk içeriden başlayan) satırlar her turda bir kez çalışır. Satırın sonundaki iki nokta (:) şart.",
+      "aciklama": "Bir işi istediğin kadar tekrarlatır. Altındaki girintili (4 boşluk içeriden başlayan) satırlar her turda bir kez çalışır. Satırın sonundaki iki nokta (:) şart. Bir metnin harflerinde de dolaşır: for harf in \"KKD\":",
       "ornek": [
         "for i in range(3):",
         "    move(East)   # 3 kez",
-        "    collect()    # 3 kez"
+        "    collect()    # 3 kez",
+        "for harf in \"KKD\":",
+        "    print(harf)   # K, K, D"
       ]
     },
     {
@@ -212,6 +214,74 @@
         "move(scout())",
         "yon = scout()",
         "move(yon)"
+      ]
+    },
+    {
+      "baslik": "return",
+      "kelimeler": ["return"],
+      "aciklama": "Rutinin cevabını verir: return 3 yazan rutin çağrıldığı yere 3 getirir. return çalışınca rutin orada biter. print ekrana yazar ama cevap vermez; return'süz rutin None (hiçbir şey) döndürür.",
+      "ornek": [
+        "def koridor():",
+        "    return 3",
+        "for i in range(koridor()):   # 3 tur",
+        "    move(North)",
+        "def iki_kat(sayi):",
+        "    return sayi * 2",
+        "x = iki_kat(4)   # x = 8"
+      ]
+    },
+    {
+      "baslik": "print",
+      "kelimeler": ["print"],
+      "aciklama": "Yazıyı ekrana yazar, başka bir şey yapmaz. Rutinin cevabını vermez: cevap return ile verilir. print'li ama return'süz rutin None (hiçbir şey) döndürür.",
+      "ornek": [
+        "def iki_kat(sayi):",
+        "    print(sayi * 2)   # ekrana yazar, cevap vermez",
+        "def iki_kat_dogru(sayi):",
+        "    return sayi * 2   # cevap verir"
+      ]
+    },
+    {
+      "baslik": "True / False",
+      "kelimeler": ["True", "False"],
+      "aciklama": "Doğru ve yanlış. Karşılaştırmalar (<, ==) ve ice_here() gibi sorular bunlardan birini verir. Bir rutin de return ile True ya da False verebilir; if ona bakar. Büyük harfle ve tırnaksız yazılır.",
+      "ornek": [
+        "def catlak_mi():",
+        "    return panel_power() < 50",
+        "if catlak_mi():",
+        "    repair()"
+      ]
+    },
+    {
+      "baslik": "Metin (str)",
+      "kelimeler": ["str"],
+      "aciklama": "Tırnak içindeki yazı bir metindir (Python'da adı str). for harf in metin: harflerini sırayla verir; == iki metni karşılaştırır; in içinde arar ve True/False verir. Büyük-küçük harf önemlidir. Tırnaklı \"4\" metindir, tırnaksız 4 sayı: ikisi eşit değildir.",
+      "ornek": [
+        "rota = \"KKDD\"",
+        "for harf in rota:",
+        "    if harf == \"K\":",
+        "        move(North)",
+        "\"Aras\" in \"Defne Aras\"   # True",
+        "\"4\" == 4   # False"
+      ]
+    },
+    {
+      "baslik": "read_note",
+      "kelimeler": ["read_note"],
+      "aciklama": "Kıvılcım durduğu yerdeki notu okur, yazısını metin olarak verir (örn. \"KKDB\"). Notlardaki yön harfleri Türkçe: K kuzey, G güney, D doğu, B batı. move harf değil yön ister: harfi önce yöne çevir. Not her denemede değişebilir; yazıyı ezberleme, oku.",
+      "ornek": [
+        "for harf in read_note():",
+        "    move(yon(harf))"
+      ]
+    },
+    {
+      "baslik": "len",
+      "kelimeler": ["len"],
+      "aciklama": "Bir metnin kaç harf olduğunu verir: len(\"KOR\") 3. Boşluklar ve işaretler de sayılır.",
+      "ornek": [
+        "len(\"KOR\")   # 3",
+        "kayit = \"MMTA\"",
+        "haftalar = len(kayit)   # 4"
       ]
     }
   ]

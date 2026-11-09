@@ -1,0 +1,86 @@
+{
+  "numara": 78,
+  "baslik": "Listenin altı",
+  "gorev": "Dışarıda kalanı bul",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . R . . .",
+    ". . . . . ."
+  ],
+  "bilgi": {
+    "baslik": "Liste uzadı, ekran kayıyor",
+    "metin": [
+      "Bu bölümde de robot yürümüyor, iş ekranda. Ekran yine her satırı senin fonksiyonuna soruyor, ama bu sefer her satır bir kişinin kaydı.",
+      "Fonksiyon `True` (evet) ya da `False` (hayır) verir. `True` veren satır ekranda turuncu renkle işaretlenir: aradığın kişi odur.",
+      "Liste 26 satır, ekrana sığmaz: parmağınla yukarı aşağı kaydırabilirsin. Başta yalnızca birkaç örnek görünür, gerisi gizlidir; bu yüzden kuralı yaz, örnekleri ezberleme. Büyük-küçük harf farkına dikkat et."
+    ]
+  },
+  "ekran": {
+    "fonksiyon": "disarida_mi",
+    "satirlar": [
+      {"girdi": "Defne Aras — kapsül: hazır", "cevap": false, "gorunur": true},
+      {"girdi": "Ece Aras — kapsül: hazır", "cevap": false, "gorunur": true},
+      {"girdi": "Kerem Yalın — kapsül: hazır", "cevap": false},
+      {"girdi": "Selin Toprak — kapsül: hazır", "cevap": false},
+      {"girdi": "Murat Ekinci — kapsül: hazır", "cevap": false},
+      {"girdi": "Leyla Ekinci — kapsül: hazır", "cevap": false},
+      {"girdi": "Can Ekinci — kapsül: hazır", "cevap": false},
+      {"girdi": "Zeynep Uçar — kapsül: hazır", "cevap": false},
+      {"girdi": "Ali Rıza Demir — kapsül: hazır", "cevap": false},
+      {"girdi": "Nur Demir — kapsül: hazır", "cevap": false},
+      {"girdi": "Baran Kaya — kapsül: hazır", "cevap": false},
+      {"girdi": "Elif Kaya — kapsül: hazır", "cevap": false},
+      {"girdi": "Hakan Sezer — kapsül: hazır", "cevap": false},
+      {"girdi": "Derya Öztürk — kapsül: hazır", "cevap": false},
+      {"girdi": "Emre Bulut — kapsül: hazır", "cevap": false},
+      {"girdi": "Aylin Bulut — kapsül: hazır", "cevap": false},
+      {"girdi": "Deniz Bulut — kapsül: hazır", "cevap": false},
+      {"girdi": "Tarık Erdem — kapsül: hazır", "cevap": false},
+      {"girdi": "Gül Şahin — kapsül: hazır", "cevap": false},
+      {"girdi": "Okan Akın — kapsül: hazır", "cevap": false},
+      {"girdi": "Melis Aydın — kapsül: hazır", "cevap": false},
+      {"girdi": "Burak Tan — kapsül: hazır", "cevap": false},
+      {"girdi": "Seda Koç — kapsül: hazır", "cevap": false},
+      {"girdi": "Orhan Usta — kapsül: hazır", "cevap": false},
+      {"girdi": "BKM-7   — dışarıda — görev: KAPI", "cevap": true},
+      {"girdi": "KOR     — hizmet dışı — hangar", "cevap": false}
+    ]
+  },
+  "komutlar": [],
+  "parcalar": ["def disarida_mi(satir):", "return \"dışarıda\" in satir"],
+  "konular": ["metin", "in"],
+  "ipuclari": [
+    "Liste uzadı: 24 kişinin altında iki satır daha var. Satırında `dışarıda` geçen için `True`, diğerleri için `False`.",
+    "Geçen bölümdeki kalıp: `\"dışarıda\" in satir`. Kelimenin tamamını yaz; yalnızca `dış` başka bir satırda da geçiyor.",
+    "`def disarida_mi(satir):` altına `    return \"dışarıda\" in satir`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def disarida_mi(satir):", "    return \"dış\" in satir"],
+      "aciklama": "dış kelimesi KOR'un satırında da geçiyor (hizmet dışı): aradığın kelimenin tamamını yaz, dışarıda."
+    },
+    {
+      "kod": ["def disarida_mi(satir):", "    return satir == \"dışarıda\""],
+      "aciklama": "== satırın tamamını karşılaştırır, hiçbir satır yalnızca dışarıda değil. İçinde aramak için in."
+    },
+    {
+      "kod": ["def disarida_mi(satir):", "    return False"],
+      "aciklama": "Görev kartındaki iki satır için doğru ama listede dışarıda olan biri var."
+    },
+    {
+      "kod": ["def disarida_mi(satir):", "    if satir == \"Defne Aras — kapsül: hazır\":", "        return False", "    if satir == \"Ece Aras — kapsül: hazır\":", "        return False"],
+      "aciklama": "Yalnızca görev kartındaki iki satır ezberlendi: öteki satırlarda fonksiyon None döndürür. Kuralı yaz."
+    }
+  ],
+  "baslangic_kodu": [
+    "def disarida_mi(satir):",
+    "    return False"
+  ],
+  "cozum": [
+    "def disarida_mi(satir):",
+    "    return \"dışarıda\" in satir"
+  ]
+}

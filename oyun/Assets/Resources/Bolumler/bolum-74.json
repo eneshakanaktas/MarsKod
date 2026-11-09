@@ -1,0 +1,61 @@
+{
+  "numara": 74,
+  "baslik": "Kayıt 4",
+  "gorev": "Toplam gücü gönder",
+  "harita": [
+    ". . . . . .",
+    ". . K . . .",
+    ". . . . . K",
+    ". . . . . .",
+    "9 5 6 7 . .",
+    "R 5 6 7 8 ."
+  ],
+  "komutlar": ["move", "panel_power", "report"],
+  "rapor": 530,
+  "rutinler": ["tara"],
+  "donus_sarti": true,
+  "parcalar": ["def tara(yon):", "toplam = 0", "for i in range(4):", "move(yon)", "toplam += panel_power()", "return toplam", "alt = tara(East)", "ust = tara(West)", "move(North)", "report(alt + ust)"],
+  "konular": ["return", "dönen değeri değişkene almak"],
+  "ipuclari": [
+    "Robot iki sırayı tarar: alttakini doğuya, bir kuzeye çıkıp üsttekini batıya. Anten iki sıranın toplam gücünü bekliyor.",
+    "`tara` toplamı hesaplıyor ama kimseye vermiyor. Döngü bitince `return toplam` yaz: `for` ile aynı hizada, döngünün içinde değil. Cevabı bir değişkene al: `alt = tara(East)`.",
+    "Rutinden sonra: `alt = tara(East)`, `move(North)`, `ust = tara(West)`, en sonda `report(alt + ust)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def tara(yon):", "    toplam = 0", "    for i in range(4):", "        move(yon)", "        toplam += panel_power()", "        return toplam", "alt = tara(East)", "move(North)", "ust = tara(West)", "report(alt + ust)"],
+      "aciklama": "return döngünün içinde: rutin ilk panelde cevap verip biter, sıranın gerisi taranmaz. return'ü for ile aynı hizaya al."
+    },
+    {
+      "kod": ["def tara(yon):", "    for i in range(4):", "        toplam = 0", "        move(yon)", "        toplam += panel_power()", "    return toplam", "alt = tara(East)", "move(North)", "ust = tara(West)", "report(alt + ust)"],
+      "aciklama": "toplam her turda sıfırlanıyor: rutin yalnızca son panelin gücünü verir. toplam = 0 döngüden önce."
+    },
+    {
+      "kod": ["def tara(yon):", "    toplam = 0", "    for i in range(4):", "        move(yon)", "        toplam += panel_power()", "    print(toplam)", "alt = tara(East)", "move(North)", "ust = tara(West)", "report(alt + ust)"],
+      "aciklama": "tara toplamı ekrana yazıyor ama cevap vermiyor: alt ve ust None olur, None'lar toplanamaz (TypeError). return toplam."
+    },
+    {
+      "kod": ["def tara(yon):", "    toplam = 0", "    for i in range(4):", "        move(yon)", "        toplam += panel_power()", "    return toplam", "report(tara(East))", "move(North)", "report(tara(West))"],
+      "aciklama": "Anten tek sayı bekliyor: iki sıranın toplamı. Önce iki cevabı topla, sonra bir kez gönder."
+    }
+  ],
+  "baslangic_kodu": [
+    "def tara(yon):",
+    "    toplam = 0",
+    "    for i in range(4):",
+    "        move(yon)",
+    "        toplam += panel_power()"
+  ],
+  "cozum": [
+    "def tara(yon):",
+    "    toplam = 0",
+    "    for i in range(4):",
+    "        move(yon)",
+    "        toplam += panel_power()",
+    "    return toplam",
+    "alt = tara(East)",
+    "move(North)",
+    "ust = tara(West)",
+    "report(alt + ust)"
+  ]
+}

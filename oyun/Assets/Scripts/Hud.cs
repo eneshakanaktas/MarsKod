@@ -13,6 +13,8 @@ public class Hud : MonoBehaviour
     public event Action StepPressed;
     // Sol ustteki kitap: kod sozlugu
     public event Action GlossaryPressed;
+    /// <summary>Bilgi karti bu bolumde ilk kez kapandi (Oyun "goruldu" diye kaydeder)</summary>
+    public event Action InfoSeen;
     // Oyuncu kodu degistirdi (yeni kodun tamami)
     public event Action<string> CodeChanged;
     // Oyuncu kademe kutusundan yeni bir kademe secti (kalici tutulmasi icin; Tier zaten degisti)
@@ -57,6 +59,14 @@ public class Hud : MonoBehaviour
     OpeningScene opening;
     RecordingScene recording;
     QuizView quiz;
+    ScreenView screenView;   // istasyon ekrani (ekran bulmacasi, Bolge 8)
+    // Bilgi karti (bolumde yeni bir sey ilk kez gorundugunde): kart, sol ustte i dugmesi, "Anladim"dan sonra dugmeyi gosteren balon
+    InfoCard infoCard;
+    VisualElement infoBtn, infoBubble;
+    IVisualElementScheduledItem infoBubbleTimer;
+    LevelInfo info;
+    bool infoSeen;
+    const long InfoBubbleMs = 9000;
     // Su an acik olan yazma paneli (klavye ya da palet), kapaliyken null
     VisualElement shownPanel;
     KeyboardTier tier = KeyboardTier.Orta;
@@ -137,6 +147,15 @@ public class Hud : MonoBehaviour
         quiz = new QuizView(fMed, fSemi, fBold, Ink, Accent, ButtonBg, Hairline, ErrorRed, CellFill);
         overlay.Add(quiz);
 
+        screenView = new ScreenView(fMono, fBold, Ink, Accent, ErrorRed, Hairline);
+        free.Add(screenView);
+
+        infoBubble = BuildInfoBubble();
+        overlay.Add(infoBubble);
+        infoCard = new InfoCard(fMed, fSemi, fBold, Ink, Accent, Hairline);
+        infoCard.Closed += CloseInfo;
+        overlay.Add(infoCard);
+
         root.Add(header);
         root.Add(free);
         root.Add(card);
@@ -178,6 +197,11 @@ public class Hud : MonoBehaviour
         var soundBtn = RoundButton(96, glass, soundIcon, () => SoundToggled?.Invoke());
         soundBtn.style.marginTop = 20;
         menuCol.Add(soundBtn);
+        // i dugmesi yalnizca bilgi karti olan bolumde gorunur; yeri tutarli olsun diye sesin altinda
+        infoBtn = RoundButton(96, glass, new Icon(46, DrawInfo), OpenInfo);
+        infoBtn.style.marginTop = 20;
+        infoBtn.style.display = DisplayStyle.None;
+        menuCol.Add(infoBtn);
 
         var center = new VisualElement { pickingMode = PickingMode.Ignore };
         center.style.flexGrow = 1;
@@ -424,7 +448,7 @@ public class Hud : MonoBehaviour
         for (int i = 0; i < iceTotal; i++)
         {
             int idx = i;
-            var d = item == Collectible.EnergyCell ? new Icon(36, (p, r) => DrawCellDot(p, r, idx < collected))
+            var d = item == Collectible.EnergyCell || item == Collectible.DataCard /* veri karti: gecici, hucre simgesi */ ? new Icon(36, (p, r) => DrawCellDot(p, r, idx < collected))
                 : item == Collectible.PanelPart ? new Icon(36, (p, r) => DrawPanelDot(p, r, idx < collected))
                 : item == Collectible.CompassPart ? new Icon(36, (p, r) => DrawCompassDot(p, r, idx < collected))
                 : item == Collectible.DronePart ? new Icon(36, (p, r) => DrawPropellerDot(p, r, idx < collected))
@@ -663,6 +687,97 @@ public class Hud : MonoBehaviour
     {
         outroLabel.text = text;
         outroLabel.style.display = string.IsNullOrEmpty(text) ? DisplayStyle.None : DisplayStyle.Flex;
+    }
+
+    // ---- istasyon ekrani (ekran bulmacasi) ----
+
+    public void ShowScreen(ScreenPuzzle puzzle) => screenView.Show(puzzle);
+    public void ClearScreen() => screenView.Clear();
+    public void AddScreenAnswer(ScreenAnswer answer) => screenView.Add(answer);
+    public void HideScreen() => screenView.Hide();
+
+    // ---- bilgi karti ----
+
+    /// <summary>Bolum yuklenince: karti ve i dugmesini kurar. Bolumde bilgi yoksa dugme gizli; seen=false ise kart kendiliginden acilir.</summary>
+    public void SetInfo(LevelInfo levelInfo, bool seen)
+    {
+        info = levelInfo;
+        infoSeen = seen;
+        HideInfoBubble();
+        infoCard.Hide();
+        infoBtn.style.display = info != null ? DisplayStyle.Flex : DisplayStyle.None;
+        if (info != null && !seen) infoCard.Show(info);
+    }
+
+    // i dugmesi: karti tekrar acar
+    void OpenInfo()
+    {
+        if (info == null) return;
+        HideInfoBubble();
+        infoCard.Show(info);
+    }
+
+    /// <summary>"Anladım": kart kapanir; ilk kez ise i dugmesini gosteren balon cikar</summary>
+    public void CloseInfo()
+    {
+        infoCard.Hide();
+        if (infoSeen || info == null) return;
+        infoSeen = true;
+        InfoSeen?.Invoke();
+        ShowInfoBubble();
+    }
+
+    public void HideInfoBubble()
+    {
+        infoBubbleTimer?.Pause();
+        infoBubble.style.display = DisplayStyle.None;
+    }
+
+    // Balon: i dugmesinin yaninda, dugmeyi gosteren ok ile; birkac saniye sonra ya da dokununca kapanir
+    VisualElement BuildInfoBubble()
+    {
+        var bubble = new VisualElement();
+        bubble.style.position = Position.Absolute;
+        bubble.style.width = 560;
+        bubble.style.backgroundColor = new Color(0.96f, 0.945f, 0.91f, 1f);
+        Ui.Radius(bubble, 30);
+        bubble.style.paddingLeft = 32; bubble.style.paddingRight = 32;
+        bubble.style.paddingTop = 24; bubble.style.paddingBottom = 26;
+        bubble.style.display = DisplayStyle.None;
+
+        var arrow = new VisualElement { pickingMode = PickingMode.Ignore };   // yana donuk kare: sola bakan ok
+        arrow.style.position = Position.Absolute;
+        arrow.style.left = -13; arrow.style.top = Length.Percent(50); arrow.style.marginTop = -13;
+        arrow.style.width = 26; arrow.style.height = 26;
+        arrow.style.backgroundColor = bubble.style.backgroundColor;
+        arrow.style.rotate = new Rotate(new Angle(45f, AngleUnit.Degree));
+        bubble.Add(arrow);
+
+        var text = Ui.Text("Bu bölümün bilgisini buradan tekrar açabilirsin.", fSemi, 31, Mats.Hex("#2A2733"));
+        text.style.whiteSpace = WhiteSpace.Normal;
+        text.pickingMode = PickingMode.Ignore;
+        bubble.Add(text);
+
+        bubble.RegisterCallback<ClickEvent>(_ => HideInfoBubble());
+        return bubble;
+    }
+
+    void ShowInfoBubble()
+    {
+        infoBubble.style.display = DisplayStyle.Flex;
+        infoBubble.style.visibility = Visibility.Hidden;   // yeri hesaplanana kadar gorunmesin
+        infoBubble.schedule.Execute(() =>
+        {
+            // i dugmesinin sagina, ortasi dugmenin ortasiyla ayni hizada
+            var button = infoBtn.worldBound;
+            var at = overlay.WorldToLocal(new Vector2(button.xMax, button.center.y));
+            infoBubble.style.left = at.x + 26;
+            infoBubble.style.top = at.y - infoBubble.resolvedStyle.height * 0.5f;
+            infoBubble.style.visibility = Visibility.Visible;
+        }).ExecuteLater(60);
+        infoBubbleTimer?.Pause();
+        infoBubbleTimer = infoBubble.schedule.Execute(HideInfoBubble);
+        infoBubbleTimer.ExecuteLater(InfoBubbleMs);
     }
 
     public void ResetView()
@@ -1159,6 +1274,26 @@ public class Hud : MonoBehaviour
             p.ClosePath();
             p.Stroke();
         }
+    }
+
+    // i dugmesi: halka icinde harf i (nokta + govde)
+    static void DrawInfo(Painter2D p, Rect r)
+    {
+        float w = r.width, h = r.height;
+        p.strokeColor = new Color(1f, 1f, 1f, 0.92f);
+        p.fillColor = p.strokeColor;
+        p.lineWidth = w * 0.07f;
+        p.lineCap = LineCap.Round;
+        p.BeginPath();
+        p.Arc(new Vector2(w * 0.5f, h * 0.5f), w * 0.43f, 0f, 360f);
+        p.Stroke();
+        p.BeginPath();
+        p.Arc(new Vector2(w * 0.5f, h * 0.31f), w * 0.055f, 0f, 360f);
+        p.Fill();
+        p.BeginPath();
+        p.MoveTo(new Vector2(w * 0.5f, h * 0.44f));
+        p.LineTo(new Vector2(w * 0.5f, h * 0.71f));
+        p.Stroke();
     }
 
     static void DrawBulb(Painter2D p, Rect r)

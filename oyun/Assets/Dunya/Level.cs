@@ -3,13 +3,17 @@
 // Biçim ve örnek: docs/tasarim/bolum-dosyasi.md
 //
 // Harita "resim gibi" yazılır: her satır bir sıra, en üstteki satır kuzey (alanın arkası).
-//   R robot   B buz   E enerji hücresi   C nehir çakılı   K kaya   T tehlikeli kristal   H hedef kare   . boş     (aradaki boşluklar önemsizdir)
+//   R robot   B buz   E enerji hücresi   C nehir çakılı   V veri kartı   K kaya   T tehlikeli kristal   H hedef kare   . boş     (aradaki boşluklar önemsizdir)
 //   0-9 güneş paneli: rakam gücün onda biri (7 → gücü 70). 0 kırık panel (parçası toplanır), 1-4 çatlak (onarılır), 5-9 sağlam.
 //   Z toz bulutu: kaç beklemede dağılacağı "toz_suresi" listesinde, haritadaki okuma sırasıyla (üst satırdan, soldan sağa).
 //   M kablo makarası: uzunlukları (metre) "makara_uzunlugu" listesinde, aynı okuma sırasıyla. "rapor": antenin report() ile beklediği sayı.
 //   Toplanacak işaretleri (B, E...) Collectible.cs'te; bir bölümde tek tür toplanır.
 //   İz ("izler"): Serçe'nin gördüğü yön listeleri; varsa scout() açılır, H yazılmaz (hedef izin son karesi). 2-3 iz = değişen yol.
 //   "parametre_sarti": rutinler bilgi (parametre) almalı ve farklı bilgilerle çağrılmalı (Bölge 7).
+//   "donus_sarti": rutinler cevabını return ile vermeli; bir kez çalışması yeter (Bölge 8).
+//   "notlar": read_note() ile okunan yön notları (K G D B, V veri kartı); hedef notun yolunun sonu, H yazılmaz. 2-3 not = değişen not.
+//   "bilgi": bilgi kartı (yeni bir şey ilk kez göründüğünde açılan açıklama; LevelInfo.cs).
+//   "ekran": ekran bulmacası; oyun oyuncunun fonksiyonunu satırların girdisiyle çağırır (Bölge 8, robot yürümez).
 
 using System;
 using System.Collections.Generic;
@@ -76,27 +80,42 @@ namespace MarsKod.Dunya
 
         /// <summary>Serçe'nin gördüğü izler (Bölge 7); boşsa iz yok. Birden çoksa değişen yol: kod her izde denenir.</summary>
         public List<Trail> Trails = new List<Trail>();
+        /// <summary>Robotun okuyacağı notlar (Bölge 8); birden çoksa değişen not: kod her notta denenir</summary>
+        public List<string> Notes = new List<string>();
+        /// <summary>Her notun yolu; hedef yolun sonu</summary>
+        public List<Trail> NoteRoutes = new List<Trail>();
+
+        /// <summary>Kaç sürümde denenir: iz ya da not sayısı (ikisi de yoksa 1)</summary>
+        public int VersionCount => Math.Max(1, Math.Max(Trails.Count, Notes.Count));
+
+        /// <summary>Bilgi kartı (yeni bir şey ilk kez göründüğünde); yoksa null</summary>
+        public LevelInfo Info;
+
+        /// <summary>Ekran bulmacası (Bölge 8'den, tür B); yoksa null</summary>
+        public ScreenPuzzle Screen;
+
         /// <summary>Bir bölümde en fazla kaç iz</summary>
         public const int MaxTrails = 3;
 
-        /// <summary>Bölümün yeni dünyası; değişen yolda trail kaçıncı izin dünyası olduğu</summary>
-        public World CreateWorld(int trail = 0) => new World(Cols, Rows, Robot, Ices, Rocks, Target, Commands, Crystals, Panels, Dust, Reels, ExpectedReport,
-            Trails.Count > 0 ? Trails[trail] : null);
+        /// <summary>Bölümün yeni dünyası; değişen yolda/notta version kaçıncı izin ya da notun dünyası olduğu</summary>
+        public World CreateWorld(int version = 0) => new World(Cols, Rows, Robot, Ices, Rocks,
+            NoteRoutes.Count > 0 ? NoteRoutes[version].End : Target, Commands, Crystals, Panels, Dust, Reels, ExpectedReport,
+            Trails.Count > 0 ? Trails[version] : null, Notes.Count > 0 ? Notes[version] : null);
 
-        /// <summary>Kodu her izde (iz yoksa bir kez) bölümün yeni bir dünyasında, bölümün rutin şartıyla çalıştırır</summary>
-        public List<TrailRun> RunTrails(string code)
+        /// <summary>Kodu her sürümde (iz/not; yoksa bir kez) bölümün yeni bir dünyasında, bölümün rutin şartı ve ekranıyla çalıştırır</summary>
+        public List<TrailRun> RunVersions(string code)
         {
             var runs = new List<TrailRun>();
-            for (int i = 0; i < Math.Max(1, Trails.Count); i++)
+            for (int i = 0; i < VersionCount; i++)
             {
                 var world = CreateWorld(i);
-                runs.Add(new TrailRun(world, ProgramRun.Execute(code, world, routines: Routines)));
+                runs.Add(new TrailRun(world, ProgramRun.Execute(code, world, routines: Routines, screen: Screen)));
             }
             return runs;
         }
 
-        /// <summary>Denetleyici ve testler için tek sonuç: her izde tamamsa tamam; değilse ilk başarısız izin raporu</summary>
-        public RunReport Run(string code) => TrailRuns.Pick(RunTrails(code), 0).Report;
+        /// <summary>Denetleyici ve testler için tek sonuç: her sürümde (iz/not; yoksa bir kez) tamamsa tamam; değilse ilk başarısız sürümün raporu</summary>
+        public RunReport Run(string code) => TrailRuns.Pick(RunVersions(code), 0).Report;
 
         public const char RobotMark = 'R', RockMark = 'K', CrystalMark = 'T', TargetMark = 'H', DustMark = 'Z', EmptyMark = '.';
         /// <summary>Haritada panelin rakamı gücün onda biri (7 → 70)</summary>
@@ -107,7 +126,7 @@ namespace MarsKod.Dunya
         /// <summary>JSON metninden bölümü okur; yanlışta DataFormatError verir (Türkçe, satır numaralı).</summary>
         public static Level Parse(string json)
         {
-            var known = new HashSet<string> { "numara", "baslik", "etiket", "gorev", "giris", "bitis", "harita", "komutlar", "konular", "parcalar", "python_kelimeleri", "ipuclari", "tipik_hatalar", "baslangic_kodu", "cozum", "toz_suresi", "makara_uzunlugu", "rapor", "rutinler", "rutin_sayisi", "parametre_sarti", "izler" };
+            var known = new HashSet<string> { "numara", "baslik", "etiket", "gorev", "giris", "bitis", "harita", "komutlar", "konular", "parcalar", "python_kelimeleri", "ipuclari", "tipik_hatalar", "baslangic_kodu", "cozum", "toz_suresi", "makara_uzunlugu", "rapor", "rutinler", "rutin_sayisi", "parametre_sarti", "donus_sarti", "izler", "ekran", "notlar", "bilgi" };
             var d = DataFields.ParseObject(json, known);
 
             var level = new Level
@@ -129,10 +148,15 @@ namespace MarsKod.Dunya
             foreach (var c in level.Commands)
                 if (Array.IndexOf(World.AllCommands, c) < 0)
                     throw new DataFormatError("\"komutlar\" içinde bilinmeyen komut: \"" + c + "\". Oyundaki komutlar: " + string.Join(", ", World.AllCommands) + ".");
-            var dustCells = ReadMap(level, TextList(d, "harita"), d.ContainsKey("izler"));
+            if (d.ContainsKey("bilgi")) level.Info = LevelInfo.Parse(d["bilgi"]);
+            if (d.ContainsKey("ekran")) level.Screen = ScreenPuzzle.Parse(d["ekran"]);
+            if (level.Screen != null && d.ContainsKey("izler"))
+                throw new DataFormatError("\"ekran\" olan bölümde \"izler\" yazılmaz: robot yürümez.");
+            var dustCells = ReadMap(level, TextList(d, "harita"), hasOtherTask: d.ContainsKey("izler") || d.ContainsKey("notlar") || d.ContainsKey("rapor") || level.Screen != null);
             ReadDust(level, dustCells, d.ContainsKey("toz_suresi") ? IntList(d, "toz_suresi") : new List<int>());
             ReadReels(level, d.ContainsKey("makara_uzunlugu") ? IntList(d, "makara_uzunlugu") : new List<int>());
             ReadReport(level, d);
+            ReadNotes(level, d);
             ReadTrails(level, d);
             ReadRoutines(level, d);
             level.Pieces = d.ContainsKey("parcalar") ? NonEmptyList(d, "parcalar") : DerivePieces(level.Commands);
@@ -163,7 +187,8 @@ namespace MarsKod.Dunya
         }
 
         /// <summary>Haritayı okur; toz bulutlarının karelerini okuma sırasıyla döndürür (süreleri ReadDust bağlar).</summary>
-        static List<Cell> ReadMap(Level level, List<string> rows, bool hasTrails)
+        /// <param name="hasOtherTask">Görev haritada değil: Serçe'nin izi, not, rapor ya da ekran bulmacası var</param>
+        static List<Cell> ReadMap(Level level, List<string> rows, bool hasOtherTask)
         {
             var dustCells = new List<Cell>();
             if (rows.Count == 0) throw new DataFormatError("\"harita\" boş olamaz.");
@@ -221,8 +246,8 @@ namespace MarsKod.Dunya
             if (kinds.Count > 1)
                 throw new DataFormatError("Haritada iki tür toplanacak var (" + string.Join(", ", kinds.Select(Collectibles.Name)) + "); bir bölümde tek tür olmalı.");
             if (kinds.Count == 1) level.Item = kinds.First();
-            if (level.Ices.Count == 0 && level.Target == null && !hasTrails && !level.Panels.Values.Any(World.IsCracked))
-                throw new DataFormatError("Haritada görev yok: toplanacak bir şey (" + MarkList() + ", 0 kırık panel), onarılacak çatlak panel (1-4), bir hedef (" + TargetMark + ") ya da Serçe'nin izi (\"izler\") olmalı.");
+            if (level.Ices.Count == 0 && level.Target == null && !hasOtherTask && !level.Panels.Values.Any(World.IsCracked))
+                throw new DataFormatError("Haritada görev yok: toplanacak bir şey (" + MarkList() + ", 0 kırık panel), onarılacak çatlak panel (1-4), bir hedef (" + TargetMark + "), Serçe'nin izi (\"izler\"), not (\"notlar\"), rapor (\"rapor\") ya da bir ekran bulmacası (\"ekran\") olmalı.");
             if (level.Ices.Count > 0 && !level.Commands.Contains("collect"))
                 throw new DataFormatError("Haritada toplanacak " + Collectibles.Name(level.Item) + " var ama \"komutlar\" içinde \"collect\" yok; toplanamaz.");
             if (level.Commands.Contains("ice_here") && level.Item != Collectible.Ice)
@@ -291,6 +316,56 @@ namespace MarsKod.Dunya
                 throw new DataFormatError("\"izler\" içinde aynı iz iki kez yazılmış; değişen yolda izler farklı olmalı.");
         }
 
+        /// <summary>Yol (iz ya da not) alanın içinde kalmalı ve kaya üstünden geçmemeli; where: mesajın başı</summary>
+        static void CheckPath(Level level, Trail path, string where)
+        {
+            for (int j = 1; j < path.Cells.Count; j++)
+            {
+                var cell = path.Cells[j];
+                if (cell.Col < 0 || cell.Col >= level.Cols || cell.Row < 0 || cell.Row >= level.Rows)
+                    throw new DataFormatError(where + " " + j + ". adımda alanın dışına çıkıyor.");
+                if (level.Rocks.Contains(cell))
+                    throw new DataFormatError(where + " " + j + ". adımda kayanın üstünden geçiyor.");
+            }
+        }
+
+        /// <summary>"notlar": robotun read_note() ile okuyacağı yön notları. read_note açıksa zorunlu, kapalıysa yazılmaz.
+        /// Her notun yolu robotun karesinden başlar; kaya üstünden ve alanın dışından geçmez (kendini kesebilir: notta
+        /// scout yok). Notlar farklı olur ve farklı yerlere çıkar (yoksa ezberlenen yol da geçer).</summary>
+        static void ReadNotes(Level level, Dictionary<string, object> d)
+        {
+            if (d.ContainsKey("notlar") && d.ContainsKey("izler"))
+                throw new DataFormatError("\"notlar\" ile \"izler\" birlikte yazılmaz: bir bölümde ya Serçe'nin izi ya not değişir.");
+            bool open = level.Commands.Contains("read_note");
+            if (d.ContainsKey("notlar") != open)
+                throw new DataFormatError(open
+                    ? "\"komutlar\" içinde \"read_note\" var ama \"notlar\" yok; robotun okuyacağı notu yaz (örn. \"notlar\": [\"KKDD\"])."
+                    : "\"notlar\" yazılmış ama \"komutlar\" içinde \"read_note\" yok; robot notu okuyamaz.");
+            if (!open) return;
+            if (level.Target != null)
+                throw new DataFormatError("\"notlar\" olan bölümde haritaya hedef (H) yazılmaz: hedef notun yolunun sonudur.");
+            var notes = d["notlar"] is List<object> list ? list : null;
+            if (notes == null || notes.Count < 1 || notes.Count > MaxTrails || notes.Any(n => !(n is string s) || s.Trim().Length == 0))
+                throw new DataFormatError("\"notlar\" 1-" + MaxTrails + " not içeren bir liste olmalı; her not bir metin, örn. [\"KKDD\"].");
+            for (int i = 0; i < notes.Count; i++)
+            {
+                string note = (string)notes[i];
+                string where = "\"notlar\" içindeki " + (i + 1) + ". not";
+                var steps = NoteLetters.Steps(note);
+                if (steps == null)
+                    throw new DataFormatError(where + " bilinmeyen harf içeriyor: \"" + note.First(c => c != NoteLetters.Collect && !NoteLetters.Directions.ContainsKey(c))
+                        + "\". Harfler: K kuzey, G güney, D doğu, B batı, V veri kartı.");
+                var route = new Trail(level.Robot, steps);
+                CheckPath(level, route, where);
+                level.Notes.Add(note);
+                level.NoteRoutes.Add(route);
+            }
+            if (level.Notes.Distinct().Count() < level.Notes.Count)
+                throw new DataFormatError("\"notlar\" içinde aynı not iki kez yazılmış; değişen notta notlar farklı olmalı.");
+            if (level.NoteRoutes.Select(r => r.End).Distinct().Count() < level.NoteRoutes.Count)
+                throw new DataFormatError("\"notlar\" içindeki notlar aynı yere çıkıyor: değişen notta her not başka bir yere götürmeli, yoksa ezberlenen yol da geçer.");
+        }
+
         static Trail ReadTrail(Level level, object value, int number)
         {
             string where = "\"izler\" içindeki " + number + ". iz";
@@ -304,20 +379,24 @@ namespace MarsKod.Dunya
                 directions.Add(dir);
             }
             var trail = new Trail(level.Robot, directions);
-            for (int j = 1; j < trail.Cells.Count; j++)
-            {
-                var cell = trail.Cells[j];
-                if (cell.Col < 0 || cell.Col >= level.Cols || cell.Row < 0 || cell.Row >= level.Rows)
-                    throw new DataFormatError(where + " " + j + ". adımda alanın dışına çıkıyor.");
-                if (level.Rocks.Contains(cell))
-                    throw new DataFormatError(where + " " + j + ". adımda kayanın üstünden geçiyor.");
-            }
+            CheckPath(level, trail, where);
             if (trail.CrossesItself)
                 throw new DataFormatError(where + " aynı kareden iki kez geçiyor; iz kendini kesmemeli (Serçe o karede iki yön arasında kalır).");
             return trail;
         }
 
-        static readonly Regex RoutineName =new Regex(@"^[A-Za-z_][A-Za-z0-9_]*$");
+        static readonly Regex RoutineName = new Regex(@"^[A-Za-z_][A-Za-z0-9_]*$");
+
+        /// <summary>Rutin/fonksiyon adı kuralı (rutin şartı ve ekran bulmacası ortak): harf ya da _ ile başlar, Python
+        /// kelimesi ve oyun komutu değildir. Sorun yoksa null; where: mesajın başı, kind: "rutin" ya da "fonksiyon".</summary>
+        internal static string RoutineNameProblem(string name, string where, string kind)
+        {
+            if (!RoutineName.IsMatch(name) || Suggestions.IsPythonWord(name))
+                return where + " geçerli bir " + kind + " adı değil: harf ya da _ ile başlamalı, boşluk içermemeli, Python kelimesi olmamalı (örn. \"sabah_turu\").";
+            if (Array.IndexOf(World.AllCommands, name) >= 0)
+                return where + " bir oyun komutunun adı; başka bir ad ver.";
+            return null;
+        }
 
         /// <summary>"rutinler": def ile yazılması istenen rutin adları; "rutin_sayisi": adı serbest en az kaç rutin.</summary>
         static void ReadRoutines(Level level, Dictionary<string, object> d)
@@ -325,10 +404,8 @@ namespace MarsKod.Dunya
             var names = d.ContainsKey("rutinler") ? NonEmptyList(d, "rutinler") : new List<string>();
             foreach (var name in names)
             {
-                if (!RoutineName.IsMatch(name) || Suggestions.IsPythonWord(name))
-                    throw new DataFormatError("\"rutinler\" içindeki \"" + name + "\" geçerli bir rutin adı değil: harf ya da _ ile başlamalı, boşluk içermemeli, Python kelimesi olmamalı (örn. \"sabah_turu\").");
-                if (Array.IndexOf(World.AllCommands, name) >= 0)
-                    throw new DataFormatError("\"rutinler\" içindeki \"" + name + "\" bir oyun komutunun adı; rutine başka bir ad ver.");
+                var problem = RoutineNameProblem(name, "\"rutinler\" içindeki \"" + name + "\"", "rutin");
+                if (problem != null) throw new DataFormatError(problem);
             }
             int count = 0;
             if (d.ContainsKey("rutin_sayisi"))
@@ -336,10 +413,17 @@ namespace MarsKod.Dunya
                 count = Int(d, "rutin_sayisi");
                 if (count < 1) throw new DataFormatError("\"rutin_sayisi\" en az 1 olmalı (rutin istemiyorsan alanı hiç yazma).");
             }
-            bool needsParameters = d.ContainsKey("parametre_sarti") && Flag(d, "parametre_sarti");
-            if (needsParameters && names.Count == 0 && count == 0)
-                throw new DataFormatError("\"parametre_sarti\" yalnızca rutin şartıyla birlikte yazılır: \"rutinler\" ya da \"rutin_sayisi\" de ekle.");
-            level.Routines = new RoutineRule(names, count, needsParameters);
+            bool hasRule = names.Count > 0 || count > 0;
+            level.Routines = new RoutineRule(names, count, RoutineFlag(d, "parametre_sarti", hasRule), RoutineFlag(d, "donus_sarti", hasRule));
+        }
+
+        /// <summary>Rutin şartına eklenen true/false alanı ("parametre_sarti", "donus_sarti"); yalnızca rutin şartıyla birlikte yazılır</summary>
+        static bool RoutineFlag(Dictionary<string, object> d, string field, bool hasRule)
+        {
+            bool on = d.ContainsKey(field) && Flag(d, field);
+            if (on && !hasRule)
+                throw new DataFormatError("\"" + field + "\" yalnızca rutin şartıyla birlikte yazılır: \"rutinler\" ya da \"rutin_sayisi\" de ekle.");
+            return on;
         }
 
         /// <summary>"B buz, E enerji hücresi" (hata mesajları için)</summary>
@@ -403,10 +487,13 @@ namespace MarsKod.Dunya
                 }
                 // "else:" (ve ileride "elif ...:") tek başına Python'a geçersiz (önünde if ister); gecerliligini
                 // sinamak icin onune sahte bir if eklenir, parcanin kendisi degismez.
+                // "return ..." da tek basina fonksiyon disinda gecersiz: sahte bir def icine konur.
                 string trimmed = piece.TrimEnd();
                 string source = trimmed == "else:" || trimmed.StartsWith("elif ")
                     ? "if True:\n    pass\n" + piece + "\n    pass\n"
-                    : trimmed.EndsWith(":") ? piece + "\n    pass\n" : piece + "\n";
+                    : trimmed.StartsWith("return")
+                        ? "def _():\n    " + piece + "\n"
+                        : trimmed.EndsWith(":") ? piece + "\n    pass\n" : piece + "\n";
                 try
                 {
                     Parser.Parse(source);

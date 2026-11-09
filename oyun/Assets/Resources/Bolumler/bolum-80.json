@@ -1,0 +1,58 @@
+{
+  "numara": 80,
+  "baslik": "İstasyon haritası",
+  "gorev": "Haritadaki yolu izle",
+  "harita": [
+    ". . . . . .",
+    ". . . K . .",
+    ". . V . K .",
+    "K . . . . .",
+    ". . V . . .",
+    ". . R . . ."
+  ],
+  "notlar": ["KVKKVBBKK", "KVKKVKKDD", "KVKKVDGDD"],
+  "komutlar": ["move", "collect", "read_note"],
+  "rutinler": ["yon"],
+  "donus_sarti": true,
+  "parcalar": ["def yon(harf):", "if harf == \"K\":", "elif harf == \"G\":", "elif harf == \"D\":", "elif harf == \"B\":", "return North", "return South", "return East", "return West", "for harf in read_note():", "if harf == \"V\":", "else:", "collect()", "move(yon(harf))"],
+  "konular": ["return", "metin", "read_note", "değişen not", "bölge finali"],
+  "ipuclari": [
+    "Harita her denemede başka bir yol çizebilir. Harfler: K kuzey, G güney, D doğu, B batı; V ise \"veri kartı burada\" demek.",
+    "Harfi yöne çeviren rutin 76'daki gibi. V bir yön değil, `yon` onu bilmez: döngüde önce V'ye bak; V ise topla, değilse yürü.",
+    "`for harf in read_note():` / `    if harf == \"V\":` / `        collect()` / `    else:` / `        move(yon(harf))`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "for harf in \"KVKKVBBKK\":", "    if harf == \"V\":", "        collect()", "    else:", "        move(yon(harf))"],
+      "aciklama": "İlk haritanın yazısı koda elle kopyalandı: harita değişince robot yanlış yere gider. Her seferinde read_note() ile oku."
+    },
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "for harf in read_note():", "    move(yon(harf))"],
+      "aciklama": "V bir yön değil: yon onun için hiçbir şey döndürmez (None), move yön bulamaz. V'yi döngüde ayrıca sor."
+    },
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return West", "    elif harf == \"B\":", "        return East", "for harf in read_note():", "    if harf == \"V\":", "        collect()", "    else:", "        move(yon(harf))"],
+      "aciklama": "Doğu ile batı karışmış: D doğu, yani East; B batı, yani West."
+    },
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "for harf in read_note():", "    if harf == \"V\":", "        move(North)", "    else:", "        move(yon(harf))"],
+      "aciklama": "V'de robot kartı toplamalı, yürümemeli: collect()."
+    }
+  ],
+  "cozum": [
+    "def yon(harf):",
+    "    if harf == \"K\":",
+    "        return North",
+    "    elif harf == \"G\":",
+    "        return South",
+    "    elif harf == \"D\":",
+    "        return East",
+    "    elif harf == \"B\":",
+    "        return West",
+    "for harf in read_note():",
+    "    if harf == \"V\":",
+    "        collect()",
+    "    else:",
+    "        move(yon(harf))"
+  ]
+}

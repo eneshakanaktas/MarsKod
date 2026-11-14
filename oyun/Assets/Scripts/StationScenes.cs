@@ -20,15 +20,14 @@ public class StationScenes
 
     public string Phase { get; private set; } = "";   // goruntu denetimi hangi anda oldugunu buradan okur
 
-    public StationScenes(MonoBehaviour host, Robot robot, CameraShot shot, Hud hud, Vector2 areaHalf, Func<float, float, float> ground,
-        Func<bool> saveProgress)
+    public StationScenes(MonoBehaviour host, Robot robot, CameraShot shot, Hud hud, Vector2 areaHalf, Func<float, float, float> ground)
     {
         this.robot = robot;
         this.shot = shot;
         this.hud = hud;
         this.areaHalf = areaHalf;
         this.ground = ground;
-        skip = new SceneSkip(host, hud, saveProgress);
+        skip = new SceneSkip(host, hud);
     }
 
     // Sahnelerin tahmini uzunluklari (Atla dugmesinin ustundeki saniye): adimlarin surelerinin toplami

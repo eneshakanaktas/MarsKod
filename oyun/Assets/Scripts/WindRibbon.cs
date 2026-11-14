@@ -63,6 +63,14 @@ public class WindRibbon : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    // Kapanis atlandi: kurdele Kivilcim'in sirtinda (buradaki gizli)
+    public void Taken()
+    {
+        StopAllCoroutines();
+        flying = false;
+        gameObject.SetActive(false);
+    }
+
     public void Restore()
     {
         StopAllCoroutines();

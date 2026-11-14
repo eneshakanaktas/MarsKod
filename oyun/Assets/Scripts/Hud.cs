@@ -45,7 +45,6 @@ public class Hud : MonoBehaviour
     Font fMed, fSemi, fBold, fMono;
     VisualElement root, header, card, message, runBtn, stepBtn, glossaryBtn, hintBtn, overlay;
     ScreenBlink blink;
-    SkipCatcher skip;
     SkipButton skipButton;
     GlossaryView glossary;
     RecordsView recordsView;
@@ -166,8 +165,6 @@ public class Hud : MonoBehaviour
         root.Add(keyboard);
         root.Add(palette);
         root.Add(overlay);
-        skip = new SkipCatcher();
-        root.Add(skip);
         skipButton = new SkipButton(fSemi, Color.white, new Color(0.08f, 0.08f, 0.1f, 0.72f));
         root.Add(skipButton);
         blink = new ScreenBlink();
@@ -846,12 +843,8 @@ public class Hud : MonoBehaviour
     public void Blink(float seconds) => blink.Play(seconds);
     public void ClearBlink() => blink.Clear();
 
-    // Atlanabilir sahne (51'in roket inisi): dokununca onTap; acikken alttaki arayuze dokunulamaz
-    public void ShowSkip(Action onTap) => skip.Show(onTap);
-    public void HideSkip() { skip.Hide(); skipButton.Hide(); }
-    public bool SkipOpen => skip.Open;
-
-    // Bolge 8 · 3b (K4): sahnenin "Atla" dugmesi ve ustundeki kalan saniye (SceneSkip)
+    // Sahnelerin "Atla" dugmesi ve ustundeki kalan saniye (SceneSkip; Bolge 8 · 3b, K4)
+    public void HideSkip() => skipButton.Hide();
     public void ShowSkipButton(Action onTap) => skipButton.Show(onTap);
     public void SetSkipSeconds(int left) => skipButton.SetSeconds(left);
     public bool SkipButtonOpen => skipButton.Open;

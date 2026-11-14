@@ -325,7 +325,7 @@ public partial class Oyun
         string p = label + " Tekrar: ";
         if (shot.Active) problems.Add(p + "sahne kamerasi birakilmadi");
         if (!hud.CardVisible) problems.Add(p + "kod karti gizli kaldi");
-        if (hud.SkipOpen) problems.Add(p + "atlama katmani acik kaldi");
+        if (hud.SkipButtonOpen) problems.Add(p + "Atla dugmesi acik kaldi");
         if (!robot.gameObject.activeSelf) problems.Add(p + "robot gizli kaldi");
         if ((robot.transform.localPosition - Pos(level.Robot)).sqrMagnitude > 1e-4f) problems.Add(p + "robot baslangic karesinde degil");
         if (stationScenes.Phase != "") problems.Add(p + "sahne durmadi ('" + stationScenes.Phase + "')");

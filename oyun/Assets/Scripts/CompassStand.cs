@@ -67,6 +67,16 @@ public class CompassStand : MonoBehaviour
         Sound.Lamp();
     }
 
+    // Kapanis atlandi: kadran acik, ibre yaw'da durmus, parliyor (PointTo'nun son hali)
+    public void Pointed(float yaw)
+    {
+        StopAllCoroutines();
+        dial.gameObject.SetActive(true);
+        dial.localScale = Vector3.one;
+        needle.localRotation = Quaternion.Euler(0f, yaw, 0f);
+        needleMat.SetColor("_EmissionColor", NeedleGlow * 1.7f);
+    }
+
     public void Restore()
     {
         StopAllCoroutines();

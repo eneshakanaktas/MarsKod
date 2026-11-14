@@ -166,6 +166,13 @@ public class DuneFinale
     // Ucus kurdelenin kendi uzerinde calisir: bolum yeniden denenirse Restore onu da durdurur.
     public Coroutine StartRibbonFlight(System.Func<Vector3> target) => ribbon.StartCoroutine(ribbon.FlyTo(target));
 
+    // Bolge 4 kapanisi atlandi: ibre antene donuk, kurdele alinmis
+    public void Finished()
+    {
+        stand.Pointed(YawToAntenna(stand.transform.position));
+        ribbon.Taken();
+    }
+
     public void Restore()
     {
         stand.Restore();

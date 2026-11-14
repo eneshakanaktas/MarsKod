@@ -30,6 +30,7 @@ public partial class Oyun
         yield return BirdViewShots(dir, problems);
         yield return CrayonShots(dir, problems);
         yield return FinaleShots70(dir, problems);
+        yield return SkipChecks(dir, problems, riverOnly);   // "Atla" dugmesi (Oyun.AtlaDenetimi.cs)
         if (!riverOnly) yield return LandingEveryEntryCheck(problems);
         if (!riverOnly) yield return StationChecks(dir, problems);   // Bolge 8 (Oyun.IstasyonDenetimi.cs)
         Debug.Log("SAHNE DENETIMI" + (riverOnly ? " (yalniz Bolge 7)" : "") + ": " + (problems.Count == 0 ? "TAMAM" : "HATA " + string.Join("; ", problems)));
@@ -238,43 +239,25 @@ public partial class Oyun
     bool EceEyesOn() =>
         robot is SparkBot spark && ((Vector4)(spark.EyeColor - CraterTraces.EceColor)).magnitude < 0.05f;
 
-    // 70 normal akistan (kutlama -> sahne -> son), atlama (ilk izleyisten sonra dokununca son kare) ve cicekler aninda "Tekrar".
-    // Oyuncunun "final izlendi" kaydi denetimden sonra eski haline doner.
+    // 70 normal akistan (kutlama -> sahne -> son), atlama ("Atla" dugmesi ilk izleyisten itibaren; dokununca son kare) ve cicekler
+    // aninda "Tekrar".
     IEnumerator FinaleSkipAndUndo(string dir, List<string> problems)
     {
-        int seenBefore = PlayerPrefs.GetInt(RiverBedScenes.FinaleSeenKey, 0);
-        PlayerPrefs.SetInt(RiverBedScenes.FinaleSeenKey, 0);
-
         yield return LoadRiverLevel(RiverBedTraces.MuralLevel);
         SetCode(level.Solution);
         OnRun();
         yield return WaitForPhase("yol", problems, RiverPhase);
-        if (hud.SkipOpen) problems.Add("70 ilk izleyis: atlama katmani acik (atlanamamali)");
         yield return WaitForPhase("son", problems, RiverPhase, limit: 90f);   // final ~36-45 sn surer: 40 sn sinir yuklu turda dar kaliyordu
         yield return new WaitForSeconds(0.5f);
         Cap(Path.Combine(dir, "s70-9-normal-son.png"));
         yield return new WaitForSeconds(0.4f);
         if (!EceEyesOn()) problems.Add("70 normal akis: sonda gozler turkuaz degil");
 
-        PlayerPrefs.SetInt(RiverBedScenes.FinaleSeenKey, 1);
-        yield return LoadRiverLevel(RiverBedTraces.MuralLevel);
-        SetCode(level.Solution);
-        OnRun();
-        yield return WaitForPhase("yol", problems, RiverPhase);
-        yield return new WaitForSeconds(0.5f);
-        if (!hud.SkipOpen) problems.Add("70 atlama: dokunma katmani acik degil");
-        riverScenes.SkipFinale();
-        yield return null;
-        yield return null;
-        if (riverScenes.Phase != "son") problems.Add("70 atlama: evre 'son' degil (" + riverScenes.Phase + ")");
-        if (hud.SkipOpen) problems.Add("70 atlama: dokunma katmani kapanmadi");
-        if (!EceEyesOn()) problems.Add("70 atlama: gozler turkuaz degil");
-        if (!riverScenes.OwnHandDrawn) problems.Add("70 atlama: Kivilcim'in eli duvarda cizilmedi");
-        yield return new WaitForSeconds(0.4f);
-        Cap(Path.Combine(dir, "s70-10-atlama.png"));
-        yield return new WaitForSeconds(0.4f);
+        yield return SkipCheck(dir, "70", RiverBedTraces.MuralLevel, riverScenes.Skip, problems, () =>
+            riverScenes.Phase != "son" ? "evre 'son' degil (" + riverScenes.Phase + ")"
+            : !EceEyesOn() ? "gozler turkuaz degil"
+            : !riverScenes.OwnHandDrawn ? "Kivilcim'in eli duvarda cizilmedi" : null);
 
-        PlayerPrefs.SetInt(RiverBedScenes.FinaleSeenKey, 0);
         yield return LoadRiverLevel(RiverBedTraces.MuralLevel);
         SetCode(level.Solution);
         OnRun();
@@ -289,9 +272,6 @@ public partial class Oyun
         Sound.Tap();   // sessizlikten sonra ses yine calisiyor (hata vermemeli)
         yield return new WaitForSeconds(1f);
         if (riverScenes.Phase != "") problems.Add("70 Tekrar: sahne durmadi (" + riverScenes.Phase + ")");
-
-        PlayerPrefs.SetInt(RiverBedScenes.FinaleSeenKey, seenBefore);
-        PlayerPrefs.Save();
     }
 
     // Adi verilen nesnelerin agaclarindaki her aga gecici MeshCollider (cakisma denetimi icin); denetim bitince silinir
@@ -335,7 +315,7 @@ public partial class Oyun
         string p = label + " Tekrar: ";
         if (shot.Active) problems.Add(p + "sahne kamerasi birakilmadi");
         if (!hud.CardVisible) problems.Add(p + "kod karti gizli kaldi");
-        if (hud.SkipOpen) problems.Add(p + "atlama katmani acik kaldi");
+        if (hud.SkipButtonOpen) problems.Add(p + "Atla dugmesi acik kaldi");
         if (!robot.gameObject.activeSelf) problems.Add(p + "robot gizli kaldi");
         if ((robot.transform.localPosition - Pos(level.Robot)).sqrMagnitude > 1e-4f) problems.Add(p + "robot baslangic karesinde degil");
         var sparrow = RiverBedTraces.ActiveSparrow;
@@ -565,17 +545,18 @@ public partial class Oyun
             Cap(Path.Combine(dir, file));
             yield return new WaitForSeconds(0.4f);
         }
-        if (hud.SkipOpen || landing != null) problems.Add("51: sahne bitti ama dokunma katmani/sahne acik kaldi");
+        if (hud.SkipButtonOpen || landing != null) problems.Add("51: sahne bitti ama Atla dugmesi/sahne acik kaldi");
 
-        // Atlatma: ucus evresinde dokunma
+        // Atlatma: ucus evresinde (1 sn sonra) "Atla"
         LoadLevel(levels.FindIndex(l => l.Number == CanyonTraces.FirstLevel));
         yield return new WaitForSeconds(1f);
         canyonScenes.PrepareLanding();
         StartLanding();
         yield return WaitForPhase("ucus", problems);
-        yield return new WaitForSeconds(0.5f);
-        if (!hud.SkipOpen) problems.Add("51 atlatma: dokunma katmani acik degil");
-        SkipLanding();
+        yield return new WaitForSeconds(1.3f);
+        if (!hud.SkipButtonOpen) problems.Add("51 atlatma: Atla dugmesi acik degil");
+        canyonScenes.Skip();
+        yield return null;
         yield return null;
         var rocket = CanyonTraces.ActiveRocket;
         if (rocket == null) problems.Add("51 atlatma: roket yok");
@@ -583,7 +564,7 @@ public partial class Oyun
         if (!robot.gameObject.activeSelf) problems.Add("51 atlatma: robot gizli kaldi");
         if ((robot.transform.localPosition - Pos(level.Robot)).sqrMagnitude > 1e-4f) problems.Add("51 atlatma: robot baslangic karesinde degil");
         if (canyonScenes.Phase != "son") problems.Add("51 atlatma: evre 'son' degil (" + canyonScenes.Phase + ")");
-        if (hud.SkipOpen) problems.Add("51 atlatma: dokunma katmani kapanmadi");
+        if (hud.SkipButtonOpen || landing != null) problems.Add("51 atlatma: Atla dugmesi kapanmadi ya da sahne bitmedi");
         yield return new WaitForSeconds(0.3f);
         Cap(Path.Combine(dir, "s51-6-atlatma.png"));
         yield return new WaitForSeconds(0.4f);

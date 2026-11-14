@@ -13,12 +13,22 @@ public class RiverBedScenes
     readonly Hud hud;
     readonly SceneWalker walker;
     readonly Vector2 areaHalf;
-    readonly SceneSkip skip;   // 70'in atlanmasi (ilk izleyisten sonra)
+    readonly SceneSkip skip;   // K4: sahneler "Atla" dugmesiyle atlanir
+
+    // Tahmini uzunluklar (Atla dugmesinin saniyesi). 68 ve 70'te yuruyus yola gore degisir: ortalama yol alindi.
+    const float BirdViewLength = 6.5f, TakeCrayonLength = 9f, FinaleLength = 40f;
+
+    public IEnumerator BirdViewWithSkip(Level level) => skip.Run(BirdView(level), BirdViewLength, FinishBirdView);
+    public IEnumerator TakeCrayonWithSkip(Level level) => skip.Run(TakeCrayon(level), TakeCrayonLength, FinishTakeCrayon);
+    public IEnumerator FinaleWithSkip(Level level) => skip.Run(Finale(level), FinaleLength, FinishFinale);
+
+    // "Atla" dugmesi (denetim de cagirir)
+    public void Skip() => skip.Skip();
     public string Phase { get; private set; } = "";   // goruntu denetimi hangi anda oldugunu buradan okur
 
-    public RiverBedScenes(MonoBehaviour host, Robot robot, CameraShot shot, Hud hud, SceneWalker walker, Vector2 areaHalf, Func<bool> saveProgress)
+    public RiverBedScenes(MonoBehaviour host, Robot robot, CameraShot shot, Hud hud, SceneWalker walker, Vector2 areaHalf)
     {
-        skip = new SceneSkip(host, hud, saveProgress);
+        skip = new SceneSkip(host, hud);
         this.robot = robot;
         this.shot = shot;
         this.hud = hud;
@@ -264,18 +274,39 @@ public class RiverBedScenes
         yield return shot.MoveTo(eye, center, seconds, CameraShot.FovToFit(halfWidth, Vector3.Distance(eye, center)));
     }
 
-    // 70'in atlanmasi (K7): ilk tam izleyiste atlanamaz; sonraki bitirislerde ekrana dokununca son kareye atlar (SceneSkip)
-    public const string FinaleSeenKey = "final_70";   // PlayerPrefs: ilk izleyis bitti mi
-    const float FinaleLength = 40f;                   // yaklasik uzunluk (yuruyusle degisir; Gorev 5'te dugmenin saniyesi)
     OwnHandPrint ownHand;   // Kivilcim'in duvara cizdigi eli; "Tekrar" siler
 
     // Denetim: Kivilcim'in eli duvarda tam cizildi mi
     public bool OwnHandDrawn => ownHand != null && ownHand.Complete;
 
-    public IEnumerator FinaleWithSkip(Level level) => skip.Run(Finale(level), FinaleLength, FinishFinale, FinaleSeenKey);
 
-    // Atlama katmanina dokunuldu (denetim de cagirir)
-    public void SkipFinale() => skip.Skip();
+    // 63'un son hali hemen: Serce yerinde, kamera normal, kart gorunur, kirpisma yok
+    void FinishBirdView() => BackToNormal();
+
+    // Atlanan sahnenin ortak sonu: Serce evinde, kirpisma yok, kart gorunur, kamera normal
+    void BackToNormal()
+    {
+        var sparrow = RiverBedTraces.ActiveSparrow;
+        if (sparrow != null)
+        {
+            sparrow.StopAllCoroutines();
+            sparrow.transform.localPosition = sparrow.HomePosition;
+        }
+        hud.ClearBlink();
+        hud.SetCardVisible(true);
+        shot.Release();
+        Phase = "son";
+    }
+
+    // 68'in son hali hemen: kalem sirtta (yerdeki gizli), robot durdugu yerde sakin, Serce evinde, kamera normal
+    void FinishTakeCrayon()
+    {
+        RiverBedTraces.ReturnCrayon();   // elde kaldiysa yerine; sonra gizlenir
+        if (RiverBedTraces.Crayon != null) RiverBedTraces.Crayon.gameObject.SetActive(false);
+        robot.ResetTo(robot.transform.localPosition, robot.Yaw);
+        robot.SetCrayon(true);
+        BackToNormal();
+    }
 
     // Son kare hemen: Kivilcim ciceklerin onunde kameraya donuk, gozler turkuaz, Serce duvarin ustunde, kamera son kadrajda, ses kesik
     void FinishFinale()

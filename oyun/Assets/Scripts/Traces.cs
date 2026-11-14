@@ -94,6 +94,9 @@ public static class Traces
         if (rover != null) yield return rover.DriveAway();
     }
 
+    // Bolge 2 kapanisi atlandi: arac uzakta
+    public static void RoverDrivenAway() => rover?.DrivenAway();
+
     // Bolum 10 (bolge finali): hedefteki telsiz diregi; tepesindeki isik yanip soner (kapanis sahnesinde anlam kazanir).
     static void RadioMast(Transform parent, Vector3 p)
     {

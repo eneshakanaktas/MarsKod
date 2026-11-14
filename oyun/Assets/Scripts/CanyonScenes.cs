@@ -16,11 +16,14 @@ public class CanyonScenes
     readonly Func<Cell, Vector3> cellPos;
     readonly int cols, rows;
     readonly float startYaw;                  // Oyun.StartYaw: robotun baslangic yonu (51'de kapidan cikinca)
+    readonly SceneSkip skip;                  // K4: sahneler "Atla" dugmesiyle atlanir
     const float BirdViewAbove = 4.5f, BirdMargin = 1.2f, SparrowOnScreen = 0.55f;   // 55 kus bakisi: Serce'nin ustunde ne kadar yukarida, alanin yanlarinda pay
     public string Phase { get; private set; } = "";   // goruntu denetimi hangi anda oldugunu buradan okur
 
-    public CanyonScenes(Robot robot, CameraShot shot, Hud hud, SceneWalker walker, Func<Cell, Vector3> cellPos, int cols, int rows, float startYaw)
+    public CanyonScenes(MonoBehaviour host, Robot robot, CameraShot shot, Hud hud, SceneWalker walker, Func<Cell, Vector3> cellPos, int cols, int rows,
+        float startYaw)
     {
+        skip = new SceneSkip(host, hud);
         this.robot = robot;
         this.shot = shot;
         this.hud = hud;
@@ -29,6 +32,52 @@ public class CanyonScenes
         this.cols = cols;
         this.rows = rows;
         this.startYaw = startYaw;
+    }
+
+    // Tahmini uzunluklar (Atla dugmesinin saniyesi). 51 ve 60'ta yuruyus yola gore degisir: ortalama yol alindi.
+    const float DescentLength = 12f, FirstFlightLength = 10f, LandingLength = 10f;
+
+    public IEnumerator DescentWithSkip(Level level) => skip.Run(Descent(level), DescentLength, FinishDescent);
+    public IEnumerator FirstFlightWithSkip(Level level) => skip.Run(FirstFlight(level), FirstFlightLength, FinishFirstFlight);
+    public IEnumerator LandingWithSkip(Level level) => skip.Run(Landing(level), LandingLength, () => FinishLanding(level));
+
+    // "Atla" dugmesi (denetim de cagirir)
+    public void Skip() => skip.Skip();
+
+    // 60'in son hali hemen: Kivilcim ve Serce yarikta (gizli), kamera yariga bakar, kart gorunur
+    void FinishDescent()
+    {
+        var rift = CanyonTraces.Rift;
+        if (rift == null) return;
+        robot.ResetTo(robot.transform.localPosition, robot.Yaw);
+        robot.gameObject.SetActive(false);
+        var sparrow = CanyonTraces.ActiveSparrow;
+        if (sparrow != null)
+        {
+            sparrow.StopAllCoroutines();
+            sparrow.gameObject.SetActive(false);
+        }
+        shot.Begin();
+        shot.Cut(rift.ViewPoint, Quaternion.LookRotation(rift.ViewTarget - rift.ViewPoint), CanyonRift.ViewFov);
+        hud.SetCardVisible(true);
+        Phase = "son";
+    }
+
+    // 55'in son hali hemen: Serce uyanik, yerinde suzuluyor; Kivilcim sakin; kamera normal, kart gorunur
+    void FinishFirstFlight()
+    {
+        var sparrow = CanyonTraces.ActiveSparrow;
+        if (sparrow != null)
+        {
+            sparrow.StopAllCoroutines();
+            sparrow.SetState(SparrowState.Flying);
+            sparrow.transform.localPosition = CanyonTraces.SparrowHover;
+        }
+        robot.ResetTo(robot.transform.localPosition, robot.Yaw);
+        hud.ClearBlink();
+        hud.SetCardVisible(true);
+        shot.Release();
+        Phase = "son";
     }
 
     // 60: hedeften bos karelerle arka siraya, patikadan direklerin arasina, yariga inis; kamera yariga bakar
@@ -154,7 +203,7 @@ public class CanyonScenes
         Phase = "son";
     }
 
-    // Dokununca atlanir: her sey son haline (roket yerde, kapi acik, robot baslangicta)
+    // Atlaninca her sey son haline (roket yerde, kapi acik, robot baslangicta)
     public void FinishLanding(Level level)
     {
         CanyonTraces.ActiveRocket?.SetLanded();
@@ -166,6 +215,7 @@ public class CanyonScenes
     // "Tekrar" ve bolum degisimi: sahnenin degistirdigi ne varsa geri verir (Serce'yi CanyonTraces.ResetBackdrop toplar)
     public void Restore()
     {
+        skip.Stop();
         robot.gameObject.SetActive(true);
         hud.SetCardVisible(true);
         hud.ClearBlink();

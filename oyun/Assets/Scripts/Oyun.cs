@@ -242,9 +242,10 @@ public partial class Oyun : MonoBehaviour
         hud = gameObject.AddComponent<Hud>();
         hud.Build();
         var walker = new SceneWalker(robot, c => Pos(c), Cols, Rows);
-        canyonScenes = new CanyonScenes(robot, shot, hud, walker, c => Pos(c), Cols, Rows, StartYaw);
-        riverScenes = new RiverBedScenes(this, robot, shot, hud, walker, new Vector2(AreaHalfX, AreaHalfZ), () => !shotsMode);
-        stationScenes = new StationScenes(this, robot, shot, hud, new Vector2(AreaHalfX, AreaHalfZ), TerrainHeight, () => !shotsMode);
+        canyonScenes = new CanyonScenes(this, robot, shot, hud, walker, c => Pos(c), Cols, Rows, StartYaw);
+        riverScenes = new RiverBedScenes(this, robot, shot, hud, walker, new Vector2(AreaHalfX, AreaHalfZ));
+        stationScenes = new StationScenes(this, robot, shot, hud, new Vector2(AreaHalfX, AreaHalfZ), TerrainHeight);
+        closingSkip = new SceneSkip(this, hud);
         if (GraphicsOptions.NoHud) hud.HideForMeasurement();
         FrameRateMeter.Create(System.Array.IndexOf(a, "-fps") >= 0);
         hud.RunPressed += OnRun;
@@ -503,6 +504,7 @@ public partial class Oyun : MonoBehaviour
         canyonScenes.Restore();
         riverScenes.Restore();
         stationScenes.Restore();
+        closingSkip.Stop();
         if (program != null) StopCoroutine(program);
         program = null;
         running = false; done = false; complete = false;
@@ -826,6 +828,7 @@ public partial class Oyun : MonoBehaviour
         canyonScenes.Restore();
         riverScenes.Restore();
         stationScenes.Restore();
+        closingSkip.Stop();
         if (program != null) StopCoroutine(program);
         program = null;
         running = false; done = false; complete = false;
@@ -941,15 +944,11 @@ public partial class Oyun : MonoBehaviour
             if (quiet) Sound.Quiet(); else Sound.Celebrate();
             Traces.LevelDone(level.Number);
             if (!quiet) yield return robot.Celebrate();
-            if (level.Number == Bolge1SonBolum) yield return ClosingSceneBolge1();
-            if (level.Number == Bolge2SonBolum) yield return ClosingSceneBolge2();
-            if (level.Number == Bolge3SonBolum) yield return ClosingSceneBolge3();
-            if (level.Number == Bolge4SonBolum) yield return ClosingSceneBolge4();
-            if (level.Number == Bolge5SonBolum) yield return ClosingSceneBolge5();
-            if (level.Number == CanyonTraces.SparrowRepairLevel) yield return canyonScenes.FirstFlight(level);
-            if (level.Number == CanyonTraces.LastLevel) yield return canyonScenes.Descent(level);
-            if (level.Number == RiverBedTraces.BirdViewLevel) yield return riverScenes.BirdView(level);
-            if (level.Number == RiverBedTraces.CrayonLevel) yield return riverScenes.TakeCrayon(level);
+            yield return RegionClosing();   // Bolge 1-5 kapanislari (Oyun.KapanisAtlama.cs)
+            if (level.Number == CanyonTraces.SparrowRepairLevel) yield return canyonScenes.FirstFlightWithSkip(level);
+            if (level.Number == CanyonTraces.LastLevel) yield return canyonScenes.DescentWithSkip(level);
+            if (level.Number == RiverBedTraces.BirdViewLevel) yield return riverScenes.BirdViewWithSkip(level);
+            if (level.Number == RiverBedTraces.CrayonLevel) yield return riverScenes.TakeCrayonWithSkip(level);
             if (level.Number == RiverBedTraces.MuralLevel) yield return riverScenes.FinaleWithSkip(level);
             if (level.Number == StationTraces.FoldedLevel) yield return stationScenes.TakeDrawingWithSkip(level, noteEnd);
             if (level.Number == StationTraces.MapLevel) yield return stationScenes.ClosingWithSkip(level, levelRoot);

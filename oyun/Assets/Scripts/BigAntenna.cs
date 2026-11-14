@@ -181,6 +181,15 @@ public class BigAntenna : MonoBehaviour
         yield return Tween.Run(0.6f, t => feedMat.SetColor("_EmissionColor", StatusGreen * 1.4f * t));
     }
 
+    // Bolge 5 kapanisi atlandi: tam guc hemen (PowerUp'in son hali)
+    public void Powered()
+    {
+        StopAllCoroutines();
+        stage = AntennaStage.Powered;
+        litLamps = lampMats.Length;
+        feedMat.SetColor("_EmissionColor", StatusGreen * 1.4f);
+    }
+
     // Selam: isik iki kez parlayip soner (Kivilcim'in sinyaliyle ayni anda)
     public IEnumerator Greet(int times)
     {

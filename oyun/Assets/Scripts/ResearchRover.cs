@@ -92,10 +92,19 @@ public class ResearchRover : MonoBehaviour
     }
 
     // Bolum 20 kapanisi: koloniye dogru (bati) uzaklasir
+    static readonly Vector3 DriveOffset = new Vector3(-6f, 0f, 0.6f);   // Bolge 2 kapanisinda uzaklastigi yer (evine gore)
+
     public IEnumerator DriveAway()
     {
-        Vector3 from = transform.localPosition, to = from + new Vector3(-6f, 0f, 0.6f);
+        Vector3 from = transform.localPosition, to = homePos + DriveOffset;
         yield return Tween.Run(3.2f, k => transform.localPosition = Vector3.Lerp(from, to, Tween.InCubic(k)));
+    }
+
+    // Kapanis atlandi: arac hemen uzaktaki yerinde
+    public void DrivenAway()
+    {
+        StopAllCoroutines();
+        transform.localPosition = homePos + DriveOffset;
     }
 
     // tilt: 1 kara saplanmis (isik yanip soner, farlar sonuk), 0 dik (farlar yanik)

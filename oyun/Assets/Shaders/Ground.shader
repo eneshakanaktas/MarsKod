@@ -27,6 +27,19 @@ Shader "MarsKod/Ground"
             float4 _Frost0, _Frost1, _Frost2, _Frost3, _Frost4, _Frost5;
             float4 _Crater;
         CBUFFER_END
+        // StationTraces: 1 = istasyonun ici (72-80). Metal zemin dumduz: arazinin alan disindaki tepecikleri burada yok.
+        // Uc gecis de (cizim, golge, derinlik) ayni bicimi kullanir. Ic mekanda zemine konan her sey zaten duz yerde durur.
+        float _FlatFloor;
+        float3 GroundWorldPos(float3 positionOS)
+        {
+            float3 ws = TransformObjectToWorld(positionOS);
+            ws.y *= 1.0 - _FlatFloor;
+            return ws;
+        }
+        float3 GroundWorldNormal(float3 normalOS)
+        {
+            return normalize(lerp(TransformObjectToWorldNormal(normalOS), float3(0.0, 1.0, 0.0), _FlatFloor));
+        }
         ENDHLSL
 
         Pass
@@ -64,8 +77,8 @@ Shader "MarsKod/Ground"
             Varyings vert (Attributes v)
             {
                 Varyings o;
-                o.posWS = TransformObjectToWorld(v.positionOS.xyz);
-                o.nWS = TransformObjectToWorldNormal(v.normalOS);
+                o.posWS = GroundWorldPos(v.positionOS.xyz);
+                o.nWS = GroundWorldNormal(v.normalOS);
                 o.positionCS = TransformWorldToHClip(o.posWS);
                 o.screenPos = ComputeScreenPos(o.positionCS);
                 return o;
@@ -162,6 +175,75 @@ Shader "MarsKod/Ground"
                 return a * (1.0 - 0.28 * bank);
             }
 
+            // Bolge 8 (istasyon). IKIZ: StationRoom.BackGap / SideGap ve StationFacade.Gap ile ayni (biri degisirse oteki de).
+            static const float STATION_BACK_GAP = 0.8;     // alanin arka kenari -> ic mekanin arka duvari
+            static const float STATION_SIDE_GAP = 0.45;    // alanin yan kenari -> yan duvar
+            static const float STATION_FACADE_GAP = 1.0;   // 71: alanin arka kenari -> istasyonun cephesi
+
+            // Ic mekanin tozu (0..1): her yerde ince; duvar diplerinde ve koselerde kalin (kapidan savrulan kum birikmis). n: 0..1 gurultu.
+            float stationDust(float2 q, float n)
+            {
+                float back = (_Area.y + STATION_BACK_GAP) - q.y;
+                float side = (_Area.x + STATION_SIDE_GAP) - abs(q.x);
+                float wall = 1.0 - smoothstep(0.0, 0.8, min(back, side));
+                float corner = (1.0 - smoothstep(0.0, 1.4, back)) * (1.0 - smoothstep(0.0, 1.4, side));
+                return saturate(0.16 + 0.22 * n + 0.6 * wall + 0.35 * corner);
+            }
+
+            // Tozdaki eski ayak izleri (koloni bir gece kaldi): seyrek, belli belirsiz cift oval; izin oldugu yerde toz silinmis.
+            float stationSteps(float2 q)
+            {
+                float2 cell = floor(q / 0.9);
+                if (hash21(cell + 41.0) > 0.16) return 0.0;
+                float a = hash21(cell + 43.0) * 6.2832;
+                float2 dir = float2(cos(a), sin(a));
+                float2 side = float2(-dir.y, dir.x);
+                float2 c = (cell + 0.3 + 0.4 * hash22(cell + 47.0)) * 0.9;
+                float m = 0.0;
+                [unroll] for (int k = 0; k < 2; k++)
+                {
+                    float2 o = q - (c + dir * (k * 0.22) + side * (k == 0 ? 0.05 : -0.05));
+                    float2 l = float2(dot(o, dir), dot(o, side));
+                    m = max(m, 1.0 - smoothstep(0.7, 1.0, length(l / float2(0.075, 0.032))));
+                }
+                return m;
+            }
+
+            // 71: kapinin onunde dokme beton; alanin arka kenarindan cepheye uzanir, kenarlari ve yer yer ustu kumla ortulu. n: 0..1 gurultu.
+            float3 stationApron(float2 q, float3 sand, float n)
+            {
+                float z0 = _Area.y - 0.15, z1 = _Area.y + STATION_FACADE_GAP + 0.3;
+                float rag = 0.3 * (n - 0.5);
+                float m = (1.0 - smoothstep(2.2 + rag, 2.45 + rag, abs(q.x)))
+                        * smoothstep(z0 - 0.1 + rag * 0.5, z0 + 0.15 + rag * 0.5, q.y) * (1.0 - smoothstep(z1, z1 + 0.1, q.y));
+                if (m <= 0.0) return sand;
+                float3 c = float3(0.60, 0.55, 0.50) * (0.94 + 0.1 * n);
+                float2 seam = abs(frac(float2(q.x / 1.2 + 0.5, (q.y - z0) / 0.9)) - 0.5) * float2(1.2, 0.9);   // dokum ortasindan uzaklik
+                c *= 1.0 - 0.22 * (1.0 - smoothstep(0.008, 0.02, min(0.6 - seam.x, 0.45 - seam.y)));
+                c = lerp(c, sand, saturate(smoothstep(0.55, 0.8, n) * 0.7 + (1.0 - m) * 0.5));   // ustune savrulmus kum
+                return lerp(sand, c, m);
+            }
+
+            // Ic mekanin metal plakalari: 0,75 x 0,5'lik, siralari kaydirilmis (tugla gibi): kare cizgileriyle karismaz, derzler
+            // tam sayilara denk gelmez. seamAmt: derzin, percinin ve plakalar arasi renk farkinin ne kadar belirgin oldugu (alanda soluk).
+            float3 stationPlates(float2 q, float seamAmt)
+            {
+                const float2 size = float2(0.75, 0.5);
+                float2 g = (q + float2(0.1, 0.25)) / size;
+                g.x += 0.5 * floor(g.y);
+                float2 id = floor(g);
+                float2 l = frac(g) * size;                        // plakanin icindeki konum
+                float2 e = min(l, size - l);                      // kenara uzaklik
+                float aa = fwidth(q.x) * 1.2;
+                float3 c = float3(0.40, 0.41, 0.44) * (1.0 + seamAmt * 0.12 * (hash21(id + 5.0) - 0.5));
+                c *= 1.0 - seamAmt * 0.45 * (1.0 - smoothstep(0.006, 0.012 + aa, min(e.x, e.y)));
+                // koselerde percin: acik nokta, alti koyu
+                float2 r = abs(l - size * 0.5) - (size * 0.5 - 0.055);
+                c = lerp(c, c * 0.6, (1.0 - smoothstep(0.014, 0.02 + aa, length(r + float2(0.0, 0.006)))) * seamAmt);
+                c = lerp(c, c * 1.35 + 0.04, (1.0 - smoothstep(0.009, 0.015 + aa, length(r))) * seamAmt);
+                return c;
+            }
+
 #if defined(MARSKOD_SADE)
             // Performans modu (telefon): pahali gurultuler yok. Ana renk + genis lekeler + alandaki krater + yuvarlak buz lekeleri.
             float frostAt(float2 xz, float4 f)
@@ -233,6 +315,22 @@ Shader "MarsKod/Ground"
                 a *= 1.0 + 0.10 * (vnoise2(q * 40.0) - 0.5);
                 a = lerp(a, float3(0.80, 0.72, 0.64), smoothstep(0.90, 0.96, vnoise2(q * 13.0 + 4.0)) * (1.0 - 0.6 * inArea) * 0.5);
                 return riverChannel(q, a, inArea);
+            }
+
+            // Istasyon (Bolge 8), hafif: icerisi plaka + toz + iz (gurultu tek); disarisi kum + beton onluk
+            float3 stationFloor(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float n = vnoise2(q * 1.3 + 5.0);
+                if (!StationIndoor())
+                {
+                    float3 sand = lerp(float3(0.58, 0.42, 0.31), float3(0.66, 0.48, 0.36), vnoise2(q * 0.8 + 2.0));
+                    sand *= 1.0 + 0.10 * (vnoise2(q * 40.0) - 0.5);
+                    return stationApron(q, sand, n);
+                }
+                float3 a = stationPlates(q, 1.0 - 0.85 * inArea);
+                float dust = lerp(stationDust(q, n) * (1.0 - 0.7 * stationSteps(q)), 0.3, inArea);
+                return lerp(a, float3(0.50, 0.40, 0.33) * (0.95 + 0.1 * n), dust * 0.75);
             }
 #else
             // Krater: icte koyu (gunes arkadan, alcaktan: uzak ic duvar golgede), kenari hafif kabarik ve aydinlik,
@@ -458,6 +556,34 @@ Shader "MarsKod/Ground"
                 return riverChannel(q, a, inArea);
             }
 
+            // Istasyon (Bolge 8). Icerisi (72-80): metal zemin plakalari (derz, percin), ustunde ince toz/kum tabakasi: duvar diplerinde
+            // ve koselerde kalin, ortada ince; tozda seyrek eski ayak izleri. Alanda derzler soluk: kareler okunsun. Disarisi (71): kanyon
+            // ucunun kumu (catlak camur yok, hafif ruzgar dalgasi, seyrek tas) + kapinin onunde dokme beton onluk. sRGB.
+            float3 stationFloor(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float detail = 1.0 - far * 0.5;
+                float n = fbm(q * 1.3 + 5.0);
+                if (!StationIndoor())
+                {
+                    float3 sand = lerp(float3(0.58, 0.42, 0.31), float3(0.66, 0.48, 0.36), fbm(q * 0.8 + 2.0));
+                    sand *= 0.93 + 0.12 * fbm(q * 0.3 + 4.0);
+                    float rip = sin(dot(q, float2(0.4, 0.92)) * 20.0 + fbm(q * 0.9 + 13.0) * 6.0);
+                    sand *= 1.0 + (1.0 - 0.75 * inArea) * (1.0 - far) * 0.05 * rip;
+                    sand *= 1.0 + detail * 0.10 * (vnoise2(q * 42.0) - 0.5);
+                    float around = detail * (1.0 - 0.6 * inArea);
+                    sand = lerp(sand, float3(0.30, 0.20, 0.16), smoothstep(0.88, 0.95, vnoise2(q * 15.0 + 3.0)) * around * 0.45);   // koyu tas
+                    return stationApron(q, sand, n);
+                }
+                float3 a = stationPlates(q, (1.0 - 0.85 * inArea) * detail);
+                a *= 1.0 + 0.06 * (vnoise2(q * 30.0) - 0.5);                       // metalde ince lekeler
+                // alanda toz ince ve duzgun (kareler okunsun); izler yalniz alanin disinda
+                float dust = lerp(stationDust(q, n) * (1.0 - 0.75 * stationSteps(q)), 0.26 + 0.1 * n, inArea);
+                float3 dustCol = float3(0.50, 0.40, 0.33) * (0.93 + 0.12 * vnoise2(q * 9.0));
+                dust *= 0.85 + 0.3 * vnoise2(q * 4.0 + 9.0);                      // tozun kalinligi yer yer degisir
+                return lerp(a, dustCol, saturate(dust) * 0.78);
+            }
+
 #endif
 
             half4 frag (Varyings i) : SV_Target
@@ -478,6 +604,7 @@ Shader "MarsKod/Ground"
                 else if (MarsDunes()) a = duneSand(p, far, inArea);
                 else if (MarsCanyon()) a = canyonFloor(p, far, inArea);
                 else if (MarsRiverBed()) a = riverFloor(p, far, inArea);
+                else if (MarsStation()) a = stationFloor(p, far, inArea);
                 else a = regolith(p, far, inArea);
 
                 // oyun alani: ayni zemin, biraz daha duzgun; kare sinirlari ince ve soluk
@@ -546,8 +673,8 @@ Shader "MarsKod/Ground"
 
             float4 vert (float4 positionOS : POSITION, float3 normalOS : NORMAL) : SV_POSITION
             {
-                float3 ws = TransformObjectToWorld(positionOS.xyz);
-                float3 nws = TransformObjectToWorldNormal(normalOS);
+                float3 ws = GroundWorldPos(positionOS.xyz);
+                float3 nws = GroundWorldNormal(normalOS);
                 float4 c = TransformWorldToHClip(ApplyShadowBias(ws, nws, _LightDirection));
                 #if UNITY_REVERSED_Z
                 c.z = min(c.z, UNITY_NEAR_CLIP_VALUE);
@@ -569,7 +696,7 @@ Shader "MarsKod/Ground"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            float4 vert (float4 positionOS : POSITION) : SV_POSITION { return TransformObjectToHClip(positionOS.xyz); }
+            float4 vert (float4 positionOS : POSITION) : SV_POSITION { return TransformWorldToHClip(GroundWorldPos(positionOS.xyz)); }
             half frag () : SV_Target { return 0; }
             ENDHLSL
         }

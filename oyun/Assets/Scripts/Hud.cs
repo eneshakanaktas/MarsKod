@@ -448,7 +448,8 @@ public class Hud : MonoBehaviour
         for (int i = 0; i < iceTotal; i++)
         {
             int idx = i;
-            var d = item == Collectible.EnergyCell || item == Collectible.DataCard /* veri karti: gecici, hucre simgesi */ ? new Icon(36, (p, r) => DrawCellDot(p, r, idx < collected))
+            var d = item == Collectible.EnergyCell ? new Icon(36, (p, r) => DrawCellDot(p, r, idx < collected))
+                : item == Collectible.DataCard ? new Icon(36, (p, r) => DrawCardDot(p, r, idx < collected))
                 : item == Collectible.PanelPart ? new Icon(36, (p, r) => DrawPanelDot(p, r, idx < collected))
                 : item == Collectible.CompassPart ? new Icon(36, (p, r) => DrawCompassDot(p, r, idx < collected))
                 : item == Collectible.DronePart ? new Icon(36, (p, r) => DrawPropellerDot(p, r, idx < collected))
@@ -1216,6 +1217,32 @@ public class Hud : MonoBehaviour
             p.ClosePath();
             if (filled) p.Fill(); else p.Stroke();
         }
+    }
+
+    // Veri karti: kosesi kesik kucuk kart, ustunde etiket cizgisi (toplaninca dolu turuncu, oncesinde bos cevre)
+    static void DrawCardDot(Painter2D p, Rect r, bool filled)
+    {
+        float w = r.width, h = r.height;
+        var color = filled ? DataCard.Label : new Color(1f, 1f, 1f, 0.5f);
+        p.lineJoin = LineJoin.Round;
+        p.lineWidth = 3f;
+        p.strokeColor = color;
+        p.fillColor = color;
+        p.BeginPath();
+        p.MoveTo(new Vector2(w * 0.14f, h * 0.24f));
+        p.LineTo(new Vector2(w * 0.70f, h * 0.24f));
+        p.LineTo(new Vector2(w * 0.86f, h * 0.40f));   // kesik kose
+        p.LineTo(new Vector2(w * 0.86f, h * 0.76f));
+        p.LineTo(new Vector2(w * 0.14f, h * 0.76f));
+        p.ClosePath();
+        if (filled) p.Fill(); else p.Stroke();
+        // etiket cizgisi: dolu kartta koyu, bosta acik
+        p.strokeColor = filled ? new Color(0.12f, 0.12f, 0.14f, 0.85f) : color;
+        p.lineWidth = 2.5f;
+        p.BeginPath();
+        p.MoveTo(new Vector2(w * 0.26f, h * 0.50f));
+        p.LineTo(new Vector2(w * 0.60f, h * 0.50f));
+        p.Stroke();
     }
 
     // Kablo makarasi: yandan gorunen makara (iki kenar cizgisi arasinda sarili kablo)

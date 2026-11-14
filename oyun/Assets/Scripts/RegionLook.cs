@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 
 // Bolgenin havasi: isik renkleri, ortam isigi ve cizimlere (zemin, arka plan, kayalar) "hangi bolgedeyiz" bilgisi.
 // Manzaranin kendisini cizimler secer (MarsSky.hlsl: PlainBackdrop / PolarSky.hlsl / CraterSky.hlsl / DuneSky.hlsl,
-// RiverSky.hlsl, Ground.shader: regolith / iceSheet / craterPlain / duneSand / canyonFloor / riverFloor).
+// RiverSky.hlsl, StationSky.hlsl, Ground.shader: regolith / iceSheet / craterPlain / duneSand / canyonFloor / riverFloor / stationFloor).
 // Yeni bolge: buraya bir tablo + cizimlerde _Region'a gore bir dal.
 public class RegionLook
 {
@@ -86,6 +86,45 @@ public class RegionLook
         sunDir = new Vector3(10f, 270f, 0f),
     };
 
+    // Istasyon (Bolge 8): 71 kapi onu ogleden sonra; icerisi yalniz lambalar ve ekranlarla aydinlanir (pencere yok).
+    // 71: Bolge 7'nin sabahindan sonraki gun. Gunes solda, yuksekce, biraz arkamizda: istasyonun cephesi (kameraya bakar) aydinlik,
+    // golgeler saga-ileri duser. Ikinci isik soluk bej gok isigi.
+    static readonly RegionLook StationDoor = new RegionLook
+    {
+        shaderRegion = 6f,
+        skyLight = "#FFD3A1", skyIntensity = 0.95f,
+        sunLight = "#E8D2C0", sunIntensity = 0.3f,
+        ambientSky = "#8A7A80", ambientEquator = "#7A5E52", ambientGround = "#3A2A22",
+        probeBase = "#6E5A56", probeTop = "#827076",
+        skyDir = new Vector3(48f, 62f, 0f),
+        sunDir = new Vector3(60f, 200f, 0f),
+    };
+
+    // 72-73 (73 bitene kadar): acil isik. Yukaridan zayif serin beyaz (tavan lambalari sonuk); ikinci isik kehribar, cok zayif,
+    // arka duvardaki ekranlardan one dogru. Ortam koyu mavi-gri.
+    static readonly RegionLook StationDim = new RegionLook
+    {
+        shaderRegion = 6f,
+        skyLight = "#C8D2E0", skyIntensity = 0.5f,
+        sunLight = "#FFB347", sunIntensity = 0.22f,
+        ambientSky = "#4A5468", ambientEquator = "#3E4250", ambientGround = "#1C1E26",
+        probeBase = "#3E4454", probeTop = "#485268",
+        skyDir = new Vector3(78f, 15f, 0f),
+        sunDir = new Vector3(22f, 180f, 0f),
+    };
+
+    // 74-80 (ve 73 bitince): tavan lambalari yanik. Yukaridan serin beyaz, yumusak golge; kehribar ikinci isik zayif.
+    static readonly RegionLook Station = new RegionLook
+    {
+        shaderRegion = 6f,
+        skyLight = "#E6ECF2", skyIntensity = 0.85f,
+        sunLight = "#FFB347", sunIntensity = 0.15f,
+        ambientSky = "#7A8296", ambientEquator = "#646874", ambientGround = "#2A2A30",
+        probeBase = "#5E6270", probeTop = "#727C90",
+        skyDir = new Vector3(76f, 15f, 0f),
+        sunDir = new Vector3(22f, 180f, 0f),
+    };
+
     // Bolge 3 finali: oyundaki ilk gun dogumu (docs/tasarim/senaryo-bolge-03.md, kapanis). Ova safaginin aydinlanmis hali.
     static readonly RegionLook SunriseLook = new RegionLook
     {
@@ -104,11 +143,20 @@ public class RegionLook
             case Region.CraterField: return Crater;
             case Region.Dunes:
             case Region.AntennaHill: return Dunes; // anten tepesinin kendi gorunusu gelene kadar kum tepeleri
-            case Region.Station: // istasyonun ic mekan gorunusu gelene kadar kanyon
+            case Region.Station: return Station;
             case Region.Canyon: return Canyon;
             case Region.RiverBed: return RiverBed;
             default: return Plain;
         }
+    }
+
+    // Bolume gore secim: Bolge 8'de kapi onu (71) disarida, 72-73 los, sonrasi aydinlik. Oteki bolgelerde For(bolge) ile ayni.
+    public static RegionLook ForLevel(int levelNumber)
+    {
+        var region = Regions.Of(levelNumber);
+        if (region != Region.Station) return For(region);
+        if (levelNumber == StationTraces.DoorLevel) return StationDoor;
+        return levelNumber <= StationTraces.LightsOnLevel ? StationDim : Station;
     }
 
     public void Apply(Light sky, Light sun) => Blend(this, this, 0f, sky, sun);

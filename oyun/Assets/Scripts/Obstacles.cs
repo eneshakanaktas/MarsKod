@@ -3,10 +3,10 @@ using UnityEngine;
 
 // Bolumdeki engel (haritada K): oyun kurali her bolgede ayni (gecilmez), gorunusu bolgeye gore.
 // Kod bilmeyen de "buradan gecilmez" diye okusun: kareyi dolduran iri bir parca + yaninda kucuk bir parca.
-// crate: kanyon deposunun icinde (Bolum 53-56) kaya yerine sandik.
+// Kanyon deposunun icinde (Bolum 53-56) kaya yerine sandik; istasyonun icinde (72-80) esya (StationFurniture), kapisinin onunde (71) kaya.
 public static class Obstacles
 {
-    public static void Create(Region region, Transform parent, Vector3 pos, int index, bool crate = false)
+    public static void Create(Region region, int levelNumber, Transform parent, Vector3 pos, int index)
     {
         switch (region)
         {
@@ -15,9 +15,11 @@ public static class Obstacles
             case Region.Dunes:
             case Region.AntennaHill: Rock(parent, pos, index, "#8A5440", "#6E4232"); SandDrift(parent, pos, index); break;
             case Region.RiverBed: RiverBoulder(parent, pos, index); break;
-            case Region.Station: Crates(parent, pos, index); break;   // gecici: istasyonda engeller kasa/dolap
+            case Region.Station:
+                if (StationTraces.IsIndoor(levelNumber)) StationFurniture.Obstacle(parent, pos, index); else LayeredRock(parent, pos, index);
+                break;
             case Region.Canyon:
-                if (crate) Crates(parent, pos, index); else LayeredRock(parent, pos, index);
+                if (CanyonTraces.IsDepot(levelNumber)) Crates(parent, pos, index); else LayeredRock(parent, pos, index);
                 break;
             default: Rock(parent, pos, index, "#7A4A3B", "#5E3A2F"); break;
         }
@@ -76,7 +78,8 @@ public static class Obstacles
             lidOpen: false, tilt: onTop ? 9f : -6f);
     }
 
-    static void Crate(Transform parent, Vector3 basePos, Vector3 size, bool lidOpen, float tilt)
+    // Tek sandik (Bolge 8 cephesinin onundeki ve istasyondaki kasalar da bunu kullanir)
+    internal static void Crate(Transform parent, Vector3 basePos, Vector3 size, bool lidOpen, float tilt)
     {
         var body = Mats.Lit(Mats.Hex("#A89A72"), 0.2f);
         var metal = Mats.Lit(Mats.Hex("#4E4C52"), 0.4f);

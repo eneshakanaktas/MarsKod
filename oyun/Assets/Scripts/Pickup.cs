@@ -22,7 +22,7 @@ public static class Pickups
             case Collectible.DronePart: return DronePart.Create(parent, localPos, seed);
             case Collectible.Pebble: return RiverPebble.Create(parent, localPos, seed);
             case Collectible.CableReel: return CableReel.Create(parent, localPos, seed);
-            case Collectible.DataCard: return EnergyCell.Create(parent, localPos, seed); // gecici: veri kartinin kendi gorunusu Bolge 8 gorunus isinde
+            case Collectible.DataCard: return DataCard.Create(parent, localPos, seed);
             default: return Ice.Create(parent, localPos, seed);
         }
     }

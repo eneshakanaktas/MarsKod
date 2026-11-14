@@ -4,12 +4,13 @@
 #define MARSKOD_SKY_INCLUDED
 
 float _StarsOn;
-float _Region;    // bolge (RegionLook.cs): 0 inis ovasi, 1 kutup buzulu, 2 kraterli duzluk, 3 kum tepeleri, 4 kanyon, 5 nehir yatagi (Bolge 7)
+float _Region;    // bolge (RegionLook.cs): 0 inis ovasi, 1 kutup buzulu, 2 kraterli duzluk, 3 kum tepeleri, 4 kanyon, 5 nehir yatagi (Bolge 7), 6 istasyon (Bolge 8)
 bool MarsPolar() { return abs(_Region - 1.0) < 0.5; }
 bool MarsCrater() { return abs(_Region - 2.0) < 0.5; }
 bool MarsDunes() { return abs(_Region - 3.0) < 0.5; }
 bool MarsCanyon() { return abs(_Region - 4.0) < 0.5; }
 bool MarsRiverBed() { return abs(_Region - 5.0) < 0.5; }
+bool MarsStation() { return abs(_Region - 6.0) < 0.5; }
 // Cok hafif genel aydinlatma: arka plan ve zeminin karistigi ova rengi ayni oranda (yoksa yeni renk siniri olusur)
 static const float MARS_EXPOSURE = 1.06;
 float _Horizon;   // ufuk: fotograf koordinatinda (asagida)
@@ -19,6 +20,8 @@ float4 _CanyonDescent;
 // Bolge 7'nin manzarasi (RiverBedTraces): 0 = 61-62 yarik patikasinin dibi, 1 = 63-64 nehir kivrimi, 2 = 65-66 yan kanyon agzi,
 // 3 = 67-70 yakin arka duvar. Arka plan (RiverSky.hlsl) ve zemin (Ground.shader) okur.
 float _RiverScene;
+// Bolge 8'in manzarasi (StationTraces): 0 = 71 kapi onu (disari), 1 = 72-80 ic mekan. Arka plan (StationSky.hlsl) ve zemin okur.
+float _StationScene;
 float _SceneCamera;   // CameraShot: 0 normal kamera, 1 sahne kamerasi (arada yumusak gecis)
 // 60'ta 3B yarik her zaman gorunur (bolum acilir acilmaz yarik orada: Enes). Kamera hareketiyle yavas yavas acilmaz.
 // Yarik boyunca uzaklik t (z - baslangic) < RiftReveal ise zemin kesilir ve 3B yarik gorunur: hep (yarik boyundan uzun).
@@ -935,6 +938,7 @@ float3 PlainBackdrop(float2 suv)
 #include "DuneSky.hlsl"
 #include "CanyonSky.hlsl"
 #include "RiverSky.hlsl"
+#include "StationSky.hlsl"
 
 // Ekran konumuna (suv, alttan 0) gore arka plan rengi (sRGB): bolgenin kendi manzarasi. Pahali: yalnizca dokuya
 // cizerken kullanilir (Backdrop.shader "Bake"); ekrandakiler saklanan dokuyu okur (MarsBackdropCached).
@@ -946,6 +950,7 @@ float3 MarsBackdrop(float2 suv)
     else if (MarsDunes()) col = DuneBackdrop(suv);
     else if (MarsCanyon()) col = CanyonBackdrop(suv);
     else if (MarsRiverBed()) col = RiverBackdrop(suv);
+    else if (MarsStation()) col = StationBackdrop(suv);
     else col = PlainBackdrop(suv);
     return col;
 }
@@ -971,6 +976,7 @@ float3 MarsHorizonPlain()
     if (MarsDunes()) return DUNE_PLAIN;
     if (MarsCanyon()) return CANYON_PLAIN;
     if (MarsRiverBed()) return RIVER_PLAIN;
+    if (MarsStation()) return StationPlain();
     return float3(0.176, 0.110, 0.106) * MARS_EXPOSURE;   // ova: ekrandan olculdu
 }
 
@@ -982,6 +988,7 @@ float3 MarsGroundWarmth()
     if (MarsDunes()) return float3(0.26, 0.17, 0.09);
     if (MarsCanyon()) return float3(0.22, 0.12, 0.08);   // gun batimi: zayif, sicak
     if (MarsRiverBed()) return float3(0.10, 0.08, 0.10);   // sabah golgesi: zayif, serin
+    if (MarsStation()) return StationIndoor() ? float3(0.02, 0.02, 0.025) : float3(0.22, 0.14, 0.08);   // icerisi: gunes yok; disarisi: ogleden sonra
     return float3(0.30, 0.13, 0.06);
 }
 
@@ -993,7 +1000,9 @@ float3 MarsDustHaze(float3 col, float3 posWS, float2 area)
     float2 o = max(abs(posWS.xz) - area, 0.0);
     if (posWS.z < 0.0) o.y *= 0.4;
     float dist = length(o * float2(0.8, 1.0));
-    float haze = smoothstep(0.4, 7.0, dist) * (MarsCanyon() || MarsRiverBed() ? 0.0 : 0.8);   // kanyonda ve dibinde pus yok (Enes): hava acik, her sey net
+    // kanyonda ve dibinde pus yok (Enes): hava acik, her sey net. Istasyonun icinde hafif toz: uzak koseler kararir, alan net kalir.
+    float amount = MarsCanyon() || MarsRiverBed() ? 0.0 : MarsStation() ? (StationIndoor() ? 0.35 : 0.0) : 0.8;
+    float haze = smoothstep(0.4, 7.0, dist) * amount;
     return lerp(col, SRGBToLinear(MarsHorizonPlain()), haze);
 }
 
@@ -1013,9 +1022,9 @@ float3 MarsFadeToBackdropBand(float3 col, float3 posWS, float2 suv, float2 fogRa
     // sahne kamerasinda (60'ta yariga bakis) zemin ufka kadar dolu kalir: ufkun altindaki arka plan yalniz yarigin icinden gorunur
     // nehir yatagi (Bolge 7) kanyonun normal bakisiyla ayni dar bant
     float2 band = custom ? customBand : (MarsCanyon() ? lerp(float2(0.085, 0.03), float2(0.035, 0.01), RiftSceneBlend())
-                                       : MarsRiverBed() ? float2(0.085, 0.03) : float2(0.15, 0.06));
+                                       : MarsRiverBed() || MarsStation() ? float2(0.085, 0.03) : float2(0.15, 0.06));
     float scrFog = smoothstep(_Horizon - band.x, _Horizon - band.y, MarsPictureUV(suv).y);
-    if ((MarsCanyon() || MarsRiverBed()) && !custom) scrFog = pow(scrFog, 1.5);
+    if ((MarsCanyon() || MarsRiverBed() || MarsStation()) && !custom) scrFog = pow(scrFog, 1.5);
     float fog = max(distFog, scrFog);
     if (fog > 0.001)
     {
@@ -1044,6 +1053,7 @@ float3 MarsRegionSurface(float3 albedo, float3 n)
     if (MarsDunes()) return lerp(albedo, float3(0.48, 0.24, 0.12), smoothstep(0.5, 0.8, n.y));
     if (MarsCanyon()) return lerp(albedo * float3(0.95, 0.85, 0.80), float3(0.42, 0.22, 0.14), smoothstep(0.6, 0.9, n.y));
     if (MarsRiverBed()) return lerp(dot(albedo, float3(0.3, 0.5, 0.2)) * float3(1.0, 0.9, 0.86), float3(0.50, 0.40, 0.34), smoothstep(0.6, 0.9, n.y));
+    if (MarsStation()) return lerp(albedo * float3(0.98, 0.88, 0.82), float3(0.55, 0.40, 0.30), smoothstep(0.6, 0.9, n.y));   // kanyon ucu: ustune kum yigilmis
     return albedo;
 }
 

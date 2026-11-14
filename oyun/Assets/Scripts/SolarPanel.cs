@@ -6,6 +6,9 @@ using UnityEngine;
 // Camin on kenarinda 10 kucuk guc isigi: yanan isik sayisi = guc / 10 (gucu 30 olan panelde 3 isik), sagslamda yesil, catlakta turuncu.
 // Catlak panelin caminda beyaz catlak cizgileri; onarilinca catlaklar kaybolur, isiklar birer birer yesil dolar.
 // Kirik panel (gucu 0) toplanacak parcadir (IPickup): yere devrilmis, cami kararmis, yaninda kirik cam parcalari, altinda turuncu hale.
+// Gorunus secilebilir: Bolge 8'de ayni davranis istasyonun zemindeki guc kutusuyla gorunur (PowerUnitLook; catlakta cubuklar kirpisir).
+public enum PanelLook { Solar, PowerUnit }
+
 public class SolarPanel : MonoBehaviour, IPickup
 {
     const int Lights = 10;
@@ -19,28 +22,59 @@ public class SolarPanel : MonoBehaviour, IPickup
     Material ringMat, haloMat, glassMat;
     readonly Material[] lightMats = new Material[Lights];
     bool popping;
+    bool flickerWhenCracked;   // guc kutusu: catlakken yanan cubuklar duzensiz kirpisir
+    float flickerSeed;
 
-    public static SolarPanel Create(Transform parent, Vector3 localPos, int power, int seed)
+    public static SolarPanel Create(Transform parent, Vector3 localPos, int power, int seed, PanelLook look = PanelLook.Solar)
     {
         var go = new GameObject(power == 0 ? "BrokenPanel" : "SolarPanel");
         go.transform.SetParent(parent, false);
         go.transform.localPosition = localPos;
         var panel = go.AddComponent<SolarPanel>();
         panel.startPower = panel.power = power;
-        panel.Build(seed);
+        panel.Build(seed, look);
         return panel;
     }
 
     bool Broken => startPower == 0;
 
-    void Build(int seed)
+    void Build(int seed, PanelLook look)
+    {
+        body = Parts.Empty("Body", transform);
+        if (look == PanelLook.PowerUnit)
+        {
+            PowerUnitLook.Build(body, lightMats, Off, out cracks, out glassMat);
+            flickerWhenCracked = true;
+            flickerSeed = seed * 3.7f;
+        }
+        else BuildSolar(seed);
+
+        if (Broken)
+        {
+            // yere sacilmis cam parcalari + altta turuncu hale (toplanacak oldugu belli olsun)
+            var shard = Mats.Lit(Mats.Hex("#2B3A55"), 0.8f);
+            Parts.Add("Shard", transform, MeshFactory.RoundedBox(new Vector3(0.12f, 0.012f, 0.08f), 0.004f), shard, new Vector3(-0.3f, 0.01f, -0.22f))
+                .localRotation = Quaternion.Euler(0f, 30f, 0f);
+            Parts.Add("Shard", transform, MeshFactory.RoundedBox(new Vector3(0.08f, 0.012f, 0.06f), 0.004f), shard, new Vector3(-0.18f, 0.01f, -0.32f))
+                .localRotation = Quaternion.Euler(0f, -20f, 0f);
+            halo = PickupFx.AddRing(transform, BrokenGlow, out haloMat);
+            haloMat.SetFloat("_R", 0f);
+            haloMat.SetFloat("_W", 0.46f);
+            haloMat.SetFloat("_A", 0.28f);
+            halo.gameObject.SetActive(true);
+            ring = PickupFx.AddRing(transform, BrokenGlow, out ringMat);
+        }
+        ShowPower(power);
+    }
+
+    // Bolge 3'un gunes paneli (gorunus)
+    void BuildSolar(int seed)
     {
         var metal = Mats.Lit(Mats.Hex("#6B7079"), 0.4f);
         var frameMat = Mats.Lit(Mats.Hex("#3A3F48"), 0.45f);
         var lineMat = Mats.Unlit(Mats.Hex("#5F7FA8"));
         glassMat = Broken ? Mats.Lit(Mats.Hex("#1A2232"), 0.5f) : Mats.Emissive(Mats.Hex("#21407A"), Mats.Hex("#0E2148"), 0.85f);
 
-        body = Parts.Empty("Body", transform);
         body.localRotation = Quaternion.Euler(0f, Broken ? seed * 53f % 60f - 30f : 0f, 0f);
 
         // ayak ve egik tabla (kirik panelde ayak yikik, tabla yere devrik)
@@ -90,29 +124,24 @@ public class SolarPanel : MonoBehaviour, IPickup
                 Quaternion.Euler(0f, angles[k], 0f) * new Vector3(lengths[k] * 0.5f, 0f, 0f), outline: false, castShadow: false);
             crack.localRotation = Quaternion.Euler(0f, angles[k], 0f);
         }
-
-        if (Broken)
-        {
-            // yere sacilmis cam parcalari + altta turuncu hale (toplanacak oldugu belli olsun)
-            var shard = Mats.Lit(Mats.Hex("#2B3A55"), 0.8f);
-            Parts.Add("Shard", transform, MeshFactory.RoundedBox(new Vector3(0.12f, 0.012f, 0.08f), 0.004f), shard, new Vector3(-0.3f, 0.01f, -0.22f))
-                .localRotation = Quaternion.Euler(0f, 30f, 0f);
-            Parts.Add("Shard", transform, MeshFactory.RoundedBox(new Vector3(0.08f, 0.012f, 0.06f), 0.004f), shard, new Vector3(-0.18f, 0.01f, -0.32f))
-                .localRotation = Quaternion.Euler(0f, -20f, 0f);
-            halo = PickupFx.AddRing(transform, BrokenGlow, out haloMat);
-            haloMat.SetFloat("_R", 0f);
-            haloMat.SetFloat("_W", 0.46f);
-            haloMat.SetFloat("_A", 0.28f);
-            halo.gameObject.SetActive(true);
-            ring = PickupFx.AddRing(transform, BrokenGlow, out ringMat);
-        }
-        ShowPower(power);
     }
 
     void Update()
     {
-        if (popping || !Broken) return;
-        haloMat.SetFloat("_A", 0.2f + 0.1f * (0.5f + 0.5f * Mathf.Sin(Time.time * 2f)));
+        if (popping) return;
+        if (Broken) haloMat.SetFloat("_A", 0.2f + 0.1f * (0.5f + 0.5f * Mathf.Sin(Time.time * 2f)));
+        else if (flickerWhenCracked && World.IsCracked(power)) Flicker();
+    }
+
+    // Catlak guc kutusu: yanan cubuklar duzensiz kirpisir (her biri kendi saatiyle; olcum aninda Flash bunun ustune yazar)
+    void Flicker()
+    {
+        int lit = power / PowerPerLight;
+        for (int k = 0; k < lit; k++)
+        {
+            float n = Mathf.PerlinNoise(Time.time * 7f + k * 3.1f, flickerSeed);
+            lightMats[k].SetColor("_EmissionColor", Weak * (n > 0.38f ? 1.6f : 0.2f));
+        }
     }
 
     void ShowPower(int p)

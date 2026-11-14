@@ -68,6 +68,7 @@ public partial class Oyun : MonoBehaviour
     Camera cam;
     CameraShot shot;   // Bolge 6 sahneleri: sahne surerken kamerayi bu yonetir
     Transform riftZoneRocks;     // manzara kayalarindan yarigin ustune dusenler: yalniz Bolum 60'ta gizlenir
+    Transform sceneryRoot;       // alan disindaki butun manzara (kayalar, sus esyalari): istasyonun icinde (72-80) gizlenir
     CanyonScenes canyonScenes;   // Bolge 6 sahneleri: 60 kanyona inis, 55 Serce'nin ilk ucusu, 51 roketin inisi (Oyun.RoketInisi.cs)
     RiverBedScenes riverScenes;  // Bolge 7 sahneleri: 63 kus bakisi, 68 kalem, 70 final
     Material backdrop;
@@ -458,7 +459,8 @@ public partial class Oyun : MonoBehaviour
 
         // Kayalar, kaya kumeleri, olcum istasyonlari, sandiklar (Scenery.cs). Alanin icindeki kayalar bolumden gelir (engel).
         // Zeminle birlikte arka plana karisirlar: zemin ufukta gokyuzune donustugu yerde havada asili kalmazlar.
-        if (!GraphicsOptions.NoScenery) riftZoneRocks = Scenery.Build(board, TerrainHeight, new Vector2(AreaHalfX, AreaHalfZ), FarRockMat,
+        sceneryRoot = Parts.Empty("Scenery", board);
+        if (!GraphicsOptions.NoScenery) riftZoneRocks = Scenery.Build(sceneryRoot, TerrainHeight, new Vector2(AreaHalfX, AreaHalfZ), FarRockMat,
             CanyonTraces.PathCorridor(new Vector2(AreaHalfX, AreaHalfZ)), CanyonTraces.RiftZone(new Vector2(AreaHalfX, AreaHalfZ)));
     }
 
@@ -500,7 +502,7 @@ public partial class Oyun : MonoBehaviour
         if (levelRoot != null) Destroy(levelRoot.gameObject);
         levelRoot = Parts.Empty("Level", world);
         var region = Regions.Of(level.Number);
-        RegionLook.For(region).Apply(skyLight, sunLight);
+        RegionLook.ForLevel(level.Number).Apply(skyLight, sunLight);
         pickups.Clear();
         for (int i = 0; i < level.Ices.Count; i++)
             pickups.Add(Pickups.Create(level.Item, levelRoot, Pos(level.Ices[i]), i + 1));
@@ -509,7 +511,7 @@ public partial class Oyun : MonoBehaviour
         panels.Clear();
         int panelSeed = 0;
         foreach (var p in level.Panels)
-            if (p.Value > 0) panels[p.Key] = SolarPanel.Create(levelRoot, Pos(p.Key), p.Value, 40 + panelSeed++);
+            if (p.Value > 0) panels[p.Key] = SolarPanel.Create(levelRoot, Pos(p.Key), p.Value, 40 + panelSeed++, region == Region.Station ? PanelLook.PowerUnit : PanelLook.Solar);
         dustClouds.Clear();
         int dustSeed = 0;
         foreach (var d in level.Dust)
@@ -522,7 +524,7 @@ public partial class Oyun : MonoBehaviour
             ground.SetVector("_Frost" + i, new Vector4(p.x, p.z, 0.45f, i < frostCount ? 1f : 0f));
         }
         for (int i = 0; i < level.Rocks.Count; i++)
-            Obstacles.Create(region, levelRoot, Pos(level.Rocks[i]), i, crate: CanyonTraces.IsDepot(level.Number));
+            Obstacles.Create(region, level.Number, levelRoot, Pos(level.Rocks[i]), i);
         target = level.Target.HasValue ? Target.Create(levelRoot, Pos(level.Target.Value)) : null;
         Traces.Build(level.Number, levelRoot, new Vector2(AreaHalfX, AreaHalfZ), level.Target.HasValue ? Pos(level.Target.Value) : (Vector3?)null,
             level.Ices.ConvertAll(c => Pos(c)), TerrainHeight);
@@ -531,6 +533,7 @@ public partial class Oyun : MonoBehaviour
             : null;
 
         if (riftZoneRocks != null) riftZoneRocks.gameObject.SetActive(level.Number != CanyonTraces.LastLevel);
+        if (sceneryRoot != null) sceneryRoot.gameObject.SetActive(!StationTraces.IsIndoor(level.Number));   // istasyonun icinde dis manzara yok
         ResetRobot();
         string saved = SavedCode(level);
         if (TestSolutionsFilled && !shotsMode) hud.LoadCode(level.Solution, null);
@@ -817,7 +820,7 @@ public partial class Oyun : MonoBehaviour
         foreach (var cloud in dustClouds.Values) cloud.Restore();
         colonyPower.Begin(PowerLampCount);
         Traces.ResetBackdrop(level.Number);
-        RegionLook.For(Regions.Of(level.Number)).Apply(skyLight, sunLight);   // Bolge 3 finalindeki gun dogumunu geri alir
+        RegionLook.ForLevel(level.Number).Apply(skyLight, sunLight);   // Bolge 3 finalindeki gun dogumunu geri alir
         if (nameTag != null) Destroy(nameTag.gameObject);
         if (target != null) target.Restore();
         trailView?.Restore();
@@ -1000,7 +1003,7 @@ public partial class Oyun : MonoBehaviour
         yield return Tween.Wait(0.6f);
         int order = 0;
         foreach (var panel in panels.Values) panel.StartCoroutine(FlashAfter(panel, 0.4f + 0.18f * order++));   // panel.Restore durdurur
-        yield return RegionLook.For(Regions.Of(level.Number)).Sunrise(skyLight, sunLight, 3f);
+        yield return RegionLook.ForLevel(level.Number).Sunrise(skyLight, sunLight, 3f);
         hud.SetOutro(Bolge3KapanisSatirlari[0]);
         yield return robot.TurnTo(90f, 0.8f);   // dogudaki gunese
         yield return Tween.Wait(2.2f);

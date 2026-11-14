@@ -60,6 +60,7 @@ public class Hud : MonoBehaviour
     RecordingScene recording;
     QuizView quiz;
     ScreenView screenView;   // istasyon ekrani (ekran bulmacasi, Bolge 8)
+    NoteView noteView;       // notun kagit karti (read_note, Bolge 8)
     // Bilgi karti (bolumde yeni bir sey ilk kez gorundugunde): kart, sol ustte i dugmesi, "Anladim"dan sonra dugmeyi gosteren balon
     InfoCard infoCard;
     VisualElement infoBtn, infoBubble;
@@ -147,8 +148,10 @@ public class Hud : MonoBehaviour
         quiz = new QuizView(fMed, fSemi, fBold, Ink, Accent, ButtonBg, Hairline, ErrorRed, CellFill);
         overlay.Add(quiz);
 
-        screenView = new ScreenView(fMono, fBold, Ink, Accent, ErrorRed, Hairline);
+        screenView = new ScreenView(fMono, fBold, ErrorRed);
         free.Add(screenView);
+        noteView = new NoteView(fBold);
+        free.Add(noteView);
 
         infoBubble = BuildInfoBubble();
         overlay.Add(infoBubble);
@@ -696,6 +699,14 @@ public class Hud : MonoBehaviour
     public void ClearScreen() => screenView.Clear();
     public void AddScreenAnswer(ScreenAnswer answer) => screenView.Add(answer);
     public void HideScreen() => screenView.Hide();
+
+    // ---- notun kagit karti (read_note) ----
+
+    public void ShowNote(string note) => noteView.Show(note);
+    // Kivilcim notun siradaki harfini yuruyor (ya da topluyor): o harf vurgulanir
+    public void MarkNoteLetter() => noteView.Advance();
+    public void HideNote() => noteView.Hide();
+    public int NoteLetter => noteView.CurrentLetter;
 
     // ---- bilgi karti ----
 

@@ -2,6 +2,7 @@ using UnityEngine;
 
 // Ece'nin cizimleri, mum boya gibi, yer yer silinmis cizgilerle kodla kucuk bir dokuya cizilir:
 // - Robotun gogsundeki silik cizim (anlami Bolum 200'de cikar): bir cicek ve yaninda el ele bir kiz ile kucuk bir robot.
+//   Cicek (70'teki duvar resmi) ve kiz + robot (75'teki duvar cizimi) asagidaki ortak olculerden cizilir.
 // - Alet cantasinin kapagina bantli cizim (Bolum 44, senaryo-bolge-05.md): anten ve el sallayan iki kisi, biri buyuk biri kucuk.
 public static class ChildDrawing
 {
@@ -20,6 +21,20 @@ public static class ChildDrawing
     public static readonly Vector4[] Leaves = { new Vector4(30f, 28f, 20f, 36f), new Vector4(30f, 34f, 40f, 40f) };   // (x0, y0, x1, y1)
     public static float PetalAngle(int k) => k * Mathf.PI * 2f / Petals + 0.3f;
 
+    // El ele kiz ve kucuk robot, dokunun pikseliyle. 75'teki duvar cizimi (WallDrawings) ayni olculerden cizer.
+    // Cizgiler (x0, y0, x1, y1), daireler (x, y, r), dortgenler (x0, y0, x1, y1); sirasi dokudaki cizim sirasi (degismesin).
+    public static readonly Vector3 GirlHead = new Vector3(72f, 70f, 7f);
+    public static readonly Vector4[] GirlSkirt = { new Vector4(72f, 63f, 63f, 38f), new Vector4(72f, 63f, 81f, 38f), new Vector4(63f, 38f, 81f, 38f) };
+    // bacaklar, kiza dogru uzanmayan kol, iki orgu
+    public static readonly Vector4[] GirlLimbs = { new Vector4(68f, 38f, 68f, 22f), new Vector4(76f, 38f, 76f, 22f), new Vector4(66f, 55f, 58f, 46f),
+        new Vector4(65f, 74f, 61f, 64f), new Vector4(79f, 74f, 83f, 64f) };
+    public static readonly Vector4 RobotHead = new Vector4(98f, 54f, 112f, 66f), RobotBody = new Vector4(96f, 30f, 114f, 52f);
+    public static readonly Vector4 RobotAntenna = new Vector4(105f, 66f, 105f, 74f);
+    public static readonly Vector3 AntennaTip = new Vector3(105f, 76f, 2f);
+    public static readonly Vector2[] RobotEyes = { new Vector2(102f, 60f), new Vector2(108f, 60f) };
+    public static readonly Vector4[] RobotLegs = { new Vector4(98f, 22f, 98f, 30f), new Vector4(112f, 22f, 112f, 30f) };
+    public static readonly Vector4 HoldingHands = new Vector4(78f, 55f, 96f, 46f);   // kizin eli robotun elinde
+
     // background: gogus plakasinin rengi (cizim onun ustune solgun karisir)
     public static Texture2D Create(Color background)
     {
@@ -37,19 +52,17 @@ public static class ChildDrawing
         Circle(px, rng, FlowerX, FlowerY, CenterRadius, Yellow);
 
         // kiz (ortada): bas, uc gen etek, kollar, bacaklar, iki orgu
-        Circle(px, rng, 72, 70, 7f, Brown);
-        Line(px, rng, 72, 63, 63, 38, Pink); Line(px, rng, 72, 63, 81, 38, Pink); Line(px, rng, 63, 38, 81, 38, Pink);
-        Line(px, rng, 68, 38, 68, 22, Brown); Line(px, rng, 76, 38, 76, 22, Brown);
-        Line(px, rng, 66, 55, 58, 46, Brown);
-        Line(px, rng, 65, 74, 61, 64, Brown); Line(px, rng, 79, 74, 83, 64, Brown);
+        Circle(px, rng, GirlHead, Brown);
+        foreach (var l in GirlSkirt) Line(px, rng, l, Pink);
+        foreach (var l in GirlLimbs) Line(px, rng, l, Brown);
 
         // kucuk robot (sagda): kare bas, kare govde, anten, kiza uzanan kol (el ele)
-        Rect(px, rng, 98, 54, 112, 66, Blue);
-        Rect(px, rng, 96, 30, 114, 52, Blue);
-        Line(px, rng, 105, 66, 105, 74, Blue); Circle(px, rng, 105, 76, 2f, Yellow);
-        Dot(px, rng, 102, 60, Blue); Dot(px, rng, 108, 60, Blue);
-        Line(px, rng, 98, 22, 98, 30, Blue); Line(px, rng, 112, 22, 112, 30, Blue);
-        Line(px, rng, 78, 55, 96, 46, Brown);   // kizin eli robotun elinde
+        Rect(px, rng, RobotHead, Blue);
+        Rect(px, rng, RobotBody, Blue);
+        Line(px, rng, RobotAntenna, Blue); Circle(px, rng, AntennaTip, Yellow);
+        foreach (var e in RobotEyes) Dot(px, rng, e.x, e.y, Blue);
+        foreach (var l in RobotLegs) Line(px, rng, l, Blue);
+        Line(px, rng, HoldingHands, Brown);
 
         return ToTexture(px);
     }
@@ -144,6 +157,10 @@ public static class ChildDrawing
             Dot(px, rng, cx + Mathf.Cos(a) * r, cy + Mathf.Sin(a) * r, c);
         }
     }
+
+    static void Line(Color[] px, System.Random rng, Vector4 l, Color c) => Line(px, rng, l.x, l.y, l.z, l.w, c);
+    static void Circle(Color[] px, System.Random rng, Vector3 circle, Color c) => Circle(px, rng, circle.x, circle.y, circle.z, c);
+    static void Rect(Color[] px, System.Random rng, Vector4 r, Color c) => Rect(px, rng, r.x, r.y, r.z, r.w, c);
 
     static void Rect(Color[] px, System.Random rng, float x0, float y0, float x1, float y1, Color c)
     {

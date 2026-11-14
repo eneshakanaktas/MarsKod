@@ -24,7 +24,7 @@ public static class BrushPaint
     public static Transform Lines(Transform surface, Vector2[][] lines, float z, Material paint, int seed, float thickness) =>
         Paint(surface, "Boya", new List<Vector2[]>(lines), new Vector3(0f, 0f, z), 1f, 0f, paint, seed, thickness, thickness * 0.25f);
 
-    // Yalnizca gereken harfler cizilir: 1 6 7 8 - A B C Ç E I İ K L M N P R S U V (bilinmeyen harf atlanir, bosluk ilerler).
+    // Yalnizca gereken harfler cizilir: 1 6 7 8 - A B C Ç D E I İ K L M N P R S U V (bilinmeyen harf atlanir, bosluk ilerler).
     // localPos: yazinin ortasi; height: harf boyu. childish: cocuk eli (Bolge 7 duvar yazisi): her harf farkli boyda (0,85-1,2),
     // satir saga dogru hafif yukari kayar, harfler hafif egik, birkac harfin altinda ince boya akintisi. Varsayilan false:
     // eski yazilar aynen kalir.
@@ -144,6 +144,7 @@ public static class BrushPaint
         ['C'] = L(P(0.52f, 0.85f, 0.38f, 1f, 0.18f, 0.95f, 0.06f, 0.70f, 0.06f, 0.30f, 0.18f, 0.05f, 0.38f, 0f, 0.52f, 0.15f)),
         ['B'] = L(P(0.08f, 0f, 0.08f, 1f, 0.35f, 1f, 0.48f, 0.88f, 0.45f, 0.66f, 0.30f, 0.55f, 0.08f, 0.55f), P(0.30f, 0.55f, 0.50f, 0.42f, 0.52f, 0.18f, 0.38f, 0f, 0.08f, 0f)),
         ['Ç'] = L(P(0.52f, 0.85f, 0.38f, 1f, 0.18f, 0.95f, 0.06f, 0.70f, 0.06f, 0.30f, 0.18f, 0.05f, 0.38f, 0f, 0.52f, 0.15f), P(0.30f, 0f, 0.33f, -0.12f, 0.24f, -0.20f)),
+        ['D'] = L(P(0.08f, 0f, 0.08f, 1f, 0.28f, 1f, 0.44f, 0.90f, 0.52f, 0.68f, 0.52f, 0.32f, 0.44f, 0.10f, 0.28f, 0f, 0.08f, 0f)),
         ['E'] = L(P(0.50f, 1f, 0.08f, 1f, 0.08f, 0f, 0.50f, 0f), P(0.08f, 0.52f, 0.40f, 0.52f)),
         ['I'] = L(P(0.25f, 0f, 0.25f, 1f)),
         ['İ'] = L(P(0.25f, 0f, 0.25f, 0.82f), P(0.25f, 1.02f, 0.26f, 1.08f)),

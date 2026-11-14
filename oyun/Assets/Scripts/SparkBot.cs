@@ -21,6 +21,8 @@ public class SparkBot : Robot
     static readonly Vector3 ArmShrug = new Vector3(15f, 40f, 105f);
     static readonly Vector3 ArmPickup = new Vector3(55f, 4f, 8f);           // egilince eli yere degsin (govde PickupLean kadar one egik)
     static readonly Vector3 ArmOverShoulder = new Vector3(165f, 10f, 70f);  // sag kol omzun ustunden sirta (goruntude ayarlandi)
+    static readonly Vector3 ArmHoldNote = new Vector3(62f, 14f, 78f);       // sag el gogsun onunde, kagit yuze donuk (Bolge 8 notu)
+    const float NoteNod = 14f;                                              // notu okurken basi kagida egilir
     const float PickupLean = 34f;
 
     // Bolum 70: avuc duvara, kalemin ucu duvardaki cizgiye. Kollar kisa (iki el ancak gogsun onunde bulusur): duvardaki avuc govdenin
@@ -35,7 +37,7 @@ public class SparkBot : Robot
     static readonly Color EyeUnsure = Mats.Hex("#FFA040") * 1.6f;
     static readonly Color EyeEce = CraterTraces.EceColor;            // 70 sonu: Ece'nin turkuazi (1,6 kat parlaklikta beyaza doyuyordu)
 
-    Transform body, head, eyeL, eyeR, ribbon, crayon, heldCrayon;
+    Transform body, head, eyeL, eyeR, ribbon, crayon, heldCrayon, heldNote, foldedDrawing;
     readonly Transform[] ribbonTails = new Transform[2];
     readonly Transform[] shoulders = new Transform[2], elbows = new Transform[2], hands = new Transform[2];
     // Hedefe uzanan kollar (Bolum 70): Animate her karede kurar, suzulurken govde inip kalksa da el duvarda yerinde kalir
@@ -100,6 +102,7 @@ public class SparkBot : Robot
 
         BuildRibbon();
         BuildCrayon();
+        BuildFoldedDrawing(dark);
 
         Parts.Add("Neck", body, MeshFactory.RoundedCylinder(0.03f, 0.04f, 0.01f, 16), dark, new Vector3(0, 0.325f, 0));
     }
@@ -137,6 +140,23 @@ public class SparkBot : Robot
     }
 
     public override void SetCrayon(bool on) => crayon.gameObject.SetActive(on);
+
+    // Ece'nin katlanmis cizimi (Bolum 76'da bulunur): pil cantasinin sirtinda, kalemin ustunde, cantanin ust kenarindaki ince kayisin altina
+    // sikistirilmis; ust kismi kapagin arkasindan tasar (kamera yukaridan-arkadan bakar: cantanin alt kisminda kalemin arkasinda
+    // gorunmuyordu). Yerdeki ile ayni model (FoldedDrawing), kucultulmus. Baslangicta gizli. Canta sirasi: kurdele, kalem, cizim.
+    void BuildFoldedDrawing(Material strap)
+    {
+        foldedDrawing = Parts.Empty("KatlanmisCizim-Sirt", body);
+        foldedDrawing.localPosition = new Vector3(-0.05f, 0.298f, -0.154f);
+        var paper = FoldedDrawing.Create(foldedDrawing, Vector3.zero, 0f);
+        paper.localRotation = Quaternion.Euler(-90f, 0f, -10f);   // kagidin yuzu arkaya bakar, hafif egik
+        paper.localScale = Vector3.one * 0.36f;
+        Parts.Add("Kayis", foldedDrawing, MeshFactory.RoundedBox(new Vector3(0.2f, 0.012f, 0.008f), 0.003f, 1), strap,
+            new Vector3(0.05f, -0.012f, -0.008f), outline: false, castShadow: false);
+        foldedDrawing.gameObject.SetActive(false);
+    }
+
+    public override void SetFoldedDrawing(bool on) => foldedDrawing.gameObject.SetActive(on);
     public override Vector3 RibbonPoint => transform.TransformPoint(RibbonKnot + Vector3.up * 0.03f);
     public override Vector3 ChestPoint => transform.TransformPoint(ChestAt);
 
@@ -171,7 +191,16 @@ public class SparkBot : Robot
         hands[side] = Parts.Add("Hand", elbow, MeshFactory.RoundedBox(new Vector3(0.042f, 0.048f, 0.034f), 0.014f), dark, new Vector3(0, -0.105f, 0));
         shoulders[side] = shoulder;
         elbows[side] = elbow;
-        if (side == 1) BuildHeldCrayon();
+        if (side == 1) { BuildHeldCrayon(); BuildHeldNote(); }
+    }
+
+    // Sag eldeki kucuk kagit (Bolge 8, notu okurken): krem, yazisiz; baslangicta gizli
+    void BuildHeldNote()
+    {
+        heldNote = Parts.Add("HeldNote", hands[1], MeshFactory.RoundedBox(new Vector3(0.075f, 0.004f, 0.055f), 0.002f, 1),
+            Mats.Lit(Mats.Hex("#EFE6CF"), 0.15f), new Vector3(0f, -0.03f, 0.03f), outline: false);
+        heldNote.localRotation = Quaternion.Euler(-20f, 0f, 0f);
+        heldNote.gameObject.SetActive(false);
     }
 
     // Sag eldeki kalem (Bolum 70'te Kivilcim kendi elini cizerken): kolun uzantisi gibi one bakar. Baslangicta gizli.
@@ -238,6 +267,7 @@ public class SparkBot : Robot
         SetEyes(EyeCalm, 0f);
         for (int side = 0; side < 2; side++) { reachWeight[side] = 0f; reachFrom[side] = ArmRest; }
         SetArms(ArmRest);
+        heldNote.gameObject.SetActive(false);
         if (heldCrayon.gameObject.activeSelf)   // elinin cevresini cizerken durduruldu: kalem sirta
         {
             heldCrayon.gameObject.SetActive(false);
@@ -378,6 +408,26 @@ public class SparkBot : Robot
         SetCrayon(true);
         reachFrom[1] = ArmRest;
         yield return Tween.Run(0.3f, t => SetArm(1, Vector3.Lerp(ArmOverShoulder, ArmRest, Tween.InOutCubic(t))));
+    }
+
+    // Bolge 8 notu: sag kol kalkar, elde kucuk krem kagit, bas kagida egilir; indirince kagit elde kalmaz (yuruyusu bozmasin)
+    public override IEnumerator HoldNote(bool up)
+    {
+        posing = true;
+        if (up) heldNote.gameObject.SetActive(true);
+        var from = up ? ArmRest : ArmHoldNote;
+        var to = up ? ArmHoldNote : ArmRest;
+        float nodFrom = nod, nodTo = up ? NoteNod : 0f;
+        yield return Tween.Run(0.3f, t =>
+        {
+            float e = Tween.InOutCubic(t);
+            SetArm(1, Vector3.Lerp(from, to, e));
+            nod = Mathf.Lerp(nodFrom, nodTo, e);
+        });
+        if (up) yield break;
+        heldNote.gameObject.SetActive(false);
+        arms = ArmRest;
+        posing = false;
     }
 
     // Bolum 68: one egilir, sag eliyle yerdeki kalemi alir, kolunu omzunun ustunden gecirip kalemi sirtina, kurdelenin yanina takar.

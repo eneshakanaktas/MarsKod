@@ -39,7 +39,7 @@ public class TrailView
     Transform prints;                     // bu izin butun izleri (her biri bir grup)
     readonly List<DecalFade> groups = new List<DecalFade>();   // groups[i]: izin i. karesine varan izler; 0 = alanin onunden gelen bas
     Trail trail;
-    Target arrival;
+    readonly ArrivalMark arrival;
 
     // Serce yol ayriminin ustunde, isik yerde (denetim karesi icin)
     public bool Scouting { get; private set; }
@@ -56,6 +56,7 @@ public class TrailView
         this.sparrow = sparrow;
         this.look = look;
         this.runner = runner;
+        arrival = new ArrivalMark(levelRoot);
         Begin(first);
     }
 
@@ -129,20 +130,14 @@ public class TrailView
     }
 
     // Izin sonu: hedef belirir ve hemen "varildi" der
-    public void Arrived()
-    {
-        if (arrival != null) return;
-        arrival = Target.Create(root, pos(trail.End));
-        arrival.Reach();
-    }
+    public void Arrived() => arrival.Show(pos(trail.End));
 
     // Tekrar / yeniden deneme: izler yine gizli (bas gorunur), hedef yok, Serce yerinde
     public void Restore()
     {
         HideAll();
         groups[0].ShowNow();
-        if (arrival != null) UnityEngine.Object.Destroy(arrival.gameObject);
-        arrival = null;
+        arrival.Clear();
         sparrow.ResetHome();
     }
 

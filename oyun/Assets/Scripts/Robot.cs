@@ -139,6 +139,8 @@ public abstract class Robot : MonoBehaviour
     public virtual void SetRibbon(bool on) { }
     // Ece'nin kalemi sirtta (Bolum 68'den sonra)
     public virtual void SetCrayon(bool on) { }
+    // Ece'nin katlanmis cizimi sirtta, kalemin yaninda (Bolum 76'dan sonra)
+    public virtual void SetFoldedDrawing(bool on) { }
     // Kutlamadan sonra sakinlesir: kollar iner, gozler eski rengine doner (Bolge 7 sahnelerinin basi). Varsayilan bir sey yapmaz.
     public virtual IEnumerator Calm() { yield break; }
     // Gozler yumusakca Ece'nin rengine (turkuaz) doner (70 sonu); seconds 0 ise hemen. ResetTo eski renge dondurur.
@@ -155,6 +157,10 @@ public abstract class Robot : MonoBehaviour
         for (int i = 0; i < outline.Count; i++) reached(i);
         yield break;
     }
+
+    // Notu okur (Bolge 8, read_note): up true iken kolunu kaldirip kucuk bir kagidi gogsunun onunde tutar, false iken indirir
+    // (kagit elde kalmaz: yazisi arayuzdeki kartta). Varsayilan bir sey yapmaz.
+    public virtual IEnumerator HoldNote(bool up) { yield break; }
 
     // Yerdeki nesneyi alip sirtina takar (Bolum 68 kalemi). Varsayilan: nesne kaybolur, sirttaki kalem gorunur.
     public virtual IEnumerator TakeToBack(Transform item) { item.gameObject.SetActive(false); SetCrayon(true); yield break; }

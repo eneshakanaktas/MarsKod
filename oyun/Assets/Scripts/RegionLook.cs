@@ -161,10 +161,16 @@ public class RegionLook
 
     public void Apply(Light sky, Light sun) => Blend(this, this, 0f, sky, sun);
 
+    // 73 bitince yanan lambalarin isigi (Bolge 8; StationLamps los isiktan buna gecer)
+    public static RegionLook StationLightsOn => Station;
+
     // Bu bolgenin isigindan gun dogumu isigina yavasca gecer
-    public IEnumerator Sunrise(Light sky, Light sun, float duration)
+    public IEnumerator Sunrise(Light sky, Light sun, float duration) => BlendTo(SunriseLook, sky, sun, duration);
+
+    // Bu isiktan baska bir isiga yavasca gecer
+    public IEnumerator BlendTo(RegionLook to, Light sky, Light sun, float duration)
     {
-        yield return Tween.Run(duration, t => Blend(this, SunriseLook, Tween.InOutCubic(t), sky, sun));
+        yield return Tween.Run(duration, t => Blend(this, to, Tween.InOutCubic(t), sky, sun));
     }
 
     static Color Mix(string a, string b, float t) => Color.Lerp(Mats.Hex(a), Mats.Hex(b), t);

@@ -1,19 +1,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Ece'nin kalemle duvara cizdikleri (Bolge 7: el izleri, 70'teki duvar resmi). Cizgiler turkuaz, ince, hafif titrek ve yer yer
-// kesik (kalem kayanin purtuklu yuzeyinde atlar). Golgedeki duvarda da secilsin diye boya hafif parlar.
+// Ece'nin kalemle duvara cizdikleri (Bolge 7: el izleri, 70'teki duvar resmi; Bolge 8: istasyon duvar cizimleri). Cizgiler ince,
+// hafif titrek ve yer yer kesik (kalem purtuklu yuzeyde atlar). Bolge 7'de turkuaz kalem; Bolge 8'de turuncu (annesinin yol isaretledigi
+// kalem, Bolge 6'nin boya oklariyla ayni renk). Golgedeki duvarda da secilsin diye boya hafif parlar.
 public static class CrayonMarks
 {
     // Yuzeyin biriminde cizer (BrushPaint.Lines): lines dogrudan yuzeyin yerel XY'sinde
-    public static Transform Draw(Transform surface, string name, IEnumerable<Vector2[]> lines, int seed, float thickness)
+    public static Transform Draw(Transform surface, string name, IEnumerable<Vector2[]> lines, int seed, float thickness) =>
+        Draw(surface, name, lines, seed, thickness, Paint, Lift);
+
+    // paint: kalemin rengi; lift: yuzeyden one uzaklik (duz duvarda kucuk)
+    public static Transform Draw(Transform surface, string name, IEnumerable<Vector2[]> lines, int seed, float thickness, Material paint, float lift)
     {
-        var drawn = BrushPaint.Lines(surface, Broken(lines, seed, thickness * 6f).ToArray(), Lift, Paint, seed, thickness);
+        var drawn = BrushPaint.Lines(surface, Broken(lines, seed, thickness * 6f).ToArray(), lift, paint, seed, thickness);
         drawn.name = name;
         return drawn;
     }
 
     public static Material Paint => Mats.Emissive(CraterTraces.EceColor, CraterTraces.EceColor * 0.3f, 0.2f);
+    // Bolge 8: turuncu kalem (PaintMarks'in boya rengi)
+    public static Material OrangePaint => Mats.Emissive(PaintMarks.FreshInShade, PaintMarks.FreshInShade * 0.3f, 0.2f);
 
     // Duvar yuzunun onu: RiverWall katmanlari yuzden en fazla ~8 cm one cikar (Setback dalgasi); cizim hepsinin onunde kalir
     public const float Lift = -0.085f;

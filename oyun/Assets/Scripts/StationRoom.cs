@@ -45,10 +45,12 @@ public static class StationRoom
         readonly Renderer emergency;
         readonly Material emergencyPool;
         readonly Light point;
+        readonly StationLamps switcher;
 
         internal Room(Transform face, List<Renderer> lamps, List<Material> pools, Renderer emergency, Material emergencyPool, Light point)
         {
             BackWallFace = face;
+            switcher = StationLamps.Attach(face.parent, this);
             this.lamps = lamps;
             this.pools = pools;
             this.emergency = emergency;
@@ -56,14 +58,28 @@ public static class StationRoom
             this.point = point;
         }
 
-        // Tavan lambalari yanik (aydinlik) ya da sonuk (yalniz kirmizi-turuncu acil isik)
+        // 73 bitince: lambalar sirayla kirpisarak yanar, isik lostan aydinliga gecer, acil isik soner (StationLamps)
+        public void TurnOn(Light sky, Light sun, RegionLook from, RegionLook to) => switcher.TurnOn(sky, sun, from, to);
+
+        // Tavan lambalari yanik (aydinlik) ya da sonuk (yalniz kirmizi-turuncu acil isik); yarim kalan yanma durur
         public void SetLights(bool on)
         {
+            switcher.Stop();
             for (int i = 0; i < lamps.Count; i++) SetLamp(i, on ? 1f : 0f);
-            emergency.sharedMaterial.SetColor("_EmissionColor", on ? Color.black : EmergencyRed * 2.2f);
-            emergency.sharedMaterial.SetColor("_BaseColor", on ? LampOff : EmergencyRed);
-            emergencyPool.SetFloat("_A", on ? 0f : EmergencyPoolOn);
-            if (point != null) point.enabled = on;
+            SetEmergency(!on);
+        }
+
+        // Acil isik yanik mi (lambalar sonukken); denetim icin
+        public bool EmergencyOn { get; private set; }
+
+        // Kirmizi-turuncu acil isik ve gercek nokta isik (yalniz lambalar yanikken)
+        internal void SetEmergency(bool on)
+        {
+            EmergencyOn = on;
+            emergency.sharedMaterial.SetColor("_EmissionColor", on ? EmergencyRed * 2.2f : Color.black);
+            emergency.sharedMaterial.SetColor("_BaseColor", on ? EmergencyRed : LampOff);
+            emergencyPool.SetFloat("_A", on ? EmergencyPoolOn : 0f);
+            if (point != null) point.enabled = !on;
         }
 
         // Tek lambanin parlakligi (0 sonuk, 1 yanik); kirpisarak yanma icin

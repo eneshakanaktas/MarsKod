@@ -5,6 +5,7 @@ using System.IO;
 using UnityEngine;
 
 // Bolge 6 ve Bolge 7 sahnelerinin, Bolge 7 izlerinin goruntu denetimi (-shots <klasor> -sahneler): ara kareler + SAHNE DENETIMI satiri.
+// Tam turda sonunda Bolge 8 denetimi de calisir (Oyun.IstasyonDenetimi.cs; yalniz o: -bolge8).
 public partial class Oyun
 {
     // riverOnly (-bolge7): yalnizca Bolge 7 (sahne uzerinde calisirken hizli tur). Bolge 6 denetimleri 3b'den once calisir: yarik cakisma
@@ -30,6 +31,7 @@ public partial class Oyun
         yield return CrayonShots(dir, problems);
         yield return FinaleShots70(dir, problems);
         if (!riverOnly) yield return LandingEveryEntryCheck(problems);
+        if (!riverOnly) yield return StationChecks(dir, problems);   // Bolge 8 (Oyun.IstasyonDenetimi.cs)
         Debug.Log("SAHNE DENETIMI" + (riverOnly ? " (yalniz Bolge 7)" : "") + ": " + (problems.Count == 0 ? "TAMAM" : "HATA " + string.Join("; ", problems)));
         Application.Quit();
     }

@@ -25,6 +25,7 @@ public partial class Oyun : MonoBehaviour
     // Fotograf kuculurse bu mesafe de onunla birlikte kuculur.
     const float HorizonAboveArea = 0.106f;
     const float StartYaw = 125f;
+    const float ScreenYaw = 0f;   // ekran bulmacasinda (Bolge 8) Kivilcim kuzeydeki bilgisayarlara doner
     // Bolge 1 finali: "Oyuna yapilacaklar" madde 5 (docs/tasarim/senaryo-bolge-01.md). Ses yok, bu yuzden sessiz hali.
     const int Bolge1SonBolum = 10;
     const string Bolge1KapanisSatiri = "Bilinmeyen sinyal algılandı (kutup bölgesi). Bu sinyal ödevin parçası değil.";
@@ -86,6 +87,7 @@ public partial class Oyun : MonoBehaviour
     Light skyLight, sunLight;
     Target target;
     TrailView trailView;   // Bolge 7 iz bolumlerinde: yurudukce beliren izler, Serce'nin isigi, izin sonunda hedef
+    NoteEnd noteEnd;       // Bolge 8 notlu bolumlerinde: notun sonunda hedef (76'da katlanmis cizim)
     Transform levelRoot;
     // Bolum 50 kapanisinda robotun ustundeki ad etiketi (yeniden denemede kaldirilir)
     NameTag nameTag;
@@ -314,8 +316,15 @@ public partial class Oyun : MonoBehaviour
         bool finale = System.Array.IndexOf(a, "-final") >= 0;   // yalnizca Bolum 50 kapanisinin goruntuleri (~2 dk)
         bool scenes = System.Array.IndexOf(a, "-sahneler") >= 0;   // yalnizca Bolge 6 ve 7 sahnelerinin kareleri
         bool riverOnly = System.Array.IndexOf(a, "-bolge7") >= 0;  // -sahneler ile: yalnizca Bolge 7 (~2 dk)
+        bool stationOnly = System.Array.IndexOf(a, "-bolge8") >= 0;   // -sahneler ile: yalnizca Bolge 8
         for (int i = 0; i < a.Length - 1; i++)
-            if (a[i] == "-shots") { shotsMode = true; LoadLevel(levelIndex); StartCoroutine(scenes ? SceneShots(a[i + 1], riverOnly) : finale ? FinaleShots(a[i + 1]) : Shots(a[i + 1])); }
+            if (a[i] == "-shots")
+            {
+                shotsMode = true;
+                LoadLevel(levelIndex);
+                StartCoroutine(scenes ? (stationOnly ? StationSceneShots(a[i + 1]) : SceneShots(a[i + 1], riverOnly))
+                    : finale ? FinaleShots(a[i + 1]) : Shots(a[i + 1]));
+            }
     }
 
     // Arka plan animasyonlari (ayar, bolum secme ekraninda): kapaliyken gokyuzu duraganlasir, telefon daha az yorulur
@@ -531,6 +540,7 @@ public partial class Oyun : MonoBehaviour
         trailView = level.Trails.Count > 0
             ? new TrailView(levelRoot, Pos, TerrainHeight, RiverBedTraces.ActiveSparrow, RiverBedTraces.LookFor(level.Number), this, level.Trails[0])
             : null;
+        noteEnd = level.Notes.Count > 0 ? NoteEnd.Create(levelRoot, TerrainHeight, level.Number == StationTraces.FoldedLevel) : null;
 
         if (riftZoneRocks != null) riftZoneRocks.gameObject.SetActive(level.Number != CanyonTraces.LastLevel);
         if (sceneryRoot != null) sceneryRoot.gameObject.SetActive(!StationTraces.IsIndoor(level.Number));   // istasyonun icinde dis manzara yok
@@ -545,6 +555,7 @@ public partial class Oyun : MonoBehaviour
         bool landingDue = LandingDue;   // 51'e her girisde: giris damgasi roket indikten sonra gelir
         hud.SetLevel(level.Number, level.Label, level.Title, level.Goal, level.Ices.Count, level.Item, landingDue ? "" : level.Intro);
         if (level.Screen != null) hud.ShowScreen(level.Screen); else hud.HideScreen();
+        hud.HideNote();
         hud.SetInfo(level.Info, seen: !shotsMode && PlayerPrefs.GetInt(InfoKey(level), 0) == 1);   // gorulmediyse kart kendiliginden acilir
         var transition = Traces.TransitionLines(level.Number);
         if (landingDue) canyonScenes.PrepareLanding();
@@ -801,9 +812,10 @@ public partial class Oyun : MonoBehaviour
     // Robot baslangic karesine doner; Bolge 4 finalinden sonraki bolumlerde sirtinda Ece'nin kurdelesi var
     void ResetRobot()
     {
-        robot.ResetTo(Pos(level.Robot), StartYaw);
+        robot.ResetTo(Pos(level.Robot), level.Screen != null ? ScreenYaw : StartYaw);
         robot.SetRibbon(level.Number > DuneTraces.LastLevel);
         robot.SetCrayon(level.Number > RiverBedTraces.CrayonLevel);
+        robot.SetFoldedDrawing(level.Number > StationTraces.FoldedLevel);
     }
 
     void ResetLevel()
@@ -824,7 +836,10 @@ public partial class Oyun : MonoBehaviour
         if (nameTag != null) Destroy(nameTag.gameObject);
         if (target != null) target.Restore();
         trailView?.Restore();
+        noteEnd?.Restore();
+        StationTraces.Screens?.Restore();
         if (level.Screen != null) hud.ShowScreen(level.Screen); else hud.HideScreen();
+        hud.HideNote();
         hud.ResetView();
     }
 
@@ -875,9 +890,11 @@ public partial class Oyun : MonoBehaviour
         if (level.Screen != null)   // ekran bulmacasi: cevaplar satir satir ekrana dusur
         {
             hud.ClearScreen();
-            foreach (var answer in report.ScreenAnswers)
+            for (int i = 0; i < report.ScreenAnswers.Count; i++)
             {
+                var answer = report.ScreenAnswers[i];
                 hud.AddScreenAnswer(answer);
+                StationTraces.Screens?.Answer(i, answer.Correct, answer.Actual is bool yes && yes);   // sahnedeki bilgisayar uyanir
                 yield return Tween.Wait(0.08f);
             }
         }
@@ -895,6 +912,8 @@ public partial class Oyun : MonoBehaviour
             hud.SetActiveLine(-1);
             if (target != null) target.Reach();
             trailView?.Arrived();
+            if (world.Target.HasValue) noteEnd?.Arrived(Pos(world.Target.Value));
+            StationTraces.LightsOn(level.Number, skyLight, sunLight);   // 73: tavan lambalari yanar
             yield return Tween.Wait(0.15f);
             complete = true;
             var kind = Xp.SolutionKind(hud.Buffer);
@@ -908,6 +927,7 @@ public partial class Oyun : MonoBehaviour
             }
             else xpLine = Xp.Name(kind) + " ile çözdün · bu XP daha önce alındı";
             hud.SetDone(HasNext, xpLine, xp.NextBetterText(level.Number, kind), level.Outro);
+            hud.HideNote();   // bitis yazilari notun kartinin yerine gelir
             bool perde1Finale = level.Number == Bolge5SonBolum && HasNext;
             if (perde1Finale) hud.HoldNext();
             done = true;
@@ -1118,6 +1138,7 @@ public partial class Oyun : MonoBehaviour
         switch (e)
         {
             case Moved m:
+                hud.MarkNoteLetter();   // notlu bolumde: yurunen harf kartta vurgulanir
                 Sound.Move();
                 yield return Face(m.Direction);
                 yield return robot.MoveTo(Pos(m.To));
@@ -1129,6 +1150,7 @@ public partial class Oyun : MonoBehaviour
                 yield return robot.Bump();
                 break;
             case Collected c:
+                hud.MarkNoteLetter();   // nottaki V harfi
                 StartCoroutine(robot.Collect());
                 yield return Tween.Wait(0.12f);
                 if (c.IceIndex >= 0)
@@ -1179,9 +1201,12 @@ public partial class Oyun : MonoBehaviour
             case Scouted s: // Serce yol ayrimina suzulur, kolu isikla gosterir
                 if (trailView != null) yield return trailView.Scouted(s.At, s.Direction);
                 break;
-            case NoteRead n: // gecici: Bolge 8 · 3a'da robot kagit notu kaldirip okur
-                StartCoroutine(PowerLabel.Show(levelRoot, Pos(n.At), n.Text, Mats.Hex("#E8E0C8")));
-                yield return Tween.Wait(0.6f);
+            case NoteRead n: // Kivilcim kagidi kaldirip okur, harfler arayuzdeki kartta (80'de once duvardaki haritaya bakar)
+                if (StationTraces.WallMap != null) { yield return Face(Direction.North); yield return Tween.Wait(0.3f); }
+                yield return robot.HoldNote(true);
+                hud.ShowNote(n.Text);
+                yield return Tween.Wait(0.45f);
+                yield return robot.HoldNote(false);
                 break;
         }
     }

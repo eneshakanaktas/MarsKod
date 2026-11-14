@@ -3,7 +3,9 @@ using UnityEngine;
 
 // Bolge 8 · 71: kanyonun ucunda arastirma istasyonunun dis cephesi (alanin arkasinda). Prefabrik, koseleri yuvarlak, alcak moduller:
 // ortada kapi modulu, iki yaninda birer modul. Krem govde kumla asinmis, koloni turuncusu seritler. Kapi tek kanatli surgulu, yari
-// acik: icerisi karanlik (72'de iceri girilir). Kapinin ustunde armanin yeri bos (Gorev 4: ColonyCrest). Iki yanda kanyon duvarina
+// acik: icerisi karanlik (72'de iceri girilir). Arma (ColonyCrest) kapi modulunun catisinda, kapinin hemen ustunde boyali: on yuzde
+// kapinin ustunde ~7 cm kaliyor, kamera dik baktigi icin orada okunmazdi; cati ekranda en genis gorunen yuzey (koloni armayi
+// inis araclari yukaridan gorsun diye catiya boyamis; kimse soylemez). Iki yanda kanyon duvarina
 // dayanan alcak kayalar, kapinin onunde yere birakilmis iki kasa (alan disi, sus). Ust yazilara (ekranin ust ~%20'si) uzanmaz.
 public static class StationFacade
 {
@@ -25,7 +27,7 @@ public static class StationFacade
     static readonly Material Glass = Mats.Lit(Mats.Hex("#1C2028"), 0.8f);
     static readonly Material Sand = Mats.Lit(Mats.Hex("#9A7258"), 0.08f);
 
-    // Doner: armanin konacagi yer (kapinin ustu, cephenin on yuzu; yerel -Z kameraya bakar)
+    // Doner: armanin yeri (kapi modulunun catisinin ortasi; yerel -Z yukari, +Y arkaya bakar)
     public static Transform Build(Transform parent, Vector2 areaHalf, Func<float, float, float> ground)
     {
         var root = Parts.Empty("Istasyon-Cephe", parent);
@@ -48,7 +50,8 @@ public static class StationFacade
         Door(root);
 
         var crest = Parts.Empty("Arma-Yeri", root);
-        crest.localPosition = new Vector3(0f, Sink + DoorHeight + 0.08f, -0.01f);
+        crest.localPosition = new Vector3(0f, DoorModuleHeight + Sink + 0.002f, Depth * 0.45f);
+        crest.localRotation = Quaternion.Euler(90f, 0f, 0f);   // boya yuzeyinin -Z'si yukari
 
         SandAlongBase(parent, areaHalf, frontZ, ground);
         SideRocks(parent, areaHalf, frontZ, ground);

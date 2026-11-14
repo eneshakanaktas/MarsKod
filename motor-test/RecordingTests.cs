@@ -7,7 +7,7 @@ public class RecordingTests
     [Fact]
     public void Katalog_sirali_ve_dolu()
     {
-        Assert.Equal(new[] { 1, 2, 3 }, Recordings.All.Select(r => r.Number));
+        Assert.Equal(new[] { 1, 2, 3, 4 }, Recordings.All.Select(r => r.Number));
         Assert.Equal(Recordings.All.Count, Recordings.All.Select(r => r.File).Distinct().Count());
         foreach (var r in Recordings.All)
         {
@@ -28,11 +28,25 @@ public class RecordingTests
                      string.Join(" ", r.Lines));
     }
 
+    // senaryo-perde-2.md / senaryo-bolge-08.md: Bölge 8, Bölüm 74 başı
+    [Fact]
+    public void Kayit_4_cizimler()
+    {
+        var r = Recordings.ByNumber(4);
+        Assert.Equal("cizimler.ses", r.File);
+        Assert.Equal((8, 74, true), (r.Region, r.Level, r.AtLevelStart));
+        Assert.Equal("Ece korkuyor ama belli etmiyor. Bana benziyor. Bütün gece çizdi; 'Kıvılcım yalnız kalmasın diye' dedi.",
+                     string.Join(" ", r.Lines));
+        Assert.Equal("Ece korkuyor ama belli…", Recordings.Preview(r));
+    }
+
     [Fact]
     public void Bolum_basi_kayitlari()
     {
         Assert.Equal(2, Recordings.AtStartOf(52).Number);
         Assert.Equal(3, Recordings.AtStartOf(64).Number);
+        Assert.Equal(4, Recordings.AtStartOf(74).Number);
+        Assert.Null(Recordings.AtStartOf(71));
         Assert.Null(Recordings.AtStartOf(50));   // Kayıt 1 kapanışta, başta değil
         Assert.Null(Recordings.AtStartOf(61));
         Assert.Null(Recordings.ByNumber(9));

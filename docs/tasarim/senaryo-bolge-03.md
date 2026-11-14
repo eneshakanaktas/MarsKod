@@ -24,7 +24,7 @@
 | Koloninin kuruluşu | 0 | ~3 yıl önce (hikâye kitabı) |
 | Ece 7 yaşında | 150 | Bir Dünya yılı ≈ 356 sol |
 | Ece 8 yaşında | 506 | |
-| Ece 9 yaşında = takvimin son günü = sığınağa iniş | 861 | Kulübe Defne'nin çalıştığı yer (mühendis); Ece'nin boyu her doğum gününde burada ölçülürdü. Son gün Defne panelleri fırtınaya karşı sabitlemeye geldi, Ece yanındaydı; aceleyle de olsa boyunu ölçtü. Aynı akşam sığınağın kapıları kapandı. |
+| Ece 9 yaşında = takvimin son günü = göçün başladığı gün | 861 | Kulübe Defne'nin çalıştığı yer (mühendis); Ece'nin boyu her doğum gününde burada ölçülürdü. Son gün Defne panelleri fırtınaya karşı sabitlemeye geldi, Ece yanındaydı; aceleyle de olsa boyunu ölçtü. Aynı gün koloni sığınağa doğru yola çıktı (iniş birkaç sol sonra; Ragıp, 2026-11-14 düzeltmesi, eskiden "aynı akşam sığınağın kapıları kapandı"). |
 | Bölüm 21 (bugün) | 1.068 | 1.068 − 861 = 207 sol ≈ 7 ay (hikâye kitabı: fırtınadan bu yana 7 ay); 1.068 sol ≈ 3 yıl |
 | Bölüm 30 | 1.072 | Tarla birkaç günde onarılır (iki bölümde bir sol artar) |
 
@@ -142,12 +142,12 @@ Kitaptaki "Çelişki kontrol listesi" ve zaman çizelgesiyle karşılaştırıld
 - Zaman çizelgesi: ✅ koloni ~3 yıl (1.068 sol ≈ 3,0 yıl), fırtınadan bu yana 7 ay (207 sol ≈ 7,0 ay), Ece ~9 (sol 861'de 9 oldu). Fırtına "güneş panelleri kırılır": ✅
 - Motifler: ✅ "Ece yazısı: Bölge 3 kapı" (kitapta zaten var); göğüsteki çizim oyuncak robotta tekrar eder (aynı el, Ece).
 - Işık: ✅ Bölge 1 ve Bölüm 21-29 "şafaktan hemen önce" (ova ışığı), Bölüm 30 kapanışı oyundaki ilk gün doğumu.
-- **Kitaba eklenen yeni bilgi:** sol sayıları ve "sol 861 = sığınağa iniş = Ece'nin 9. doğum günü" (zaman çizelgesine not düşüldü).
+- **Kitaba eklenen yeni bilgi:** sol sayıları ve "sol 861 = göçün başladığı gün = Ece'nin 9. doğum günü" (zaman çizelgesine not düşüldü; 2026-11-14'te "sığınağa iniş"ten düzeltildi).
 - Küçük fark: `senaryo-bolge-02.md` kapanışındaki harita (kraterli düzlükte yanıp sönen nokta) oyuna konmadı; Bölge 3 açılışı ona dayanmıyor, sorun yok.
 
 ## Alınan kararlar (Ragıp, 2026-10-03)
 
-- **Doğum günü ayrıntısı kalır:** sol 861 = Ece'nin 9. doğum günü = sığınağa iniş. Hiçbir yerde söylenmez, yalnızca sayılar aynı. Dizide Defne'nin kızının boyunu aceleyle ölçtüğü kısa bir geri dönüş sahnesi olabilir.
+- **Doğum günü ayrıntısı kalır:** sol 861 = Ece'nin 9. doğum günü = göçün başladığı gün. Hiçbir yerde söylenmez, yalnızca sayılar aynı. Dizide Defne'nin kızının boyunu aceleyle ölçtüğü kısa bir geri dönüş sahnesi olabilir.
 - **Oyuncak robot çantaya girmez:** Kıvılcım'ın çantası Bölge 4'te kurdeleyle başlar (Perde 2 sırası bozulmaz). Oyuncak robot kulübede kalır; finalde kulübeye dönülürse orada durur.
 - **Turkuaz:** "ECE" yazısı turkuaz (`#2FC4B8`); Bölge 4'teki kurdele de aynı renk.
 - **Kulübe yalnızca iz:** güç ölçer modülünün nereden geldiğini program söylemez.

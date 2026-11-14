@@ -1,5 +1,5 @@
 // Defne'nin kayıtları (hikaye-kitabi.md "Kayıtlar"): metinlerin oyundaki tek yeri.
-// Bölüm 50 kapanışı, bölüm başları (52, 64) ve Kayıtlar sayfası buradan okur. Yeni kayıt = listeye bir satır.
+// Bölüm 50 kapanışı, bölüm başları (52, 64, 74) ve Kayıtlar sayfası buradan okur. Yeni kayıt = listeye bir satır.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -48,6 +48,10 @@ namespace MarsKod.Dunya
                 "Bir anlığına onu kaybettim.",
                 "Sonra buldum; bir duvarın önünde, elinde boya kalemi.",
                 "Ona kızamadım."),
+            new Recording(4, 8, 74, true, "cizimler.ses",
+                "Ece korkuyor ama belli etmiyor.",
+                "Bana benziyor.",
+                "Bütün gece çizdi; 'Kıvılcım yalnız kalmasın diye' dedi."),
         };
 
         /// <summary>Numarası verilen kayıt; yoksa null.</summary>

@@ -2,6 +2,9 @@
   "numara": 80,
   "baslik": "İstasyon haritası",
   "gorev": "Haritadaki yolu izle",
+  "etiket": "BÖLGE 8 · İSTASYON",
+  "giris": "Sol 1.097 · İstasyon haritası",
+  "bitis": "Oklar: tuz gölünün ötesi · Sonraki: tuz gölü",
   "harita": [
     ". . . . . .",
     ". . . K . .",

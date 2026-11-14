@@ -101,7 +101,9 @@ Finalde Ece çantayı görür ve eşyalarını tek tek tanır. Kimse açıklamaz
 
 ---
 
-## Bölge 8 — Terk edilmiş araştırma istasyonu (Bölüm 71-80) · `return`
+## Bölge 8 — Terk edilmiş araştırma istasyonu (Bölüm 71-80) · `return` + metin
+
+> Ayrıntılı senaryo (bölüm bölüm damgalar, 24 kişilik liste, Kayıt 4, çelişki kontrolü): `senaryo-bolge-08.md` (2026-11-14). Duvar çizimleri turuncu (turkuaz kalem Bölge 7'de düştü).
 
 **Olay:** Kanyonun ucunda koloninin eski araştırma istasyonu. Koloni göç sırasında burada bir gece kalmış. İstasyonun bilgisayarları uyandırılır; sorulara cevap veren rutinler (`return`) ile kayıtlar okunur. Duvarlar Ece'nin çizimleriyle dolu (bir gece boyunca çizmiş).
 

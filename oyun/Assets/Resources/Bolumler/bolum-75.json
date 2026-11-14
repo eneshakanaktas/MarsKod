@@ -2,6 +2,9 @@
   "numara": 75,
   "baslik": "Dışarıda tek robot",
   "gorev": "Çizimdeki yolu yürü",
+  "etiket": "BÖLGE 8 · İSTASYON",
+  "giris": "Sol 1.095 · Dışarıda tek robot",
+  "bitis": "Çizim: 5 · Sonuncusu: robot ve kız",
   "harita": [
     ". . . . . .",
     ". K H . K .",

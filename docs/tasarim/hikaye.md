@@ -27,9 +27,9 @@ Dünya'da bir genç, okulun Mars programında sıradan bir kod ödevi açtığı
 
 ## Uzun oyun yapısı: sezonlar
 
-- **Sezon 1 — Sessiz Koloni: 200 bölüm = 20 bölge × 10 bölüm.** Kendi içinde başlar ve biter (temel Python'un tamamı).
-- Final bir sonraki sezonun kapısını açar. Her sezon ~200 bölüm → 10 sezon = 2000 bölüm.
-- Sezon 1 dört perde (her perde 5 bölge = 50 bölüm); her perde bir büyük soruyla başlar, büyük bir cevap ya da dönüşle biter.
+- **"Sessiz Koloni" hikâyesi: 200 bölüm = 20 bölge × 10 bölüm, dört perde** (her perde 5 bölge = 50 bölüm); her perde bir büyük soruyla başlar, büyük bir cevap ya da dönüşle biter. Hikâye kendi içinde başlar ve biter.
+- **Oyunda iki sezona bölünür (Ragıp, 2026-11-02; yukarıdaki "Sezonlar" notu):** **Sezon 1 = Bölüm 1-100** (Perde 1-2; temel Python'un tamamı: Sezon 1 tek başına ders olarak yetmeli), **Sezon 2 = Bölüm 101-200** (Perde 3-4; ileri konular).
+- Final bir sonraki hikâyenin kapısını açar; oyun ileride 2000 bölüme büyüyebilir.
 
 ## Ton kuralları
 
@@ -89,18 +89,18 @@ Python konu sırası kolaydan zora genel bir taslaktır; motorun destekledikleri
 |---|---|---|---|---|---|
 | 6 | 51-60 | Kanyon girişi | Geçiş: roketle kanyona. Depoda bir drone bulunup onarılır; kanyon duvarlarında boya oklar. Defne'nin kayıtları artık açıkça öğrenciye konuşur. | Drone parçası | Fonksiyonlar (Defne'nin "rutinleri": ezber değil beceri) |
 | 7 | 61-70 | Kanyon dibi (eski nehir yatağı) | Drone ile yukarıdan, robotla aşağıdan iş birliği. Kumda küçük ayak izleri: Ece. | Maden | Parametreli fonksiyonlar |
-| 8 | 71-80 | Terk edilmiş araştırma istasyonu | Ece'nin çizimleri duvarlarda; kayıtlar kişiselleşir: "Ece korkuyor ama belli etmiyor." | Veri kartı | `return` |
-| 9 | 81-90 | Tuz gölü (kurumuş göl) | Geniş, düz, beyaz alan; oklar volkanı gösterir. | Tuz kristali | Listeler |
-| 10 | 91-100 | Gece ovası (meteor yağmuru) | **Orta nokta (Bölüm 100):** iki saat birden: sığınaktan uyarı (kapsüllerin enerjisi azalıyor) + **güneş kavuşumu yaklaşıyor**; bağlantı, kapsüllerin dayanacağı süreden önce kopacak. Kıvılcım tek başına iş yapmayı öğrenmeli. | Meteor taşı | Listede dolaşma (`for x in liste`) |
+| 8 | 71-80 | Terk edilmiş araştırma istasyonu | Ece'nin çizimleri duvarlarda; kayıtlar kişiselleşir: "Ece korkuyor ama belli etmiyor." | Veri kartı | `return` + metin (string) |
+| 9 | 81-90 | Tuz gölü (kurumuş göl) | Geniş, düz, beyaz alan; oklar volkanı gösterir. | Tuz kristali | Listeler + iç içe döngüler |
+| 10 | 91-100 | Gece ovası (meteor yağmuru) | **Orta nokta (Bölüm 100):** iki saat birden: sığınaktan uyarı (kapsüllerin enerjisi azalıyor) + **güneş kavuşumu yaklaşıyor**; bağlantı, kapsüllerin dayanacağı süreden önce kopacak. Kıvılcım tek başına iş yapmayı öğrenmeli. | Meteor taşı | `and`, `or`, `not` + pekiştirme (95-100) |
 
 ### Perde 3 — Yol Arkadaşı (Bölüm 101-150) · Soru: "Kıvılcım bensiz yapabilir mi?"
 
 | # | Bölümler | Bölge | Ne olur | Toplanan | Yeni Python |
 |---|---|---|---|---|---|
-| 11 | 101-110 | Volkan eteği | Geçiş: roketle volkana. Defne'nin şifreli notları çözülür. | Isı kristali | Metinler (string) |
-| 12 | 111-120 | Lav ovası | Soğumuş lav ızgara gibi çatlamış; alan satır satır, sütun sütun taranır. | Obsidyen | İç içe döngüler (2 boyutlu alan) |
+| 11 | 101-110 | Volkan eteği | Geçiş: roketle volkana. Defne'nin şifreli notları çözülür. | Isı kristali | ~~Metinler (string)~~ → Sezon 1'e (Bölge 8) taşındı; Sezon 2'de yeniden dengelenecek |
+| 12 | 111-120 | Lav ovası | Soğumuş lav ızgara gibi çatlamış; alan satır satır, sütun sütun taranır. | Obsidyen | ~~İç içe döngüler~~ → Sezon 1'e (Bölge 9) taşındı; Sezon 2'de yeniden dengelenecek |
 | 13 | 121-130 | Eski hangar | **Kor bulunur.** Huysuz yaşlı robot insanların gittiği geceyi anlatır; Kıvılcım bunları belleğine kaydeder (sonra önemli). Parça envanteri tutulur. | Yedek parça | Sözlükler (dict) |
-| 14 | 131-140 | Jeotermal santral | Santral çalıştırılır; Kıvılcım öğrencinin yazdığı rutinleri kendi başına sırayla kullanmaya başlar (her yeri tek tek söylemek gerekmez). | Vana | `and`, `or`, `not` |
+| 14 | 131-140 | Jeotermal santral | Santral çalıştırılır; Kıvılcım öğrencinin yazdığı rutinleri kendi başına sırayla kullanmaya başlar (her yeri tek tek söylemek gerekmez). | Vana | ~~`and`, `or`, `not`~~ → Sezon 1'e (Bölge 10) taşındı; Sezon 2'de yeniden dengelenecek |
 | 15 | 141-150 | Sığınak kapısı | Kapının kodu aranır. **Perde sonu (Bölüm 150, en karanlık an):** kapı açılırken tünel çöker; Kor, Kıvılcım'ı iterek kurtarır ve kayaların altında paramparça olur. Kapı açık, Kor yok. | Kapı anahtarı | Arama (bir listede bulmak) |
 
 ### Perde 4 — Dönüş (Bölüm 151-200) · Soru: "Herkesi kurtarabilecek miyiz?"

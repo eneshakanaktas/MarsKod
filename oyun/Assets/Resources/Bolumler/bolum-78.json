@@ -2,6 +2,9 @@
   "numara": 78,
   "baslik": "Listenin altı",
   "gorev": "Dışarıda kalanı bul",
+  "etiket": "BÖLGE 8 · İSTASYON",
+  "giris": "Sol 1.096 · Listenin altı",
+  "bitis": "BKM-7: dışarıda · Görev: KAPI",
   "harita": [
     ". . . . . .",
     ". . . . . .",
@@ -21,13 +24,11 @@
   "ekran": {
     "fonksiyon": "disarida_mi",
     "satirlar": [
-      {"girdi": "Defne Aras — kapsül: hazır", "cevap": false, "gorunur": true},
       {"girdi": "Ece Aras — kapsül: hazır", "cevap": false, "gorunur": true},
-      {"girdi": "Kerem Yalın — kapsül: hazır", "cevap": false},
       {"girdi": "Selin Toprak — kapsül: hazır", "cevap": false},
+      {"girdi": "Kerem Yalın — kapsül: hazır", "cevap": false},
       {"girdi": "Murat Ekinci — kapsül: hazır", "cevap": false},
       {"girdi": "Leyla Ekinci — kapsül: hazır", "cevap": false},
-      {"girdi": "Can Ekinci — kapsül: hazır", "cevap": false},
       {"girdi": "Zeynep Uçar — kapsül: hazır", "cevap": false},
       {"girdi": "Ali Rıza Demir — kapsül: hazır", "cevap": false},
       {"girdi": "Nur Demir — kapsül: hazır", "cevap": false},
@@ -37,14 +38,16 @@
       {"girdi": "Derya Öztürk — kapsül: hazır", "cevap": false},
       {"girdi": "Emre Bulut — kapsül: hazır", "cevap": false},
       {"girdi": "Aylin Bulut — kapsül: hazır", "cevap": false},
-      {"girdi": "Deniz Bulut — kapsül: hazır", "cevap": false},
+      {"girdi": "Cem Altun — kapsül: hazır", "cevap": false},
       {"girdi": "Tarık Erdem — kapsül: hazır", "cevap": false},
       {"girdi": "Gül Şahin — kapsül: hazır", "cevap": false},
       {"girdi": "Okan Akın — kapsül: hazır", "cevap": false},
       {"girdi": "Melis Aydın — kapsül: hazır", "cevap": false},
+      {"girdi": "Deniz Ateş — kapsül: hazır", "cevap": false},
       {"girdi": "Burak Tan — kapsül: hazır", "cevap": false},
       {"girdi": "Seda Koç — kapsül: hazır", "cevap": false},
       {"girdi": "Orhan Usta — kapsül: hazır", "cevap": false},
+      {"girdi": "Defne Aras — kapsül: hazır", "cevap": false, "gorunur": true},
       {"girdi": "BKM-7   — dışarıda — görev: KAPI", "cevap": true},
       {"girdi": "KOR     — hizmet dışı — hangar", "cevap": false}
     ]

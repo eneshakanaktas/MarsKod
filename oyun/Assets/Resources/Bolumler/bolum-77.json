@@ -2,6 +2,9 @@
   "numara": 77,
   "baslik": "24 kişilik liste",
   "gorev": "Listede Aras'ları bul",
+  "etiket": "BÖLGE 8 · İSTASYON",
+  "giris": "Sol 1.096 · Sığınak listesi",
+  "bitis": "Kişi: 24 · Aras: 2",
   "harita": [
     ". . . . . .",
     ". . . . . .",
@@ -13,13 +16,11 @@
   "ekran": {
     "fonksiyon": "aras_mi",
     "satirlar": [
-      {"girdi": "Defne Aras — kapsül: hazır", "cevap": true, "gorunur": true},
-      {"girdi": "Ece Aras — kapsül: hazır", "cevap": true},
-      {"girdi": "Kerem Yalın — kapsül: hazır", "cevap": false, "gorunur": true},
+      {"girdi": "Ece Aras — kapsül: hazır", "cevap": true, "gorunur": true},
       {"girdi": "Selin Toprak — kapsül: hazır", "cevap": false},
+      {"girdi": "Kerem Yalın — kapsül: hazır", "cevap": false, "gorunur": true},
       {"girdi": "Murat Ekinci — kapsül: hazır", "cevap": false},
       {"girdi": "Leyla Ekinci — kapsül: hazır", "cevap": false},
-      {"girdi": "Can Ekinci — kapsül: hazır", "cevap": false},
       {"girdi": "Zeynep Uçar — kapsül: hazır", "cevap": false},
       {"girdi": "Ali Rıza Demir — kapsül: hazır", "cevap": false},
       {"girdi": "Nur Demir — kapsül: hazır", "cevap": false},
@@ -29,14 +30,16 @@
       {"girdi": "Derya Öztürk — kapsül: hazır", "cevap": false},
       {"girdi": "Emre Bulut — kapsül: hazır", "cevap": false},
       {"girdi": "Aylin Bulut — kapsül: hazır", "cevap": false},
-      {"girdi": "Deniz Bulut — kapsül: hazır", "cevap": false},
+      {"girdi": "Cem Altun — kapsül: hazır", "cevap": false},
       {"girdi": "Tarık Erdem — kapsül: hazır", "cevap": false},
       {"girdi": "Gül Şahin — kapsül: hazır", "cevap": false},
       {"girdi": "Okan Akın — kapsül: hazır", "cevap": false},
       {"girdi": "Melis Aydın — kapsül: hazır", "cevap": false},
+      {"girdi": "Deniz Ateş — kapsül: hazır", "cevap": false},
       {"girdi": "Burak Tan — kapsül: hazır", "cevap": false},
       {"girdi": "Seda Koç — kapsül: hazır", "cevap": false},
-      {"girdi": "Orhan Usta — kapsül: hazır", "cevap": false}
+      {"girdi": "Orhan Usta — kapsül: hazır", "cevap": false},
+      {"girdi": "Defne Aras — kapsül: hazır", "cevap": true}
     ]
   },
   "komutlar": [],
@@ -49,7 +52,7 @@
   ],
   "tipik_hatalar": [
     {
-      "kod": ["def aras_mi(satir):", "    if satir == \"Defne Aras — kapsül: hazır\":", "        return True", "    return False"],
+      "kod": ["def aras_mi(satir):", "    if satir == \"Ece Aras — kapsül: hazır\":", "        return True", "    return False"],
       "aciklama": "Görev kartındaki satır doğru ama listede başka bir Aras daha var: tek satırı ezberlemek yetmez, satırın içinde ara."
     },
     {

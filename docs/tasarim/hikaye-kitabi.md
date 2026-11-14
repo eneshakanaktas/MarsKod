@@ -48,8 +48,8 @@ Oyuncu bunu parça parça öğrenir; bu bölüm yazarlar içindir.
 | ~3 yıl önce | Koloni kurulur (24 kişi). Kor koloninin ilk maden robotu. |
 | ~1 yıl önce | Kıvılcım koloniye gelir (küçük bakım robotu). Kor eskir, bacağı arızalanır; hizmet dışı bırakılıp eski hangara kaldırılır. Ece sık sık Kıvılcım'la oynar; göğsüne çizimini yapar. |
 | ~7 ay + 10 gün önce | Gözlemevi dev bir güneş fırtınası görür: 10 gün sonra varacak. Defne karar verir: volkanın altındaki lav tüneli sığınağına inilecek, herkes uyku kapsüllerine girecek. |
-| Sonraki 10 gün | Hazırlık. Son gün (koloni takvimiyle **sol 861**, aynı zamanda Ece'nin 9. doğum günü) herkes sığınağa iner; O sabah Defne panel tarlasındaki bakım kulübesinde panelleri sabitlerken, her doğum gününde olduğu gibi aceleyle de olsa kızının boyunu kapı pervazına işaretler (Bölge 3 izleri). Kutuptaki iki kişilik ekip son anda alınır, araçları orada kalır. Defne kayıtlarını hazırlar, Mars Kod Okulu'na isteği bırakır, yol boyunca işaretler (boya oklar) yaptırır. Ece, Kıvılcım'a veda eder. Sığınak kapısı dışarıdan kilitlenir; Kıvılcım dışarıda kalır. |
-| Göç günü (sol 861) | Göçte Ece gruptan ayrılıp yan kanyona koştu, duvara Kıvılcım'a mesaj boyadı ("KIVILCIM BENİ BUL"); Defne peşinden gidip onu buldu, kucağında taşıyarak döndü; turkuaz kalem dönüşte düştü (Bölge 7). |
+| Sonraki 10 gün | Hazırlık. Koloni takvimiyle **sol 861** (aynı zamanda Ece'nin 9. doğum günü) **göç başlar**: herkes koloniden ayrılıp sığınağa doğru yola çıkar (kanyon → istasyon → tuz gölü → volkan; sığınağa iniş birkaç sol sonra, fırtınadan hemen önce; kesin gün söylenmez. Ragıp, 2026-11-14: eskiden "861 = sığınağa iniş" yazıyordu, Bölge 7-8 ile çelişiyordu). O sabah Defne panel tarlasındaki bakım kulübesinde panelleri sabitlerken, her doğum gününde olduğu gibi aceleyle de olsa kızının boyunu kapı pervazına işaretler (Bölge 3 izleri). Kutuptaki iki kişilik ekip son anda alınır, araçları orada kalır. Defne kayıtlarını hazırlar, Mars Kod Okulu'na isteği bırakır, yol boyunca işaretler (boya oklar) yaptırır. Ece, Kıvılcım'a veda eder. Sığınak kapısı dışarıdan kilitlenir; Kıvılcım dışarıda kalır. |
+| Göç günü (sol 861) | Göçte Ece gruptan ayrılıp yan kanyona koştu, duvara Kıvılcım'a mesaj boyadı ("KIVILCIM BENİ BUL"); Defne peşinden gidip onu buldu, kucağında taşıyarak döndü; turkuaz kalem dönüşte düştü (Bölge 7). Gece koloni kanyonun ucundaki araştırma istasyonunda kalır (istasyon bilgisayarları son kez o gün açılır: Bölüm 72 damgası "Son açılış: sol 861"); Ece bütün gece duvarlara annesinin turuncu işaret kalemiyle çizer, yatağının yanında katlanmış bir çizim unutur (Bölge 8). |
 | ~7 ay önce | Fırtına çarpar. Koloninin enerjisi çöker, enerji hücreleri ovaya saçılır, güneş panelleri kırılır, anten devrilir. Kıvılcım'ın belleği silinir, kapanır. Dünya ile bağlantı kopar. |
 | ~7 ay önce → oyun başı | Dünya'da ajans koloniyi "büyük olasılıkla kayıp" ilan eder. Mars Kod Okulu kendi kendine açık kalır. Sığınakta kapsüllerin enerjisi beklenenden hızlı azalır (fırtına bir kısmını tüketmiş). |
 | Oyun başı (Bölüm 1) | *(Bölge 3'te program bugünü sol 1.068 diye gösterir: koloni kuruluşundan bu yana ~3 yıl, inişten bu yana 207 sol ≈ 7 ay.)*  Program, Defne'nin isteğini ilk uygun öğrenciye verir: Yıldız. Kıvılcım uyanır. |
@@ -110,7 +110,7 @@ Bölüm 50'den önce kayıt yok (yalnızca kısa kod geliyor; öneri 4). Perde 1
 | 1 | Bölüm 50 | "Bu bir ödev değil. Adım Defne Aras…" |
 | 2 | Bölge 6 başı (oyunda: Bölüm 52 başı, `rutinler.ses`) | Rutinler: "Ona ezber değil, beceri öğret. Bir kez öğrettiğini kendisi tekrar edebilir. Bunlara biz 'rutin' derdik. İlki sabah turuydu; her sabah yapardı." |
 | 3 | Bölge 7 (oyunda: Bölüm 64 başı, `izler.ses`) | Ayak izleri: "Ece yine önden koştu. Bir anlığına onu kaybettim. Sonra buldum; bir duvarın önünde, elinde boya kalemi. Ona kızamadım." |
-| 4 | Bölge 8 | "Ece korkuyor ama belli etmiyor. Bana benziyor." |
+| 4 | Bölge 8 (oyunda: Bölüm 74 başı, `cizimler.ses`) | İstasyon gecesi: "Ece korkuyor ama belli etmiyor. Bana benziyor. Bütün gece çizdi; 'Kıvılcım yalnız kalmasın diye' dedi." |
 | 5 | Bölge 9 | Oklar, volkan: "Okları takip et. Biz oradayız; dağın altında. Acele etme, ama durma da." |
 | 5b | Bölge 10 | Mavi yıldız: "Ece her gece o mavi yıldızı arardı. 'Orada bizi duyan biri var mı?' derdi." |
 | 6 | Bölüm 100 | Kayıt değil, otomatik sistem uyarısı: kapsül enerjisi + kavuşum tarihi. |
@@ -135,9 +135,9 @@ Bölge 16-20 için kayıt yerine **canlı konuşma** (Defne uyanık); dakikalarc
 | Kıvılcım'ın çantası | Bölge 4 kurdele (Bölüm 40, son direkten; pil çantasına bağlı); sonra turkuaz boya kalemi (7, Bölüm 68; ucu aşınmış), katlanmış çizim (8), oyuncak astronot (9) | Final: Ece eşyalarını tanır; katlanmış çizim açılır. |
 | Geri sayan direkler | Bölge 4: işaret direkleri 9 → 1, son direk tepede anteni görür | Bölüm 50: "Yolu işaretledik. Okları takip et." |
 | D.A. notları (koddaki yorumlar) | Bölüm 9 `# sabah turu - D.A.`, Bölüm 35 (adı "Acele etme") `# toz gecene kadar bekle.` + `# acele etme. - D.A.` (iki satır); Bölüm 62 `# serçe yukarıdan bakar, sen yürü :) - E.` (annesi "D.A.", kızı "E."; Ece'nin oyundaki ilk "sesi") | Bölge 5 "D. ARAS" çantası (43; üçüncü not yok, ad eşyadan okunur); Bölüm 50 kayıt; Bölge 6 `sabah_turu()`. |
-| Ece'nin çizimleri | Kıvılcım'ın göğsü (çiçek, kız, robot); Bölge 5 alet çantasının kapağına bantlı çizim (44: anten + el sallayan iki kişi, büyük ve küçük; küçük olan turkuaz) | Final: göğüsteki çizime yıldız eklenir. |
+| Ece'nin çizimleri | Kıvılcım'ın göğsü (çiçek, kız, robot); Bölge 5 alet çantasının kapağına bantlı çizim (44: anten + el sallayan iki kişi, büyük ve küçük; küçük olan turkuaz) | Bölge 8 istasyon duvarları (**turuncu**: turkuaz kalem Bölge 7'de düştü; Ece o gece annesinin yol işaretlediği turuncu kalemle çizdi, kimse söylemez); final: göğüsteki çizime yıldız eklenir. |
 | Dönüş izi | Bölüm 66 (gidiş aralıklı, koşarak) | 66-69: dönüş daha derin, yanında küçük iz yok → Defne Ece'yi taşıdı; kalem dönüşte düştü. |
-| Sol 861 | Bölge 3 boy çizgisi + takvim (Ece'nin 9. doğum günü = sığınağa iniş); Bölüm 47'deki makaralar 80-60-10 m (ilk rakamlar 8-6-1; kimse söylemez) | Perde 3: sığınak kapısının kodu. Bölüm 70 duvarında dokuz çizgili pasta (kimse hatırlatmaz). |
+| Sol 861 | Bölge 3 boy çizgisi + takvim (Ece'nin 9. doğum günü = göçün başladığı gün); Bölge 6 son boya ok; Bölüm 72 istasyon "Son açılış: sol 861"; Bölüm 47'deki makaralar 80-60-10 m (ilk rakamlar 8-6-1; kimse söylemez) | Perde 3: sığınak kapısının kodu. Bölüm 70 duvarında dokuz çizgili pasta (kimse hatırlatmaz). |
 
 ## Yan karakterler ve adlar
 
@@ -145,7 +145,10 @@ Bölge 16-20 için kayıt yerine **canlı konuşma** (Defne uyanık); dakikalarc
   **Görünüşü (Enes, 2026-10-08; Ragıp'a haber):** tombul, yuvarlak serçe gövdesi (krem), önde iki kamera "göz" ve küçük turuncu gaga,
   arkada kısa kuyruk, altta iki kızak; dört çapraz kolda halkalı (korumalı) pervaneler; Kıvılcım'ın yarı boyu; gövdenin üstünde
   turkuaz (`#2FC4B8`) çocuk eliyle fırçayla boyanmış "SERÇE" (`BrushPaint`). Uçarken gözleri açık mavi yanar (`Sparrow.cs`).
-- **24 kişi:** Sığınaktaki koloni; listesi Bölge 8'de (isimler sonra yazılacak; Perde 4'te uyananlar).
+- **24 kişi:** Sığınaktaki koloni; listesi Bölge 8'de (Bölüm 77-78 istasyon ekranı; Perde 4'te uyananlar). Liste sığınağa **iniş sırası**: Ece ilk (en derindeki kapsül, en son uyanır), Defne en son (komutan). Görevler oyunda yazmaz, yazarlar için (Ragıp, 2026-11-14):
+  1. **Ece Aras** · 2. Selin Toprak (jeolog) · 3. Kerem Yalın (anten/haberleşme) · 4. Murat Ekinci (sera) · 5. Leyla Ekinci (hekim) · 6. Zeynep Uçar (roket rotaları) · 7. Ali Rıza Demir (maden mühendisi, Kor'un ustası) · 8. Nur Demir (su arıtma) · 9. Baran Kaya (güneş panelleri) · 10. Elif Kaya (biyolog) · 11. Hakan Sezer (gözlemevi; fırtınayı ilk gören) · 12. Derya Öztürk (istasyon bilgisayarları) · 13. Emre Bulut (sondaj) · 14. Aylin Bulut (hava durumu) · 15. Cem Altun (araçlar, KT-2) · 16. Tarık Erdem (kubbe yapımı) · 17. Gül Şahin (aşçı; Perde 4'te ilk uyananlardan) · 18. Okan Akın (teknisyen) · 19. Melis Aydın (sağlık) · 20. Deniz Ateş (gözlemevi yardımcısı) · 21. Burak Tan (buz ve su) · 22. Seda Koç (depo) · 23. Orhan Usta (en yaşlı, eski madenci) · 24. **Defne Aras**
+  - Dört evli çift (Ekinci, Demir, Kaya, Bulut); Ece koloninin tek çocuğu. Listede başka "Aras" yok: **Ece'nin babası kolonide değil.** Nedeni Sezon 1'de söylenmez (açık soru, Ragıp'ta; dizide ya da Sezon 2'de tohum olabilir). Defne'nin "her şeyi tek başına taşıma" yüküyle uyumlu.
+  - Bulmaca kuralı: "Aras" (ve küçük harfle "aras") yalnız Defne ile Ece'nin satırında, "dışarıda" yalnız BKM-7 satırında geçer (77-78 buna dayanır); isim değişirse `dotnet test` denetler.
 
 ## Çelişki kontrol listesi (yeni sahne yazarken)
 

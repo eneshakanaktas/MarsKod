@@ -54,8 +54,15 @@ public static class StationMap
         AddArrow(arrows, M(-0.28f, -0.02f), M(0.36f, 0.04f));
         AddArrow(arrows, M(0.44f, 0.08f), M(0.64f, 0.2f));
         BrushPaint.Lines(face, arrows.ToArray(), -0.006f, PaintMarks.PaintMat(0f), seed + 1, 0.022f).name = "Oklar";
+        var end = Parts.Empty(ArrowsEndName, face);   // son okun ucu (3b kapanisinda Kivilcim basini buraya kaldirir)
+        end.localPosition = new Vector3(M(0.64f, 0.2f).x, M(0.64f, 0.2f).y, -0.006f);
         return map;
     }
+
+    const string ArrowsEndName = "Ok-Ucu";
+
+    // Haritadaki son okun ucu (tuz golunun otesi), dunya konumu. map: Paint'in dondurdugu levha
+    public static Vector3 ArrowsEnd(Transform map) => map.Find("Yuz/" + ArrowsEndName).position;
 
     // Govde + iki kanatli uc (kalemle cizilmis)
     static void AddArrow(List<Vector2[]> lines, Vector2 from, Vector2 to)

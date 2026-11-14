@@ -53,6 +53,8 @@ public static class Sound
     public static void Bump() => Play(Get("bump", () => Buzz(130f, 0.1f)), 0.55f);
     public static void Error() => Play(Get("error", () => Chime(new[] { 440f, 310f }, 0.09f, square: true)), 0.55f);
     public static void Celebrate() => Play(Get("celebrate", () => Chime(new[] { 523f, 659f, 784f, 1046f }, 0.1f)), 0.7f);
+    // sessiz bitis (78): alcak, yumusak iki notali tini
+    public static void Quiet() => Play(Get("quiet", () => Chime(new[] { 392f, 330f }, 0.22f)), 0.4f);
     public static void Lamp() => Play(Get("lamp", () => Beep(1300f, 0.05f)), 0.35f);
     public static void Blip() => Play(Get("blip", () => Beep(520f, 0.12f)), 0.35f);
     public static void Rotor() => Play(Get("rotor", () => Whirr(1.6f)), 0.35f);

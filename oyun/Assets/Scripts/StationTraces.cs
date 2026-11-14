@@ -32,12 +32,18 @@ public static class StationTraces
     public static Transform CrestSpot { get; private set; }
     // 76: Ece ile Defne'nin yataklari (3b sahnesi icin); baska bolumlerde null
     public static Transform Beds { get; private set; }
+    // 76: Ece'nin (kucuk) yataginin ortasi, alanin yerel konumu (3b: Kivilcim cizimi alinca ona doner); baska bolumlerde null
+    public static Vector3? EceBed { get; private set; }
     // 73, 75: Ece'nin duvar cizimlerinin ortalari (3b kapanisi icin); baska bolumlerde null
     public static IReadOnlyList<Vector3> Drawings { get; private set; }
     // 71: koloninin armasi (denetim icin); baska bolumlerde null
     public static Transform Crest { get; private set; }
     // 80: duvar haritasi (3b kapanisi icin); baska bolumlerde null
     public static Transform WallMap { get; private set; }
+    // 80: haritadaki son okun ucu (tuz golunun otesi), dunya konumu; baska bolumlerde null
+    public static Vector3? MapArrowsEnd => WallMap != null ? StationMap.ArrowsEnd(WallMap) : (Vector3?)null;
+    // 80 kapanisinin hatira satiri: 78'de bulunan satir (denetim bolum-78.json ile harfi harfine karsilastirir)
+    public const string KapiLine = "BKM-7   — dışarıda — görev: KAPI";
     // 79: Kor'un kirik bacagi (denetim icin); baska bolumlerde null
     public static Transform KorLeg { get; private set; }
     // 72, 77, 78: ekran bulmacasinin sahnedeki bilgisayarlari; baska bolumlerde null
@@ -60,6 +66,7 @@ public static class StationTraces
         Room = null;
         CrestSpot = null;
         Beds = null;
+        EceBed = null;
         WallMap = null;
         KorLeg = null;
         Screens = null;
@@ -72,25 +79,41 @@ public static class StationTraces
             Crest = ColonyCrest.Paint(CrestSpot, Vector3.zero, CrestSize, 871);
             return;
         }
-        // yatak, tezgah ve masalarin altina kum/kagit girmesin
-        bool backClutter = levelNumber != FoldedLevel && levelNumber != WorkshopLevel && levelNumber != ScreensLevel;
-        Room = StationRoom.Build(parent, areaHalf, LightsOnAtStart(levelNumber), backClutter, 800 + levelNumber, ground);
+        Room = BuildRoom(levelNumber, parent, areaHalf, ground);
         float wallZ = areaHalf.y + StationRoom.BackGap;
         switch (levelNumber)
         {
-            case FoldedLevel: Beds = StationProps.Beds(parent, wallZ, ground); break;
+            case FoldedLevel:
+                Beds = StationProps.Beds(parent, wallZ, ground);
+                EceBed = StationProps.EceBedCenter(wallZ, ground);
+                break;
             case WorkshopLevel:
                 StationProps.Workshop(parent, Room.BackWallFace, wallZ, ground);
                 KorLeg = StationProps.KorLeg(parent, new Vector3(1.85f, 0f, wallZ - 0.4f), -10f, ground);
                 break;
             case MapLevel: WallMap = StationMap.Paint(Room.BackWallFace, new Vector2(0f, 0.62f), 2.2f, 800); break;
-            case DrawingsFirstLevel: Drawings = WallDrawings.Paint(Room.BackWallFace, 3, 873); break;
-            case DrawingsSecondLevel: Drawings = WallDrawings.Paint(Room.BackWallFace, 5, 873); break;   // ayni duvar: ilk uc ayni
+            case DrawingsFirstLevel:
+            case DrawingsSecondLevel: Drawings = PaintDrawings(levelNumber, Room.BackWallFace); break;
             case ScreensLevel: Screens = StationScreens.Create(Room.BackWallFace, 6, highlightTrue: false, 872, ground); break;
             case ListLevel: Screens = StationScreens.Create(Room.BackWallFace, 1, highlightTrue: false, 877, ground); break;
             case ListEndLevel: Screens = StationScreens.Create(Room.BackWallFace, 1, highlightTrue: true, 878, ground); break;   // BKM-7
         }
     }
+
+    // Istasyonun odasi (bolumun tohumuyla). Yatak, tezgah ve masalarin altina kum/kagit girmesin.
+    static StationRoom.Room BuildRoom(int levelNumber, Transform parent, Vector2 areaHalf, Func<float, float, float> ground)
+    {
+        bool backClutter = levelNumber != FoldedLevel && levelNumber != WorkshopLevel && levelNumber != ScreensLevel;
+        return StationRoom.Build(parent, areaHalf, LightsOnAtStart(levelNumber), backClutter, 800 + levelNumber, ground);
+    }
+
+    // Ece'nin duvar cizimleri: 73'te 3, 75'te 5; ayni duvar, ilk uc ayni
+    static IReadOnlyList<Vector3> PaintDrawings(int levelNumber, Transform wallFace) =>
+        WallDrawings.Paint(wallFace, levelNumber == DrawingsFirstLevel ? 3 : 5, 873);
+
+    // 80 kapanisinin hatira kesmesi: 75'in koridoru (ayni oda, ayni 5 cizim) ayni yerde, 80'in esyalari gizli. CorridorSet.Hide geri alir.
+    public static CorridorSet ShowCorridor(Transform levelRoot, Vector2 areaHalf, Func<float, float, float> ground) =>
+        CorridorSet.Show(levelRoot, root => PaintDrawings(DrawingsSecondLevel, BuildRoom(DrawingsSecondLevel, root, areaHalf, ground).BackWallFace));
 
     // 73 bitti: onarilan guc kutulariyla tavan lambalari kirpisarak yanar (Tekrar'da ResetBackdrop losa dondurur)
     public static void LightsOn(int levelNumber, Light sky, Light sun)

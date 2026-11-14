@@ -23,6 +23,13 @@ public class SparkBot : Robot
     static readonly Vector3 ArmOverShoulder = new Vector3(165f, 10f, 70f);  // sag kol omzun ustunden sirta (goruntude ayarlandi)
     static readonly Vector3 ArmHoldNote = new Vector3(62f, 14f, 78f);       // sag el gogsun onunde, kagit yuze donuk (Bolge 8 notu)
     const float NoteNod = 14f;                                              // notu okurken basi kagida egilir
+    // 76 katlanmis cizim (goruntude ayarlandi): kagit gogsun onunde (govdenin yerelinde), ustu basa donuk; iki el yan kenarlarindan tutar
+    // (kollar hedefe uzanir: ReachArm). Kollar kisa: iki el ancak gogsun onunde bulusur.
+    static readonly Vector3 HeldPaperAt = new Vector3(0f, 0.29f, 0.17f);
+    static readonly Quaternion HeldPaperTurn = Quaternion.Euler(-25f, 0f, 0f);
+    const float HeldPaperSize = 1f;     // elde dunya olcegi (yerdekiyle ayni)
+    const float GripInset = 0.8f;       // eller kagidin yan kenarlarinda (yarim genisligin 0,8'i)
+    const float PaperNod = 32f;         // basi kagida egilir (yuz kagida bakar)
     const float PickupLean = 34f;
 
     // Bolum 70: avuc duvara, kalemin ucu duvardaki cizgiye. Kollar kisa (iki el ancak gogsun onunde bulusur): duvardaki avuc govdenin
@@ -37,7 +44,12 @@ public class SparkBot : Robot
     static readonly Color EyeUnsure = Mats.Hex("#FFA040") * 1.6f;
     static readonly Color EyeEce = CraterTraces.EceColor;            // 70 sonu: Ece'nin turkuazi (1,6 kat parlaklikta beyaza doyuyordu)
 
-    Transform body, head, eyeL, eyeR, ribbon, crayon, heldCrayon, heldNote, foldedDrawing;
+    Transform body, head, eyeL, eyeR, ribbon, crayon, heldCrayon, heldNote, foldedDrawing, backPaper;
+    Transform carriedHome;   // elde tasinan nesnenin (68 kalem, 76 cizim) yerdeki ebeveyni
+    Transform heldPaper;     // 76: elde tutulan katlanmis cizim (TryUnfold - StowOnBack arasi)
+    bool gripPaper;          // iki el heldPaper'in kenarlarina uzanir (Animate her karede hedefi kagittan alir)
+    float openAmount;        // elde tutulan kagidin ne kadar acik oldugu
+    readonly Vector3[] armPose = { ArmRest, ArmRest };   // her kolun su anki durusu (SetArm)
     readonly Transform[] ribbonTails = new Transform[2];
     readonly Transform[] shoulders = new Transform[2], elbows = new Transform[2], hands = new Transform[2];
     // Hedefe uzanan kollar (Bolum 70): Animate her karede kurar, suzulurken govde inip kalksa da el duvarda yerinde kalir
@@ -47,7 +59,7 @@ public class SparkBot : Robot
     Material eyeMat, thrusterMat, beaconMat;
     Color eyeColor;
     Vector3 arms = ArmRest;   // kollarin su anki durusu (SetArms)
-    float headYaw, headYawTarget, nod, tilt, lean, lift, beaconBoost;
+    float headYaw, headYawTarget, nod, tilt, lean, lift, beaconBoost, beaconDim;
     bool posing;   // kutlama/omuz silkme: bos durus hareketleri durur
 
     protected override float WheelRadius => 1f;   // tekerlegi yok
@@ -148,9 +160,9 @@ public class SparkBot : Robot
     {
         foldedDrawing = Parts.Empty("KatlanmisCizim-Sirt", body);
         foldedDrawing.localPosition = new Vector3(-0.05f, 0.298f, -0.154f);
-        var paper = FoldedDrawing.Create(foldedDrawing, Vector3.zero, 0f);
-        paper.localRotation = Quaternion.Euler(-90f, 0f, -10f);   // kagidin yuzu arkaya bakar, hafif egik
-        paper.localScale = Vector3.one * 0.36f;
+        backPaper = FoldedDrawing.Create(foldedDrawing, Vector3.zero, 0f);
+        backPaper.localRotation = Quaternion.Euler(-90f, 0f, -10f);   // kagidin yuzu arkaya bakar, hafif egik
+        backPaper.localScale = Vector3.one * 0.36f;
         Parts.Add("Kayis", foldedDrawing, MeshFactory.RoundedBox(new Vector3(0.2f, 0.012f, 0.008f), 0.003f, 1), strap,
             new Vector3(0.05f, -0.012f, -0.008f), outline: false, castShadow: false);
         foldedDrawing.gameObject.SetActive(false);
@@ -221,6 +233,7 @@ public class SparkBot : Robot
     // Tek kol (side 0 sol, 1 sag)
     void SetArm(int side, Vector3 pose)
     {
+        armPose[side] = pose;
         shoulders[side].localRotation = ShoulderPose(side, pose);
         elbows[side].localRotation = ElbowPose(pose.z);
     }
@@ -233,7 +246,7 @@ public class SparkBot : Robot
     void ReachArm(int side)
     {
         float sx = side == 0 ? -1f : 1f;
-        float upper = UpperArm, lower = side == 0 ? PalmFromElbow : CrayonTipFromElbow;
+        float upper = UpperArm, lower = side == 1 && heldCrayon.gameObject.activeSelf ? CrayonTipFromElbow : PalmFromElbow;
         Vector3 from = shoulders[side].localPosition, to = body.InverseTransformPoint(reachAt[side]);
         float d = Mathf.Clamp(Vector3.Distance(from, to), Mathf.Abs(upper - lower) + 1e-3f, upper + lower - 1e-3f);
         var dir = (to - from).normalized;
@@ -263,11 +276,15 @@ public class SparkBot : Robot
     protected override void OnReset()
     {
         posing = false;
-        headYaw = headYawTarget = nod = tilt = lean = lift = beaconBoost = 0f;
+        headYaw = headYawTarget = nod = tilt = lean = lift = beaconBoost = beaconDim = 0f;
         SetEyes(EyeCalm, 0f);
         for (int side = 0; side < 2; side++) { reachWeight[side] = 0f; reachFrom[side] = ArmRest; }
         SetArms(ArmRest);
         heldNote.gameObject.SetActive(false);
+        carriedHome = null;   // elde kalan nesneyi sahnesi geri alir (RiverBedTraces.ReturnCrayon, NoteEnd.Restore)
+        heldPaper = null;
+        gripPaper = false;
+        openAmount = 0f;
         if (heldCrayon.gameObject.activeSelf)   // elinin cevresini cizerken durduruldu: kalem sirta
         {
             heldCrayon.gameObject.SetActive(false);
@@ -284,7 +301,7 @@ public class SparkBot : Robot
         thrusterMat.SetColor("_EmissionColor", Mats.Hex("#7FD8FF") * (1.2f + 0.5f * Mathf.Sin(t * 2.2f + 1.5f)));
 
         float blink = Mathf.Pow(0.5f + 0.5f * Mathf.Sin(t * 4f), 8f);
-        beaconMat.SetColor("_EmissionColor", Mats.Hex("#FFA733") * (0.3f + 1.2f * Mathf.Max(blink, beaconBoost)));
+        beaconMat.SetColor("_EmissionColor", Mats.Hex("#FFA733") * ((0.3f + 1.2f * Mathf.Max(blink, beaconBoost)) * (1f - beaconDim)));
 
         // kurdelenin uclari suzulmeyle hafifce savrulur (biri digerinden biraz geride)
         for (int k = 0; k < 2; k++)
@@ -300,6 +317,9 @@ public class SparkBot : Robot
 
         // bos dururken kollar suzulmeyle hafifce sallanir
         if (!posing) SetArms(ArmRest + new Vector3(4f * Mathf.Sin(t * 2.2f - 0.8f), 0f, 6f * Mathf.Sin(t * 2.2f - 1.2f)));
+        if (gripPaper)
+            for (int side = 0; side < 2; side++)
+                reachAt[side] = heldPaper.TransformPoint(new Vector3((side == 0 ? -0.5f : 0.5f) * FoldedDrawing.Width * GripInset, 0f, 0f));
         for (int side = 0; side < 2; side++)
             if (reachWeight[side] > 0f) ReachArm(side);
     }
@@ -327,8 +347,10 @@ public class SparkBot : Robot
 
     public override void GlanceAtCamera(bool on) => headYawTarget = on ? 32f : 0f;
 
-    // Gozlerin su anki rengi (goruntu denetimi)
+    // Gozlerin su anki rengi, normal rengi ve ozel durusta mi (goruntu denetimi)
     public Color EyeColor => eyeColor;
+    public static Color CalmEyes => EyeCalm;
+    public bool Posing => posing;
 
     public override IEnumerator Calm()
     {
@@ -430,50 +452,118 @@ public class SparkBot : Robot
         posing = false;
     }
 
-    // Bolum 68: one egilir, sag eliyle yerdeki kalemi alir, kolunu omzunun ustunden gecirip kalemi sirtina, kurdelenin yanina takar.
-    // Yerdeki nesne sonunda gizlenip eski yerine (ebeveynine) birakilir: "Tekrar" onu yine yere koyabilsin.
-    public override IEnumerator TakeToBack(Transform item)
+    // 68 kalem, 76 cizim: one egilir, sag eliyle yerdeki nesneyi alir (egik kalir). Nesnenin eski ebeveyni saklanir: StowOnBack
+    // sonunda nesneyi gizleyip oraya birakir ("Tekrar" onu yine yere koyabilsin).
+    public override IEnumerator PickUp(Transform item)
     {
         posing = true;
         GlanceAtCamera(false);
-        var home = item.parent;
+        carriedHome = item.parent;
         yield return Tween.Run(0.4f, t =>
         {
             float e = Tween.InOutCubic(t);
             lean = PickupLean * e;
-            nod = 20f * e;   // basi kaleme bakar
+            nod = 20f * e;   // basi nesneye bakar
             SetArms(Vector3.Lerp(ArmRest, ArmPickup, e));
         });
-        // kalem ele gelir (son birkac santim), sonra ele baglanir
+        // nesne ele gelir (son birkac santim), sonra ele baglanir
         var hand = hands[1];
         Vector3 fromPos = item.position;
         Quaternion fromRot = item.rotation;
         yield return Tween.Run(0.15f, t => item.SetPositionAndRotation(Vector3.Lerp(fromPos, hand.position, t), fromRot));
         item.SetParent(hand, true);
+    }
+
+    // Dogrulurken kolunu omzunun ustunden gecirir, nesne elden sirttaki yerine kayar (kagit sirttaki kucuk boyuna iner), kol iner.
+    public override IEnumerator StowOnBack(Transform item, BackSlot slot)
+    {
+        posing = true;
+        float leanFrom = lean, nodFrom = nod;
+        Vector3 leftFrom = armPose[0], rightFrom = armPose[1];
+        bool gripped = gripPaper;   // 76: iki el kagidin kenarinda; kagit sag ele gecer, kollar uzanmadan durusa doner
+        if (gripped)
+        {
+            gripPaper = false;
+            item.SetParent(hands[1], true);
+            reachFrom[0] = ArmRest;
+            reachFrom[1] = ArmOverShoulder;
+        }
         yield return Tween.Run(0.6f, t =>
         {
             float e = Tween.InOutCubic(t);
-            lean = PickupLean * (1f - e);
-            nod = 20f * (1f - e);
-            SetArm(0, Vector3.Lerp(ArmPickup, ArmRest, e));
-            SetArm(1, Vector3.Lerp(ArmPickup, ArmOverShoulder, e));
+            lean = leanFrom * (1f - e);
+            nod = nodFrom * (1f - e);
+            if (gripped) reachWeight[0] = reachWeight[1] = 1f - e;
+            else
+            {
+                SetArm(0, Vector3.Lerp(leftFrom, ArmRest, e));
+                SetArm(1, Vector3.Lerp(rightFrom, ArmOverShoulder, e));
+            }
         });
-        // elden sirttaki yerine kayar
-        fromPos = item.position;
-        fromRot = item.rotation;
+        if (gripped)
+        {
+            reachWeight[0] = reachWeight[1] = 0f;
+            reachFrom[0] = reachFrom[1] = ArmRest;
+            SetArm(0, ArmRest);
+            SetArm(1, ArmOverShoulder);
+        }
+        var spot = slot == BackSlot.Crayon ? crayon : backPaper;
+        // kalemin yerdeki ve sirttaki boyu ayni; kagit sirtta kucuk
+        float sizeFrom = item.lossyScale.x, sizeTo = slot == BackSlot.Crayon ? sizeFrom : backPaper.lossyScale.x;
+        Vector3 fromPos = item.position;
+        Quaternion fromRot = item.rotation;
         yield return Tween.Run(0.25f, t =>
         {
             float e = Tween.InOutCubic(t);
-            item.SetPositionAndRotation(Vector3.Lerp(fromPos, crayon.position, e), Quaternion.Slerp(fromRot, crayon.rotation, e));
+            item.SetPositionAndRotation(Vector3.Lerp(fromPos, spot.position, e), Quaternion.Slerp(fromRot, spot.rotation, e));
+            item.localScale = Vector3.one * (Mathf.Lerp(sizeFrom, sizeTo, e) / item.parent.lossyScale.x);
         });
         item.gameObject.SetActive(false);
-        item.SetParent(home, true);
-        SetCrayon(true);
+        item.SetParent(carriedHome, true);
+        carriedHome = null;
+        heldPaper = null;
+        ShowOnBack(slot);
         yield return Tween.Run(0.3f, t => SetArm(1, Vector3.Lerp(ArmOverShoulder, ArmRest, Tween.InOutCubic(t))));
         lean = 0f;
         nod = 0f;
         arms = ArmRest;
         posing = false;
+    }
+
+    // 76: dogrulur, kagidi gogsunun onune getirir, iki eli kenarlarinda; basi kagida egilir; ust katin kosesini kaldirir ve durur.
+    public override IEnumerator TryUnfold(Transform paper, float amount, float hold)
+    {
+        posing = true;
+        heldPaper = paper;
+        paper.SetParent(body, true);   // suzulurken govdeyle birlikte iner kalkar; eller onu izler
+        float leanFrom = lean, nodFrom = nod;
+        for (int side = 0; side < 2; side++) reachFrom[side] = armPose[side];
+        gripPaper = true;
+        Vector3 posFrom = paper.localPosition;
+        Quaternion rotFrom = paper.localRotation;
+        float sizeFrom = paper.localScale.x, sizeTo = HeldPaperSize / body.lossyScale.x;
+        yield return Tween.Run(0.5f, t =>
+        {
+            float e = Tween.InOutCubic(t);
+            lean = leanFrom * (1f - e);
+            nod = Mathf.Lerp(nodFrom, PaperNod, e);
+            reachWeight[0] = reachWeight[1] = e;
+            paper.localPosition = Vector3.Lerp(posFrom, HeldPaperAt, e);
+            paper.localRotation = Quaternion.Slerp(rotFrom, HeldPaperTurn, e);
+            paper.localScale = Vector3.one * Mathf.Lerp(sizeFrom, sizeTo, e);
+        });
+        yield return Tween.Run(0.5f, t => FoldedDrawing.SetOpen(paper, amount * Tween.InOutCubic(t)));
+        openAmount = amount;
+        yield return Tween.Wait(hold);
+    }
+
+    public override IEnumerator Refold(float seconds)
+    {
+        if (heldPaper == null) yield break;
+        var paper = heldPaper;
+        float from = openAmount;
+        yield return Tween.Run(seconds, t => FoldedDrawing.SetOpen(paper, from * (1f - Tween.InOutCubic(t))));
+        openAmount = 0f;
     }
 
     // Kameraya (oyuncuya) doner, gozleri yesil gulumser, kollarini kaldirip iki kez zipar, anten isigini iki kez yakar.
@@ -510,6 +600,68 @@ public class SparkBot : Robot
             SetArms(Vector3.Lerp(from, ArmRest, e));
             nod = -30f * e;
         });
+    }
+
+    // 78 aciklama ani: donar, gozler sonuklesip kisilir, anten isigi soner; basini gogsundeki cizime eger, durur, yavasca ekrana kaldirir.
+    const float RealizeNod = 45f, RealizeEyes = 0.6f, RealizeSquint = 0.35f;
+
+    public override IEnumerator Realize()
+    {
+        posing = true;
+        GlanceAtCamera(false);
+        var dim = EyeCalm * RealizeEyes;
+        yield return Tween.Run(0.3f, t =>
+        {
+            float e = Tween.InOutCubic(t);
+            SetEyes(Color.Lerp(EyeCalm, dim, e), RealizeSquint * e);
+            beaconDim = e;
+        });
+        yield return Tween.Wait(0.3f);
+        yield return Tween.Run(0.6f, t => nod = RealizeNod * Tween.InOutCubic(t));
+        yield return Tween.Wait(1.2f);
+        yield return Tween.Run(0.8f, t =>
+        {
+            float e = Tween.InOutCubic(t);
+            nod = RealizeNod * (1f - e);
+            SetEyes(Color.Lerp(dim, EyeCalm, e), RealizeSquint * (1f - e));
+            beaconDim = 1f - e;
+        });
+        nod = 0f;
+        beaconDim = 0f;
+        SetEyes(EyeCalm, 0f);
+        posing = false;
+    }
+
+    // 80 kapanisi: kollar iner, gozler sakin; bas noktaya kalkar (yukari en cok 45 derece), yuksekse govde biraz geriye yaslanir.
+    // Harita cocuk boyunda (oklar bas hizasinin biraz altinda): bas yine de belirgin kalkar, "okun otesine" bakar
+    const float RaiseMaxUp = 45f, RaiseMinUp = 22f, RaiseMaxLean = 8f, RaiseMaxTurn = 30f;
+    public float Nod => nod;   // goruntu denetimi (eksi: yukari bakiyor)
+
+    public override IEnumerator RaiseHeadTo(Vector3 worldPoint, float seconds)
+    {
+        GlanceAtCamera(false);
+        posing = true;
+        SetEyes(EyeCalm, 0f);
+        var local = body.InverseTransformPoint(worldPoint) - head.localPosition;
+        float flat = new Vector2(local.x, local.z).magnitude;
+        float up = Mathf.Atan2(local.y, Mathf.Max(flat, 1e-3f)) * Mathf.Rad2Deg;          // noktanin yukseklik acisi
+        float nodTo = Mathf.Clamp(-up - HeadUp, -RaiseMaxUp, -RaiseMinUp);                // bas zaten HeadUp kadar kalkik
+        float leanTo = -Mathf.Clamp(up - RaiseMaxUp, 0f, RaiseMaxLean);
+        float turnTo = Mathf.Clamp(Mathf.Atan2(local.x, local.z) * Mathf.Rad2Deg, -RaiseMaxTurn, RaiseMaxTurn);
+        var armsFrom = arms;
+        float nodFrom = nod, leanFrom = lean;
+        headYawTarget = turnTo;
+        if (seconds <= 0f) headYaw = turnTo;
+        else yield return Tween.Run(seconds, t =>
+        {
+            float e = Tween.InOutCubic(t);
+            SetArms(Vector3.Lerp(armsFrom, ArmRest, e));
+            nod = Mathf.Lerp(nodFrom, nodTo, e);
+            lean = Mathf.Lerp(leanFrom, leanTo, e);
+        });
+        SetArms(ArmRest);
+        nod = nodTo;
+        lean = leanTo;
     }
 
     // Basindaki anten isigi art arda parlayip soner (selam).

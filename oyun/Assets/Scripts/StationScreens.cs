@@ -6,7 +6,8 @@ using UnityEngine;
 // Bolge 8 · Ekran bulmacasinda arka duvardaki bilgisayarlar (docs/superpowers/plans/2026-11-14-bolge-8-gorunus-3a.md, K2).
 //   72: arka duvarin onunde yan yana 6 masa, her birinde eski, kalin kasali bir bilgisayar; ekranlar sonuk koyu cam.
 //       Her dogru cevapta sirasi gelen bilgisayar (soldan saga) kirpisarak kehribar yanar; yanlista bir an kirmizi kirpisir.
-//   77-78: arka duvarda tek, genis duvar terminali (hep acik); her cevapta kisa kirpisir. 78'de True satiri gelince bir an turuncu.
+//   77-78: arka duvarda tek, genis duvar terminali (hep acik); her cevapta kisa kirpisir. 78'de True satiri gelince bir an turuncu;
+//       3b'de (cozum tam dogruysa) aciklama aninda turuncu kalir (HoldHighlight) ve onundeki Kivilcim'in yuzune turuncu isik vurur.
 // Sahnedeki ekranlarda okunur yazi yok (dunyada bilgisayar yazisi yok): kehribar soyut satir cizgileri kayar.
 // Dunya kurallarini bilmez: Oyun cevabin sirasini ve dogrulugunu verir. Alanin disinda kalir, masalar zemine basar.
 public class StationScreens : MonoBehaviour
@@ -39,11 +40,15 @@ public class StationScreens : MonoBehaviour
         public Material Glass;
         public Material Pool;   // masanin onune dusen kehribar leke (yalniz 72)
         public float Glow;      // 0 sonuk, 1 tam yanik
+        public Color Tint;      // isigin su anki rengi
         public bool On;
     }
 
     readonly List<Monitor> screens = new List<Monitor>();
     bool terminal, highlightTrue;
+    Light foundLight;   // 78: turuncuyken onune vuran isik (hafif modda yok)
+    const float FoundLightIntensity = 2.2f, FoundLightRange = 3.2f;
+    const float HeldGlow = 0.85f;   // turuncu kalirken parlaklik (daha parlakta isik sariya doyuyordu)
 
     // Uyanik (ekrani yanan) bilgisayar sayisi; denetim icin. Terminal hep acik: 1.
     public int AwakeCount { get; private set; }
@@ -93,6 +98,36 @@ public class StationScreens : MonoBehaviour
             SetGlow(s, terminal ? TerminalIdle : 0f, Amber);
             if (terminal) AwakeCount++;
         }
+        SetFoundLight(0f);
+    }
+
+    // 78 aciklama ani (3b): on iken terminal ~0,4 sn'de turuncuya cikar ve orada kalir; off iken 0,7 sn'de bostaki kehribara iner
+    public void HoldHighlight(bool on)
+    {
+        if (!terminal) return;
+        StopAllCoroutines();
+        if (on) Highlights++;
+        StartCoroutine(on ? FadeTo(HeldGlow, Found, 1f, 0.4f) : FadeTo(TerminalIdle, Amber, 0f, 0.7f));
+    }
+
+    IEnumerator FadeTo(float glow, Color color, float light, float seconds)
+    {
+        var s = screens[0];
+        float glowFrom = s.Glow, lightFrom = foundLight != null ? foundLight.intensity / FoundLightIntensity : 0f;
+        var colorFrom = s.Tint;
+        yield return Tween.Run(seconds, t =>
+        {
+            float e = Tween.InOutCubic(t);
+            SetGlow(s, Mathf.Lerp(glowFrom, glow, e), Color.Lerp(colorFrom, color, e));
+            SetFoundLight(Mathf.Lerp(lightFrom, light, e));
+        });
+    }
+
+    void SetFoundLight(float amount)
+    {
+        if (foundLight == null) return;
+        foundLight.intensity = FoundLightIntensity * amount;
+        foundLight.enabled = amount > 0.001f;
     }
 
     void Update()
@@ -136,6 +171,7 @@ public class StationScreens : MonoBehaviour
     void SetGlow(Monitor s, float glow, Color color)
     {
         s.Glow = glow;
+        s.Tint = color;
         float lit = Mathf.Clamp01(glow);
         s.Glass.SetColor("_BaseColor", Color.Lerp(DeadGlass, LitGlass, lit));
         s.Glass.SetColor("_EmissionColor", color * (GlowOn * glow));
@@ -187,6 +223,15 @@ public class StationScreens : MonoBehaviour
         var glass = GlassMaterial(new Vector2(3f, 1f));
         GlassQuad(unit, new Vector2(TerminalWidth, TerminalHeight), new Vector3(0f, midY, -TerminalDepth - 0.004f), glass);
         screens.Add(new Monitor { Glass = glass });
+        if (!highlightTrue || GraphicsQuality.Performance) return;
+        foundLight = new GameObject("Bulundu-Isigi").AddComponent<Light>();
+        foundLight.transform.SetParent(unit, false);
+        foundLight.transform.localPosition = new Vector3(0f, midY, -0.6f);
+        foundLight.type = LightType.Point;
+        foundLight.range = FoundLightRange;
+        foundLight.color = Found;
+        foundLight.shadows = LightShadows.None;
+        foundLight.enabled = false;
     }
 
     // Ekran cami: dik duran duz yuzey (kameraya bakar), uzerinde kayan satir dokusu

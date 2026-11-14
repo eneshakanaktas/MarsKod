@@ -46,6 +46,7 @@ public class Hud : MonoBehaviour
     VisualElement root, header, card, message, runBtn, stepBtn, glossaryBtn, hintBtn, overlay;
     ScreenBlink blink;
     SkipCatcher skip;
+    SkipButton skipButton;
     GlossaryView glossary;
     RecordsView recordsView;
     HintPanel hint;
@@ -167,6 +168,8 @@ public class Hud : MonoBehaviour
         root.Add(overlay);
         skip = new SkipCatcher();
         root.Add(skip);
+        skipButton = new SkipButton(fSemi, Color.white, new Color(0.08f, 0.08f, 0.1f, 0.72f));
+        root.Add(skipButton);
         blink = new ScreenBlink();
         root.Add(blink);
     }
@@ -699,6 +702,12 @@ public class Hud : MonoBehaviour
     public void ClearScreen() => screenView.Clear();
     public void AddScreenAnswer(ScreenAnswer answer) => screenView.Add(answer);
     public void HideScreen() => screenView.Hide();
+    public int ScreenRows => screenView.Rows;
+    // 80 kapanisi: terminal kutusunda tek satirlik hatira (HideScreen kapatir)
+    public void ShowRecall(string line) => screenView.ShowRecall(line);
+    public bool ScreenOpen => screenView.style.display == DisplayStyle.Flex;
+    public string ScreenFirstRow => screenView.FirstRowText;
+    public string ScreenTitle => screenView.TitleText;
 
     // ---- notun kagit karti (read_note) ----
 
@@ -839,8 +848,14 @@ public class Hud : MonoBehaviour
 
     // Atlanabilir sahne (51'in roket inisi): dokununca onTap; acikken alttaki arayuze dokunulamaz
     public void ShowSkip(Action onTap) => skip.Show(onTap);
-    public void HideSkip() => skip.Hide();
+    public void HideSkip() { skip.Hide(); skipButton.Hide(); }
     public bool SkipOpen => skip.Open;
+
+    // Bolge 8 · 3b (K4): sahnenin "Atla" dugmesi ve ustundeki kalan saniye (SceneSkip)
+    public void ShowSkipButton(Action onTap) => skipButton.Show(onTap);
+    public void SetSkipSeconds(int left) => skipButton.SetSeconds(left);
+    public bool SkipButtonOpen => skipButton.Open;
+    public string SkipSecondsText => skipButton.SecondsText;
 
     public bool HintOpen => hint.Open;
 

@@ -8,19 +8,17 @@ using UnityEngine;
 // alir. Kamera sahne surerken CameraShot'ta; Restore her seyi geri verir. Kivilcim ucmaz: yalnizca bos karelerden yurur (SceneWalker).
 public class RiverBedScenes
 {
-    readonly MonoBehaviour host;
     readonly Robot robot;
     readonly CameraShot shot;
     readonly Hud hud;
     readonly SceneWalker walker;
     readonly Vector2 areaHalf;
-    readonly Func<bool> saveProgress;   // oyuncunun ilerlemesi kaydedilir mi (denetim modunda hayir)
+    readonly SceneSkip skip;   // 70'in atlanmasi (ilk izleyisten sonra)
     public string Phase { get; private set; } = "";   // goruntu denetimi hangi anda oldugunu buradan okur
 
     public RiverBedScenes(MonoBehaviour host, Robot robot, CameraShot shot, Hud hud, SceneWalker walker, Vector2 areaHalf, Func<bool> saveProgress)
     {
-        this.saveProgress = saveProgress;
-        this.host = host;
+        skip = new SceneSkip(host, hud, saveProgress);
         this.robot = robot;
         this.shot = shot;
         this.hud = hud;
@@ -104,7 +102,7 @@ public class RiverBedScenes
         var look = Vector3.Lerp(robot.RibbonPoint, crayon.position, 0.35f);
         yield return shot.MoveTo(look + robot.transform.rotation * CrayonShotOffset, look, 0.9f,
             CameraShot.FovToFit(CrayonShotHalfWidth, CrayonShotOffset.magnitude));
-        yield return robot.TakeToBack(crayon);
+        yield return robot.TakeToBack(crayon, BackSlot.Crayon);
         Phase = "sirt";
         yield return Tween.Wait(0.8f);
         hud.SetCardVisible(true);   // kart kamera donmeden once (CanyonScenes.FirstFlight'taki neden)
@@ -266,44 +264,18 @@ public class RiverBedScenes
         yield return shot.MoveTo(eye, center, seconds, CameraShot.FovToFit(halfWidth, Vector3.Distance(eye, center)));
     }
 
-    // 70'in atlanmasi (K7): ilk tam izleyiste atlanamaz; sonraki bitirislerde ekrana dokununca son kareye atlar
+    // 70'in atlanmasi (K7): ilk tam izleyiste atlanamaz; sonraki bitirislerde ekrana dokununca son kareye atlar (SceneSkip)
     public const string FinaleSeenKey = "final_70";   // PlayerPrefs: ilk izleyis bitti mi
-    Coroutine finale;
-    bool finaleDone, skipRequested;
+    const float FinaleLength = 40f;                   // yaklasik uzunluk (yuruyusle degisir; Gorev 5'te dugmenin saniyesi)
     OwnHandPrint ownHand;   // Kivilcim'in duvara cizdigi eli; "Tekrar" siler
 
     // Denetim: Kivilcim'in eli duvarda tam cizildi mi
     public bool OwnHandDrawn => ownHand != null && ownHand.Complete;
 
-    public IEnumerator FinaleWithSkip(Level level)
-    {
-        skipRequested = false;
-        if (PlayerPrefs.GetInt(FinaleSeenKey, 0) == 1) hud.ShowSkip(SkipFinale);
-        finaleDone = false;
-        finale = host.StartCoroutine(PlayFinale(level));
-        while (!finaleDone && !skipRequested) yield return null;
-        if (!finaleDone)
-        {
-            host.StopCoroutine(finale);
-            FinishFinale();
-        }
-        else if (saveProgress())
-        {
-            PlayerPrefs.SetInt(FinaleSeenKey, 1);
-            PlayerPrefs.Save();
-        }
-        finale = null;
-        hud.HideSkip();
-    }
+    public IEnumerator FinaleWithSkip(Level level) => skip.Run(Finale(level), FinaleLength, FinishFinale, FinaleSeenKey);
 
     // Atlama katmanina dokunuldu (denetim de cagirir)
-    public void SkipFinale() => skipRequested = true;
-
-    IEnumerator PlayFinale(Level level)
-    {
-        yield return Finale(level);
-        finaleDone = true;
-    }
+    public void SkipFinale() => skip.Skip();
 
     // Son kare hemen: Kivilcim ciceklerin onunde kameraya donuk, gozler turkuaz, Serce duvarin ustunde, kamera son kadrajda, ses kesik
     void FinishFinale()
@@ -332,8 +304,7 @@ public class RiverBedScenes
     // Oyun.ResetRobot -> Robot.ResetTo eski rengine dondurur)
     public void Restore()
     {
-        if (finale != null) host.StopCoroutine(finale);
-        finale = null;
+        skip.Stop();
         ownHand?.Clear();
         ownHand = null;
         RiverBedTraces.ReturnCrayon();   // 68: elde ya da sirtta kalmis kalem yere (sirttaki kalemi Oyun.ResetRobot kaldirir)

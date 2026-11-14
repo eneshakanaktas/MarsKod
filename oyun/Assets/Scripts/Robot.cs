@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public enum RobotModel { Spark, Rover, Toy }
+// Sirttaki yerler (canta sirasi soldan: cizim, kalem, kurdele)
+public enum BackSlot { Crayon, FoldedDrawing }
 
 // Oyuncunun robotu: hareket ve ortak davranis burada, gorunum alt siniflarda (SparkBot, ColonyRover, ToyRobot).
 // Ileri yonu +Z. Olculer bir kare = 1 birim.
@@ -162,8 +164,38 @@ public abstract class Robot : MonoBehaviour
     // (kagit elde kalmaz: yazisi arayuzdeki kartta). Varsayilan bir sey yapmaz.
     public virtual IEnumerator HoldNote(bool up) { yield break; }
 
-    // Yerdeki nesneyi alip sirtina takar (Bolum 68 kalemi). Varsayilan: nesne kaybolur, sirttaki kalem gorunur.
-    public virtual IEnumerator TakeToBack(Transform item) { item.gameObject.SetActive(false); SetCrayon(true); yield break; }
+    // Yerdeki nesneyi alip sirtina takar (68 kalem, 76 cizim): once egilip alir, sonra omzunun ustunden sirtindaki yerine koyar.
+    public IEnumerator TakeToBack(Transform item, BackSlot slot)
+    {
+        yield return PickUp(item);
+        yield return StowOnBack(item, slot);
+    }
+
+    // Egilip yerdeki nesneyi eline alir (egik kalir; StowOnBack ya da TryUnfold dogrultur). Varsayilan bir sey yapmaz.
+    public virtual IEnumerator PickUp(Transform item) { yield break; }
+    // Elindeki nesneyi omzunun ustunden sirtindaki yerine koyar. Varsayilan: nesne kaybolur, sirttaki gorunur.
+    public virtual IEnumerator StowOnBack(Transform item, BackSlot slot)
+    {
+        item.gameObject.SetActive(false);
+        ShowOnBack(slot);
+        yield break;
+    }
+
+    protected void ShowOnBack(BackSlot slot)
+    {
+        if (slot == BackSlot.Crayon) SetCrayon(true);
+        else SetFoldedDrawing(true);
+    }
+
+    // 76: elindeki katli kagidi gogsunun onune getirir, ust katin kosesini 'amount' kadar kaldirir, 'hold' sn durur (acik kalir;
+    // Refold kapatir). Varsayilan bir sey yapmaz.
+    public virtual IEnumerator TryUnfold(Transform paper, float amount, float hold) { yield break; }
+    // Elindeki kagidi yine katlar (TryUnfold'un tersi)
+    public virtual IEnumerator Refold(float seconds) { yield break; }
+    // 78: bir an donar (bostaki suzulme hareketleri durur, gozler kisilir), basini gogsundeki cizime eger, sonra yavasca ekrana kaldirir
+    public virtual IEnumerator Realize() { yield break; }
+    // 80: basini (gerekirse govdesini hafif geriye) dunyadaki bir noktaya kaldirir ve orada tutar; seconds 0 ise hemen. ResetTo duzeltir.
+    public virtual IEnumerator RaiseHeadTo(Vector3 worldPoint, float seconds) { yield break; }
     // Kurdelenin ucup gelecegi nokta (dunya konumu): varsayilan robotun ustu
     public virtual Vector3 RibbonPoint => transform.position + Vector3.up * 0.5f;
 

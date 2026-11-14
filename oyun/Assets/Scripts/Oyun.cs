@@ -72,6 +72,7 @@ public partial class Oyun : MonoBehaviour
     Transform sceneryRoot;       // alan disindaki butun manzara (kayalar, sus esyalari): istasyonun icinde (72-80) gizlenir
     CanyonScenes canyonScenes;   // Bolge 6 sahneleri: 60 kanyona inis, 55 Serce'nin ilk ucusu, 51 roketin inisi (Oyun.RoketInisi.cs)
     RiverBedScenes riverScenes;  // Bolge 7 sahneleri: 63 kus bakisi, 68 kalem, 70 final
+    StationScenes stationScenes; // Bolge 8 sahneleri: 76 cizim, 78 aciklama ani, 80 kapanis
     Material backdrop;
     BackdropCache backdropCache;
     Transform world;
@@ -243,6 +244,7 @@ public partial class Oyun : MonoBehaviour
         var walker = new SceneWalker(robot, c => Pos(c), Cols, Rows);
         canyonScenes = new CanyonScenes(robot, shot, hud, walker, c => Pos(c), Cols, Rows, StartYaw);
         riverScenes = new RiverBedScenes(this, robot, shot, hud, walker, new Vector2(AreaHalfX, AreaHalfZ), () => !shotsMode);
+        stationScenes = new StationScenes(this, robot, shot, hud, new Vector2(AreaHalfX, AreaHalfZ), TerrainHeight, () => !shotsMode);
         if (GraphicsOptions.NoHud) hud.HideForMeasurement();
         FrameRateMeter.Create(System.Array.IndexOf(a, "-fps") >= 0);
         hud.RunPressed += OnRun;
@@ -500,6 +502,7 @@ public partial class Oyun : MonoBehaviour
         CancelLanding();
         canyonScenes.Restore();
         riverScenes.Restore();
+        stationScenes.Restore();
         if (program != null) StopCoroutine(program);
         program = null;
         running = false; done = false; complete = false;
@@ -822,6 +825,7 @@ public partial class Oyun : MonoBehaviour
     {
         canyonScenes.Restore();
         riverScenes.Restore();
+        stationScenes.Restore();
         if (program != null) StopCoroutine(program);
         program = null;
         running = false; done = false; complete = false;
@@ -890,11 +894,13 @@ public partial class Oyun : MonoBehaviour
         if (level.Screen != null)   // ekran bulmacasi: cevaplar satir satir ekrana dusur
         {
             hud.ClearScreen();
+            int reveal = StationScenes.RevealRow(level, report);   // 78: BKM-7 satirinda aciklama ani
             for (int i = 0; i < report.ScreenAnswers.Count; i++)
             {
                 var answer = report.ScreenAnswers[i];
                 hud.AddScreenAnswer(answer);
-                StationTraces.Screens?.Answer(i, answer.Correct, answer.Actual is bool yes && yes);   // sahnedeki bilgisayar uyanir
+                if (i == reveal) yield return stationScenes.RevealWithSkip(i);
+                else StationTraces.Screens?.Answer(i, answer.Correct, answer.Actual is bool yes && yes);   // sahnedeki bilgisayar uyanir
                 yield return Tween.Wait(0.08f);
             }
         }
@@ -931,9 +937,10 @@ public partial class Oyun : MonoBehaviour
             bool perde1Finale = level.Number == Bolge5SonBolum && HasNext;
             if (perde1Finale) hud.HoldNext();
             done = true;
-            Sound.Celebrate();
+            bool quiet = StationScenes.QuietEnding(level.Number);   // 78: sessiz anlama, dans yok
+            if (quiet) Sound.Quiet(); else Sound.Celebrate();
             Traces.LevelDone(level.Number);
-            yield return robot.Celebrate();
+            if (!quiet) yield return robot.Celebrate();
             if (level.Number == Bolge1SonBolum) yield return ClosingSceneBolge1();
             if (level.Number == Bolge2SonBolum) yield return ClosingSceneBolge2();
             if (level.Number == Bolge3SonBolum) yield return ClosingSceneBolge3();
@@ -944,6 +951,8 @@ public partial class Oyun : MonoBehaviour
             if (level.Number == RiverBedTraces.BirdViewLevel) yield return riverScenes.BirdView(level);
             if (level.Number == RiverBedTraces.CrayonLevel) yield return riverScenes.TakeCrayon(level);
             if (level.Number == RiverBedTraces.MuralLevel) yield return riverScenes.FinaleWithSkip(level);
+            if (level.Number == StationTraces.FoldedLevel) yield return stationScenes.TakeDrawingWithSkip(level, noteEnd);
+            if (level.Number == StationTraces.MapLevel) yield return stationScenes.ClosingWithSkip(level, levelRoot);
             if (perde1Finale)
             {
                 yield return Tween.Wait(Bolge5DevamBekleme);   // son kare bir sure yalniz kalir

@@ -38,10 +38,12 @@ public partial class Oyun
         yield return LightsCheck(problems);
         yield return DrawingsCheck(dir, problems, StationTraces.DrawingsSecondLevel, 5);
         yield return NoteCheck(dir, problems);
+        yield return DrawingTakeCheck(dir, problems);
         yield return BackDrawingCheck(dir, problems);
-        yield return HighlightCheck(problems);
+        yield return RevealCheck(dir, problems);
         yield return WorkshopCheck(dir, problems);
         yield return MapCheck(dir, problems);
+        yield return ClosingCheck(dir, problems);
     }
 
     IEnumerator LoadStationLevel(int number)
@@ -166,7 +168,8 @@ public partial class Oyun
         return min;
     }
 
-    // 76: her not surumunde kart son harfe kadar ilerler, katlanmis cizim notun son karesinde belirir ve yere basar; "Tekrar" ile kalkar
+    // 76: her not surumunde kart son harfe kadar ilerler; sahneden sonra (3b) yerdeki cizim gizli, sirttaki gorunur; "Tekrar" ile kalkar.
+    // Cizimin yerde belirmesi (son karede, yere basar) DrawingTakeCheck'te, sahne baslamadan once olculur.
     IEnumerator NoteCheck(string dir, List<string> problems)
     {
         yield return LoadStationLevel(StationTraces.FoldedLevel);
@@ -198,15 +201,9 @@ public partial class Oyun
             if (lastLetter != level.Notes[v].Length - 1) problems.Add(label + "kart vurgusu " + lastLetter + ". harfte bitti");
             var drawing = noteEnd != null ? noteEnd.Drawing : null;
             if (drawing == null) { problems.Add(label + "katlanmis cizim belirmedi"); continue; }
-            var b = MeshBounds(drawing, levelRoot);
-            var cell = Pos(level.NoteRoutes[v].End);
-            if (Mathf.Abs(b.center.x - cell.x) > 0.5f || Mathf.Abs(b.center.z - cell.z) > 0.5f) problems.Add(label + "cizim son karede degil");
-            if (Mathf.Abs(b.min.y - TerrainHeight(b.center.x, b.center.z)) > GroundTolerance) problems.Add(label + "cizim yere basmiyor");
-            if (run == 0)
-            {
-                Cap(Path.Combine(dir, "s76-cizim.png"));
-                yield return new WaitForSeconds(0.3f);
-            }
+            if (drawing.gameObject.activeSelf) problems.Add(label + "sahneden sonra cizim yerde kaldi");
+            if (!BackDrawingShown()) problems.Add(label + "sahneden sonra sirtta cizim yok");
+            if (stationScenes.Phase != "son") problems.Add(label + "sahne bitmedi ('" + stationScenes.Phase + "')");
         }
         if (versions.Count != level.Notes.Count) problems.Add("76: " + level.Notes.Count + " notun " + versions.Count + "'i denendi");
         ResetLevel();
@@ -215,6 +212,125 @@ public partial class Oyun
     }
 
     static Vector3 Flat(Vector3 p) => new Vector3(p.x, 0f, p.z);
+
+    // 76 (3b, K3): uc not surumunun her bitis karesinden sahne baslatilir; ilkinden kareler. Cizim once son karede ve yere basar;
+    // elde iken robotun govdesine girmez; yatak aninda robot Ece'nin yatagina doner (+-25 derece); sonda yerdeki gizli, sirttaki gorunur.
+    // Sonra atlama (son hal) ve normal akista "acma" aninda "Tekrar".
+    IEnumerator DrawingTakeCheck(string dir, List<string> problems)
+    {
+        var shots = new[] { ("bakis", 1.3f, "s76-1-bakis.png"), ("acma", 0.5f, "s76-2-acma.png"), ("yatak", 0.4f, "s76-3-yatak.png"),
+            ("sirt", 0.3f, "s76-4-sirt.png"), ("son", 0.5f, "s76-5-son.png") };
+        yield return LoadStationLevel(StationTraces.FoldedLevel);
+        int versions = level.NoteRoutes.Count;
+        for (int v = 0; v < versions; v++)
+        {
+            if (v > 0) yield return LoadStationLevel(StationTraces.FoldedLevel);
+            string label = "76 not " + (v + 1) + ": ";
+            yield return DrawingAtNoteEnd(v, label, problems);
+            var drawing = noteEnd.Drawing;
+            if (drawing == null) continue;
+            if (v == 0) { Cap(Path.Combine(dir, "s76-cizim.png")); yield return new WaitForSeconds(0.2f); }
+            StartCoroutine(stationScenes.TakeDrawing(level, noteEnd));
+            bool inBody = false, bedChecked = false;
+            void Measure()
+            {
+                var phase = stationScenes.Phase;
+                if ((phase == "acma" || phase == "yatak") && PaperInTorso(drawing)) inBody = true;
+                if (phase == "sirt" && !bedChecked) { bedChecked = true; CheckFacesBed(label, problems); }
+            }
+            float t = 0f;
+            foreach (var (phase, wait, file) in v == 0 ? shots : new[] { ("son", 0f, "") })
+            {
+                for (; stationScenes.Phase != phase && t < 40f; t += Time.deltaTime) { Measure(); yield return null; }
+                if (stationScenes.Phase != phase) { problems.Add(label + phase + " evresi gelmedi ('" + stationScenes.Phase + "')"); break; }
+                for (float w = 0f; w < wait; w += Time.deltaTime) { Measure(); yield return null; }
+                if (file != "") Cap(Path.Combine(dir, file));
+                yield return null;
+            }
+            if (inBody) problems.Add(label + "kagit elde iken govdenin icine girdi");
+            if (!bedChecked) problems.Add(label + "yataga donus olculmedi");
+            if (drawing.gameObject.activeSelf) problems.Add(label + "sonda yerdeki cizim gizlenmedi");
+            if (!BackDrawingShown()) problems.Add(label + "sonda sirtta cizim yok");
+            if (shot.Active) problems.Add(label + "sonda sahne kamerasi birakilmadi");
+        }
+
+        // "Atla" (K4): normal akista "acma" aninda dugmeye dokunulur, sahne durur, son hal kurulur
+        yield return LoadStationLevel(StationTraces.FoldedLevel);
+        SetCode(level.Solution);
+        yield return new WaitForSeconds(0.3f);
+        OnRun();
+        yield return WaitForPhase("acma", problems, () => stationScenes.Phase);
+        yield return new WaitForSeconds(0.5f);
+        if (!hud.SkipButtonOpen) problems.Add("76 atlama: Atla dugmesi acik degil");
+        stationScenes.Skip();
+        yield return null;
+        yield return null;
+        if (noteEnd.Drawing == null || noteEnd.Drawing.gameObject.activeSelf) problems.Add("76 atlama: yerdeki cizim gizlenmedi");
+        if (!BackDrawingShown()) problems.Add("76 atlama: sirtta cizim yok");
+        if (shot.Active || !hud.CardVisible) problems.Add("76 atlama: kamera ya da kart geri gelmedi");
+        if (stationScenes.Phase != "son") problems.Add("76 atlama: evre 'son' degil");
+
+        // normal akista "acma" aninda "Tekrar"
+        yield return LoadStationLevel(StationTraces.FoldedLevel);
+        SetCode(level.Solution);
+        yield return new WaitForSeconds(0.3f);
+        OnRun();
+        yield return WaitForPhase("acma", problems, () => stationScenes.Phase);
+        yield return new WaitForSeconds(0.5f);
+        ResetLevel();
+        yield return null;
+        CheckStationRestored("76", problems);
+        if (noteEnd.Drawing != null) problems.Add("76 Tekrar: cizim kalkmadi");
+        if (BackDrawingShown()) problems.Add("76 Tekrar: sirtta cizim kaldi");
+        foreach (var t in robot.GetComponentsInChildren<Transform>(true))
+            if (t.name == "KatlanmisCizim" && t.parent != null && t.parent.name == "Hand") problems.Add("76 Tekrar: elde kagit kaldi");
+    }
+
+    // Robot not surumu v'nin son karesinde, kutlamadan sonraki gibi kameraya donuk; cizim belirir, son karede ve yere basar
+    IEnumerator DrawingAtNoteEnd(int v, string label, List<string> problems)
+    {
+        var cell = Pos(level.NoteRoutes[v].End);
+        robot.ResetTo(cell, 180f);
+        noteEnd.Arrived(cell);
+        yield return new WaitForSeconds(1.2f);
+        var drawing = noteEnd.Drawing;
+        if (drawing == null) { problems.Add(label + "katlanmis cizim belirmedi"); yield break; }
+        var b = MeshBounds(drawing, levelRoot);
+        if (Mathf.Abs(b.center.x - cell.x) > 0.5f || Mathf.Abs(b.center.z - cell.z) > 0.5f) problems.Add(label + "cizim son karede degil");
+        if (Mathf.Abs(b.min.y - TerrainHeight(b.center.x, b.center.z)) > GroundTolerance) problems.Add(label + "cizim yere basmiyor");
+    }
+
+    // Elde tutulan kagit robotun govdesinin (Torso) icine giriyor mu: govdenin kendi yerelinde (degmek serbest)
+    bool PaperInTorso(Transform paper)
+    {
+        Transform torso = null;
+        foreach (var t in robot.GetComponentsInChildren<Transform>(false)) if (t.name == "Torso") torso = t;
+        if (torso == null) return false;
+        var body = MeshBounds(torso, torso);
+        body.Expand(-0.008f);
+        return body.Intersects(MeshBounds(paper, torso));
+    }
+
+    void CheckFacesBed(string label, List<string> problems)
+    {
+        var bed = levelRoot.TransformPoint(StationTraces.EceBed.Value);
+        float want = DuneFinale.YawTowards(robot.transform.position, bed);
+        float off = Mathf.Abs(Mathf.DeltaAngle(robot.Yaw, want));
+        if (off > 25f) problems.Add(label + "yatak aninda yataga donuk degil (" + off.ToString("F0") + " derece)");
+    }
+
+    // Sahne ortasinda "Tekrar": kamera serbest, kart gorunur, kirpisma ve atlama kapali, robot baslangicta ve normal durusta
+    void CheckStationRestored(string label, List<string> problems)
+    {
+        string p = label + " Tekrar: ";
+        if (shot.Active) problems.Add(p + "sahne kamerasi birakilmadi");
+        if (!hud.CardVisible) problems.Add(p + "kod karti gizli kaldi");
+        if (hud.SkipOpen) problems.Add(p + "atlama katmani acik kaldi");
+        if (!robot.gameObject.activeSelf) problems.Add(p + "robot gizli kaldi");
+        if ((robot.transform.localPosition - Pos(level.Robot)).sqrMagnitude > 1e-4f) problems.Add(p + "robot baslangic karesinde degil");
+        if (stationScenes.Phase != "") problems.Add(p + "sahne durmadi ('" + stationScenes.Phase + "')");
+        if (robot is SparkBot spark && (spark.Posing || spark.EyeColor != SparkBot.CalmEyes)) problems.Add(p + "robot normal durusa donmedi");
+    }
 
     // 77: sirtta katlanmis cizim (kalici karakter gorunusu); arkadan ve yukaridan yakin plan
     IEnumerator BackDrawingCheck(string dir, List<string> problems)
@@ -239,14 +355,221 @@ public partial class Oyun
         return false;
     }
 
-    // 78: True (BKM-7) satirinda terminal bir kez turuncuya doner
-    IEnumerator HighlightCheck(List<string> problems)
+    // 78 (3b, K2): dogru cozumde akis BKM-7 satirinda durur (anlama aninda 25 satir, KOR yok); sonda 26 satir, terminal bir kez turuncu,
+    // robot kutlama yapmadi (ekrana donuk), bolum tamam. Yanlis kod (hep True): sahne oynamaz, terminal kirpisir, bolum bitmez.
+    // Sahne ortasinda "Tekrar", klavye acikken bitis (kamera sicramaz) ve 77'de sahne yok.
+    IEnumerator RevealCheck(string dir, List<string> problems)
     {
         yield return LoadStationLevel(StationTraces.ListEndLevel);
         var screens = StationTraces.Screens;
         if (screens == null) { problems.Add("78: duvar terminali yok"); yield break; }
-        yield return RunStationSolution();
+        int total = level.Screen.Rows.Count;
+        SetCode(level.Solution);
+        yield return new WaitForSeconds(0.3f);
+        OnRun();
+        foreach (var (phase, wait, file) in new[] { ("durus", 0.6f, "s78-1-durus.png"), ("anlama", 1.0f, "s78-2-anlama.png"), ("son", 0.5f, "s78-3-son.png") })
+        {
+            yield return WaitForPhase(phase, problems, () => stationScenes.Phase);
+            yield return new WaitForSeconds(wait);
+            if (phase == "anlama" && hud.ScreenRows != total - 1) problems.Add("78 anlama: ekranda " + hud.ScreenRows + " satir (" + (total - 1) + " olmali)");
+            Cap(Path.Combine(dir, file));
+            yield return null;
+        }
+        while (running) yield return null;
+        if (hud.ScreenRows != total) problems.Add("78 son: ekranda " + hud.ScreenRows + " satir");
         if (screens.Highlights != 1) problems.Add("78: terminal " + screens.Highlights + " kez turuncu oldu");
+        if (!complete) problems.Add("78: bolum tamamlanmadi");
+        if (Mathf.Abs(Mathf.DeltaAngle(robot.Yaw, ScreenYaw)) > 5f) problems.Add("78: robot ekrana donuk degil (kutlama yapti?)");
+
+        // "Atla" (K4): anlama aninda dokunulur; kalan satirlar duser, sessiz bitis
+        yield return LoadStationLevel(StationTraces.ListEndLevel);
+        screens = StationTraces.Screens;
+        SetCode(level.Solution);
+        yield return new WaitForSeconds(0.3f);
+        OnRun();
+        yield return WaitForPhase("anlama", problems, () => stationScenes.Phase);
+        yield return new WaitForSeconds(0.3f);
+        if (!hud.SkipButtonOpen) problems.Add("78 atlama: Atla dugmesi acik degil");
+        Cap(Path.Combine(dir, "s78-atla-dugme.png"));
+        yield return null;
+        stationScenes.Skip();
+        while (running) yield return null;
+        if (stationScenes.Phase != "son") problems.Add("78 atlama: evre 'son' degil (" + stationScenes.Phase + ")");
+        if (hud.ScreenRows != total) problems.Add("78 atlama: ekranda " + hud.ScreenRows + " satir");
+        if (!complete) problems.Add("78 atlama: bolum tamamlanmadi");
+        if (shot.Active) problems.Add("78 atlama: kamera birakilmadi");
+        if (Mathf.Abs(Mathf.DeltaAngle(robot.Yaw, ScreenYaw)) > 5f) problems.Add("78 atlama: robot ekrana donuk degil");
+
+        // yanlis kod: her satira True
+        yield return LoadStationLevel(StationTraces.ListEndLevel);
+        screens = StationTraces.Screens;
+        SetCode("def " + level.Screen.Function + "(satir):\n    return True");
+        yield return new WaitForSeconds(0.3f);
+        OnRun();
+        bool played = false;
+        while (running) { played |= stationScenes.Phase != ""; yield return null; }
+        if (played) problems.Add("78 yanlis kod: sahne oynadi");
+        if (complete) problems.Add("78 yanlis kod: bolum tamamlandi");
+        if (screens.Highlights == 0) problems.Add("78 yanlis kod: terminal turuncu kirpismadi");
+
+        // sahne ortasinda "Tekrar"
+        yield return LoadStationLevel(StationTraces.ListEndLevel);
+        screens = StationTraces.Screens;
+        SetCode(level.Solution);
+        yield return new WaitForSeconds(0.3f);
+        OnRun();
+        yield return WaitForPhase("anlama", problems, () => stationScenes.Phase);
+        yield return new WaitForSeconds(0.8f);
+        ResetLevel();
+        yield return null;
+        CheckStationRestored("78", problems);
+        if (screens.Highlights != 0) problems.Add("78 Tekrar: terminal bosta degil");
+
+        // klavye acikken bitis: sahne kamerasi kucultulmus gorunumden sicramadan baslar (k0 ile k1 ayni olmali)
+        yield return LoadStationLevel(StationTraces.ListEndLevel);
+        SetCode(level.Solution);
+        yield return new WaitForSeconds(0.3f);
+        OnRun();
+        yield return new WaitForSeconds(0.5f);
+        hud.FocusCode(0, 0);
+        while (hud.ScreenRows < total - 3 && stationScenes.Phase == "") yield return null;
+        Cap(Path.Combine(dir, "s78-k0-klavye.png"));
+        yield return WaitForPhase("durus", problems, () => stationScenes.Phase);
+        Cap(Path.Combine(dir, "s78-k1-begin.png"));
+        while (running) yield return null;
+
+        // 77: sahne yok, kutlama var
+        yield return LoadStationLevel(StationTraces.ListLevel);
+        SetCode(level.Solution);
+        yield return new WaitForSeconds(0.3f);
+        OnRun();
+        bool played77 = false;
+        while (running) { played77 |= stationScenes.Phase != ""; yield return null; }
+        if (played77) problems.Add("77: 78'in sahnesi oynadi");
+        if (Mathf.Abs(Mathf.DeltaAngle(robot.Yaw, 180f)) > 5f) problems.Add("77: robot kutlama yapmadi");
+    }
+
+    // 80 (3b, K1): uc not surumunun hepsinden kapanis sonuna varilir; ilkinden kareler. Koridorda 5 cizim, 80'in haritasi gizli, sirtta
+    // uc esya; satirda kutudaki yazi bolum-78'deki BKM-7 satiriyla ayni; sonda koridor yok, harita gorunur, bas kalkik, kart gorunur.
+    // Sonra "Atla" dugmesi (1 sn sonra, saniye azalir; cizimde dokununca son hal), "satir" ve "cizim" anlarinda "Tekrar".
+    IEnumerator ClosingCheck(string dir, List<string> problems)
+    {
+        string kapi = KapiLineOf78();
+        if (kapi != StationTraces.KapiLine) problems.Add("80: hatira satiri bolum-78'deki satirla ayni degil ('" + kapi + "')");
+        yield return LoadStationLevel(StationTraces.MapLevel);
+        SetCode(level.Solution);
+        yield return new WaitForSeconds(0.3f);
+        var shots = new[] { ("harita", 2.2f, "s80-1-harita.png"), ("cizim", 1f, "s80-2-cizim.png"), ("satir", 1.2f, "s80-3-satir.png"),
+            ("bas", 1.5f, "s80-4-bas.png"), ("son", 0.5f, "s80-5-son.png") };
+        for (int run = 0; run < level.Notes.Count; run++)
+        {
+            if (run > 0) ResetLevel();
+            string label = "80 kosu " + (run + 1) + ": ";
+            OnRun();
+            foreach (var (phase, wait, file) in run == 0 ? shots : new[] { ("cizim", 0.5f, ""), ("satir", 0.5f, ""), ("son", 0.5f, "") })
+            {
+                yield return WaitForPhase(phase, problems, () => stationScenes.Phase, 60f);
+                if (stationScenes.Phase != phase) break;
+                yield return new WaitForSeconds(wait);
+                if (phase == "cizim") CheckCorridor(label, problems);
+                if (phase == "satir") CheckRecall(label, kapi, problems);
+                if (phase == "son") CheckClosingEnd(label, problems);
+                if (file != "") Cap(Path.Combine(dir, file));
+                yield return null;
+            }
+            while (running) yield return null;
+        }
+
+        // Atla: dugme 1 sn sonra, saniye azalir; cizimde dokununca son hal
+        yield return LoadStationLevel(StationTraces.MapLevel);
+        SetCode(level.Solution);
+        yield return new WaitForSeconds(0.3f);
+        OnRun();
+        yield return WaitForPhase("harita", problems, () => stationScenes.Phase, 60f);
+        yield return new WaitForSeconds(0.5f);
+        if (hud.SkipButtonOpen) problems.Add("80 atlama: dugme 1 sn dolmadan acildi");
+        yield return new WaitForSeconds(0.9f);
+        string first = hud.SkipSecondsText;
+        if (!hud.SkipButtonOpen) problems.Add("80 atlama: dugme acilmadi");
+        Cap(Path.Combine(dir, "s80-atla-dugme.png"));
+        yield return new WaitForSeconds(1.1f);
+        if (hud.SkipSecondsText == first) problems.Add("80 atlama: kalan saniye azalmadi (" + first + ")");
+        yield return WaitForPhase("cizim", problems, () => stationScenes.Phase, 60f);
+        stationScenes.Skip();
+        yield return null;
+        yield return null;
+        if (stationScenes.Phase != "son") problems.Add("80 atlama: evre 'son' degil (" + stationScenes.Phase + ")");
+        if (hud.SkipButtonOpen) problems.Add("80 atlama: dugme kapanmadi");
+        CheckClosingEnd("80 atlama: ", problems);
+        if (CorridorRoot() != null) problems.Add("80 atlama: koridor silinmedi");
+        while (running) yield return null;
+        Cap(Path.Combine(dir, "s80-atlama-son.png"));
+        yield return null;
+
+        // sahne ortasinda "Tekrar": satirda ve cizimde (koridor acikken)
+        foreach (var phase in new[] { "satir", "cizim" })
+        {
+            yield return LoadStationLevel(StationTraces.MapLevel);
+            SetCode(level.Solution);
+            yield return new WaitForSeconds(0.3f);
+            OnRun();
+            yield return WaitForPhase(phase, problems, () => stationScenes.Phase, 60f);
+            yield return new WaitForSeconds(0.5f);
+            ResetLevel();
+            yield return null;
+            CheckStationRestored("80 (" + phase + ")", problems);
+            if (CorridorRoot() != null) problems.Add("80 Tekrar (" + phase + "): koridor silinmedi");
+            if (StationTraces.WallMap == null || !StationTraces.WallMap.gameObject.activeInHierarchy) problems.Add("80 Tekrar (" + phase + "): harita gorunmuyor");
+            if (hud.ScreenOpen) problems.Add("80 Tekrar (" + phase + "): hatira kutusu acik");
+        }
+    }
+
+    // bolum-78.json'da True donen (BKM-7) satirin girdisi
+    string KapiLineOf78()
+    {
+        var list = levels.Find(l => l.Number == StationTraces.ListEndLevel);
+        foreach (var row in list.Screen.Rows)
+            if (row.Expected is bool yes && yes) return row.Input as string;
+        return null;
+    }
+
+    Transform CorridorRoot() => world.Find("Koridor-Hatirasi");
+
+    void CheckCorridor(string label, List<string> problems)
+    {
+        var corridor = CorridorRoot();
+        if (corridor == null) { problems.Add(label + "koridor kurulmadi"); return; }
+        int drawings = 0;
+        foreach (var t in corridor.GetComponentsInChildren<Transform>(false))
+            if (t.name.StartsWith("Cizim-") && t.name.Length > 6 && char.IsDigit(t.name[6])) drawings++;
+        if (drawings != 5) problems.Add(label + "koridorda " + drawings + " cizim");
+        if (StationTraces.WallMap != null && StationTraces.WallMap.gameObject.activeInHierarchy) problems.Add(label + "koridorda 80'in haritasi gorunuyor");
+        if (!BackDrawingShown() || !HasCrayon() || !HasRibbon()) problems.Add(label + "koridorda sirtta uc esya yok");
+        var p = robot.transform.localPosition;
+        if (Mathf.Abs(p.x) > AreaHalfX || Mathf.Abs(p.z) > AreaHalfZ) problems.Add(label + "koridorda robot alanin disinda " + p.ToString("F2"));
+    }
+
+    void CheckRecall(string label, string kapi, List<string> problems)
+    {
+        if (!hud.ScreenOpen) { problems.Add(label + "hatira kutusu acilmadi"); return; }
+        string row = hud.ScreenFirstRow;
+        if (kapi == null || row == null || !row.Contains(kapi)) problems.Add(label + "hatira satiri '" + row + "'");
+        if (hud.ScreenTitle != ScreenView.RecallTitle) problems.Add(label + "kutu basligi '" + hud.ScreenTitle + "'");
+    }
+
+    void CheckClosingEnd(string label, List<string> problems)
+    {
+        if (StationTraces.WallMap == null || !StationTraces.WallMap.gameObject.activeInHierarchy) problems.Add(label + "sonda harita gorunmuyor");
+        if (hud.ScreenOpen) problems.Add(label + "sonda hatira kutusu acik");
+        if (!hud.CardVisible) problems.Add(label + "sonda kart gizli");
+        if (robot is SparkBot spark && spark.Nod > -15f) problems.Add(label + "sonda bas kalkik degil (" + spark.Nod.ToString("F0") + ")");
+        if (Mathf.Abs(Mathf.DeltaAngle(robot.Yaw, 0f)) > 5f) problems.Add(label + "sonda robot haritaya donuk degil");
+    }
+
+    bool HasRibbon()
+    {
+        foreach (var t in robot.GetComponentsInChildren<Transform>(false)) if (t.name == "Ribbon") return true;
+        return false;
     }
 
     // 79: Kor'un bacagi var (yere basma ve alan disi CheckStationFloor'da)

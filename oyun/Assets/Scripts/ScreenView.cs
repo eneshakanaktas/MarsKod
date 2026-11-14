@@ -98,8 +98,28 @@ public class ScreenView : VisualElement
         title.text = "İSTASYON EKRANI · " + puzzle.Function + "(...)";
         Clear();
         foreach (var row in puzzle.VisibleRows) list.Add(MakeRow(row, null));
+        style.opacity = 1f;
         style.display = DisplayStyle.Flex;
     }
+
+    /// <summary>80 kapanisi (3b): tek satirlik hatira; 78'de bulunan satirin gorunusunde ama cevabi yok. Kutu yavasca belirir.</summary>
+    public void ShowRecall(string line)
+    {
+        title.text = RecallTitle;
+        Clear();
+        list.Add(Line(Shown(line), found: true));
+        Ui.Transition(this, "opacity", RecallFade);
+        style.opacity = 0f;
+        style.display = DisplayStyle.Flex;
+        schedule.Execute(() => style.opacity = 1f).StartingIn(20);
+    }
+
+    public const string RecallTitle = "İSTASYON EKRANI";
+    const float RecallFade = 0.3f;
+
+    /// <summary>Kutudaki ilk satirin yazisi (goruntu denetimi)</summary>
+    public string FirstRowText => list.childCount > 0 ? list[0].Q<Label>().text : null;
+    public string TitleText => title.text;
 
     /// <summary>Satirlari siler, baslik kalir (kod her calistiginda cevaplar bastan yazilir)</summary>
     public new void Clear() => list.Clear();
@@ -114,24 +134,15 @@ public class ScreenView : VisualElement
 
     public void Hide() => style.display = DisplayStyle.None;
 
+    /// <summary>Kutudaki satir sayisi (goruntu denetimi)</summary>
+    public int Rows => list.childCount;
+
     VisualElement MakeRow(ScreenRow row, ScreenAnswer answer)
     {
         // cevabi True olan satir ters yazilir: kehribar zemin, koyu yazi (77-78'de Kivilcim'in buldugu kisiler)
         bool found = answer != null && answer.Actual is bool b && b;
         var ink = found ? InverseInk : Amber;
-
-        var line = new VisualElement { pickingMode = PickingMode.Ignore };
-        line.style.flexDirection = FlexDirection.Row;
-        line.style.alignItems = Align.FlexStart;
-        line.style.paddingTop = 6; line.style.paddingBottom = 6; line.style.paddingLeft = 10; line.style.paddingRight = 10;
-        Ui.Radius(line, 6);
-        if (found) line.style.backgroundColor = Amber;
-
-        var input = Ui.Text(Shown(row.Input), mono, FontSize, ink);
-        input.style.whiteSpace = WhiteSpace.Normal;
-        input.style.flexShrink = 1;
-        input.style.flexGrow = 1;
-        line.Add(input);
+        var line = Line(Shown(row.Input), found);
 
         var result = Ui.Text("  →  " + (answer == null ? "?" : Shown(answer.Actual)), mono, FontSize, ink);
         result.style.flexShrink = 0;
@@ -149,6 +160,24 @@ public class ScreenView : VisualElement
                 line.Add(hidden);
             }
         }
+        return line;
+    }
+
+    // Satirin zemini ve girdisi: bulunan (True) satir ters yazilir, kehribar zemin, koyu yazi
+    VisualElement Line(string input, bool found)
+    {
+        var line = new VisualElement { pickingMode = PickingMode.Ignore };
+        line.style.flexDirection = FlexDirection.Row;
+        line.style.alignItems = Align.FlexStart;
+        line.style.paddingTop = 6; line.style.paddingBottom = 6; line.style.paddingLeft = 10; line.style.paddingRight = 10;
+        Ui.Radius(line, 6);
+        if (found) line.style.backgroundColor = Amber;
+
+        var text = Ui.Text(input, mono, FontSize, found ? InverseInk : Amber);
+        text.style.whiteSpace = WhiteSpace.Normal;
+        text.style.flexShrink = 1;
+        text.style.flexGrow = 1;
+        line.Add(text);
         return line;
     }
 

@@ -23,8 +23,8 @@ public static class StationProps
     public static Transform Beds(Transform parent, float wallZ, Func<float, float, float> ground)
     {
         var root = Parts.Empty("Yataklar", parent);
-        float z = wallZ - 0.38f;
-        var ece = CampBed(root, "Yatak-Ece", new Vector3(-1.5f, 0f, z), RobotHeight * 2f, 0.5f, ground);
+        float z = wallZ - BedsFromWall;
+        var ece = CampBed(root, "Yatak-Ece", new Vector3(EceBedX, 0f, z), RobotHeight * 2f, 0.5f, ground);
         PatchworkBlanket(ece, RobotHeight * 2f, 0.5f);
         var toy = Parts.Empty("BezOyuncak", ece);   // yastigin yaninda kucuk bez bir sey (ayi gibi)
         toy.localPosition = new Vector3(-RobotHeight + 0.36f, BedTop + 0.04f, 0.13f);
@@ -43,6 +43,14 @@ public static class StationProps
     }
 
     const float BedTop = 0.3f;
+    const float BedsFromWall = 0.38f, EceBedX = -1.5f;
+
+    // 76: Ece'nin (kucuk) yataginin ortasi, battaniyenin ustu (3b sahnesinde Kivilcim buraya doner)
+    public static Vector3 EceBedCenter(float wallZ, Func<float, float, float> ground)
+    {
+        float z = wallZ - BedsFromWall;
+        return new Vector3(EceBedX, ground(EceBedX, z) + BedTop, z);
+    }
 
     // Kamp yatagi: iki yan boru, dort ayak, gerili bez, bas ucunda yastik. at: ortasi (y kullanilmaz); length: boyu (x).
     static Transform CampBed(Transform root, string name, Vector3 at, float length, float width, Func<float, float, float> ground)

@@ -1,0 +1,30 @@
+{
+  "bolum": 90,
+  "baslik": "KIVILCIM · KENDİNİ DENETLİYOR",
+  "sorular": [
+    {
+      "soru": "for a in range(3): altında for b in range(4): ve onun altında move(East) var. move(East) kaç kez çalışır?",
+      "secenekler": ["3", "4", "7", "12"],
+      "dogru": 3,
+      "aciklama": "Dıştaki her turda içteki baştan sona çalışır: 3 tur × 4 = 12."
+    },
+    {
+      "soru": "for satir in [\"T.\", \".T\"]: altında for kare in satir: var. İçteki döngü ilk turda neyin üstünde dolaşır?",
+      "secenekler": ["İki satırın hepsi", "\"T.\" metninin harfleri", "Yalnız \"T\"", "\".T\" metninin harfleri"],
+      "dogru": 1,
+      "aciklama": "Dış döngü ilk turda satir'a \"T.\" verir; iç döngü onun harflerinde dolaşır: \"T\", sonra \".\"."
+    },
+    {
+      "soru": "İç içe döngüde hangisi önce biter?",
+      "secenekler": ["Dıştaki döngü", "İçteki döngü, her dış turda bir kez baştan sona", "İkisi aynı anda", "Hangisi kısaysa"],
+      "dogru": 1,
+      "aciklama": "İçteki döngü dış döngünün her turunda yeniden başlar ve biter; dıştaki ancak son turunda biter."
+    },
+    {
+      "soru": "parcalar = [\"KK\", \"D\"] ise parcalar[0][1] nedir?",
+      "secenekler": ["\"K\"", "\"D\"", "\"KK\"", "Hata verir"],
+      "dogru": 0,
+      "aciklama": "parcalar[0] \"KK\" metni; onun [1]'i ikinci harfi: \"K\"."
+    }
+  ]
+}

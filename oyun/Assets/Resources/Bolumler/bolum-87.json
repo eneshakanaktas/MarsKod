@@ -1,0 +1,72 @@
+{
+  "numara": 87,
+  "baslik": "Kristaller sıraya",
+  "gorev": "Kristalleri say",
+  "etiket": "BÖLGE 9 · TUZ GÖLÜ",
+  "giris": "Sol 1.101 · Kristaller sıraya",
+  "bitis": "Not: gölün haritası · Sayıldı",
+  "harita": [
+    ". . . . . .",
+    ". . . K . .",
+    ". . . . . .",
+    ". . R . . .",
+    ". K . . . .",
+    ". . . . . ."
+  ],
+  "notlar": [
+    {
+      "yazi": ["T..T", ".TT.", "...T"],
+      "yol": "",
+      "rapor": 5
+    },
+    {
+      "yazi": [".T.T.", "TT...", "..T.T", "T...."],
+      "yol": "",
+      "rapor": 7
+    },
+    {
+      "yazi": ["...", "T.T", ".T."],
+      "yol": "",
+      "rapor": 3
+    }
+  ],
+  "komutlar": ["read_note", "report"],
+  "parcalar": ["for satir in harita:", "for kare in satir:", "if kare == \"T\":", "sayac += 1", "report(sayac)"],
+  "konular": ["iç içe döngü", "metin listesi", "sayaç", "değişen not"],
+  "ipuclari": [
+    "Not gölün küçük haritası: her metin bir satır, her `T` bir tuz kristali. Not her denemede değişir: say, ezberleme.",
+    "Dış döngü satırlarda dolaşır, iç döngü satırın karelerinde (harflerinde). Her `T`'de sayacı bir artır.",
+    "`for satir in harita:` / `    for kare in satir:` / `        if kare == \"T\":` / `            sayac += 1`; sonda `report(sayac)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["harita = read_note()", "sayac = 0", "for satir in harita:", "    sayac += 1", "report(sayac)"],
+      "aciklama": "Satırlar sayıldı, kristaller değil. Her satırın içinde ikinci bir döngüyle karelere bak."
+    },
+    {
+      "kod": ["report(5)"],
+      "aciklama": "İlk notun sayısı ezberlendi: not değişince kristal sayısı da değişir. Saydır."
+    },
+    {
+      "kod": ["harita = read_note()", "sayac = 0", "for satir in harita:", "    if satir == \"T\":", "        sayac += 1", "report(sayac)"],
+      "aciklama": "Satırın tamamı hiçbir zaman \"T\" değil: harflere bakmak için satırın içinde de dolaş."
+    },
+    {
+      "kod": ["harita = read_note()", "sayac = 0", "for satir in harita:", "    for kare in satir:", "        if kare == \"t\":", "            sayac += 1", "report(sayac)"],
+      "aciklama": "Büyük-küçük harf farklı: notta büyük T var."
+    }
+  ],
+  "baslangic_kodu": [
+    "harita = read_note()",
+    "sayac = 0"
+  ],
+  "cozum": [
+    "harita = read_note()",
+    "sayac = 0",
+    "for satir in harita:",
+    "    for kare in satir:",
+    "        if kare == \"T\":",
+    "            sayac += 1",
+    "report(sayac)"
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "numara": 90,
+  "baslik": "Karşı kıyı",
+  "gorev": "Karşı kıyıya geç",
+  "etiket": "BÖLGE 9 · TUZ GÖLÜ",
+  "giris": "Sol 1.102 · Karşı kıyı",
+  "bitis": "En büyük kristal: 11 cm · Sonraki: gece ovası",
+  "harita": [
+    "K . . . K .",
+    ". . . . . .",
+    "S S S . . .",
+    "S . . . . .",
+    "S . T . K .",
+    "R . . . . ."
+  ],
+  "kristal_boyu": [6, 11, 4, 9, 5],
+  "rapor": 11,
+  "notlar": [
+    ["KKK", "DD", "KK"],
+    ["KKK", "DD", "GGG", "D"],
+    ["KKK", "DD", "DDD", "K"]
+  ],
+  "komutlar": ["move", "collect", "read_note", "crystal_size", "report"],
+  "rutinler": ["yon"],
+  "donus_sarti": true,
+  "parcalar": ["boylar = []", "for parca in read_note():", "for harf in parca:", "move(yon(harf))", "if crystal_size() > 0:", "boylar.append(crystal_size())", "collect()", "report(max(boylar))"],
+  "konular": ["iç içe döngü", "liste", "append", "max", "read_note", "değişen not", "bölge finali"],
+  "ipuclari": [
+    "Not yol parçalarını veriyor. Yolda tuz kristallerini ölçüp topla, kırmızılara dokunma; sonda en büyük boyu antene gönder.",
+    "Gölün ortasındaki gibi parçalarda ve harflerde dolaş; her adımda ölç: boy 0'dan büyükse listeye ekle ve topla.",
+    "`if crystal_size() > 0:` / `    boylar.append(crystal_size())` / `    collect()`; en sonda, girintisiz `report(max(boylar))`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "boylar = []", "for parca in read_note():", "    for harf in parca:", "        move(yon(harf))", "        boylar.append(crystal_size())", "        collect()", "report(max(boylar))"],
+      "aciklama": "Her karede toplandı, kırmızı kristalde de: bir notta yol ondan geçiyor ve robot duruyor. Önce ölç, 0'dan büyükse topla."
+    },
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "boylar = []", "for parca in [\"KKK\", \"DD\", \"KK\"]:", "    for harf in parca:", "        move(yon(harf))", "        if crystal_size() > 0:", "            boylar.append(crystal_size())", "            collect()", "report(max(boylar))"],
+      "aciklama": "İlk notun parçaları koda elle kopyalandı: not değişince robot yanlış kıyıya çıkar. read_note() ile oku."
+    },
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "boylar = []", "for parca in read_note():", "    for harf in parca:", "        move(yon(harf))", "        if crystal_size() > 0:", "            boylar.append(crystal_size())", "            collect()", "report(len(boylar))"],
+      "aciklama": "len kaç kristal olduğunu verir; anten en büyük boyu bekliyor: max(boylar)."
+    },
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "boylar = []", "for harf in read_note():", "    move(yon(harf))"],
+      "aciklama": "read_note() parça listesi verir, harf değil: parçanın içinde ikinci bir döngüyle harflerde dolaş."
+    }
+  ],
+  "baslangic_kodu": [
+    "def yon(harf):",
+    "    if harf == \"K\":",
+    "        return North",
+    "    elif harf == \"G\":",
+    "        return South",
+    "    elif harf == \"D\":",
+    "        return East",
+    "    elif harf == \"B\":",
+    "        return West"
+  ],
+  "cozum": [
+    "def yon(harf):",
+    "    if harf == \"K\":",
+    "        return North",
+    "    elif harf == \"G\":",
+    "        return South",
+    "    elif harf == \"D\":",
+    "        return East",
+    "    elif harf == \"B\":",
+    "        return West",
+    "boylar = []",
+    "for parca in read_note():",
+    "    for harf in parca:",
+    "        move(yon(harf))",
+    "        if crystal_size() > 0:",
+    "            boylar.append(crystal_size())",
+    "            collect()",
+    "report(max(boylar))"
+  ]
+}

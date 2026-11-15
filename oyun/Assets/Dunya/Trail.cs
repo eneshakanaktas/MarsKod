@@ -1,5 +1,5 @@
 // Kareden kareye yön listesi: Bölge 7'de Serçe'nin gördüğü göç izi (scout() izin sonraki yönünü söyler; "izler"),
-// Bölge 8'de notun yolu (Level.NoteRoutes; "notlar"). Hedef yolun son karesidir.
+// Bölge 8'de notun yolu (Note.Route; "notlar"). Hedef yolun son karesidir.
 
 using System.Collections.Generic;
 using System.Linq;

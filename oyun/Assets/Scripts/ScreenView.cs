@@ -92,17 +92,18 @@ public class ScreenView : VisualElement
         }
     }
 
-    /// <summary>Kutuyu acar: baslik ve gorunen satirlar (cevaplari henuz yok: "girdi → ?")</summary>
-    public void Show(ScreenPuzzle puzzle)
+    /// <summary>Kutuyu acar: baslik ve gorunen satirlar (cevaplari henuz yok: "girdi → ?"). name: ekranin adi (NameFor)</summary>
+    public void Show(ScreenPuzzle puzzle, string name)
     {
-        title.text = "İSTASYON EKRANI · " + puzzle.Function + "(...)";
+        title.text = name + " · " + puzzle.Function + "(...)";
         Clear();
         foreach (var row in puzzle.VisibleRows) list.Add(MakeRow(row, null));
         style.opacity = 1f;
         style.display = DisplayStyle.Flex;
     }
 
-    /// <summary>80 kapanisi (3b): tek satirlik hatira; 78'de bulunan satirin gorunusunde ama cevabi yok. Kutu yavasca belirir.</summary>
+    /// <summary>80 kapanisi (3b): tek satirlik hatira; 78'de bulunan satirin gorunusunde ama cevabi yok. Kutu yavasca belirir,
+    /// tam degil biraz soluk kalir (Kivilcim'in belleginden; Ragip "sen karar ver", 2026-11-15).</summary>
     public void ShowRecall(string line)
     {
         title.text = RecallTitle;
@@ -111,11 +112,15 @@ public class ScreenView : VisualElement
         Ui.Transition(this, "opacity", RecallFade);
         style.opacity = 0f;
         style.display = DisplayStyle.Flex;
-        schedule.Execute(() => style.opacity = 1f).StartingIn(20);
+        schedule.Execute(() => style.opacity = RecallOpacity).StartingIn(20);
     }
 
-    public const string RecallTitle = "İSTASYON EKRANI";
+    /// <summary>Ekranin adi: istasyonda bilgisayar, gece ovasinda (99) antene gelen kodlar</summary>
+    public static string NameFor(Region region) => region == Region.NightPlain ? "ANTEN" : "İSTASYON EKRANI";
+
+    public const string RecallTitle = "BELLEK · İSTASYON EKRANI";
     const float RecallFade = 0.3f;
+    const float RecallOpacity = 0.85f;
 
     /// <summary>Kutudaki ilk satirin yazisi (goruntu denetimi)</summary>
     public string FirstRowText => list.childCount > 0 ? list[0].Q<Label>().text : null;

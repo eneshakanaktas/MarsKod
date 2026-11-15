@@ -332,6 +332,27 @@ Shader "MarsKod/Ground"
                 float dust = lerp(stationDust(q, n) * (1.0 - 0.7 * stationSteps(q)), 0.3, inArea);
                 return lerp(a, float3(0.50, 0.40, 0.33) * (0.95 + 0.1 * n), dust * 0.75);
             }
+            // Tuz golu (Bolge 9), hafif: sedef + kukurt seritleri + tek gurultuden catlak cizgileri
+            float3 saltFlat(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float3 a = lerp(float3(0.84, 0.82, 0.74), float3(0.90, 0.88, 0.80), vnoise2(q * 0.9 + 3.0));
+                float crack = 1.0 - smoothstep(0.0, 0.035, abs(vnoise2(q * 2.0 + 11.0) - 0.5));
+                a = lerp(a, float3(0.70, 0.67, 0.55), crack * 0.5 * (1.0 - 0.8 * inArea) * (1.0 - far));
+                float sulfur = smoothstep(0.62, 0.72, vnoise2(float2(q.x * 0.35 + q.y * 0.15, q.y * 0.9) + 5.0));
+                a = lerp(a, float3(0.88, 0.78, 0.30), sulfur * 0.55 * (1.0 - 0.7 * inArea));
+                return a * (1.0 + 0.06 * (vnoise2(q * 40.0) - 0.5));
+            }
+
+            // Gece ovasi (Bolge 10), hafif: murdum bazalt + seyrek yesil meteor tozu
+            float3 nightPlain(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float3 a = lerp(float3(0.30, 0.22, 0.32), float3(0.36, 0.27, 0.38), vnoise2(q * 1.1 + 2.0));
+                a *= 1.0 + 0.12 * (vnoise2(q * 40.0) - 0.5);
+                a = lerp(a, float3(0.40, 0.70, 0.50), smoothstep(0.93, 0.97, vnoise2(q * 18.0 + 6.0)) * 0.35 * (1.0 - 0.7 * inArea));
+                return a;
+            }
 #else
             // Krater: icte koyu (gunes arkadan, alcaktan: uzak ic duvar golgede), kenari hafif kabarik ve aydinlik,
             // cevresinde soluk bir firlatma halkasi. d: merkezden uzaklik / yaricap, dir: merkezden yon.
@@ -584,6 +605,59 @@ Shader "MarsKod/Ground"
                 return lerp(a, dustCol, saturate(dust) * 0.78);
             }
 
+            // Tuz golu (Bolge 9; renkler: docs/superpowers/plans/2026-11-15-bolge-9-10-gorunus.md). Sedef beyazi tuz kabugu: buyuk cokgen
+            // hucreler (gercek tuz gollerindeki gibi), hucre kenarlari hafif kabarik sirt (acik) ve ortasinda ince koyu catlak; aralarda
+            // kuruyan golun dibine cokmus kukurt sarisi mineral seritleri. Alanin icinde desen soluk: kareler okunsun. sRGB.
+            float3 saltFlat(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float detail = 1.0 - far * 0.5;
+                float3 a = lerp(float3(0.84, 0.82, 0.74), float3(0.90, 0.88, 0.80), fbm(q * 0.9 + 3.0));
+                a *= 0.95 + 0.08 * fbm(q * 0.3 + 6.0);
+
+                float2 g = (q + 0.15 * (float2(fbm(q * 1.1 + 4.0), fbm(q * 1.1 + 9.0)) - 0.5)) / 0.95;
+                float2 id = floor(g), f = frac(g);
+                float d1 = 8.0, d2 = 8.0;
+                [unroll] for (int j = -1; j <= 1; j++)
+                [unroll] for (int i = -1; i <= 1; i++)
+                {
+                    float2 o = float2(i, j);
+                    float2 c = o + 0.2 + 0.6 * hash22(id + o + 31.0);
+                    float d = length(f - c);
+                    if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) d2 = d;
+                }
+                float edgeDist = (d2 - d1) * 0.5;
+                float aa = fwidth(edgeDist) * 1.2;
+                float amt = (1.0 - 0.8 * inArea) * detail * (1.0 - far);
+                float ridge = 1.0 - smoothstep(0.0, 0.06 + aa, edgeDist);          // kabarik sirt: acik
+                float crack = 1.0 - smoothstep(0.006, 0.014 + aa, edgeDist);        // sirtin ortasinda ince catlak
+                a = lerp(a, float3(0.97, 0.96, 0.90), ridge * 0.5 * amt);
+                a = lerp(a, float3(0.62, 0.60, 0.48), crack * 0.6 * amt);
+
+                // kukurt seritleri: hafif kivrimli, genis; alanin icinde soluk
+                float sulfur = smoothstep(0.58, 0.72, fbm(float2(q.x * 0.35 + q.y * 0.15, q.y * 0.9) + 5.0));
+                float3 sulfurCol = lerp(float3(0.91, 0.82, 0.29), float3(0.79, 0.70, 0.23), vnoise2(q * 3.0));
+                a = lerp(a, sulfurCol, sulfur * 0.6 * (1.0 - 0.7 * inArea) * detail);
+
+                a *= 1.0 + detail * 0.06 * (vnoise2(q * 42.0) - 0.5);            // ince tuz taneleri
+                return a;
+            }
+
+            // Gece ovasi (Bolge 10). Koyu murdum bazalt duzlugu: genis lekeler, seyrek koyu cakil, meteor tozundan seyrek yesil parilti
+            // (gokteki meteorlarin yesili). Alanin icinde sade. sRGB.
+            float3 nightPlain(float3 p, float far, float inArea)
+            {
+                float2 q = p.xz;
+                float detail = 1.0 - far * 0.5;
+                float3 a = lerp(float3(0.30, 0.22, 0.32), float3(0.36, 0.27, 0.38), fbm(q * 1.1 + 2.0));
+                a *= 0.92 + 0.12 * fbm(q * 0.3 + 8.0);
+                a *= 1.0 + detail * 0.12 * (vnoise2(q * 42.0) - 0.5);
+                float around = detail * (1.0 - 0.6 * inArea);
+                a = lerp(a, float3(0.14, 0.10, 0.16), smoothstep(0.86, 0.94, vnoise2(q * 15.0 + 3.0)) * around * 0.5);   // koyu cakil
+                a = lerp(a, float3(0.42, 0.75, 0.55), smoothstep(0.94, 0.98, vnoise2(q * 19.0 + 6.0)) * around * 0.4);   // yesil meteor tozu
+                return a;
+            }
+
 #endif
 
             half4 frag (Varyings i) : SV_Target
@@ -605,6 +679,8 @@ Shader "MarsKod/Ground"
                 else if (MarsCanyon()) a = canyonFloor(p, far, inArea);
                 else if (MarsRiverBed()) a = riverFloor(p, far, inArea);
                 else if (MarsStation()) a = stationFloor(p, far, inArea);
+                else if (MarsSaltLake()) a = saltFlat(p, far, inArea);
+                else if (MarsNightPlain()) a = nightPlain(p, far, inArea);
                 else a = regolith(p, far, inArea);
 
                 // oyun alani: ayni zemin, biraz daha duzgun; kare sinirlari ince ve soluk

@@ -1,0 +1,54 @@
+{
+  "numara": 95,
+  "baslik": "Dumanlı krater",
+  "gorev": "Kızgın taşa dokunma",
+  "etiket": "BÖLGE 10 · GECE OVASI",
+  "giris": "Sol 1.105 · Dumanlı krater",
+  "bitis": "Kızgın taş: 3 · Dokunulmadı",
+  "harita": [
+    ". . . . . K",
+    ". . . X G .",
+    ". . . G . .",
+    "G . G X . .",
+    "X . . . . .",
+    "R . . . . ."
+  ],
+  "komutlar": ["move", "collect", "smoke_here"],
+  "bilgi": {
+    "baslik": "Bazı taşlar hâlâ kızgın",
+    "metin": [
+      "Yeni düşen göktaşının dumanı tüter. `smoke_here()` robotun durduğu karede duman var mı diye bakar: varsa `True`.",
+      "Kızgın taşın üstünden geçilir ama toplanmaz. Toplamadan önce bak: duman yoksa topla."
+    ]
+  },
+  "parcalar": ["for y in yol:", "move(y)", "if not smoke_here():", "collect()"],
+  "konular": ["smoke_here", "not", "liste"],
+  "ipuclari": [
+    "Yol hazır. Her karede bak: duman varsa geç, yoksa topla.",
+    "`not smoke_here()` duman yoksa `True`.",
+    "`    move(y)` / `    if not smoke_here():` / `        collect()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["yol = [North, North, East, East, East, North, North, East]", "for y in yol:", "    move(y)", "    collect()"],
+      "aciklama": "Kızgın taş toplanmaya çalışıldı: robot durdu. Önce bak: if not smoke_here():"
+    },
+    {
+      "kod": ["yol = [North, North, East, East, East, North, North, East]", "for y in yol:", "    move(y)", "    if smoke_here():", "        collect()"],
+      "aciklama": "Ters: dumanlı (kızgın) taş toplanmaz; duman YOKSA topla."
+    }
+  ],
+  "baslangic_kodu": [
+    "yol = [North, North, East, East, East, North, North, East]",
+    "for y in yol:",
+    "    move(y)",
+    "    collect()"
+  ],
+  "cozum": [
+    "yol = [North, North, East, East, East, North, North, East]",
+    "for y in yol:",
+    "    move(y)",
+    "    if not smoke_here():",
+    "        collect()"
+  ]
+}

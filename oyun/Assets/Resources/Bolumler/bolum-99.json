@@ -1,0 +1,109 @@
+{
+  "numara": 99,
+  "baslik": "Sığınaktan sinyal",
+  "gorev": "Gerçek sinyali bul",
+  "etiket": "BÖLGE 10 · GECE OVASI",
+  "giris": "Sol 1.107 · Sığınaktan sinyal",
+  "bitis": "Gerçek sinyal: 3 · Mesaj açılıyor",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . R . . .",
+    ". . . . . .",
+    ". . . . . ."
+  ],
+  "ekran": {
+    "fonksiyon": "gercek_mi",
+    "satirlar": [
+      {
+        "girdi": "DEFNE861",
+        "cevap": true,
+        "gorunur": true
+      },
+      {
+        "girdi": "KKKKKKKK",
+        "cevap": false,
+        "gorunur": true
+      },
+      {
+        "girdi": "4821",
+        "cevap": false,
+        "gorunur": true
+      },
+      {
+        "girdi": "00000000",
+        "cevap": false
+      },
+      {
+        "girdi": "SIGINAK1",
+        "cevap": true
+      },
+      {
+        "girdi": "BKM7",
+        "cevap": false
+      },
+      {
+        "girdi": "12345678",
+        "cevap": false
+      },
+      {
+        "girdi": "ARAS-ECE",
+        "cevap": false
+      },
+      {
+        "girdi": "KAPI8610",
+        "cevap": true
+      }
+    ]
+  },
+  "komutlar": [],
+  "bilgi": {
+    "baslik": "Antene kodlar yağıyor",
+    "metin": [
+      "Antene bir sürü kod geliyor: çoğu gürültü, biri sığınaktan. Defne'nin kuralı: gerçek kod en az 8 karakter, içinde en az bir rakam var ve bilinen gürültülerden (`gurultu` listesi) değil.",
+      "`gercek_mi(kod)` yaz: kod gerçekse `True`, değilse `False` döndürsün. Anten onu her kodla çağırır."
+    ]
+  },
+  "parcalar": ["def gercek_mi(kod):", "rakam_var = False", "for harf in kod:", "if harf in \"0123456789\":", "rakam_var = True", "return len(kod) >= 8 and rakam_var and kod not in gurultu"],
+  "konular": ["and", "not", "in", "len", "return", "şifre ödevi"],
+  "ipuclari": [
+    "Üç şart birden tutmalı: uzunluk en az 8, en az bir rakam, gürültü listesinde değil.",
+    "Rakam var mı diye harflerde dolaş: `if harf in \"0123456789\":` bir bayrağı `True` yapsın. Sonra üç şartı `and` ile birleştir.",
+    "`    return len(kod) >= 8 and rakam_var and kod not in gurultu`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["gurultu = [\"00000000\", \"12345678\"]", "def gercek_mi(kod):", "    return len(kod) >= 8 and kod not in gurultu"],
+      "aciklama": "Rakam şartı unutulmuş: \"KKKKKKKK\" de gerçek sayılıyor."
+    },
+    {
+      "kod": ["gurultu = [\"00000000\", \"12345678\"]", "def gercek_mi(kod):", "    rakam_var = False", "    for harf in kod:", "        if harf in \"0123456789\":", "            rakam_var = True", "    return len(kod) >= 8 and rakam_var"],
+      "aciklama": "Gürültü listesi unutulmuş: \"00000000\" de gerçek sayılıyor."
+    },
+    {
+      "kod": ["gurultu = [\"00000000\", \"12345678\"]", "def gercek_mi(kod):", "    rakam_var = False", "    for harf in kod:", "        if harf in \"0123456789\":", "            rakam_var = True", "    return len(kod) > 8 and rakam_var and kod not in gurultu"],
+      "aciklama": "Tam 8 karakter de yeter: > değil >= yaz."
+    },
+    {
+      "kod": ["def gercek_mi(kod):", "    if kod == \"DEFNE861\":", "        return True", "    return False"],
+      "aciklama": "Görünen örnek ezberlendi: gizli kodlarda başka gerçek sinyaller de var."
+    },
+    {
+      "kod": ["gurultu = [\"00000000\", \"12345678\"]", "def gercek_mi(kod):", "    rakam_var = False", "    for harf in kod:", "        if harf in \"0123456789\":", "            rakam_var = True", "    print(len(kod) >= 8 and rakam_var and kod not in gurultu)"],
+      "aciklama": "print ekrana yazar ama cevap vermez: anten None alır. return yaz."
+    }
+  ],
+  "baslangic_kodu": [
+    "gurultu = [\"00000000\", \"12345678\"]"
+  ],
+  "cozum": [
+    "gurultu = [\"00000000\", \"12345678\"]",
+    "def gercek_mi(kod):",
+    "    rakam_var = False",
+    "    for harf in kod:",
+    "        if harf in \"0123456789\":",
+    "            rakam_var = True",
+    "    return len(kod) >= 8 and rakam_var and kod not in gurultu"
+  ]
+}

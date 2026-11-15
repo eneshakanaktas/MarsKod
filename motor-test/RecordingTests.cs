@@ -7,7 +7,7 @@ public class RecordingTests
     [Fact]
     public void Katalog_sirali_ve_dolu()
     {
-        Assert.Equal(new[] { 1, 2, 3, 4 }, Recordings.All.Select(r => r.Number));
+        Assert.Equal(new[] { 1, 2, 3, 4, 5, 6 }, Recordings.All.Select(r => r.Number));
         Assert.Equal(Recordings.All.Count, Recordings.All.Select(r => r.File).Distinct().Count());
         foreach (var r in Recordings.All)
         {
@@ -28,6 +28,26 @@ public class RecordingTests
                      string.Join(" ", r.Lines));
     }
 
+    // senaryo-perde-2.md / senaryo-bolge-09.md: Bölge 9, Bölüm 83 başı; metin hikaye-kitabi.md ile harfi harfine aynı
+    [Fact]
+    public void Kayit_5_oklar()
+    {
+        var r = Recordings.ByNumber(5);
+        Assert.Equal("oklar.ses", r.File);
+        Assert.Equal((9, 83, true), (r.Region, r.Level, r.AtLevelStart));
+        Assert.Equal("Okları takip et. Biz oradayız; dağın altında. Acele etme, ama durma da.", string.Join(" ", r.Lines));
+    }
+
+    // senaryo-bolge-10.md: taslaklarda "Kayıt 5b"; oyunda 6. kayıt, Bölüm 93 başı
+    [Fact]
+    public void Kayit_6_mavi_yildiz()
+    {
+        var r = Recordings.ByNumber(6);
+        Assert.Equal("yildiz.ses", r.File);
+        Assert.Equal((10, 93, true), (r.Region, r.Level, r.AtLevelStart));
+        Assert.Equal("Ece her gece o mavi yıldızı arardı. 'Orada bizi duyan biri var mı?' derdi. Ben de 'Belki bir gün' derdim.", string.Join(" ", r.Lines));
+    }
+
     // senaryo-perde-2.md / senaryo-bolge-08.md: Bölge 8, Bölüm 74 başı
     [Fact]
     public void Kayit_4_cizimler()
@@ -46,6 +66,8 @@ public class RecordingTests
         Assert.Equal(2, Recordings.AtStartOf(52).Number);
         Assert.Equal(3, Recordings.AtStartOf(64).Number);
         Assert.Equal(4, Recordings.AtStartOf(74).Number);
+        Assert.Equal(5, Recordings.AtStartOf(83).Number);
+        Assert.Equal(6, Recordings.AtStartOf(93).Number);
         Assert.Null(Recordings.AtStartOf(71));
         Assert.Null(Recordings.AtStartOf(50));   // Kayıt 1 kapanışta, başta değil
         Assert.Null(Recordings.AtStartOf(61));

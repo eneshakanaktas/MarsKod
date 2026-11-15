@@ -1,0 +1,83 @@
+{
+  "numara": 84,
+  "baslik": "Tuzla çevrili oklar",
+  "gorev": "İlk okun yönüne git",
+  "etiket": "BÖLGE 9 · TUZ GÖLÜ",
+  "giris": "Sol 1.099 · Tuzla çevrili oklar",
+  "bitis": "İlk ok tuzla çevrili · Biri okları korumuş",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . K .",
+    ". . . . . .",
+    ". R . . . .",
+    ". . . . . ."
+  ],
+  "notlar": [
+    {
+      "yazi": ["D", "K", "K"],
+      "yol": "DDD"
+    },
+    {
+      "yazi": ["K", "B", "D", "G"],
+      "yol": "KKKK"
+    }
+  ],
+  "komutlar": ["move", "read_note"],
+  "rutinler": ["yon"],
+  "donus_sarti": true,
+  "bilgi": {
+    "baslik": "Not artık bir liste",
+    "metin": [
+      "Bu gölde `read_note()` bir liste verir: her ok bir öğe, örneğin `['D', 'K', 'K']`.",
+      "Listenin ilk öğesi `oklar[0]`, ikincisi `oklar[1]`: Python sırayı 0'dan sayar. `len(oklar)` listede kaç öğe olduğunu verir."
+    ]
+  },
+  "parcalar": ["for i in range(len(oklar)):", "move(yon(oklar[0]))"],
+  "konular": ["liste", "sıra (indeks)", "len", "read_note", "değişen not"],
+  "ipuclari": [
+    "Tuzla çevrili ilk ok yönü gösteriyor; okların sayısı kaç adım gideceğini. Not her denemede değişir: ezberleme, oku.",
+    "Listenin ilk öğesi `oklar[0]`: Python sırayı 0'dan sayar, `oklar[1]` ikinci ok. `len(oklar)` kaç ok olduğunu verir.",
+    "`for i in range(len(oklar)):` / `    move(yon(oklar[0]))`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "oklar = read_note()", "for i in range(len(oklar)):", "    move(yon(oklar[1]))"],
+      "aciklama": "Sıra 0'dan başlar: ilk ok oklar[0]; oklar[1] ikinci ok."
+    },
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "oklar = read_note()", "for i in range(3):", "    move(yon(oklar[0]))"],
+      "aciklama": "Adım sayısı ezberlenmiş: not değişince okların sayısı da değişir. Kaç ok olduğunu len(oklar) söyler."
+    },
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "oklar = read_note()", "for ok in oklar:", "    move(yon(ok))"],
+      "aciklama": "Her ok ayrı yürünmüyor: hepsi ilk okun yönünde, ok sayısı kadar adım."
+    }
+  ],
+  "baslangic_kodu": [
+    "def yon(harf):",
+    "    if harf == \"K\":",
+    "        return North",
+    "    elif harf == \"G\":",
+    "        return South",
+    "    elif harf == \"D\":",
+    "        return East",
+    "    elif harf == \"B\":",
+    "        return West",
+    "oklar = read_note()"
+  ],
+  "cozum": [
+    "def yon(harf):",
+    "    if harf == \"K\":",
+    "        return North",
+    "    elif harf == \"G\":",
+    "        return South",
+    "    elif harf == \"D\":",
+    "        return East",
+    "    elif harf == \"B\":",
+    "        return West",
+    "oklar = read_note()",
+    "for i in range(len(oklar)):",
+    "    move(yon(oklar[0]))"
+  ]
+}

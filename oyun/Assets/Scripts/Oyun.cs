@@ -109,6 +109,7 @@ public partial class Oyun : MonoBehaviour
     bool running, done, complete;
     // Adim adim modu: her satirdan sonra ⏭ basisini bekler (stepRequested: bir satir daha calissin)
     bool stepMode, stepRequested;
+    MeteorMarks meteorMarks;   // Bolge 10: o denemenin kraterleri (her denemede baska yerde olabilir)
     int trailTurn;       // degisen yolda her Calistir'da siradaki iz oynatilir (TrailRuns.Pick)
     bool versionChanged;   // son kosuda kod bir izde/notta calisip digerinde takildi: mesajin basinda soylenir
     float stars = 1f, starsTarget = 1f;
@@ -522,6 +523,10 @@ public partial class Oyun : MonoBehaviour
             pickups.Add(Pickups.Create(level.Item, levelRoot, Pos(level.Ices[i]), i + 1));
         for (int i = 0; i < level.Crystals.Count; i++)
             Ice.CreateHazard(levelRoot, Pos(level.Crystals[i]), 20 + i); // toplanmaz: pickups listesinde degil
+        for (int i = 0; i < level.HotStones.Count; i++)
+            MeteorMarks.HotStone(levelRoot, Pos(level.HotStones[i]), i);   // kizgin goktasi: toplanmaz
+        meteorMarks = new MeteorMarks(levelRoot, Pos);
+        meteorMarks.Show(level.CratersOf(0));
         panels.Clear();
         int panelSeed = 0;
         foreach (var p in level.Panels)
@@ -559,7 +564,7 @@ public partial class Oyun : MonoBehaviour
         hud.SetPieces(level.Pieces, Palette.NewPieces(levels, level.Number));
         bool landingDue = LandingDue;   // 51'e her girisde: giris damgasi roket indikten sonra gelir
         hud.SetLevel(level.Number, level.Label, level.Title, level.Goal, level.Ices.Count, level.Item, landingDue ? "" : level.Intro);
-        if (level.Screen != null) hud.ShowScreen(level.Screen); else hud.HideScreen();
+        if (level.Screen != null) hud.ShowScreen(level.Screen, ScreenView.NameFor(region)); else hud.HideScreen();
         hud.HideNote();
         hud.SetInfo(level.Info, seen: !shotsMode && PlayerPrefs.GetInt(InfoKey(level), 0) == 1);   // gorulmediyse kart kendiliginden acilir
         var transition = Traces.TransitionLines(level.Number);
@@ -845,7 +850,7 @@ public partial class Oyun : MonoBehaviour
         trailView?.Restore();
         noteEnd?.Restore();
         StationTraces.Screens?.Restore();
-        if (level.Screen != null) hud.ShowScreen(level.Screen); else hud.HideScreen();
+        if (level.Screen != null) hud.ShowScreen(level.Screen, ScreenView.NameFor(Regions.Of(level.Number))); else hud.HideScreen();
         hud.HideNote();
         hud.ResetView();
     }
@@ -862,6 +867,7 @@ public partial class Oyun : MonoBehaviour
         var report = shown.Report;
         versionChanged = TrailRuns.Mixed(runs);
         trailView?.Begin(level.Trails[runs.IndexOf(shown)]);   // degisen yolda her kosu kendi izini gosterir
+        meteorMarks.Show(level.CratersOf(runs.IndexOf(shown)));   // degisen meteorda her kosu kendi kraterlerini
 
         // Bitmeyen dongude kaydin sadece basi oynatilir; uzun kayitta bos satirlarda beklenmez.
         int count = report.Halt != null && report.Halt.Reason == "steps" ? Mathf.Min(report.Trace.Count, 40) : report.Trace.Count;
@@ -983,7 +989,8 @@ public partial class Oyun : MonoBehaviour
                     null, error: false);
             else if (level.Notes.Count > 0)
                 ShowFailure("GÖREV", "Kod bitti, notun sonuna varmadı",
-                    "Kodun sonuna kadar çalıştı ama Kıvılcım notun gösterdiği yere varmadı. Notun her harfi bir adım: harfleri sırayla yürü.",
+                    "Kodun sonuna kadar çalıştı ama Kıvılcım notun gösterdiği yere varmadı. "
+                    + (level.Notes[0].LettersAreRoute ? "Notun her harfi bir adım: harfleri sırayla yürü." : "Görevi yeniden oku: not nereye, kaç adım diyor?"),
                     null, error: false);
             else
                 ShowFailure("GÖREV", "Kod bitti, robot hedefte değil",
@@ -1182,8 +1189,10 @@ public partial class Oyun : MonoBehaviour
                 yield return Tween.Wait(0.5f);
                 break;
             case CableMeasured cm:
-                StartCoroutine(PowerLabel.Show(levelRoot, Pos(cm.At), cm.Length + " m", cm.Length == 0 ? new Color(0.85f, 0.85f, 0.92f) : Mats.Hex("#FFB070")));
-                yield return Tween.Wait(0.5f);
+                yield return ShowMeasure(cm.At, cm.Length + " m", cm.Length == 0, Mats.Hex("#FFB070"));
+                break;
+            case CrystalMeasured km:   // tuz kristali (Bolge 9)
+                yield return ShowMeasure(km.At, km.Size + " cm", km.Size == 0, Mats.Hex("#BFE3FF"));
                 break;
             case ReportSent rs:
                 if (rs.Correct) Sound.Collect();
@@ -1212,7 +1221,7 @@ public partial class Oyun : MonoBehaviour
             case NoteRead n: // Kivilcim kagidi kaldirip okur, harfler arayuzdeki kartta (80'de once duvardaki haritaya bakar)
                 if (StationTraces.WallMap != null) { yield return Face(Direction.North); yield return Tween.Wait(0.3f); }
                 yield return robot.HoldNote(true);
-                hud.ShowNote(n.Text);
+                if (n.Lines != null) hud.ShowNoteLines(n.Lines, n.StepByLetter); else hud.ShowNote(n.Text);
                 yield return Tween.Wait(0.45f);
                 yield return robot.HoldNote(false);
                 break;
@@ -1236,7 +1245,16 @@ public partial class Oyun : MonoBehaviour
             ShowFailure(report.Halt.Kind == "limit" ? "DURDURULDU" : "HENÜZ YOK", ex.Title, text, null, error: true);
     }
 
-    string VersionChangedNote => level.Notes.Count > 0 ? "Bu denemede not başka bir yol yazıyor." : "Serçe bu sefer başka bir kol gördü.";
+    // Olcum yazisi karenin ustunde (kablo makarasi metre, tuz kristali santimetre); olculen sey yoksa soluk
+    IEnumerator ShowMeasure(Cell at, string text, bool empty, Color color)
+    {
+        StartCoroutine(PowerLabel.Show(levelRoot, Pos(at), text, empty ? new Color(0.85f, 0.85f, 0.92f) : color));
+        yield return Tween.Wait(0.5f);
+    }
+
+    string VersionChangedNote => level.Notes.Count > 0 ? "Bu denemede not başka bir yol yazıyor."
+        : level.Meteors.Count > 0 ? "Bu denemede meteorlar başka yere düştü."
+        : "Serçe bu sefer başka bir kol gördü.";
 
     // Kod bir izde/notta calisip bu sefer takildiysa oyuncu yolun degistigini bilsin
     void ShowFailure(string header, string title, string text, string detail, bool error)

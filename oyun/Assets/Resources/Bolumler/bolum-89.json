@@ -1,0 +1,70 @@
+{
+  "numara": 89,
+  "baslik": "Gölün ortası",
+  "gorev": "Parça parça yürü",
+  "etiket": "BÖLGE 9 · TUZ GÖLÜ",
+  "giris": "Sol 1.102 · Gölün ortası",
+  "bitis": "Her yön aynı · Yalnız oklar",
+  "harita": [
+    ". . . . . .",
+    "K K . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    "R . . . . K"
+  ],
+  "notlar": [
+    ["KK", "DDD", "KK"],
+    ["DD", "KKK", "DD", "G"],
+    ["K", "DDDD", "KKKK", "B"]
+  ],
+  "komutlar": ["move", "read_note"],
+  "rutinler": ["yon"],
+  "donus_sarti": true,
+  "parcalar": ["for parca in read_note():", "for harf in parca:", "move(yon(harf))"],
+  "konular": ["iç içe döngü", "metin listesi", "read_note", "değişen not"],
+  "ipuclari": [
+    "Not bu kez yol parçalarının listesi, örneğin `['KK', 'DDD', 'KK']`. Her parçanın her harfi bir adım.",
+    "Dış döngü parçalarda, iç döngü parçanın harflerinde dolaşır; harfi `yon` ile yöne çevir.",
+    "`for parca in read_note():` / `    for harf in parca:` / `        move(yon(harf))`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "for harf in read_note():", "    move(yon(harf))"],
+      "aciklama": "read_note() burada harf değil, parça listesi verir: her öğe \"KK\" gibi bir metin, yon onu tanımaz (None). Parçanın içinde ikinci bir döngüyle harflerde dolaş."
+    },
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "for parca in [\"KK\", \"DDD\", \"KK\"]:", "    for harf in parca:", "        move(yon(harf))"],
+      "aciklama": "İlk notun parçaları koda elle kopyalandı: not değişince robot yanlış yere gider. Her seferinde read_note() ile oku."
+    },
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "for parca in read_note():", "    move(yon(parca[0]))"],
+      "aciklama": "Her parçanın yalnız ilk harfi yüründü: parçadaki her harf bir adım."
+    }
+  ],
+  "baslangic_kodu": [
+    "def yon(harf):",
+    "    if harf == \"K\":",
+    "        return North",
+    "    elif harf == \"G\":",
+    "        return South",
+    "    elif harf == \"D\":",
+    "        return East",
+    "    elif harf == \"B\":",
+    "        return West"
+  ],
+  "cozum": [
+    "def yon(harf):",
+    "    if harf == \"K\":",
+    "        return North",
+    "    elif harf == \"G\":",
+    "        return South",
+    "    elif harf == \"D\":",
+    "        return East",
+    "    elif harf == \"B\":",
+    "        return West",
+    "for parca in read_note():",
+    "    for harf in parca:",
+    "        move(yon(harf))"
+  ]
+}

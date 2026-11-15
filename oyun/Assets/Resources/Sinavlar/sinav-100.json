@@ -1,0 +1,60 @@
+{
+  "bolum": 100,
+  "baslik": "KIVILCIM · KENDİNİ DENETLİYOR",
+  "sorular": [
+    {
+      "soru": "for i in range(4): altında move(East) var. move(East) kaç kez çalışır?",
+      "secenekler": ["3", "4", "5", "1"],
+      "dogru": 1,
+      "aciklama": "range(4) dört tur verir: 0, 1, 2, 3."
+    },
+    {
+      "soru": "sayac = 0 ve iki kez sayac += 1 çalıştıktan sonra sayac kaçtır?",
+      "secenekler": ["0", "1", "2", "11"],
+      "dogru": 2,
+      "aciklama": "+= 1 her seferinde bir ekler."
+    },
+    {
+      "soru": "while dust_here(): altında wait() var. Döngü ne zaman biter?",
+      "secenekler": ["Hiç bitmez", "Toz dağılınca: dust_here() False olunca", "İlk turda", "wait() bir kez çalışınca"],
+      "dogru": 1,
+      "aciklama": "while şart True olduğu sürece döner; şart False olunca durur."
+    },
+    {
+      "soru": "def iki_kat(s): altında return s * 2 var. iki_kat(5) nedir?",
+      "secenekler": ["5", "10", "None", "s * 2"],
+      "dogru": 1,
+      "aciklama": "return cevabı çağrının yerine getirir."
+    },
+    {
+      "soru": "len(\"KAPI\") kaçtır?",
+      "secenekler": ["3", "4", "5", "KAPI"],
+      "dogru": 1,
+      "aciklama": "len harfleri sayar: K, A, P, I."
+    },
+    {
+      "soru": "oklar = [\"D\", \"K\", \"G\"] ise oklar[2] nedir?",
+      "secenekler": ["\"K\"", "\"G\"", "\"D\"", "Hata verir"],
+      "dogru": 1,
+      "aciklama": "Sıra 0'dan başlar: oklar[2] üçüncü öğe."
+    },
+    {
+      "soru": "for a in range(2): altında for b in range(3): ve onun altında collect() var. collect() kaç kez çalışır?",
+      "secenekler": ["2", "3", "5", "6"],
+      "dogru": 3,
+      "aciklama": "Dıştaki her turda içteki baştan sona: 2 × 3 = 6."
+    },
+    {
+      "soru": "kod = \"DEFNE861\" ise len(kod) >= 8 and \"8\" in kod sonucu nedir?",
+      "secenekler": ["True", "False", "8", "Hata verir"],
+      "dogru": 0,
+      "aciklama": "len(kod) 8, yani >= 8 True; \"8\" de kodun içinde. İki şart da True, and True verir."
+    },
+    {
+      "soru": "Hangisi True olur?",
+      "secenekler": ["False or False", "True and False", "not True", "False or True"],
+      "dogru": 3,
+      "aciklama": "or için biri True olsa yeter."
+    }
+  ]
+}

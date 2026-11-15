@@ -17,6 +17,14 @@ public class Ice : MonoBehaviour, IPickup
     public static Ice CreateHazard(Transform parent, Vector3 localPos, int seed)
         => Create(parent, localPos, seed, Mats.Hex("#FF5A4F"), Mats.Hex("#E02A2A") * 0.8f);
 
+    // Tuz kristali (Bolge 9): sedef govde, altin parilti (renkler: Bolge 9 paleti)
+    public static Ice CreateSalt(Transform parent, Vector3 localPos, int seed)
+        => Create(parent, localPos, seed, Mats.Hex("#F4F1E8"), Mats.Hex("#E8D24A") * 0.45f);
+
+    // Goktasi (Bolge 10): grafit govde, meteorun zumrut yesili parilti (gecici: kristal kumesi bicimi; asil tas 3a'da)
+    public static Ice CreateMeteorStone(Transform parent, Vector3 localPos, int seed)
+        => Create(parent, localPos, seed, Mats.Hex("#3A3A40"), Mats.Hex("#2EE86A") * 0.55f);
+
     static Ice Create(Transform parent, Vector3 localPos, int seed, Color body, Color glow)
     {
         var go = new GameObject("Ice");

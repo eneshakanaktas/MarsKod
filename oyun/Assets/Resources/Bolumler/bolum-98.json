@@ -1,0 +1,49 @@
+{
+  "numara": 98,
+  "baslik": "Sessizlik",
+  "gorev": "Ovayı tara",
+  "etiket": "BÖLGE 10 · GECE OVASI",
+  "giris": "Sol 1.106 · Sessizlik",
+  "bitis": "Yağmur dindi",
+  "harita": [
+    ". . . . . .",
+    ". . . . . K",
+    ". G X G . .",
+    ". X G . G .",
+    "R G . X G .",
+    ". . . . . ."
+  ],
+  "komutlar": ["move", "collect", "smoke_here"],
+  "rutinler": ["satir_tara"],
+  "parcalar": ["def satir_tara():", "for adim in range(4):", "move(East)", "if not smoke_here():", "collect()", "move(North)", "move(West)", "for satir in range(3):", "satir_tara()"],
+  "konular": ["rutin", "iç içe döngü", "not", "pekiştirme"],
+  "ipuclari": [
+    "Yağmur dindi. Ovayı satır satır tara, kızgın olmayan taşları topla. Bir satırı tarayan işi `satir_tara` rutini yapsın."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def satir_tara():", "    for adim in range(4):", "        move(East)", "        collect()", "    move(North)", "    for adim in range(4):", "        move(West)", "for satir in range(3):", "    satir_tara()"],
+      "aciklama": "Kızgın taş toplanmaya çalışıldı: robot durdu. Önce smoke_here() ile bak."
+    },
+    {
+      "kod": ["def satir_tara():", "    for adim in range(4):", "        move(East)", "        if not smoke_here():", "            collect()", "    move(North)", "for satir in range(3):", "    satir_tara()"],
+      "aciklama": "Satırın başına dönüş unutulmuş: ikinci satırda robot alanın dışına çıkar."
+    },
+    {
+      "kod": ["def satir_tara():", "    for adim in range(4):", "        move(East)", "        if not smoke_here():", "            collect()", "    move(North)", "    for adim in range(4):", "        move(West)", "for satir in range(2):", "    satir_tara()"],
+      "aciklama": "Ova 3 satır: 2 turda en üst satır taranmıyor."
+    }
+  ],
+  "cozum": [
+    "def satir_tara():",
+    "    for adim in range(4):",
+    "        move(East)",
+    "        if not smoke_here():",
+    "            collect()",
+    "    move(North)",
+    "    for adim in range(4):",
+    "        move(West)",
+    "for satir in range(3):",
+    "    satir_tara()"
+  ]
+}

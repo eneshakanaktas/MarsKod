@@ -23,6 +23,8 @@ public static class Pickups
             case Collectible.Pebble: return RiverPebble.Create(parent, localPos, seed);
             case Collectible.CableReel: return CableReel.Create(parent, localPos, seed);
             case Collectible.DataCard: return DataCard.Create(parent, localPos, seed);
+            case Collectible.SaltCrystal: return Ice.CreateSalt(parent, localPos, seed);
+            case Collectible.MeteorStone: return Ice.CreateMeteorStone(parent, localPos, seed);
             default: return Ice.Create(parent, localPos, seed);
         }
     }

@@ -63,7 +63,7 @@
 
 **Kapanış:** Kapsül odasında uyananlar battaniyelere sarılı, sıcak çorba içiyor. Defne odanın kapısında, derin tünellerin karanlığına bakıyor. Kıvılcım yanında.
 
-**Dizide:** Rıza Dede'nin kaydettiği canlı mesaj ("Demek sendin") ajansa ulaşır; ajans doğrular: **koloni yaşıyor.** Dünya çapında haber. Yıldız'ın okulu ona dönüp bakar. Ama Yıldız'ın aklı başka yerde: takvimde kalan günler.
+**Dizide:** Rıza Dede'nin kaydettiği canlı mesaj ("Demek sendin") ajansa ulaşır; ajans doğrular: **koloni yaşıyor.** Dünya çapında haber. (Görev merkezinde ekranın önünde konuşmayan bir adam; masasında turkuaz bir çocuk çizimi: Ece'nin babası Kaan Aras. Adı söylenmez; `hikaye-kitabi.md`.) Yıldız'ın okulu ona dönüp bakar. Ama Yıldız'ın aklı başka yerde: takvimde kalan günler.
 
 ---
 

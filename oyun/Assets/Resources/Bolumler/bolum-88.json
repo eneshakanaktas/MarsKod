@@ -1,0 +1,49 @@
+{
+  "numara": 88,
+  "baslik": "Volkan belirginleşir",
+  "gorev": "Yalnız tuzu topla",
+  "etiket": "BÖLGE 9 · TUZ GÖLÜ",
+  "giris": "Sol 1.101 · Volkan belirginleşir",
+  "bitis": "Kırmızı kristal: 4 · Dokunulmadı",
+  "harita": [
+    ". . . . . .",
+    ". S T S . .",
+    ". . S T . .",
+    ". T S S . .",
+    "R S . T . .",
+    ". . . . . ."
+  ],
+  "kristal_boyu": [4, 6, 5, 8, 3, 7],
+  "komutlar": ["move", "collect", "crystal_size"],
+  "parcalar": ["for satir in range(4):", "for adim in range(3):", "move(East)", "if crystal_size() > 0:", "collect()", "move(North)", "move(West)"],
+  "konular": ["iç içe döngü", "if", "crystal_size"],
+  "ipuclari": [
+    "Kırmızı kristaller tehlikeli, toplanmaz. Tuz kristalinin boyu var; kırmızınınki ölçülmez, 0 çıkar.",
+    "Tuza gömülü oyuncağı bulduğun taramayı kur. İçteki döngüde toplamadan önce ölç: boy 0'dan büyükse topla.",
+    "4 satır, her satırda 3 kare. İç döngüde `if crystal_size() > 0:` / `    collect()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for satir in range(4):", "    for adim in range(3):", "        move(East)", "        collect()", "    move(North)", "    for adim in range(3):", "        move(West)"],
+      "aciklama": "Her kare toplandı, kırmızı kristal de: robot durdu. Önce ölç: crystal_size() 0'dan büyükse topla."
+    },
+    {
+      "kod": ["for satir in range(3):", "    for adim in range(3):", "        move(East)", "        if crystal_size() > 0:", "            collect()", "    move(North)", "    for adim in range(3):", "        move(West)"],
+      "aciklama": "Göl 4 satır: dış döngü 3 turda en üst satıra varmıyor."
+    },
+    {
+      "kod": ["for satir in range(4):", "    for adim in range(3):", "        move(East)", "        if crystal_size() > 0:", "            collect()", "    move(North)"],
+      "aciklama": "Her satırdan sonra robot satırın başına dönmeli; dönmezse alanın dışına çıkar."
+    }
+  ],
+  "cozum": [
+    "for satir in range(4):",
+    "    for adim in range(3):",
+    "        move(East)",
+    "        if crystal_size() > 0:",
+    "            collect()",
+    "    move(North)",
+    "    for adim in range(3):",
+    "        move(West)"
+  ]
+}

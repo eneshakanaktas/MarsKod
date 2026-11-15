@@ -1,0 +1,36 @@
+{
+  "bolum": 85,
+  "baslik": "KIVILCIM · KENDİNİ DENETLİYOR",
+  "sorular": [
+    {
+      "soru": "oklar = [\"D\", \"K\", \"G\"] ise oklar[0] nedir?",
+      "secenekler": ["\"D\"", "\"K\"", "\"G\"", "Hata verir"],
+      "dogru": 0,
+      "aciklama": "Python sırayı 0'dan sayar: oklar[0] ilk öğe, oklar[1] ikinci."
+    },
+    {
+      "soru": "len([North, North, East]) kaçtır?",
+      "secenekler": ["1", "2", "3", "East"],
+      "dogru": 2,
+      "aciklama": "len listede kaç öğe olduğunu verir: üç yön."
+    },
+    {
+      "soru": "boylar = [5] ve boylar.append(8) çalıştıktan sonra boylar nedir?",
+      "secenekler": ["[5]", "[8]", "[5, 8]", "[8, 5]"],
+      "dogru": 2,
+      "aciklama": "append yeni öğeyi listenin sonuna ekler; eskiler yerinde kalır."
+    },
+    {
+      "soru": "yanimiza_al = [\"su\", \"ilac\", ] satırı ne olur?",
+      "secenekler": ["Hata verir: virgülden sonra bir şey yok", "Çalışır: iki öğeli bir liste", "Çalışır: üç öğeli, sonuncusu boş", "Liste boş kalır"],
+      "dogru": 1,
+      "aciklama": "Listenin sonundaki virgül Python'da hata değildir; öğe eklemez."
+    },
+    {
+      "soru": "3 in [5, 3, 7] sonucu nedir?",
+      "secenekler": ["True", "False", "1", "Hata verir"],
+      "dogru": 0,
+      "aciklama": "in listede arar: 3 listede var."
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "numara": 93,
+  "baslik": "Kayıt 5b",
+  "gorev": "İki tehlikeye bak",
+  "etiket": "BÖLGE 10 · GECE OVASI",
+  "giris": "Sol 1.104 · Kayıt 6",
+  "bitis": "Gökyüzünde: mavi bir nokta",
+  "harita": [
+    ". . . . . H",
+    ". . . . . K",
+    ". . . . . K",
+    ". . . . . K",
+    ". . . . K .",
+    "R . . . . ."
+  ],
+  "meteorlar": [
+    [
+      ". . . . . .",
+      ". . . . . .",
+      "U . . . . .",
+      ". . . . . .",
+      ". . . . . .",
+      ". . U . . ."
+    ],
+    [
+      ". . . . . .",
+      ". . U . . .",
+      ". . . . . .",
+      ". . . . . .",
+      ". . . . . .",
+      ". U . . . ."
+    ]
+  ],
+  "komutlar": ["move", "meteor_ahead", "rock_ahead"],
+  "parcalar": ["for i in range(10):", "if not meteor_ahead(East) and not rock_ahead(East):", "else:", "move(East)", "move(North)"],
+  "python_kelimeleri": ["and"],
+  "konular": ["and", "not", "meteor_ahead", "rock_ahead", "değişen meteor"],
+  "ipuclari": [
+    "Doğuya ancak iki şart birden tutarsa gidilir: krater yok VE kaya yok. Yoksa kuzeye çık.",
+    "`and` iki şartı birleştirir: ikisi de `True` ise `True`. `not meteor_ahead(East) and not rock_ahead(East)`.",
+    "`    if not meteor_ahead(East) and not rock_ahead(East):` / `        move(East)` / `    else:` / `        move(North)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(10):", "    if not meteor_ahead(East):", "        move(East)", "    else:", "        move(North)"],
+      "aciklama": "Yalnız krater soruldu: robot kayaya çarpıyor. Kayayı da sor: and not rock_ahead(East)."
+    },
+    {
+      "kod": ["for i in range(10):", "    if not rock_ahead(East):", "        move(East)", "    else:", "        move(North)"],
+      "aciklama": "Yalnız kaya soruldu: robot kratere giriyor. İkisini birden sor: and."
+    },
+    {
+      "kod": ["for i in range(10):", "    if not meteor_ahead(East) or not rock_ahead(East):", "        move(East)", "    else:", "        move(North)"],
+      "aciklama": "or şartlardan biri tutsa yeter der: kaya yokken krater olsa da robot doğuya gider. İkisi birden: and."
+    }
+  ],
+  "cozum": [
+    "for i in range(10):",
+    "    if not meteor_ahead(East) and not rock_ahead(East):",
+    "        move(East)",
+    "    else:",
+    "        move(North)"
+  ]
+}

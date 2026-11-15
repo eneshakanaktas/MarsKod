@@ -1,0 +1,64 @@
+{
+  "numara": 92,
+  "baslik": "Göktaşları",
+  "gorev": "Göktaşlarını topla",
+  "etiket": "BÖLGE 10 · GECE OVASI",
+  "giris": "Sol 1.103 · Göktaşları",
+  "bitis": "Toplanan göktaşı: 3",
+  "harita": [
+    ". . . . . G",
+    "K . . . G .",
+    ". . . G . .",
+    ". . . . . .",
+    ". . . . . .",
+    "R . . . . K"
+  ],
+  "meteorlar": [
+    [
+      ". . . U U .",
+      ". U U . . .",
+      ". . . . . .",
+      "U . . . . .",
+      ". . . . . .",
+      ". . . . . ."
+    ],
+    [
+      ". . . U U .",
+      ". . U . . .",
+      ". . . . . .",
+      ". . . . . .",
+      "U U . . . .",
+      ". . . . . ."
+    ]
+  ],
+  "komutlar": ["move", "collect", "meteor_ahead"],
+  "parcalar": ["for i in range(10):", "if not meteor_ahead(North):", "else:", "move(North)", "move(East)", "collect()"],
+  "konular": ["not", "meteor_ahead", "değişen meteor"],
+  "ipuclari": [
+    "Bu kez önce kuzeye git: kuzeyde krater yoksa kuzeye, varsa doğuya. Her adımda topla.",
+    "`not` cevabı tersine çevirir: `not meteor_ahead(North)` kuzeyde krater yoksa `True`.",
+    "`    if not meteor_ahead(North):` / `        move(North)` / `    else:` / `        move(East)`; sonra `    collect()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(10):", "    if meteor_ahead(North):", "        move(North)", "    else:", "        move(East)", "    collect()"],
+      "aciklama": "not unutulmuş: robot kuzeyde krater VARKEN kuzeye gidiyor. Krater yoksa git: if not meteor_ahead(North):"
+    },
+    {
+      "kod": ["for i in range(10):", "    if not meteor_ahead(North):", "        move(North)", "    else:", "        move(East)"],
+      "aciklama": "Yol doğru ama göktaşları toplanmadı: her adımdan sonra collect()."
+    },
+    {
+      "kod": ["for i in range(10):", "    move(North)", "    collect()"],
+      "aciklama": "Bakmadan yürüyen robot kratere girer."
+    }
+  ],
+  "cozum": [
+    "for i in range(10):",
+    "    if not meteor_ahead(North):",
+    "        move(North)",
+    "    else:",
+    "        move(East)",
+    "    collect()"
+  ]
+}

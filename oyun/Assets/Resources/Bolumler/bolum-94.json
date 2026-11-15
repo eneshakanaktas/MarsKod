@@ -1,0 +1,77 @@
+{
+  "numara": 94,
+  "baslik": "Mavi nokta",
+  "gorev": "Tehlikeyi tart",
+  "etiket": "BÖLGE 10 · GECE OVASI",
+  "giris": "Sol 1.104 · Mavi nokta",
+  "bitis": "Kıvılcım bakıyor · Uzun süre",
+  "harita": [
+    ". . . K K H",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    "R . . . . ."
+  ],
+  "meteorlar": [
+    [
+      ". . . . . .",
+      ". . U . . .",
+      ". . . . . .",
+      "U U . . . .",
+      ". . . . . .",
+      ". . . . . ."
+    ],
+    [
+      ". . . . . .",
+      ". . . . . .",
+      ". U U . . .",
+      ". . . . . .",
+      "U . . . . .",
+      ". . . . . ."
+    ]
+  ],
+  "komutlar": ["move", "meteor_ahead", "rock_ahead"],
+  "rutinler": ["tehlikeli"],
+  "donus_sarti": true,
+  "parcalar": ["return meteor_ahead(yon) or rock_ahead(yon)", "for i in range(10):", "if tehlikeli(North):", "else:", "move(East)", "move(North)"],
+  "python_kelimeleri": ["or"],
+  "konular": ["or", "return", "değişen meteor"],
+  "ipuclari": [
+    "Kuzey tehlikeliyse (krater ya da kaya) doğuya git, değilse kuzeye. Tehlikeyi bir rutin söylesin.",
+    "`or` şartlardan biri tutsa yeter: `meteor_ahead(yon) or rock_ahead(yon)` krater ya da kaya varsa `True`. Rutin bunu `return` ile verir.",
+    "`    return meteor_ahead(yon) or rock_ahead(yon)`; döngüde `if tehlikeli(North):` doğuya, `else:` kuzeye."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def tehlikeli(yon):", "    return meteor_ahead(yon) and rock_ahead(yon)", "for i in range(10):", "    if tehlikeli(North):", "        move(East)", "    else:", "        move(North)"],
+      "aciklama": "and ikisi birden olsun der: aynı karede hem krater hem kaya olmaz, rutin hep False verir. Biri yeter: or."
+    },
+    {
+      "kod": ["def tehlikeli(yon):", "    return meteor_ahead(yon)", "for i in range(10):", "    if tehlikeli(North):", "        move(East)", "    else:", "        move(North)"],
+      "aciklama": "Kaya unutulmuş: robot kayaya çarpıyor. or rock_ahead(yon) ekle."
+    },
+    {
+      "kod": ["def tehlikeli(yon):", "    print(meteor_ahead(yon) or rock_ahead(yon))", "for i in range(10):", "    if tehlikeli(North):", "        move(East)", "    else:", "        move(North)"],
+      "aciklama": "print ekrana yazar ama cevap vermez: rutin None döndürür, if onu False sayar. return yaz."
+    }
+  ],
+  "baslangic_kodu": [
+    "def tehlikeli(yon):",
+    "    return meteor_ahead(yon)",
+    "for i in range(10):",
+    "    if tehlikeli(North):",
+    "        move(East)",
+    "    else:",
+    "        move(North)"
+  ],
+  "cozum": [
+    "def tehlikeli(yon):",
+    "    return meteor_ahead(yon) or rock_ahead(yon)",
+    "for i in range(10):",
+    "    if tehlikeli(North):",
+    "        move(East)",
+    "    else:",
+    "        move(North)"
+  ]
+}

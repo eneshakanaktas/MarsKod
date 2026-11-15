@@ -30,13 +30,16 @@
     {
       "baslik": "for",
       "kelimeler": ["for", "in"],
-      "aciklama": "Bir işi istediğin kadar tekrarlatır. Altındaki girintili (4 boşluk içeriden başlayan) satırlar her turda bir kez çalışır. Satırın sonundaki iki nokta (:) şart. Bir metnin harflerinde de dolaşır: for harf in \"KKD\":",
+      "aciklama": "Bir işi istediğin kadar tekrarlatır. Altındaki girintili (4 boşluk içeriden başlayan) satırlar her turda bir kez çalışır. Satırın sonundaki iki nokta (:) şart. Bir metnin harflerinde de dolaşır: for harf in \"KKD\": ve bir listenin öğelerinde: for y in yol: Bir döngünün içine başka bir döngü yazılabilir: dıştaki her turda içteki baştan sona çalışır (3 × 4 = 12 tur).",
       "ornek": [
         "for i in range(3):",
         "    move(East)   # 3 kez",
         "    collect()    # 3 kez",
         "for harf in \"KKD\":",
-        "    print(harf)   # K, K, D"
+        "    print(harf)   # K, K, D",
+        "for satir in range(3):",
+        "    for adim in range(4):",
+        "        move(East)   # 12 kez"
       ]
     },
     {
@@ -282,6 +285,78 @@
         "len(\"KOR\")   # 3",
         "kayit = \"MMTA\"",
         "haftalar = len(kayit)   # 4"
+      ]
+    },
+    {
+      "baslik": "Liste (list)",
+      "kelimeler": ["list"],
+      "aciklama": "Birden çok değeri sırayla tutar: köşeli parantez, aralarında virgül. for ile öğelerinde dolaşılır. Sıra 0'dan başlar: ilk öğe yol[0]. len(yol) kaç öğe olduğunu, x in yol x listede var mı diye verir; append sona ekler. Sondaki virgül hata değildir.",
+      "ornek": [
+        "yol = [North, North, East]",
+        "for y in yol:",
+        "    move(y)",
+        "ilk = yol[0]   # North",
+        "boylar = []",
+        "boylar.append(5)   # [5]",
+        "print(5 in boylar)   # True"
+      ]
+    },
+    {
+      "baslik": "crystal_size",
+      "kelimeler": ["crystal_size"],
+      "aciklama": "Robotun durduğu karedeki tuz kristalinin boyunu santimetre olarak verir; kristal yoksa 0. Kırmızı kristal ölçülmez, 0 çıkar. Toplanan kristal artık yerde değildir: önce ölç, sonra topla.",
+      "ornek": [
+        "if crystal_size() > 0:",
+        "    collect()"
+      ]
+    },
+    {
+      "baslik": "max",
+      "kelimeler": ["max"],
+      "aciklama": "Listedeki en büyük sayıyı verir. Liste boşsa hata verir: önce listeye bir şey ekle.",
+      "ornek": [
+        "boylar = [5, 12, 7]",
+        "en_buyuk = max(boylar)   # 12"
+      ]
+    },
+    {
+      "baslik": "and",
+      "kelimeler": ["and"],
+      "aciklama": "İki şartı birleştirir: ikisi de True ise True, biri bile False ise False. Örneğin doğuda ne krater ne kaya varsa yürü.",
+      "ornek": [
+        "if not meteor_ahead(East) and not rock_ahead(East):",
+        "    move(East)",
+        "print(True and False)   # False"
+      ]
+    },
+    {
+      "baslik": "or",
+      "kelimeler": ["or"],
+      "aciklama": "İki şarttan biri tutsa yeter: biri True ise True; ikisi de False ise False.",
+      "ornek": [
+        "def tehlikeli(yon):",
+        "    return meteor_ahead(yon) or rock_ahead(yon)",
+        "print(True or False)   # True"
+      ]
+    },
+    {
+      "baslik": "meteor_ahead",
+      "kelimeler": ["meteor_ahead"],
+      "aciklama": "O yönde bir adım ötede yeni düşmüş bir meteorun krateri var mı diye bakar: varsa True. Robot yürümez. Krater sıcak, içine girilmez; meteorlar her denemede başka yere düşebilir.",
+      "ornek": [
+        "if meteor_ahead(East):",
+        "    move(North)",
+        "else:",
+        "    move(East)"
+      ]
+    },
+    {
+      "baslik": "smoke_here",
+      "kelimeler": ["smoke_here"],
+      "aciklama": "Robotun durduğu karede duman var mı diye bakar: yeni düşmüş kızgın göktaşı dumanı tüter. Kızgın taşın üstünden geçilir ama toplanmaz.",
+      "ornek": [
+        "if not smoke_here():",
+        "    collect()"
       ]
     }
   ]

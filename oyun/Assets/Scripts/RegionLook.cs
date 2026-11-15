@@ -125,6 +125,29 @@ public class RegionLook
         sunDir = new Vector3(22f, 180f, 0f),
     };
 
+    // Tuz golu (Bolge 9; renkler docs/superpowers/plans/2026-11-15-bolge-9-10-gorunus.md): gunduz, gunes solda yuksekte. Ustten
+    // altin-beyaz isik, golgeler kisa ve zeytin tonunda; ikinci isik soluk altin. Onceki bolgelerin lavanta/seftali tonlari yok.
+    static readonly RegionLook SaltLake = new RegionLook
+    {
+        shaderRegion = 7f,
+        skyLight = "#FFF4D6", skyIntensity = 0.82f,
+        sunLight = "#F5D77A", sunIntensity = 0.35f,
+        ambientSky = "#A8A27C", ambientEquator = "#8A8460", ambientGround = "#34331F",
+        probeBase = "#7E7D5C", probeTop = "#B0AA84",
+        skyDir = new Vector3(60f, 70f, 0f),   // gunes solda (batida), yuksekte: kanyondaki gibi yon, daha dik
+    };
+
+    // Gece ovasi (Bolge 10): gunes yok (gunduz golgesi yok). Ustten soluk zumrut kutup isigi (yumusak golge), ortam murdum,
+    // ikinci isik kraterlerin fusya koru gibi cok zayif. Telefonda okunur kalsin diye ortam isigi sifir degil.
+    static readonly RegionLook NightPlain = new RegionLook
+    {
+        shaderRegion = 8f,
+        skyLight = "#9BEFC0", skyIntensity = 0.45f,
+        sunLight = "#FF3FA4", sunIntensity = 0.08f,
+        ambientSky = "#4A3058", ambientEquator = "#3A2646", ambientGround = "#160C1A",
+        probeBase = "#2E1E38", probeTop = "#4A3058",
+    };
+
     // Bolge 3 finali: oyundaki ilk gun dogumu (docs/tasarim/senaryo-bolge-03.md, kapanis). Ova safaginin aydinlanmis hali.
     static readonly RegionLook SunriseLook = new RegionLook
     {
@@ -146,6 +169,8 @@ public class RegionLook
             case Region.Station: return Station;
             case Region.Canyon: return Canyon;
             case Region.RiverBed: return RiverBed;
+            case Region.SaltLake: return SaltLake;
+            case Region.NightPlain: return NightPlain;
             default: return Plain;
         }
     }

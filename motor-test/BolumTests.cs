@@ -45,6 +45,50 @@ public class BolumTests
         Assert.Equal((6, 6), (level.Cols, level.Rows));
     }
 
+    // senaryo-bolge-09.md: etiket, damgalar; bitiş damgasındaki sayılar bulmacayla aynı
+    [Fact]
+    public void Bolge_9_bolumleri_tuz_golu_etiketi_ve_damga_tasir()
+    {
+        for (int n = 81; n <= 90; n++)
+        {
+            var level = Load("bolum-" + n + ".json");
+            Assert.Equal("BÖLGE 9 · TUZ GÖLÜ", level.Label);
+            Assert.StartsWith("Sol 1.", level.Intro);
+            Assert.False(string.IsNullOrEmpty(level.Outro), n + ": bitis yok");
+            Assert.True(level.Goal.Length <= 22, n + ": gorev çok uzun (" + level.Goal.Length + " harf)");
+        }
+        Assert.StartsWith("Tuz kristali: " + Load("bolum-81.json").Ices.Count + " ", Load("bolum-81.json").Outro);
+        Assert.StartsWith("Toplam boy: " + Load("bolum-82.json").ExpectedReport + " cm", Load("bolum-82.json").Outro);
+        Assert.Equal("En büyük kristal: " + Load("bolum-83.json").ExpectedReport + " cm", Load("bolum-83.json").Outro);
+        Assert.StartsWith("Farklı boy: " + Load("bolum-85.json").ExpectedReport + " ", Load("bolum-85.json").Outro);
+        Assert.StartsWith("Kırmızı kristal: " + Load("bolum-88.json").Crystals.Count + " ", Load("bolum-88.json").Outro);
+        Assert.StartsWith("En büyük kristal: " + Load("bolum-90.json").ExpectedReport + " cm", Load("bolum-90.json").Outro);
+        // 85: Defne'nin yarım listesi başlangıç kodunun ilk satırı (senaryo-perde-2.md, harfi harfine)
+        Assert.StartsWith("yanimiza_al = [\"su\", \"ilac\", \"battaniye\", \"Ece'nin defteri\", ]\n", Load("bolum-85.json").StartCode.Replace("\r\n", "\n"));
+    }
+
+    // senaryo-bolge-10.md: etiket, damgalar; bitiş damgasındaki sayılar bulmacayla aynı
+    [Fact]
+    public void Bolge_10_bolumleri_gece_ovasi_etiketi_ve_damga_tasir()
+    {
+        for (int n = 91; n <= 100; n++)
+        {
+            var level = Load("bolum-" + n + ".json");
+            Assert.Equal("BÖLGE 10 · GECE OVASI", level.Label);
+            Assert.StartsWith("Sol 1.", level.Intro);
+            Assert.False(string.IsNullOrEmpty(level.Outro), n + ": bitis yok");
+            Assert.True(level.Goal.Length <= 22, n + ": gorev çok uzun (" + level.Goal.Length + " harf)");
+        }
+        Assert.Equal("Toplanan göktaşı: " + Load("bolum-92.json").Ices.Count, Load("bolum-92.json").Outro);
+        Assert.StartsWith("Kızgın taş: " + Load("bolum-95.json").HotStones.Count + " ", Load("bolum-95.json").Outro);
+        var b96 = Load("bolum-96.json");
+        Assert.Equal("Göktaşı: " + b96.Ices.Count + " · Kızgın: " + b96.HotStones.Count, b96.Outro);
+        var b99 = Load("bolum-99.json");
+        Assert.StartsWith("Gerçek sinyal: " + b99.Screen.Rows.Count(r => r.Expected is bool b && b) + " ", b99.Outro);
+        Assert.Equal(Region.NightPlain, Regions.Of(100));
+        Assert.Equal(Collectible.MeteorStone, Regions.Item(Region.NightPlain));
+    }
+
     // Perde 2 biçimi (senaryo-bolge-06.md): üst etikette bölge adı, "ÖDEV" yok; giriş ve bitiş kayıt damgası
     [Fact]
     public void Bolge_6_bolumleri_kanyon_etiketi_ve_damga_tasir()
@@ -77,7 +121,7 @@ public class BolumTests
     public void Bolumler_1_den_baslayip_bosluksuz_ilerler()
     {
         var numbers = Files().Select(f => Load((string)f[0]).Number).ToList();
-        Assert.Equal(Enumerable.Range(1, numbers.Count), numbers);
+        Assert.Equal(Enumerable.Range(1, numbers.Count), numbers.OrderBy(n => n));   // dosya adı sırası: bolum-100, bolum-11den önce gelir
     }
 
     [Fact]
@@ -132,6 +176,8 @@ public class BolumTests
         Assert.Equal(Collectible.DataCard, Regions.Item(Region.Station));
         Assert.Equal(Collectible.DataCard, Collectibles.Marks['V']);
         Assert.Equal("veri kartı", Collectibles.Name(Collectible.DataCard));
+        Assert.Equal(Region.SaltLake, Regions.Of(81));
+        Assert.Equal(Collectible.SaltCrystal, Regions.Item(Region.SaltLake));
     }
 
     // Spec tutarlılık 1: Bölge 8'den itibaren çözüm ve başlangıç kodu yalnızca o bölüme kadar açılmış Python kelimelerini kullanır
@@ -219,7 +265,7 @@ public class BolumTests
     [Theory]
     [InlineData("\"harita\": [\"K . H\", \"R . B\"]", "\"harita\": [\"K . H\", \"R B\"]", "2. satırında 2 kare var, ilk satırda 3")]
     [InlineData("\"harita\": [\"K . H\", \"R . B\"]", "\"harita\": [\"K . R\", \"R . B\"]", "birden fazla robot")]
-    [InlineData("\"harita\": [\"K . H\", \"R . B\"]", "\"harita\": [\"K . H\", \"R . X\"]", "bilinmeyen işaret: 'X'")]
+    [InlineData("\"harita\": [\"K . H\", \"R . B\"]", "\"harita\": [\"K . H\", \"R . Q\"]", "bilinmeyen işaret: 'Q'")]
     [InlineData("\"harita\": [\"K . H\", \"R . B\"]", "\"harita\": [\"K . .\", \"R . .\"]", "görev yok")]
     [InlineData("\"harita\": [\"K . H\", \"R . B\"]", "\"harita\": [\"K . H\", \". . B\"]", "robot (R) yok")]
     [InlineData("\"numara\": 7,", "", "\"numara\" alanı eksik")]

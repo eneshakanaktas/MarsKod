@@ -21,6 +21,8 @@ public static class Obstacles
             case Region.Canyon:
                 if (CanyonTraces.IsDepot(levelNumber)) Crates(parent, pos, index); else LayeredRock(parent, pos, index);
                 break;
+            case Region.SaltLake: Rock(parent, pos, index, "#E8E2CC", "#D9D2B8"); break;   // tuz yigini: sedef
+            case Region.NightPlain: Rock(parent, pos, index, "#3A2C40", "#2A2030"); break;   // murdum bazalt
             default: Rock(parent, pos, index, "#7A4A3B", "#5E3A2F"); break;
         }
     }

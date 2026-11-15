@@ -29,7 +29,7 @@ public class NoteTests
     [Fact]
     public void Not_okunur_ve_olay_birakir()
     {
-        var world = new World(6, 6, new Cell(0, 0), new Cell[0], commands: new[] { "move", "read_note" }, note: "KD");
+        var world = new World(6, 6, new Cell(0, 0), new Cell[0], commands: new[] { "move", "read_note" }, note: new Note("KD", null));
         var report = ProgramRun.Execute("yazi = read_note()\n", world);
         Assert.False(report.Stopped);
         Assert.Contains(report.Trace.SelectMany(t => t.Events), e => e is NoteRead n && n.Text == "KD");

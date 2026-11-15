@@ -1,0 +1,68 @@
+{
+  "numara": 85,
+  "baslik": "Yarım kalmış liste",
+  "gorev": "Farklı boyları say",
+  "etiket": "BÖLGE 9 · TUZ GÖLÜ",
+  "giris": "Sol 1.100 · Yarım kalmış liste",
+  "bitis": "Farklı boy: 4 · Liste yarım kalmış",
+  "harita": [
+    ". . . . . .",
+    ". S S S . .",
+    ". S . S . .",
+    ". S . S . .",
+    ". R . . . .",
+    ". . . . . ."
+  ],
+  "kristal_boyu": [5, 3, 7, 3, 5, 4, 7],
+  "rapor": 4,
+  "komutlar": ["move", "collect", "crystal_size", "report"],
+  "bilgi": {
+    "baslik": "Yarım kalmış bir liste",
+    "metin": [
+      "Başlangıç kodundaki ilk liste yarım kalmış: sonunda bir virgül var, ardından hiçbir şey.",
+      "Python'da listenin sonundaki virgül hata değildir. O satırı silmeden çözebilirsin."
+    ]
+  },
+  "parcalar": ["for y in yol:", "move(y)", "boy = crystal_size()", "collect()", "if boy not in farkli:", "farkli.append(boy)", "report(len(farkli))"],
+  "konular": ["liste", "in", "append", "len"],
+  "ipuclari": [
+    "Her kristali ölç ve topla; boy listede yoksa listeye ekle. Sonunda listede kaç boy var, onu gönder.",
+    "`in` listede arar: `5 in [3, 5]` True verir. `not in` tersini sorar: `boy not in farkli` boy listede yoksa True.",
+    "`if boy not in farkli:` / `    farkli.append(boy)`; sonda `report(len(farkli))`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["yanimiza_al = [\"su\", \"ilac\", \"battaniye\", \"Ece'nin defteri\", ]", "yol = [North, North, North, East, East, South, South]", "farkli = []", "for y in yol:", "    move(y)", "    boy = crystal_size()", "    collect()", "    farkli.append(boy)", "report(len(farkli))"],
+      "aciklama": "Aynı boy iki kez eklendi, 7 kristal 7 sayıldı. Eklemeden önce sor: if boy not in farkli:"
+    },
+    {
+      "kod": ["yanimiza_al = [\"su\", \"ilac\", \"battaniye\", \"Ece'nin defteri\", ]", "yol = [North, North, North, East, East, South, South]", "farkli = []", "for y in yol:", "    move(y)", "    boy = crystal_size()", "    collect()", "    if boy in farkli:", "        farkli.append(boy)", "report(len(farkli))"],
+      "aciklama": "Soru ters: liste boşken hiçbir boy listede değil, hiç eklenmedi. Listede olmayanı ekle: not in."
+    },
+    {
+      "kod": ["yanimiza_al = [\"su\", \"ilac\", \"battaniye\", \"Ece'nin defteri\", ]", "yol = [North, North, North, East, East, South, South]", "farkli = []", "for y in yol:", "    move(y)", "    collect()", "    boy = crystal_size()", "    if boy not in farkli:", "        farkli.append(boy)", "report(len(farkli))"],
+      "aciklama": "Önce toplandı, sonra ölçüldü: bütün boylar 0, tek bir boy sayıldı. Önce ölç, sonra topla."
+    },
+    {
+      "kod": ["yanimiza_al = [\"su\", \"ilac\", \"battaniye\", \"Ece'nin defteri\", ]", "yol = [North, North, North, East, East, South, South]", "farkli = []", "for y in yol:", "    move(y)", "    boy = crystal_size()", "    collect()", "    if boy not in farkli:", "        farkli.append(boy)", "report(farkli)"],
+      "aciklama": "Antene liste değil, sayı gönderilir: listede kaç boy olduğunu len(farkli) verir."
+    }
+  ],
+  "baslangic_kodu": [
+    "yanimiza_al = [\"su\", \"ilac\", \"battaniye\", \"Ece'nin defteri\", ]",
+    "yol = [North, North, North, East, East, South, South]",
+    "farkli = []"
+  ],
+  "cozum": [
+    "yanimiza_al = [\"su\", \"ilac\", \"battaniye\", \"Ece'nin defteri\", ]",
+    "yol = [North, North, North, East, East, South, South]",
+    "farkli = []",
+    "for y in yol:",
+    "    move(y)",
+    "    boy = crystal_size()",
+    "    collect()",
+    "    if boy not in farkli:",
+    "        farkli.append(boy)",
+    "report(len(farkli))"
+  ]
+}

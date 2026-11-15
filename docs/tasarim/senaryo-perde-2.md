@@ -166,7 +166,7 @@ Oyuncu Kıvılcım'ın **bilerek dışarıda bırakıldığını** öğrenir (bi
 - 89 — Gölün ortası; her yön aynı görünüyor, yalnızca oklar yol gösteriyor.
 - 90 · Bölge finali — Karşı kıyı; gece çöküyor.
 
-**Kapanış:** Güneş batar; tuz gölü mora, sonra laciverte döner. Gökyüzünde ilk yıldızlar. Volkanın siluetinin üstünde bir şey parıldıyor.
+**Kapanış:** Güneş batar; tuz gölü altından fuşyaya, sonra mürdüme döner (renkler 2026-11-15'te değişti: önceki bölgelerde kullanılmamış renkler; `senaryo-bolge-09.md`). Gökyüzünde ilk yıldızlar. Volkanın siluetinin üstünde bir şey parıldıyor.
 
 ---
 

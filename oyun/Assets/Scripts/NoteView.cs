@@ -20,9 +20,11 @@ public class NoteView : VisualElement
     const int SmallFrom = 10;   // bu kadar ve daha cok harfte harfler kuculur: kart tasmaz
 
     readonly Font font;
-    readonly VisualElement letters;
+    readonly VisualElement letters;   // satirlar (metin notunda tek satir, liste notunda her oge bir satir)
     readonly List<Label> cells = new List<Label>();
     int current = -1;
+    bool stepByLetter = true;
+    const int ManyLines = 3;   // bu kadar ve daha cok satirda harfler kuculur
 
     public NoteView(Font font)
     {
@@ -45,7 +47,8 @@ public class NoteView : VisualElement
         Add(card);
 
         letters = new VisualElement { pickingMode = PickingMode.Ignore };
-        letters.style.flexDirection = FlexDirection.Row;
+        letters.style.flexDirection = FlexDirection.Column;
+        letters.style.alignItems = Align.FlexStart;
         card.Add(letters);
     }
 
@@ -53,21 +56,33 @@ public class NoteView : VisualElement
     public int CurrentLetter => current;
 
     /// <summary>Karti acar: harfler sirayla, hicbiri vurgulu degil (her okunan notta bastan)</summary>
-    public void Show(string note)
+    public void Show(string note) => Show(new[] { note }, true);
+
+    /// <summary>Liste notu (Bolge 9): her oge ayri satir. stepByLetter false ise harfler yurunmez (84'un oklari, 87'nin haritasi): vurgu olmaz.</summary>
+    public void Show(IReadOnlyList<string> lines, bool stepByLetter)
     {
         letters.Clear();
         cells.Clear();
         current = -1;
-        float size = note.Length >= SmallFrom ? SmallLetterSize : LetterSize;
-        foreach (char c in note)
+        this.stepByLetter = stepByLetter;
+        int longest = 0;
+        foreach (var line in lines) longest = Mathf.Max(longest, line.Length);
+        float size = longest >= SmallFrom || lines.Count >= ManyLines ? SmallLetterSize : LetterSize;
+        foreach (var line in lines)
         {
-            var cell = Ui.Text(c.ToString(), font, size, InkColor);
-            cell.style.marginLeft = 6; cell.style.marginRight = 6;
-            cell.style.paddingLeft = 4; cell.style.paddingRight = 4;
-            cell.style.borderBottomWidth = 6;
-            cell.style.borderBottomColor = Color.clear;
-            cells.Add(cell);
-            letters.Add(cell);
+            var row = new VisualElement { pickingMode = PickingMode.Ignore };
+            row.style.flexDirection = FlexDirection.Row;
+            foreach (char c in line)
+            {
+                var cell = Ui.Text(c.ToString(), font, size, InkColor);
+                cell.style.marginLeft = 6; cell.style.marginRight = 6;
+                cell.style.paddingLeft = 4; cell.style.paddingRight = 4;
+                cell.style.borderBottomWidth = 6;
+                cell.style.borderBottomColor = Color.clear;
+                cells.Add(cell);
+                row.Add(cell);
+            }
+            letters.Add(row);
         }
         style.display = DisplayStyle.Flex;
     }
@@ -75,7 +90,7 @@ public class NoteView : VisualElement
     /// <summary>Siradaki harfi vurgular, oncekini soluk yapar. Son harften sonra yerinde kalir (bozuk kod hata vermez).</summary>
     public void Advance()
     {
-        if (cells.Count == 0 || current >= cells.Count - 1) return;
+        if (!stepByLetter || cells.Count == 0 || current >= cells.Count - 1) return;
         if (current >= 0) Mark(cells[current], InkColor, ReadAlpha, Color.clear);
         current++;
         Mark(cells[current], Current, 1f, Underline);

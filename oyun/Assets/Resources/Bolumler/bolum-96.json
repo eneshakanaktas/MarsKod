@@ -1,0 +1,77 @@
+{
+  "numara": 96,
+  "baslik": "Yağmur yoğunlaşır",
+  "gorev": "Yağmurda yolunu bul",
+  "etiket": "BÖLGE 10 · GECE OVASI",
+  "giris": "Sol 1.105 · Yağmur yoğunlaşır",
+  "bitis": "Göktaşı: 2 · Kızgın: 2",
+  "harita": [
+    ". . . . . .",
+    ". . . . X K",
+    ". . . . G K",
+    ". . G X . K",
+    ". . . K . .",
+    "R . . . . ."
+  ],
+  "meteorlar": [
+    [
+      ". . . . . .",
+      ". U . . . .",
+      "U . . . . .",
+      ". . . . . .",
+      ". . . . . .",
+      ". . . U . ."
+    ],
+    [
+      ". . . . . .",
+      "U . . . . .",
+      ". . . . . .",
+      ". . . . . .",
+      ". . . . . .",
+      ". U . U . ."
+    ],
+    [
+      ". . . . . .",
+      ". . . U . .",
+      ". . . . . .",
+      "U . . . . .",
+      ". . . . . .",
+      ". . U . . ."
+    ]
+  ],
+  "komutlar": ["move", "collect", "meteor_ahead", "rock_ahead", "smoke_here"],
+  "rutinler": ["tehlikeli"],
+  "donus_sarti": true,
+  "parcalar": ["def tehlikeli(yon):", "return meteor_ahead(yon) or rock_ahead(yon)", "for i in range(10):", "if tehlikeli(East):", "else:", "move(North)", "move(East)", "if not smoke_here():", "collect()"],
+  "konular": ["or", "not", "return", "değişen meteor"],
+  "ipuclari": [
+    "Sağ üst köşeye 10 adım. Doğu tehlikeliyse kuzeye çık; her adımda kızgın olmayan taşı topla. Meteorlar her denemede başka yerde.",
+    "Mavi noktanın bölümündeki `tehlikeli` rutini burada da işe yarar; doğuya bakacak şekilde kullan.",
+    "`    if tehlikeli(East):` / `        move(North)` / `    else:` / `        move(East)` / `    if not smoke_here():` / `        collect()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def tehlikeli(yon):", "    return meteor_ahead(yon) or rock_ahead(yon)", "for i in range(10):", "    if tehlikeli(East):", "        move(North)", "    else:", "        move(East)", "    collect()"],
+      "aciklama": "Kızgın taş da toplanmaya çalışıldı: robot durdu. Toplamadan önce smoke_here() ile bak."
+    },
+    {
+      "kod": ["def tehlikeli(yon):", "    return meteor_ahead(yon)", "for i in range(10):", "    if tehlikeli(East):", "        move(North)", "    else:", "        move(East)", "    if not smoke_here():", "        collect()"],
+      "aciklama": "Kaya unutulmuş: robot kayaya çarpıyor."
+    },
+    {
+      "kod": ["move(East)", "move(East)", "move(North)", "move(North)", "move(East)", "collect()", "move(East)", "move(North)", "collect()", "move(North)", "move(North)", "move(East)", "collect()"],
+      "aciklama": "İlk denemenin yolu ezberlendi: meteorlar başka yere düşünce robot kratere girer."
+    }
+  ],
+  "cozum": [
+    "def tehlikeli(yon):",
+    "    return meteor_ahead(yon) or rock_ahead(yon)",
+    "for i in range(10):",
+    "    if tehlikeli(East):",
+    "        move(North)",
+    "    else:",
+    "        move(East)",
+    "    if not smoke_here():",
+    "        collect()"
+  ]
+}

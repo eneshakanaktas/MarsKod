@@ -458,6 +458,8 @@ public class Hud : MonoBehaviour
                 : item == Collectible.DronePart ? new Icon(36, (p, r) => DrawPropellerDot(p, r, idx < collected))
                 : item == Collectible.Pebble ? new Icon(36, (p, r) => DrawPebbleDot(p, r, idx < collected))
                 : item == Collectible.CableReel ? new Icon(36, (p, r) => DrawReelDot(p, r, idx < collected))
+                : item == Collectible.SaltCrystal ? new Icon(36, (p, r) => DrawGemDot(p, r, idx < collected, SaltFill))
+                : item == Collectible.MeteorStone ? new Icon(36, (p, r) => DrawGemDot(p, r, idx < collected, MeteorFill))
                 : new Icon(36, (p, r) => DrawIceDot(p, r, idx < collected));
             d.style.marginLeft = 10; d.style.marginRight = 10;
             Ui.Transition(d, "scale", 0.28f, EasingMode.EaseOutBack);
@@ -695,7 +697,7 @@ public class Hud : MonoBehaviour
 
     // ---- istasyon ekrani (ekran bulmacasi) ----
 
-    public void ShowScreen(ScreenPuzzle puzzle) => screenView.Show(puzzle);
+    public void ShowScreen(ScreenPuzzle puzzle, string name) => screenView.Show(puzzle, name);
     public void ClearScreen() => screenView.Clear();
     public void AddScreenAnswer(ScreenAnswer answer) => screenView.Add(answer);
     public void HideScreen() => screenView.Hide();
@@ -709,6 +711,7 @@ public class Hud : MonoBehaviour
     // ---- notun kagit karti (read_note) ----
 
     public void ShowNote(string note) => noteView.Show(note);
+    public void ShowNoteLines(IReadOnlyList<string> lines, bool stepByLetter) => noteView.Show(lines, stepByLetter);
     // Kivilcim notun siradaki harfini yuruyor (ya da topluyor): o harf vurgulanir
     public void MarkNoteLetter() => noteView.Advance();
     public void HideNote() => noteView.Hide();
@@ -1109,7 +1112,12 @@ public class Hud : MonoBehaviour
         }
     }
 
-    static void DrawIceDot(Painter2D p, Rect r, bool filled)
+    static void DrawIceDot(Painter2D p, Rect r, bool filled) => DrawGemDot(p, r, filled, IceFill);
+
+    // Bolge 9-10 simgeleri buzun bicimi, kendi renkleriyle (tuz kristali altin, goktasi zumrut; paletler gorunus planinda)
+    static readonly Color SaltFill = Mats.Hex("#E8D24A"), MeteorFill = Mats.Hex("#2EE86A");
+
+    static void DrawGemDot(Painter2D p, Rect r, bool filled, Color fill)
     {
         float w = r.width, h = r.height;
         p.BeginPath();
@@ -1119,7 +1127,7 @@ public class Hud : MonoBehaviour
         p.LineTo(new Vector2(w * 0.16f, h * 0.38f));
         p.ClosePath();
         p.lineJoin = LineJoin.Round;
-        if (filled) { p.fillColor = IceFill; p.Fill(); p.strokeColor = IceFill; p.lineWidth = 3f; p.Stroke(); }
+        if (filled) { p.fillColor = fill; p.Fill(); p.strokeColor = fill; p.lineWidth = 3f; p.Stroke(); }
         else { p.strokeColor = new Color(1f, 1f, 1f, 0.5f); p.lineWidth = 3f; p.Stroke(); }
     }
 

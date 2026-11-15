@@ -1,0 +1,36 @@
+{
+  "bolum": 95,
+  "baslik": "KIVILCIM · KENDİNİ DENETLİYOR",
+  "sorular": [
+    {
+      "soru": "True and False sonucu nedir?",
+      "secenekler": ["True", "False", "Hata verir", "None"],
+      "dogru": 1,
+      "aciklama": "and için ikisi de True olmalı; biri False ise sonuç False."
+    },
+    {
+      "soru": "True or False sonucu nedir?",
+      "secenekler": ["True", "False", "Hata verir", "None"],
+      "dogru": 0,
+      "aciklama": "or için biri True olsa yeter."
+    },
+    {
+      "soru": "not True sonucu nedir?",
+      "secenekler": ["True", "False", "None", "Hata verir"],
+      "dogru": 1,
+      "aciklama": "not cevabı tersine çevirir."
+    },
+    {
+      "soru": "x = 3 iken x != 3 ile not x == 3 aynı sonucu mu verir?",
+      "secenekler": ["Evet, ikisi de False", "Hayır, biri True biri False", "İkisi de hata verir", "İkisi de True"],
+      "dogru": 0,
+      "aciklama": "x != 3 \"3 değil mi?\" diye sorar; not x == 3 \"3 mü?\" sorusunun tersidir. İkisi aynı: False."
+    },
+    {
+      "soru": "meteor_ahead(East) False, rock_ahead(East) True ise not meteor_ahead(East) and not rock_ahead(East) nedir?",
+      "secenekler": ["True", "False", "None", "Hata verir"],
+      "dogru": 1,
+      "aciklama": "not meteor_ahead(East) True ama not rock_ahead(East) False: and için ikisi de True olmalı. Robot doğuya yürümemeli."
+    }
+  ]
+}

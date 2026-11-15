@@ -1,0 +1,79 @@
+{
+  "numara": 91,
+  "baslik": "Gece ovası",
+  "gorev": "Kraterlerden kaç",
+  "etiket": "BÖLGE 10 · GECE OVASI",
+  "giris": "Sol 1.103 · Gece ovası",
+  "bitis": "İlk meteorlar · Kraterler sıcak",
+  "harita": [
+    ". K . . . H",
+    "K . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    "R . . . . ."
+  ],
+  "meteorlar": [
+    [
+      ". . . . . .",
+      ". . . . . U",
+      ". . . . . U",
+      ". . . . U .",
+      ". . . U . .",
+      ". . . U . ."
+    ],
+    [
+      ". . . . . .",
+      ". . . . . U",
+      ". . . . . U",
+      ". . . . U .",
+      ". . . . U .",
+      ". U . . . ."
+    ]
+  ],
+  "komutlar": ["move", "meteor_ahead"],
+  "bilgi": {
+    "baslik": "Meteorlar her denemede başka yere düşüyor",
+    "metin": [
+      "`meteor_ahead(East)` doğuda, bir adım ötede yeni düşmüş bir meteorun krateri var mı diye bakar: varsa `True`, yoksa `False`. Robot yürümez, yalnızca bakar.",
+      "Krater sıcak, içine girilmez. Meteorlar her denemede başka yere düşer: yolu ezberleme, her adımda bak."
+    ]
+  },
+  "parcalar": ["for i in range(10):", "if meteor_ahead(East):", "else:", "move(North)", "move(East)"],
+  "konular": ["meteor_ahead", "if / else", "değişen meteor"],
+  "ipuclari": [
+    "Hedef sağ üst köşede: 5 doğu, 5 kuzey, toplam 10 adım. Doğuda krater varsa kuzeye çık, yoksa doğuya git.",
+    "Her adımda önce bak, sonra yürü: `if meteor_ahead(East):` kuzeye, `else:` doğuya.",
+    "`    if meteor_ahead(East):` / `        move(North)` / `    else:` / `        move(East)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for i in range(10):", "    move(East)"],
+      "aciklama": "Hiç bakmadan doğuya yürüyen robot ya kratere girer ya alanın dışına çıkar. Her adımda meteor_ahead(East) ile bak."
+    },
+    {
+      "kod": ["move(East)", "move(East)", "move(North)", "move(North)", "move(East)", "move(North)", "move(East)", "move(North)", "move(North)", "move(East)"],
+      "aciklama": "İlk denemenin yolu ezberlendi: meteorlar başka yere düşünce robot kratere girer."
+    },
+    {
+      "kod": ["for i in range(9):", "    if meteor_ahead(East):", "        move(North)", "    else:", "        move(East)"],
+      "aciklama": "Yol 10 adım: 9 turda robot hedefe varmıyor."
+    },
+    {
+      "kod": ["for i in range(10):", "    if meteor_ahead(East):", "        move(East)", "    else:", "        move(North)"],
+      "aciklama": "Ters: krater doğudaysa doğuya değil, kuzeye çıkmalı."
+    }
+  ],
+  "baslangic_kodu": [
+    "for i in range(10):",
+    "    if meteor_ahead(East):",
+    "        move(North)"
+  ],
+  "cozum": [
+    "for i in range(10):",
+    "    if meteor_ahead(East):",
+    "        move(North)",
+    "    else:",
+    "        move(East)"
+  ]
+}

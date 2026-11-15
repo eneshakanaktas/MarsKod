@@ -4,13 +4,15 @@
 #define MARSKOD_SKY_INCLUDED
 
 float _StarsOn;
-float _Region;    // bolge (RegionLook.cs): 0 inis ovasi, 1 kutup buzulu, 2 kraterli duzluk, 3 kum tepeleri, 4 kanyon, 5 nehir yatagi (Bolge 7), 6 istasyon (Bolge 8)
+float _Region;    // bolge (RegionLook.cs): 0 inis ovasi, 1 kutup buzulu, 2 kraterli duzluk, 3 kum tepeleri, 4 kanyon, 5 nehir yatagi (Bolge 7), 6 istasyon (Bolge 8), 7 tuz golu (Bolge 9), 8 gece ovasi (Bolge 10)
 bool MarsPolar() { return abs(_Region - 1.0) < 0.5; }
 bool MarsCrater() { return abs(_Region - 2.0) < 0.5; }
 bool MarsDunes() { return abs(_Region - 3.0) < 0.5; }
 bool MarsCanyon() { return abs(_Region - 4.0) < 0.5; }
 bool MarsRiverBed() { return abs(_Region - 5.0) < 0.5; }
 bool MarsStation() { return abs(_Region - 6.0) < 0.5; }
+bool MarsSaltLake() { return abs(_Region - 7.0) < 0.5; }
+bool MarsNightPlain() { return abs(_Region - 8.0) < 0.5; }
 // Cok hafif genel aydinlatma: arka plan ve zeminin karistigi ova rengi ayni oranda (yoksa yeni renk siniri olusur)
 static const float MARS_EXPOSURE = 1.06;
 float _Horizon;   // ufuk: fotograf koordinatinda (asagida)
@@ -939,6 +941,8 @@ float3 PlainBackdrop(float2 suv)
 #include "CanyonSky.hlsl"
 #include "RiverSky.hlsl"
 #include "StationSky.hlsl"
+#include "SaltSky.hlsl"
+#include "NightSky.hlsl"
 
 // Ekran konumuna (suv, alttan 0) gore arka plan rengi (sRGB): bolgenin kendi manzarasi. Pahali: yalnizca dokuya
 // cizerken kullanilir (Backdrop.shader "Bake"); ekrandakiler saklanan dokuyu okur (MarsBackdropCached).
@@ -951,6 +955,8 @@ float3 MarsBackdrop(float2 suv)
     else if (MarsCanyon()) col = CanyonBackdrop(suv);
     else if (MarsRiverBed()) col = RiverBackdrop(suv);
     else if (MarsStation()) col = StationBackdrop(suv);
+    else if (MarsSaltLake()) col = SaltBackdrop(suv);
+    else if (MarsNightPlain()) col = NightBackdrop(suv);
     else col = PlainBackdrop(suv);
     return col;
 }
@@ -977,6 +983,8 @@ float3 MarsHorizonPlain()
     if (MarsCanyon()) return CANYON_PLAIN;
     if (MarsRiverBed()) return RIVER_PLAIN;
     if (MarsStation()) return StationPlain();
+    if (MarsSaltLake()) return SALT_PLAIN;
+    if (MarsNightPlain()) return NIGHT_PLAIN;
     return float3(0.176, 0.110, 0.106) * MARS_EXPOSURE;   // ova: ekrandan olculdu
 }
 
@@ -989,6 +997,8 @@ float3 MarsGroundWarmth()
     if (MarsCanyon()) return float3(0.22, 0.12, 0.08);   // gun batimi: zayif, sicak
     if (MarsRiverBed()) return float3(0.10, 0.08, 0.10);   // sabah golgesi: zayif, serin
     if (MarsStation()) return StationIndoor() ? float3(0.02, 0.02, 0.025) : float3(0.22, 0.14, 0.08);   // icerisi: gunes yok; disarisi: ogleden sonra
+    if (MarsSaltLake()) return float3(0.20, 0.18, 0.08);   // gunduz: altin
+    if (MarsNightPlain()) return float3(0.01, 0.06, 0.03);   // gece: yalniz kutup isiginin soluk yesili
     return float3(0.30, 0.13, 0.06);
 }
 
@@ -1001,7 +1011,8 @@ float3 MarsDustHaze(float3 col, float3 posWS, float2 area)
     if (posWS.z < 0.0) o.y *= 0.4;
     float dist = length(o * float2(0.8, 1.0));
     // kanyonda ve dibinde pus yok (Enes): hava acik, her sey net. Istasyonun icinde hafif toz: uzak koseler kararir, alan net kalir.
-    float amount = MarsCanyon() || MarsRiverBed() ? 0.0 : MarsStation() ? (StationIndoor() ? 0.35 : 0.0) : 0.8;
+    float amount = MarsCanyon() || MarsRiverBed() ? 0.0 : MarsStation() ? (StationIndoor() ? 0.35 : 0.0)
+                 : MarsSaltLake() ? 0.7 : MarsNightPlain() ? 0.4 : 0.8;   // golde ufuk kaybolur: gol ufka dogru gogun rengine karisir
     float haze = smoothstep(0.4, 7.0, dist) * amount;
     return lerp(col, SRGBToLinear(MarsHorizonPlain()), haze);
 }
@@ -1054,6 +1065,9 @@ float3 MarsRegionSurface(float3 albedo, float3 n)
     if (MarsCanyon()) return lerp(albedo * float3(0.95, 0.85, 0.80), float3(0.42, 0.22, 0.14), smoothstep(0.6, 0.9, n.y));
     if (MarsRiverBed()) return lerp(dot(albedo, float3(0.3, 0.5, 0.2)) * float3(1.0, 0.9, 0.86), float3(0.50, 0.40, 0.34), smoothstep(0.6, 0.9, n.y));
     if (MarsStation()) return lerp(albedo * float3(0.98, 0.88, 0.82), float3(0.55, 0.40, 0.30), smoothstep(0.6, 0.9, n.y));   // kanyon ucu: ustune kum yigilmis
+    // tuz golu: zeytin-gri kaya, ustu tuz kabugu (sedef); gece ovasi: koyu murdum bazalt
+    if (MarsSaltLake()) return lerp(dot(albedo, float3(0.3, 0.5, 0.2)) * float3(0.95, 0.94, 0.78), float3(0.82, 0.80, 0.70), smoothstep(0.5, 0.85, n.y));
+    if (MarsNightPlain()) return dot(albedo, float3(0.3, 0.5, 0.2)) * float3(0.55, 0.42, 0.60);
     return albedo;
 }
 

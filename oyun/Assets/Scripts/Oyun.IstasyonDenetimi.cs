@@ -194,11 +194,11 @@ public partial class Oyun
                 yield return null;
             }
             yield return new WaitForSeconds(1.0f);
-            int v = level.NoteRoutes.FindIndex(r => (Flat(Pos(r.End)) - Flat(robot.transform.localPosition)).sqrMagnitude < 0.01f);
+            int v = level.Notes.FindIndex(n => (Flat(Pos(n.Route.End)) - Flat(robot.transform.localPosition)).sqrMagnitude < 0.01f);
             if (v < 0) { problems.Add("76 kosu " + (run + 1) + ": robot notun sonunda degil"); continue; }
             versions.Add(v);
             string label = "76 not " + (v + 1) + ": ";
-            if (lastLetter != level.Notes[v].Length - 1) problems.Add(label + "kart vurgusu " + lastLetter + ". harfte bitti");
+            if (lastLetter != level.Notes[v].Text.Length - 1) problems.Add(label + "kart vurgusu " + lastLetter + ". harfte bitti");
             var drawing = noteEnd != null ? noteEnd.Drawing : null;
             if (drawing == null) { problems.Add(label + "katlanmis cizim belirmedi"); continue; }
             if (drawing.gameObject.activeSelf) problems.Add(label + "sahneden sonra cizim yerde kaldi");
@@ -221,7 +221,7 @@ public partial class Oyun
         var shots = new[] { ("bakis", 1.3f, "s76-1-bakis.png"), ("acma", 0.5f, "s76-2-acma.png"), ("yatak", 0.4f, "s76-3-yatak.png"),
             ("sirt", 0.3f, "s76-4-sirt.png"), ("son", 0.5f, "s76-5-son.png") };
         yield return LoadStationLevel(StationTraces.FoldedLevel);
-        int versions = level.NoteRoutes.Count;
+        int versions = level.Notes.Count;
         for (int v = 0; v < versions; v++)
         {
             if (v > 0) yield return LoadStationLevel(StationTraces.FoldedLevel);
@@ -289,7 +289,7 @@ public partial class Oyun
     // Robot not surumu v'nin son karesinde, kutlamadan sonraki gibi kameraya donuk; cizim belirir, son karede ve yere basar
     IEnumerator DrawingAtNoteEnd(int v, string label, List<string> problems)
     {
-        var cell = Pos(level.NoteRoutes[v].End);
+        var cell = Pos(level.Notes[v].Route.End);
         robot.ResetTo(cell, 180f);
         noteEnd.Arrived(cell);
         yield return new WaitForSeconds(1.2f);

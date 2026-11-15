@@ -1,0 +1,68 @@
+{
+  "numara": 100,
+  "baslik": "İki saat",
+  "gorev": "Antene var",
+  "etiket": "BÖLGE 10 · GECE OVASI",
+  "giris": "Sol 1.107 · İki saat",
+  "bitis": "Anten ışığı: bir kez · Söz",
+  "harita": [
+    ". . . . . H",
+    ". . . . G K",
+    ". . . G . .",
+    ". . G . . .",
+    ". G . . . .",
+    "R . . . . ."
+  ],
+  "meteorlar": [
+    [
+      ". . . . . .",
+      ". . . . . .",
+      ". . . . . U",
+      ". . . . U .",
+      ". . . U . .",
+      ". . U . . ."
+    ],
+    [
+      ". . . . . .",
+      ". . . . . .",
+      ". . . . U .",
+      ". . . U . .",
+      ". . U . . .",
+      ". U . . . ."
+    ]
+  ],
+  "komutlar": ["move", "collect", "meteor_ahead", "rock_ahead"],
+  "rutinler": ["tehlikeli"],
+  "donus_sarti": true,
+  "parcalar": ["def tehlikeli(yon):", "return meteor_ahead(yon) or rock_ahead(yon)", "for i in range(10):", "if tehlikeli(East):", "else:", "move(North)", "move(East)", "collect()"],
+  "konular": ["or", "return", "değişen meteor", "Sezon 1 finali"],
+  "ipuclari": [
+    "Anten sağ üst köşede. Doğu tehlikeliyse kuzeye çık, değilse doğuya git; yoldaki göktaşlarını topla.",
+    "Tehlikeyi bir rutin söylesin: krater ya da kaya varsa `True` döndürsün.",
+    "`    return meteor_ahead(yon) or rock_ahead(yon)`; döngüde `if tehlikeli(East):` kuzeye, `else:` doğuya, sonra `collect()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def tehlikeli(yon):", "    return rock_ahead(yon)", "for i in range(10):", "    if tehlikeli(East):", "        move(North)", "    else:", "        move(East)", "    collect()"],
+      "aciklama": "Krater unutulmuş: robot kratere giriyor."
+    },
+    {
+      "kod": ["def tehlikeli(yon):", "    return meteor_ahead(yon) or rock_ahead(yon)", "for i in range(10):", "    if tehlikeli(East):", "        move(North)", "    else:", "        move(East)"],
+      "aciklama": "Yol doğru ama göktaşları toplanmadı: her adımda collect()."
+    },
+    {
+      "kod": ["move(East)", "move(North)", "collect()", "move(East)", "move(North)", "collect()", "move(East)", "move(North)", "collect()", "move(East)", "move(North)", "collect()", "move(North)", "move(East)"],
+      "aciklama": "İlk denemenin yolu ezberlendi: meteorlar başka yere düşünce robot kratere girer."
+    }
+  ],
+  "cozum": [
+    "def tehlikeli(yon):",
+    "    return meteor_ahead(yon) or rock_ahead(yon)",
+    "for i in range(10):",
+    "    if tehlikeli(East):",
+    "        move(North)",
+    "    else:",
+    "        move(East)",
+    "    collect()"
+  ]
+}

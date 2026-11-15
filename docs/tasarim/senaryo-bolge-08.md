@@ -58,7 +58,7 @@ Satır biçimi: `<Ad Soyad> — kapsül: hazır`; 78'de altına `BKM-7   — dı
 | 73, 75 | Duvar çizimleri **turuncu**: Ece'nin turkuaz kalemi Bölge 7'de (dönüş yolunda) düştü; o gece annesinin yol işaretlediği turuncu kalemle çizdi. Kimse söylemez. Çizimler çocuk eliyle ince çizgi; Bölge 6'nın boya oklarından (kalın, akmış boya) ayırt edilir. Turkuaz kuralı bozulmaz: turkuaz yalnız Ece'nin kendi kalemi. |
 | 75 | Sonuncu çizim (robot ve kız el ele) göğüsteki çizimin aynı biçimi; renk turuncu. |
 | 76 | Katlanmış çizim açılmaz ("Açılmadı"): Kıvılcım onu Ece'ye götürüyor. İçi Perde 4 finalinde açılır. |
-| 77-78 | Ece ilk, Defne en son (yukarıda). Listede başka "Aras" yok: Ece'nin babası kolonide değil; nedeni Sezon 1'de söylenmez (açık soru, Ragıp). |
+| 77-78 | Ece ilk, Defne en son (yukarıda). Listede başka "Aras" yok: Ece'nin babası kolonide değil; babası Dünya'da (Kaan Aras, ajansın görev merkezi; oyunda hiç söylenmez; ayrıntı `hikaye-kitabi.md`, 2026-11-15). |
 | 79 | Kor'un kaydı `MMTMMTMTMMTMAAAAAA`: sondaki A'lar (arıza) hizmet dışı kalışı; Perde 3'teki "huysuz ama korumacı" Kor'un ilk izi. |
 
 ## Çelişki kontrolü

@@ -60,6 +60,8 @@ public static class Traces
         CanyonTraces.ResetBackdrop(levelNumber);
         RiverBedTraces.ResetBackdrop(levelNumber);
         StationTraces.ResetBackdrop(levelNumber);
+        SaltLakeTraces.ResetBackdrop(levelNumber);
+        NightPlainTraces.ResetBackdrop(levelNumber);
         if (rover != null) rover.Restore();
         if (tank != null) tank.Restore();
         if (Dune != null) Dune.Restore();
@@ -140,7 +142,9 @@ public static class Traces
         levelNumber == AntennaTraces.FirstLevel ? AntennaTraces.TransitionLines :
         levelNumber == CanyonTraces.FirstLevel ? CanyonTraces.TransitionLines :
         levelNumber == RiverBedTraces.FirstLevel ? RiverBedTraces.TransitionLines :
-        levelNumber == StationTraces.FirstLevel ? StationTraces.TransitionLines : null;
+        levelNumber == StationTraces.FirstLevel ? StationTraces.TransitionLines :
+        levelNumber == SaltLakeTraces.FirstLevel ? SaltLakeTraces.TransitionLines :
+        levelNumber == NightPlainTraces.FirstLevel ? NightPlainTraces.TransitionLines : null;
 
     // Bolum 8 (ve Bolum 21-22): firtinanin izi: devrilmis gunes paneli, kuma gomulu kablo, kayalarin yanina yigilmis kum.
     public static void StormDebris(Transform parent, Vector3 p)

@@ -25,7 +25,7 @@ public static class ColonyCrest
         Fill(root, "Arma-Kenar", Eroded(r, rng), orange, 1);
         Fill(root, "Arma-Zemin", Eroded(r * 0.86f, rng), cream, 2);
         Fill(root, "Arma-Kubbe", DomeShape(new Vector2(0f, -r * 0.36f), r * 0.5f), orange, 3);
-        Fill(root, "Arma-Yildiz", Star(new Vector2(0f, r * 0.47f), r * 0.18f, r * 0.075f), orange, 3);
+        Fill(root, "Arma-Yildiz", FlatShapes.Star(new Vector2(0f, r * 0.47f), r * 0.18f, r * 0.075f), orange, 3);
 
         // asinma: alt yarida kumla kazinmis lekeler (govde rengi) ve birkac kum tanesi
         for (int i = 0; i < 14; i++)
@@ -66,17 +66,6 @@ public static class ColonyCrest
         return rim;
     }
 
-    static List<Vector2> Star(Vector2 c, float outer, float inner)
-    {
-        var rim = new List<Vector2>();
-        for (int k = 0; k < 10; k++)
-        {
-            float a = Mathf.PI * 0.5f - k * Mathf.PI / 5f;   // tepeden baslar, saat yonunde
-            rim.Add(c + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * (k % 2 == 0 ? outer : inner));
-        }
-        return rim;
-    }
-
     static List<Vector2> Blob(Vector2 c, float r, System.Random rng)
     {
         var rim = new List<Vector2>();
@@ -88,23 +77,10 @@ public static class ColonyCrest
         return rim;
     }
 
-    // Ortasindan yelpaze: rim saat yonunde (-Z'den bakan kameraya gore on yuz); layer: yuzeyden one kac kat
+    // Duz boyali sekil (FlatShapes); rim saat yonunde (-Z'den bakan kameraya gore on yuz); layer: yuzeyden one kac kat
     static void Fill(Transform root, string name, List<Vector2> rim, Material paint, int layer)
     {
-        var center = Vector2.zero;
-        foreach (var p in rim) center += p;
-        center /= rim.Count;
-        var verts = new List<Vector3> { center };
-        foreach (var p in rim) verts.Add(p);
-        var tris = new List<int>();
-        for (int k = 0; k < rim.Count; k++) tris.AddRange(new[] { 0, 1 + k, 1 + (k + 1) % rim.Count });
-        var normals = new Vector3[verts.Count];
-        for (int i = 0; i < normals.Length; i++) normals[i] = Vector3.back;
-        var mesh = new Mesh { name = name };
-        mesh.SetVertices(verts);
-        mesh.SetNormals(normals);
-        mesh.SetTriangles(tris, 0);
-        mesh.RecalculateBounds();
+        var mesh = FlatShapes.Fan(name, rim);
         Parts.Add(name, root, mesh, paint, new Vector3(0f, 0f, -Layer * layer), outline: false, castShadow: false);
     }
 

@@ -1,0 +1,55 @@
+{
+  "numara": 81,
+  "baslik": "Tuz gölünün kıyısı",
+  "gorev": "Listedeki yolu yürü",
+  "etiket": "BÖLGE 9 · TUZ GÖLÜ",
+  "giris": "Sol 1.098 · Tuz gölünün kıyısı",
+  "bitis": "Tuz kristali: 5 · Ufuk: bembeyaz",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . S S S .",
+    ". . S . . .",
+    ". . S . . .",
+    ". . R . . ."
+  ],
+  "komutlar": ["move", "collect"],
+  "parcalar": ["yol = [North, North, North, East, East]", "for y in yol:", "move(y)", "collect()"],
+  "python_kelimeleri": ["list"],
+  "konular": ["liste", "listede dolaşma"],
+  "ipuclari": [
+    "Liste köşeli parantezle yazılır, öğeler virgülle ayrılır: `[North, East]`. Robot listedeki yönleri sırayla yürür.",
+    "Metnin harflerinde dolaştığın gibi listede de dolaşırsın: `for y in yol:` her turda `y` listenin sıradaki yönü olur.",
+    "Yol üç kuzey, iki doğu: `yol = [North, North, North, East, East]`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["yol = [North North North East East]", "for y in yol:", "    move(y)", "    collect()"],
+      "aciklama": "Listedeki öğeler virgülle ayrılır; virgül yoksa Python listeyi okuyamaz."
+    },
+    {
+      "kod": ["yol = [\"K\", \"K\", \"K\", \"D\", \"D\"]", "for y in yol:", "    move(y)", "    collect()"],
+      "aciklama": "Bu liste nottaki harflerden değil, yönlerden oluşur: North, East... Tırnaksız yaz; move harf değil yön ister."
+    },
+    {
+      "kod": ["yol = [North, North, North, East, East]", "move(yol)"],
+      "aciklama": "move tek bir yön ister, listenin tamamını değil. Listede dolaş ve her yönü ayrı ver: move(y)."
+    },
+    {
+      "kod": ["yol = [North, North, East, East]", "for y in yol:", "    move(y)", "    collect()"],
+      "aciklama": "Yol kısa kaldı: kristallerin hepsine varmak için önce üç kez kuzeye çık."
+    }
+  ],
+  "baslangic_kodu": [
+    "yol = [North, North]",
+    "for y in yol:",
+    "    move(y)",
+    "    collect()"
+  ],
+  "cozum": [
+    "yol = [North, North, North, East, East]",
+    "for y in yol:",
+    "    move(y)",
+    "    collect()"
+  ]
+}

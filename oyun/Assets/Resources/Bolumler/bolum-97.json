@@ -1,0 +1,72 @@
+{
+  "numara": 97,
+  "baslik": "Kapının silueti",
+  "gorev": "Notun yolunu yürü",
+  "etiket": "BÖLGE 10 · GECE OVASI",
+  "giris": "Sol 1.106 · Kapının silueti",
+  "bitis": "Volkanın eteğinde: bir kapı",
+  "harita": [
+    "K . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    "G X G . . .",
+    "X . . . . .",
+    "R . . . . K"
+  ],
+  "notlar": [
+    ["KK", "DD", "KK", "D"],
+    ["KK", "DD", "DDD", "K"],
+    ["KK", "DD", "G", "DD"]
+  ],
+  "komutlar": ["move", "collect", "read_note", "smoke_here"],
+  "rutinler": ["yon"],
+  "donus_sarti": true,
+  "parcalar": ["for parca in read_note():", "for harf in parca:", "move(yon(harf))", "if not smoke_here():", "collect()"],
+  "konular": ["read_note", "iç içe döngü", "not", "değişen not"],
+  "ipuclari": [
+    "Not yol parçalarını veriyor; her harf bir adım. Yolda dumanı olmayan taşları topla.",
+    "Gölün ortasındaki gibi parçalarda ve harflerde dolaş; her adımdan sonra bak: duman yoksa topla.",
+    "`for parca in read_note():` / `    for harf in parca:` / `        move(yon(harf))` / `        if not smoke_here():` / `            collect()`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "for parca in read_note():", "    for harf in parca:", "        move(yon(harf))", "        collect()"],
+      "aciklama": "Kızgın taş toplanmaya çalışıldı: robot durdu. Önce smoke_here() ile bak."
+    },
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "for parca in [\"KK\", \"DD\", \"KK\", \"D\"]:", "    for harf in parca:", "        move(yon(harf))", "        if not smoke_here():", "            collect()"],
+      "aciklama": "İlk notun parçaları koda elle kopyalandı: not değişince robot yanlış yere gider. read_note() ile oku."
+    },
+    {
+      "kod": ["def yon(harf):", "    if harf == \"K\":", "        return North", "    elif harf == \"G\":", "        return South", "    elif harf == \"D\":", "        return East", "    elif harf == \"B\":", "        return West", "for harf in read_note():", "    move(yon(harf))"],
+      "aciklama": "read_note() parça listesi verir, harf değil: parçanın içinde ikinci bir döngüyle harflerde dolaş."
+    }
+  ],
+  "baslangic_kodu": [
+    "def yon(harf):",
+    "    if harf == \"K\":",
+    "        return North",
+    "    elif harf == \"G\":",
+    "        return South",
+    "    elif harf == \"D\":",
+    "        return East",
+    "    elif harf == \"B\":",
+    "        return West"
+  ],
+  "cozum": [
+    "def yon(harf):",
+    "    if harf == \"K\":",
+    "        return North",
+    "    elif harf == \"G\":",
+    "        return South",
+    "    elif harf == \"D\":",
+    "        return East",
+    "    elif harf == \"B\":",
+    "        return West",
+    "for parca in read_note():",
+    "    for harf in parca:",
+    "        move(yon(harf))",
+    "        if not smoke_here():",
+    "            collect()"
+  ]
+}

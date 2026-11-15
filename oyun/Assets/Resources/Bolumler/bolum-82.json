@@ -1,0 +1,62 @@
+{
+  "numara": 82,
+  "baslik": "Ufuk kayboluyor",
+  "gorev": "Toplam boyu bildir",
+  "etiket": "BÖLGE 9 · TUZ GÖLÜ",
+  "giris": "Sol 1.098 · Ufuk kayboluyor",
+  "bitis": "Toplam boy: 27 cm · Gökyüzü yerde",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". S . . . .",
+    ". S S S . .",
+    ". . . S . .",
+    ". . . R . ."
+  ],
+  "kristal_boyu": [6, 4, 9, 3, 5],
+  "rapor": 27,
+  "komutlar": ["move", "collect", "crystal_size", "report"],
+  "bilgi": {
+    "baslik": "Kıvılcım kristalleri ölçebiliyor",
+    "metin": [
+      "`crystal_size()` robotun durduğu karedeki tuz kristalinin boyunu santimetre olarak verir; kristal yoksa 0.",
+      "Toplanan kristal artık yerde değildir, boyu 0 ölçülür: önce ölç, sonra topla. Anten tepesindeki kablo makaraları gibi."
+    ]
+  },
+  "parcalar": ["toplam = 0", "for y in yol:", "move(y)", "toplam += crystal_size()", "collect()", "report(toplam)"],
+  "konular": ["liste", "crystal_size", "toplam"],
+  "ipuclari": [
+    "Her kristali ölç, boyunu bir toplama ekle; en sonda toplamı antene gönder.",
+    "Önce ölç, sonra topla: toplanan kristalin boyu 0 olur. Toplamı döngüden önce `toplam = 0` diye başlat.",
+    "Döngünün içinde `toplam += crystal_size()` / `collect()`; döngüden sonra, girintisiz `report(toplam)`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["yol = [North, North, West, West, North]", "toplam = 0", "for y in yol:", "    move(y)", "    collect()", "    toplam += crystal_size()", "report(toplam)"],
+      "aciklama": "Önce toplandı, sonra ölçüldü: toplanan kristalin boyu 0. Önce ölç, sonra topla."
+    },
+    {
+      "kod": ["yol = [North, North, West, West, North]", "toplam = 0", "for y in yol:", "    move(y)", "    toplam += crystal_size()", "    collect()", "    report(toplam)"],
+      "aciklama": "report döngünün içinde: ilk kristalden sonra yarım toplam gönderildi. Girintisiz, döngüden sonra yaz."
+    },
+    {
+      "kod": ["yol = [North, North, West, West, North]", "toplam = 0", "for y in yol:", "    move(y)", "    toplam = crystal_size()", "    collect()", "report(toplam)"],
+      "aciklama": "toplam = yazınca her turda eski toplam silinir, yalnız son boy kalır. Eklemek için +=."
+    }
+  ],
+  "baslangic_kodu": [
+    "yol = [North, North, West, West, North]",
+    "for y in yol:",
+    "    move(y)",
+    "    collect()"
+  ],
+  "cozum": [
+    "yol = [North, North, West, West, North]",
+    "toplam = 0",
+    "for y in yol:",
+    "    move(y)",
+    "    toplam += crystal_size()",
+    "    collect()",
+    "report(toplam)"
+  ]
+}

@@ -65,6 +65,8 @@ namespace MarsKod.Dunya
         public Direction Direction;
         public bool ByRock;
         public bool ByDust;
+        /// <summary>Önünde yeni düşmüş meteorun krateri vardı (Bölge 10)</summary>
+        public bool ByCrater;
     }
 
     /// <summary>Robot toplamayı denedi. Buz yoksa IceIndex -1.</summary>
@@ -120,6 +122,14 @@ namespace MarsKod.Dunya
         public int Length;
     }
 
+    /// <summary>Robot crystal_size() ile bulunduğu karedeki tuz kristalinin boyunu ölçtü (kristal yoksa 0).</summary>
+    public sealed class CrystalMeasured : WorldEvent
+    {
+        public Cell At;
+        /// <summary>Santimetre</summary>
+        public int Size;
+    }
+
     /// <summary>Robot report() ile antene bir sayı gönderdi; Correct, antenin beklediği sayı mı.</summary>
     public sealed class ReportSent : WorldEvent
     {
@@ -139,7 +149,12 @@ namespace MarsKod.Dunya
     public sealed class NoteRead : WorldEvent
     {
         public Cell At;
+        /// <summary>Notun ekranda görünen yazısı (liste notunda Python'daki görünüşü: ['KK', 'D'])</summary>
         public string Text;
+        /// <summary>Liste notunun satırları (Bölge 9; kartta her biri ayrı satır); metin notunda null</summary>
+        public IReadOnlyList<string> Lines;
+        /// <summary>Notun harfleri sırayla yürünür mü (kart yürünen harfi vurgular)</summary>
+        public bool StepByLetter = true;
     }
 
     /// <summary>
@@ -169,6 +184,10 @@ namespace MarsKod.Dunya
         readonly HashSet<Cell> rocks;
         /// <summary>Tehlikeli kristaller: üstünden geçilir ama toplanamaz</summary>
         readonly HashSet<Cell> crystals;
+        /// <summary>Meteorun yeni düştüğü kraterler (Bölge 10): robot içine giremez; meteor_ahead() bakar</summary>
+        readonly HashSet<Cell> craters;
+        /// <summary>Kızgın, dumanı tüten göktaşları (Bölge 10): üstünden geçilir ama toplanamaz; smoke_here() bakar</summary>
+        readonly HashSet<Cell> hotStones;
         /// <summary>Güneş panelleri ve güçleri (0-100): 0 kırık (parçası toplanır), CrackedBelow'dan az çatlak (onarılır), gerisi sağlam</summary>
         readonly Dictionary<Cell, int> panels;
         /// <summary>Toz bulutları: dağılması için kalan bekleme sayısı (0 = dağıldı). Robot bulutun içindeyken yürüyemez.</summary>
@@ -176,12 +195,14 @@ namespace MarsKod.Dunya
         readonly Dictionary<Cell, int> dustTotal;
         /// <summary>Kablo makaralarının uzunlukları (metre); makaralar toplanacaklar arasındadır (Ices)</summary>
         readonly Dictionary<Cell, int> reels;
+        /// <summary>Tuz kristallerinin boyları (santimetre); kristaller toplanacaklar arasındadır (Ices)</summary>
+        readonly Dictionary<Cell, int> crystalSizes;
         /// <summary>Antenin report() ile beklediği sayı; null ise bu bölümde rapor istenmez</summary>
         public readonly BigInteger? ExpectedReport;
         /// <summary>Serçe'nin gördüğü iz; yoksa null (scout() çalışmaz)</summary>
         readonly Trail trail;
-        /// <summary>Robotun okuyacağı not (Bölge 8); yoksa null</summary>
-        readonly string note;
+        /// <summary>Robotun okuyacağı not (Bölge 8'den); yoksa null. Yazısı metin ya da metinlerden oluşan liste (Bölge 9).</summary>
+        readonly Note note;
         /// <summary>Bu bölümde açık olan komutlar; null ise hepsi açık</summary>
         readonly HashSet<string> allowed;
 
@@ -206,7 +227,7 @@ namespace MarsKod.Dunya
         public bool Complete => IceLeft == 0 && CrackedLeft == 0 && ReportDone && OnTarget;
 
         /// <summary>Oyunda olan tüm komutlar (bölüm dosyasındaki "komutlar" bunlardan seçilir)</summary>
-        public static readonly string[] AllCommands = { "move", "collect", "ice_here", "rock_ahead", "panel_power", "repair", "dust_here", "wait", "cable_length", "report", "scout", "read_note" };
+        public static readonly string[] AllCommands = { "move", "collect", "ice_here", "rock_ahead", "panel_power", "repair", "dust_here", "wait", "cable_length", "report", "scout", "read_note", "crystal_size", "meteor_ahead", "smoke_here" };
 
         /// <summary>Panel çatlak mı (gücü 0'dan çok, CrackedBelow'dan az)</summary>
         public static bool IsCracked(int power) => power > 0 && power < CrackedBelow;
@@ -215,7 +236,8 @@ namespace MarsKod.Dunya
         public World(int cols, int rows, Cell robot, IEnumerable<Cell> iceCells,
             IEnumerable<Cell> rockCells = null, Cell? target = null, IEnumerable<string> commands = null, IEnumerable<Cell> crystalCells = null,
             IDictionary<Cell, int> panelCells = null, IDictionary<Cell, int> dustCells = null,
-            IDictionary<Cell, int> reelCells = null, BigInteger? expectedReport = null, Trail trail = null, string note = null)
+            IDictionary<Cell, int> reelCells = null, BigInteger? expectedReport = null, Trail trail = null, Note note = null,
+            IDictionary<Cell, int> crystalSizeCells = null, IEnumerable<Cell> craterCells = null, IEnumerable<Cell> hotStoneCells = null)
         {
             Cols = cols;
             Rows = rows;
@@ -224,10 +246,13 @@ namespace MarsKod.Dunya
             taken = new bool[ices.Count];
             rocks = new HashSet<Cell>(rockCells ?? Array.Empty<Cell>());
             crystals = new HashSet<Cell>(crystalCells ?? Array.Empty<Cell>());
+            craters = new HashSet<Cell>(craterCells ?? Array.Empty<Cell>());
+            hotStones = new HashSet<Cell>(hotStoneCells ?? Array.Empty<Cell>());
             panels = panelCells == null ? new Dictionary<Cell, int>() : new Dictionary<Cell, int>(panelCells);
             dust = dustCells == null ? new Dictionary<Cell, int>() : new Dictionary<Cell, int>(dustCells);
             dustTotal = new Dictionary<Cell, int>(dust);
             reels = reelCells == null ? new Dictionary<Cell, int>() : new Dictionary<Cell, int>(reelCells);
+            crystalSizes = crystalSizeCells == null ? new Dictionary<Cell, int>() : new Dictionary<Cell, int>(crystalSizeCells);
             ExpectedReport = expectedReport;
             Target = target ?? trail?.End;
             this.trail = trail;
@@ -240,6 +265,10 @@ namespace MarsKod.Dunya
         public bool RockAt(Cell c) => rocks.Contains(c);
 
         public bool CrystalAt(Cell c) => crystals.Contains(c);
+
+        public bool CraterAt(Cell c) => craters.Contains(c);
+
+        public bool HotStoneAt(Cell c) => hotStones.Contains(c);
 
         /// <summary>Karede henüz dağılmamış toz bulutu var mı</summary>
         public bool DustAt(Cell c) => dust.TryGetValue(c, out int left) && left > 0;
@@ -270,6 +299,12 @@ namespace MarsKod.Dunya
                 throw new GameRuleStop("Alanın sınırı",
                     "Robot bu yönde alanın dışına çıkacaktı, o yüzden durdu. Bu bir oyun kuralı, Python hatası değil: kodun doğru yazılmış ama robotu alanın dışına götürüyor.");
             }
+            if (CraterAt(to))
+            {
+                Events.Add(new Blocked { At = Robot, Direction = d, ByCrater = true });
+                throw new GameRuleStop("Önünde yeni bir krater var",
+                    "Meteor bu kareye yeni düştü; krater hâlâ sıcak, robot içine girmedi ve durdu. Bu bir oyun kuralı, Python hatası değil. Meteorlar her denemede başka yere düşebilir: adım atmadan önce meteor_ahead(yön) ile bak.");
+            }
             if (RockAt(to))
             {
                 Events.Add(new Blocked { At = Robot, Direction = d, ByRock = true });
@@ -287,7 +322,14 @@ namespace MarsKod.Dunya
             {
                 Events.Add(new Rejected { At = Robot });
                 throw new GameRuleStop("Tehlikeli kristal",
-                    "Kırmızı kristal toplanmaz, robot bu yüzden durdu. Bu bir oyun kuralı, Python hatası değil: kristalin üstünden geçebilirsin ama collect() onu toplamaya çalışır. Önce ice_here() ile bak: buz varsa topla.");
+                    "Kırmızı kristal toplanmaz, robot bu yüzden durdu. Bu bir oyun kuralı, Python hatası değil: kristalin üstünden geçebilirsin ama collect() onu toplamaya çalışır. "
+                    + (IsOpen("crystal_size") ? "Önce crystal_size() ile ölç: tuz kristalinin boyu 0'dan büyüktür, kırmızınınki 0." : "Önce ice_here() ile bak: buz varsa topla."));
+            }
+            if (HotStoneAt(Robot))
+            {
+                Events.Add(new Rejected { At = Robot });
+                throw new GameRuleStop("Taş hâlâ kızgın",
+                    "Bu göktaşı yeni düştü, dumanı tütüyor; kızgın taş toplanmaz, robot bu yüzden durdu. Bu bir oyun kuralı, Python hatası değil: üstünden geçebilirsin ama toplamadan önce smoke_here() ile bak, duman yoksa topla.");
             }
             int power = PanelPowerAt(Robot);
             if (power > 0)
@@ -324,6 +366,23 @@ namespace MarsKod.Dunya
             return blocked;
         }
 
+        /// <summary>O yönde bir adım ötede yeni düşmüş meteorun krateri var mı? (Alanın dışı krater değildir.) İlerlemez, yalnızca bakar.</summary>
+        public bool MeteorAhead(Direction d)
+        {
+            var to = Robot.Step(d);
+            bool found = CraterAt(to);
+            Events.Add(new Scanned { At = to, Found = found });
+            return found;
+        }
+
+        /// <summary>Bulunduğu karede duman var mı (kızgın göktaşı)? Yalnızca bakar.</summary>
+        public bool SmokeHere()
+        {
+            bool found = HotStoneAt(Robot);
+            Events.Add(new Scanned { At = Robot, Found = found });
+            return found;
+        }
+
         /// <summary>Bulunduğu karede toz bulutu var mı? Yalnızca bakar.</summary>
         public bool DustHere()
         {
@@ -349,10 +408,21 @@ namespace MarsKod.Dunya
         /// <summary>Bulunduğu karedeki (toplanmamış) kablo makarasının uzunluğu, metre; makara yoksa 0. Yalnızca ölçer.</summary>
         public int CableLength()
         {
-            int length = IceAt(Robot) >= 0 && reels.TryGetValue(Robot, out int l) ? l : 0;
+            int length = SizeHere(reels);
             Events.Add(new CableMeasured { At = Robot, Length = length });
             return length;
         }
+
+        /// <summary>Bulunduğu karedeki (toplanmamış) tuz kristalinin boyu, santimetre; kristal yoksa 0 (kırmızı kristal de 0). Yalnızca ölçer.</summary>
+        public int CrystalSize()
+        {
+            int size = SizeHere(crystalSizes);
+            Events.Add(new CrystalMeasured { At = Robot, Size = size });
+            return size;
+        }
+
+        // Robotun karesindeki henüz toplanmamış nesnenin ölçüsü (makara uzunluğu, kristal boyu); yoksa 0
+        int SizeHere(Dictionary<Cell, int> sizes) => IceAt(Robot) >= 0 && sizes.TryGetValue(Robot, out int size) ? size : 0;
 
         /// <summary>Sayıyı antene gönderir. Antenin beklediği sayı değilse (ya da bu bölümde rapor istenmiyorsa) robot durur (oyun kuralı).</summary>
         public void Report(BigInteger value)
@@ -365,18 +435,18 @@ namespace MarsKod.Dunya
             if (!correct)
                 throw new GameRuleStop("Anten bu sayıyı beklemiyordu",
                     "Robot antene " + value + " gönderdi ama anten başka bir sayı bekliyordu; robot bu yüzden durdu. Bu bir oyun kuralı, Python hatası değil. "
-                    + "Sayıyı tahmin etme, robota saydır: bir değişken kur (sayac = 0), her seferinde büyüt (sayac += 1), sonunda onu gönder: report(sayac).");
+                    + "Sayıyı tahmin etme, robota buldur: bir değişkende tut (sayaç, toplam ya da bir liste), sonunda onu gönder, örn. report(sayac).");
             reported = true;
         }
 
-        /// <summary>Robotun durduğu yerdeki notu okur (yazısını verir). Not yoksa robot durur (oyun kuralı).</summary>
-        public string ReadNote()
+        /// <summary>Robotun durduğu yerdeki notu okur: metin ya da (Bölge 9) metin listesi; her okuyuşta yeni liste. Not yoksa robot durur (oyun kuralı).</summary>
+        public object ReadNote()
         {
             if (note == null)
                 throw new GameRuleStop("Burada okunacak not yok",
                     "Kıvılcım'ın okuyabileceği bir not yok, robot bu yüzden durdu. Bu bir oyun kuralı, Python hatası değil.");
-            Events.Add(new NoteRead { At = Robot, Text = note });
-            return note;
+            Events.Add(new NoteRead { At = Robot, Text = note.Text, Lines = note.Lines, StepByLetter = note.LettersAreRoute });
+            return note.PythonValue();
         }
 
         /// <summary>Serçe'ye sorar: izin robotun durduğu kareden gittiği yön. Robot izde değilse ya da iz bittiyse robot durur (oyun kuralı).</summary>
@@ -518,16 +588,39 @@ namespace MarsKod.Dunya
                     if (args.Count != 0) throw Values.PyError("TypeError", "read_note() takes no arguments (" + args.Count + " given)");
                     return ReadNote();
                 }),
+                ["meteor_ahead"] = new PyBuiltin("meteor_ahead", (args, kwargs) =>
+                {
+                    Unlocked("meteor_ahead");
+                    NoKeywords("meteor_ahead", kwargs);
+                    if (args.Count != 1) throw Values.PyError("TypeError", "meteor_ahead() takes exactly one argument (" + args.Count + " given)");
+                    return MeteorAhead(DirectionOf(args[0]));
+                }),
+                ["smoke_here"] = new PyBuiltin("smoke_here", (args, kwargs) =>
+                {
+                    Unlocked("smoke_here");
+                    NoKeywords("smoke_here", kwargs);
+                    if (args.Count != 0) throw Values.PyError("TypeError", "smoke_here() takes no arguments (" + args.Count + " given)");
+                    return SmokeHere();
+                }),
+                ["crystal_size"] = new PyBuiltin("crystal_size", (args, kwargs) =>
+                {
+                    Unlocked("crystal_size");
+                    NoKeywords("crystal_size", kwargs);
+                    if (args.Count != 0) throw Values.PyError("TypeError", "crystal_size() takes no arguments (" + args.Count + " given)");
+                    return new BigInteger(CrystalSize());
+                }),
             };
             // Yönler şimdilik metin olarak tutulur: print(East) -> East
             foreach (Direction d in Enum.GetValues(typeof(Direction))) commands[d.ToString()] = d.ToString();
             return commands;
         }
 
+        bool IsOpen(string name) => allowed == null || allowed.Contains(name);
+
         // Bölümde henüz açılmamış bir komut çağrılırsa: Python hatası değil, oyun kuralı
         void Unlocked(string name)
         {
-            if (allowed == null || allowed.Contains(name)) return;
+            if (IsOpen(name)) return;
             var open = new List<string>();
             foreach (var c in AllCommands)
                 if (allowed.Contains(c)) open.Add(c + "()");

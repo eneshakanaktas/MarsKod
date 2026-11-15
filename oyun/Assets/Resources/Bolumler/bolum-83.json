@@ -1,0 +1,58 @@
+{
+  "numara": 83,
+  "baslik": "Kayıt 5",
+  "gorev": "En büyük boyu bildir",
+  "etiket": "BÖLGE 9 · TUZ GÖLÜ",
+  "giris": "Sol 1.099 · Kayıt 5",
+  "bitis": "En büyük kristal: 12 cm",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". S S S S S",
+    "R . . . . .",
+    ". . . . . ."
+  ],
+  "kristal_boyu": [5, 8, 12, 7, 9],
+  "rapor": 12,
+  "komutlar": ["move", "collect", "crystal_size", "report"],
+  "parcalar": ["for y in yol:", "move(y)", "boylar.append(crystal_size())", "collect()", "report(max(boylar))"],
+  "python_kelimeleri": ["max"],
+  "konular": ["liste", "append", "max"],
+  "ipuclari": [
+    "Her kristalin boyunu bir listeye ekle; hepsi ölçülünce listedeki en büyük boyu gönder.",
+    "`boylar.append(5)` listenin sonuna 5 ekler. `max(boylar)` listedeki en büyük sayıyı verir.",
+    "Döngünün içinde `boylar.append(crystal_size())` / `collect()`; sonda `report(max(boylar))`."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["yol = [North, East, East, East, East, East]", "boylar = []", "for y in yol:", "    move(y)", "    collect()", "    boylar.append(crystal_size())", "report(max(boylar))"],
+      "aciklama": "Önce toplandı, sonra ölçüldü: listeye hep 0 eklendi. Önce ölç, sonra topla."
+    },
+    {
+      "kod": ["yol = [North, East, East, East, East, East]", "boylar = []", "for y in yol:", "    move(y)", "    boylar.append(crystal_size())", "    collect()", "report(len(boylar))"],
+      "aciklama": "len listede kaç öğe olduğunu verir, en büyüğünü değil. En büyük sayı için max(boylar)."
+    },
+    {
+      "kod": ["yol = [North, East, East, East, East, East]", "boylar = []", "for y in yol:", "    move(y)", "    boylar.append(crystal_size())", "    collect()", "report(boylar)"],
+      "aciklama": "Antene listenin tamamı değil, tek bir sayı gönderilir: report(max(boylar))."
+    },
+    {
+      "kod": ["yol = [North, East, East, East, East, East]", "for y in yol:", "    boylar = []", "    move(y)", "    boylar.append(crystal_size())", "    collect()", "report(max(boylar))"],
+      "aciklama": "boylar = [] döngünün içinde: her turda liste boşalıyor, sonda yalnız son boy kalıyor. Boş listeyi döngüden önce kur."
+    }
+  ],
+  "baslangic_kodu": [
+    "yol = [North, East, East, East, East, East]",
+    "boylar = []"
+  ],
+  "cozum": [
+    "yol = [North, East, East, East, East, East]",
+    "boylar = []",
+    "for y in yol:",
+    "    move(y)",
+    "    boylar.append(crystal_size())",
+    "    collect()",
+    "report(max(boylar))"
+  ]
+}

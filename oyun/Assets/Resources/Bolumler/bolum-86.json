@@ -1,0 +1,55 @@
+{
+  "numara": 86,
+  "baslik": "Tuza gömülü",
+  "gorev": "Gölü satır satır tara",
+  "etiket": "BÖLGE 9 · TUZ GÖLÜ",
+  "giris": "Sol 1.100 · Tuza gömülü",
+  "bitis": "Bulundu: oyuncak astronot · Çantaya",
+  "harita": [
+    ". . . . . .",
+    ". . . . . .",
+    ". S . S S .",
+    ". S S . S .",
+    "R S . S S .",
+    ". . . . . ."
+  ],
+  "komutlar": ["move", "collect"],
+  "parcalar": ["for satir in range(3):", "for adim in range(4):", "move(East)", "collect()", "move(North)", "move(West)"],
+  "konular": ["iç içe döngü", "tarama"],
+  "ipuclari": [
+    "Bir satırı tarayan kod başlangıçta hazır. Onu üç kez çalıştır: her satır için bir kez.",
+    "Bir döngünün içine başka bir döngü yazılabilir: dıştaki her turda içteki baştan sona çalışır. 3 satır × 4 kare = 12 kare.",
+    "En üste `for satir in range(3):` yaz, hazır kodun hepsini 4 boşluk içeri al."
+  ],
+  "tipik_hatalar": [
+    {
+      "kod": ["for satir in range(3):", "    for adim in range(4):", "        move(East)", "        collect()", "    move(North)"],
+      "aciklama": "Her satırdan sonra robot satırın başına dönmeli; dönmezse ikinci satırda alanın dışına çıkar."
+    },
+    {
+      "kod": ["for satir in range(3):", "    for adim in range(3):", "        move(East)", "        collect()", "    move(North)", "    for adim in range(3):", "        move(West)"],
+      "aciklama": "Her satırda 4 kare var: içteki döngü 3 turda son sütuna varmıyor."
+    },
+    {
+      "kod": ["for satir in range(2):", "    for adim in range(4):", "        move(East)", "        collect()", "    move(North)", "    for adim in range(4):", "        move(West)"],
+      "aciklama": "Göl 3 satır: dış döngü 2 turda en üst satırı taramıyor."
+    }
+  ],
+  "baslangic_kodu": [
+    "for adim in range(4):",
+    "    move(East)",
+    "    collect()",
+    "move(North)",
+    "for adim in range(4):",
+    "    move(West)"
+  ],
+  "cozum": [
+    "for satir in range(3):",
+    "    for adim in range(4):",
+    "        move(East)",
+    "        collect()",
+    "    move(North)",
+    "    for adim in range(4):",
+    "        move(West)"
+  ]
+}

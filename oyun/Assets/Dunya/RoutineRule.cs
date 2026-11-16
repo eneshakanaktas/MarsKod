@@ -52,6 +52,13 @@ namespace MarsKod.Dunya
                 Title = "Kod bitti, else yok",
                 Text = "Görev tamam, ama robot yalnızca tek yolu biliyor. Bu bölümde `else` ile öteki durumu da yaz.",
             },
+            new RequiredConstruct
+            {
+                // elif, ayrıştırıcıda "else içinde tek if" olarak durur (Parser.IfStatement)
+                Name = "elif", Matches = s => s is If i && i.OrElse != null && i.OrElse.Count == 1 && i.OrElse[0] is If,
+                Title = "Kod bitti, elif yok",
+                Text = "Görev tamam, ama robot üçüncü yolu bilmeden ilerledi. Bu bölümde `elif` ile ikinci soruyu da yaz.",
+            },
         };
 
         public static IEnumerable<string> Names => Known.Select(c => c.Name);

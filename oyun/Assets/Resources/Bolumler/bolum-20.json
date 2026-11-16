@@ -2,46 +2,135 @@
   "numara": 20,
   "baslik": "Su yolu",
   "etiket": "ÖDEV",
-  "gorev": "3 buz ve hedef",
-  "giris": "Son ödev! Aracı koloniye hazırla.",
-  "bitis": "Bölge 2 tamamlandı! Tebrikler!",
+  "gorev": "3 buz, hedef · değişir",
+  "giris": "Son ödev! Tipi geri döndü. Aracı koloniye hazırla.",
+  "bitis": "Tipide bile yolunu buldun. Bölge 2 tamamlandı!",
   "harita": [
     ". . H . . .",
-    ". K B . . .",
-    ". T . . . .",
-    "K B . . . .",
-    "B . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
+    ". . . . . .",
     "R . . . . ."
   ],
-  "komutlar": ["move", "collect", "ice_here", "rock_ahead"],
-  "parcalar": ["move(North)", "move(East)", "collect()", "for i in range(3):", "if rock_ahead(North):", "else:", "if ice_here():"],
-  "konular": ["for döngüsü", "if/else", "ice_here", "rock_ahead", "hedef kare", "bölge finali"],
+  "duzenler": [
+    [
+      ". . . . . .",
+      ". . T . . .",
+      ". K . . . .",
+      ". B B . . .",
+      "K T . . . .",
+      ". B . . . ."
+    ],
+    [
+      ". . . . . .",
+      ". K B . . .",
+      ". T . . . .",
+      "K B . . . .",
+      "B . . . . .",
+      ". . . . . ."
+    ],
+    [
+      ". B . . . .",
+      "B K . . . .",
+      "T . . . . .",
+      "B K . . . .",
+      "T . . . . .",
+      ". . . . . ."
+    ]
+  ],
+  "komutlar": [
+    "move",
+    "collect",
+    "ice_here",
+    "rock_ahead"
+  ],
+  "parcalar": [
+    "move(North)",
+    "move(East)",
+    "collect()",
+    "for i in range(3):",
+    "if rock_ahead(North):",
+    "else:",
+    "if ice_here():"
+  ],
+  "konular": [
+    "for döngüsü",
+    "if/else",
+    "ice_here",
+    "rock_ahead",
+    "hedef kare",
+    "değişen alan",
+    "her adımdan sonra bakma",
+    "bölge finali"
+  ],
   "ipuclari": [
-    "Yol dik değil: iki kez kayaya takılıp doğuya kaymak, bir yerde de kristali atlamak gerekiyor. Bölüm 18 ve 19'daki aynı döngü burada da çalışır.",
-    "Tek bir döngü yeter: her turda önce `rock_ahead(North)` ile önüne bak (kaya varsa doğuya kay), yoksa kuzeye çık ve `ice_here()` ile bakıp buz varsa topla. Kaç tur gerektiğini say: kaç kuzey adımı, kaç doğu kayması var?",
-    "`for i in range(7):` altına girintili `if rock_ahead(North):` / `    move(East)` / `else:` / `    move(North)`, ve onun altında bir girinti daha içeride `if ice_here():` / `    collect()`. Döngü robotu tam hedefte bırakır."
+    "Hedef üst sırada. Tipi her denemede buz bloklarını, buzları ve kristalleri başka yere taşıyor; yolu ezberleme. Robot yalnızca kuzeye ve doğuya gidecek.",
+    "Bölüm 18'deki gibi her turda önce `rock_ahead(North)` ile bak: engel ya da alanın kenarı varsa doğuya kay, yoksa kuzeye çık. Kaydığın karede de buz olabilir: bakmayı yalnızca kuzeye çıkınca değil, her adımdan sonra yap. Tur sayısı her düzende aynı: 5 kuzey + 2 doğu.",
+    "`for i in range(7):` / `    if rock_ahead(North):` / `        move(East)` / `    else:` / `        move(North)` ve en altta, `if rock_ahead` ile aynı hizada (döngünün içinde, if/else'in dışında) `    if ice_here():` / `        collect()`."
   ],
   "tipik_hatalar": [
     {
       "kod": [
-        "for i in range(5):", "    if rock_ahead(North):", "        move(East)",
-        "    else:", "        move(North)", "        if ice_here():", "            collect()"
+        "for i in range(5):",
+        "    if rock_ahead(North):",
+        "        move(East)",
+        "    else:",
+        "        move(North)",
+        "    if ice_here():",
+        "        collect()"
       ],
-      "aciklama": "range(5) yetmez: iki kez doğuya kaymak da birer tur harcıyor, robot hedefin gerisinde kalır."
+      "aciklama": "range(5) yetmez: robot hedefe hangi yoldan giderse gitsin 5 kuzey + 2 doğu = 7 adım atar; 5 turda hedefin gerisinde kalır."
     },
     {
       "kod": [
-        "for i in range(7):", "    if rock_ahead(North):", "        move(East)",
-        "    else:", "        move(North)", "        collect()"
+        "for i in range(7):",
+        "    if rock_ahead(North):",
+        "        move(East)",
+        "    else:",
+        "        move(North)",
+        "    collect()"
       ],
       "aciklama": "collect() ice_here() ile korunmamış: robot kristal karesinde durur."
     },
     {
       "kod": [
-        "for i in range(8):", "    if rock_ahead(North):", "        move(East)",
-        "    else:", "        move(North)", "        if ice_here():", "            collect()"
+        "for i in range(7):",
+        "    if rock_ahead(North):",
+        "        move(East)",
+        "    else:",
+        "        move(North)",
+        "        if ice_here():",
+        "            collect()"
+      ],
+      "aciklama": "Buza yalnızca kuzeye çıkınca bakıyorsun (Bölüm 19'daki gibi). Burada engel seni doğuya kaydırdığında da bir buzun üstüne gelebilirsin: if ice_here():'i if/else'in dışına, döngünün içine al; robot nereye adım atarsa atsın baksın."
+    },
+    {
+      "kod": [
+        "for i in range(8):",
+        "    if rock_ahead(North):",
+        "        move(East)",
+        "    else:",
+        "        move(North)",
+        "    if ice_here():",
+        "        collect()"
       ],
       "aciklama": "range(8) bir tur fazla: yedinci turda hedefe varıyorsun, sekizincide önünde alanın sınırı var (rock_ahead True), doğuya kayıp hedefin dışında kalıyorsun. Tur sayısı tam yetmeli."
+    },
+    {
+      "kod": [
+        "move(East)",
+        "collect()",
+        "move(North)",
+        "move(North)",
+        "collect()",
+        "move(East)",
+        "collect()",
+        "move(North)",
+        "move(North)",
+        "move(North)"
+      ],
+      "aciklama": "Yol elle yazıldı: ilk düzende çalışır, ama tipi blokları ve buzları taşıyınca robot ya bir bloğa çarpar ya buz kaçırır. Her turda rock_ahead(North) ile bak, vardığın her karede ice_here() ile sor."
     }
   ],
   "baslangic_kodu": [
@@ -55,7 +144,14 @@
     "        move(East)",
     "    else:",
     "        move(North)",
-    "        if ice_here():",
-    "            collect()"
-  ]
+    "    if ice_here():",
+    "        collect()"
+  ],
+  "bilgi": {
+    "baslik": "Tipi buz bloklarını da taşıyor",
+    "metin": [
+      "Bu sefer rüzgâr karın altından buz bloklarını da açıyor ya da örtüyor. Blokların içinden robot geçemez; `rock_ahead()` onları da görür.",
+      "Buzlar, kristaller ve bloklar her denemede başka yerde; robotun yeri ve hedef aynı. Kodun üç düzende de çalışmalı."
+    ]
+  }
 }

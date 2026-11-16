@@ -9,7 +9,8 @@
 //   M kablo makarası: uzunlukları (metre) "makara_uzunlugu" listesinde, aynı okuma sırasıyla. "rapor": antenin report() ile beklediği sayı.
 //   S tuz kristali: boyları (santimetre) "kristal_boyu" listesinde, aynı okuma sırasıyla (crystal_size() ölçer; Bölge 9).
 //   G göktaşı (toplanır), U meteorun yeni düştüğü krater (girilmez; meteor_ahead() bakar), X kızgın göktaşı (üstünden geçilir,
-//     toplanmaz; smoke_here() bakar). "meteorlar": her denemede başka yere düşen kraterler (Bölge 10); 2-3 düzen = değişen meteor.
+//     toplanmaz; smoke_here() bakar). "duzenler": her denemede değişen nesneler
+//     (buz, kristal, engel, krater; Layout.cs); 2-3 düzen = değişen alan (Bölge 2 sınavları, Bölge 10).
 //   Toplanacak işaretleri (B, E...) Collectible.cs'te; bir bölümde tek tür toplanır.
 //   İz ("izler"): Serçe'nin gördüğü yön listeleri; varsa scout() açılır, H yazılmaz (hedef izin son karesi). 2-3 iz = değişen yol.
 //   "parametre_sarti": rutinler bilgi (parametre) almalı ve farklı bilgilerle çağrılmalı (Bölge 7).
@@ -61,8 +62,8 @@ namespace MarsKod.Dunya
         public List<Cell> Craters = new List<Cell>();
         /// <summary>Kızgın göktaşları (üstünden geçilir, toplanmaz; Bölge 10)</summary>
         public List<Cell> HotStones = new List<Cell>();
-        /// <summary>Her denemede başka yere düşen meteorların kraterleri ("meteorlar"); boşsa yok. Birden çoksa kod her düzende denenir.</summary>
-        public List<List<Cell>> Meteors = new List<List<Cell>>();
+        /// <summary>Her denemede değişen nesneler ("duzenler"); boşsa yok. Birden çoksa kod her düzende denenir.</summary>
+        public List<Layout> Layouts = new List<Layout>();
         /// <summary>Güneş panelleri ve güçleri (kırık olanlar gücü 0 ile burada, parçaları Ices'ta)</summary>
         public Dictionary<Cell, int> Panels = new Dictionary<Cell, int>();
         /// <summary>Toz bulutları ve kaç beklemede dağılacakları</summary>
@@ -98,8 +99,8 @@ namespace MarsKod.Dunya
         /// <summary>Robotun okuyacağı notlar (Bölge 8'den); birden çoksa değişen not: kod her notta denenir. Hedef notun yolunun sonu.</summary>
         public List<Note> Notes = new List<Note>();
 
-        /// <summary>Kaç sürümde denenir: iz, not ya da meteor düzeni sayısı (hiçbiri yoksa 1)</summary>
-        public int VersionCount => Math.Max(1, Math.Max(Math.Max(Trails.Count, Notes.Count), Meteors.Count));
+        /// <summary>Kaç sürümde denenir: iz, not ya da düzen sayısı (hiçbiri yoksa 1)</summary>
+        public int VersionCount => Math.Max(1, Math.Max(Math.Max(Trails.Count, Notes.Count), Layouts.Count));
 
         /// <summary>Bilgi kartı (yeni bir şey ilk kez göründüğünde); yoksa null</summary>
         public LevelInfo Info;
@@ -114,12 +115,18 @@ namespace MarsKod.Dunya
         public World CreateWorld(int version = 0)
         {
             var note = Notes.Count > 0 ? Notes[version] : null;
-            return new World(Cols, Rows, Robot, Ices, Rocks, note != null ? note.Route.End : Target, Commands, Crystals, Panels, Dust, Reels,
+            return new World(Cols, Rows, Robot, IcesOf(version), RocksOf(version), note != null ? note.Route.End : Target, Commands, CrystalsOf(version), Panels, Dust, Reels,
                 note?.Report ?? ExpectedReport, Trails.Count > 0 ? Trails[version] : null, note, CrystalSizes, CratersOf(version), HotStones);
         }
 
-        /// <summary>Bir denemedeki bütün kraterler: haritadakiler ve (varsa) o denemenin meteorları</summary>
-        public List<Cell> CratersOf(int version) => Meteors.Count > 0 ? Craters.Concat(Meteors[version]).ToList() : Craters;
+        // Bir denemedeki nesneler: haritadakiler (hep aynı, önde) ve (varsa) o denemenin düzeninden gelenler
+        public List<Cell> IcesOf(int version) => With(Ices, layout => layout.Ices, version);
+        public List<Cell> RocksOf(int version) => With(Rocks, layout => layout.Rocks, version);
+        public List<Cell> CrystalsOf(int version) => With(Crystals, layout => layout.Crystals, version);
+        public List<Cell> CratersOf(int version) => With(Craters, layout => layout.Craters, version);
+
+        List<Cell> With(List<Cell> mapCells, Func<Layout, List<Cell>> pick, int version) =>
+            Layouts.Count > 0 ? mapCells.Concat(pick(Layouts[version])).ToList() : mapCells;
 
         /// <summary>Kodu her sürümde (iz/not; yoksa bir kez) bölümün yeni bir dünyasında, bölümün rutin şartı ve ekranıyla çalıştırır</summary>
         public List<TrailRun> RunVersions(string code)
@@ -146,7 +153,7 @@ namespace MarsKod.Dunya
         /// <summary>JSON metninden bölümü okur; yanlışta DataFormatError verir (Türkçe, satır numaralı).</summary>
         public static Level Parse(string json)
         {
-            var known = new HashSet<string> { "numara", "baslik", "etiket", "gorev", "giris", "bitis", "harita", "komutlar", "konular", "parcalar", "python_kelimeleri", "ipuclari", "tipik_hatalar", "baslangic_kodu", "cozum", "toz_suresi", "makara_uzunlugu", "rapor", "rutinler", "rutin_sayisi", "parametre_sarti", "donus_sarti", "zorunlu_yapilar", "izler", "ekran", "notlar", "bilgi", "kristal_boyu", "meteorlar" };
+            var known = new HashSet<string> { "numara", "baslik", "etiket", "gorev", "giris", "bitis", "harita", "komutlar", "konular", "parcalar", "python_kelimeleri", "ipuclari", "tipik_hatalar", "baslangic_kodu", "cozum", "toz_suresi", "makara_uzunlugu", "rapor", "rutinler", "rutin_sayisi", "parametre_sarti", "donus_sarti", "zorunlu_yapilar", "izler", "ekran", "notlar", "bilgi", "kristal_boyu", LayoutFile.Field };
             var d = DataFields.ParseObject(json, known);
 
             var level = new Level
@@ -173,13 +180,13 @@ namespace MarsKod.Dunya
             if (d.ContainsKey("ekran")) level.Screen = ScreenPuzzle.Parse(d["ekran"]);
             if (level.Screen != null && d.ContainsKey("izler"))
                 throw new DataFormatError("\"ekran\" olan bölümde \"izler\" yazılmaz: robot yürümez.");
-            var dustCells = ReadMap(level, TextList(d, "harita"), hasOtherTask: d.ContainsKey("izler") || d.ContainsKey("notlar") || d.ContainsKey("rapor") || level.Screen != null);
+            var dustCells = ReadMap(level, TextList(d, "harita"), hasOtherTask: d.ContainsKey("izler") || d.ContainsKey("notlar") || d.ContainsKey(LayoutFile.Field) || d.ContainsKey("rapor") || level.Screen != null);
             ReadDust(level, dustCells, d.ContainsKey("toz_suresi") ? IntList(d, "toz_suresi") : new List<int>());
             ReadSizes(level, d, "makara_uzunlugu", Collectible.CableReel, "M", "kablo makarası", "uzunluk (metre)", level.Reels);
             if (level.Commands.Contains("crystal_size") || d.ContainsKey("kristal_boyu"))   // boy yalnız ölçülen bölümde gerekir
                 ReadSizes(level, d, "kristal_boyu", Collectible.SaltCrystal, "S", "tuz kristali", "boy (santimetre)", level.CrystalSizes);
             ReadNotes(level, d);
-            ReadMeteors(level, d);
+            LayoutFile.Read(level, d);
             ReadReport(level, d);
             ReadTrails(level, d);
             ReadRoutines(level, d);
@@ -454,54 +461,6 @@ namespace MarsKod.Dunya
             var route = new Trail(level.Robot, steps);
             CheckPath(level, route, where);
             return route;
-        }
-
-        /// <summary>"meteorlar": her denemede başka yere düşen meteorların kraterleri (Bölge 10). Her düzen haritanın boyunda satırlar;
-        /// U krater, . boş. meteor_ahead açık olmalı (oyuncu bakabilsin). Krater robotun, kayanın, toplanacakların, hedefin üstüne düşmez;
-        /// not da varsa her not kendi düzeniyle eşleşir (sayıları aynı) ve yolu kraterden geçmez.</summary>
-        static void ReadMeteors(Level level, Dictionary<string, object> d)
-        {
-            if (!d.ContainsKey("meteorlar")) return;
-            if (!level.Commands.Contains("meteor_ahead"))
-                throw new DataFormatError("\"meteorlar\" yazılmış ama \"komutlar\" içinde \"meteor_ahead\" yok; oyuncu meteorun nereye düştüğüne bakamaz.");
-            if (level.Trails.Count > 0)
-                throw new DataFormatError("\"meteorlar\" ile \"izler\" birlikte yazılmaz.");
-            if (!(d["meteorlar"] is List<object> layouts) || layouts.Count < 1 || layouts.Count > MaxTrails)
-                throw new DataFormatError("\"meteorlar\" 1-" + MaxTrails + " düzen içeren bir liste olmalı; her düzen haritanın boyunda satırlar, örn. [[\". . U . . .\", ...]].");
-            if (level.Notes.Count > 0 && level.Notes.Count != layouts.Count)
-                throw new DataFormatError("\"notlar\" ile \"meteorlar\" aynı sayıda olmalı: her denemede bir not ve bir meteor düzeni (şimdi " + level.Notes.Count + " not, " + layouts.Count + " düzen).");
-            for (int i = 0; i < layouts.Count; i++)
-            {
-                string where = "\"meteorlar\" içindeki " + (i + 1) + ". düzen";
-                var craters = ReadCraterLayout(level, layouts[i], where);
-                if (level.Notes.Count > 0 && level.Notes[i].Route.Cells.Any(craters.Contains))
-                    throw new DataFormatError(where + " " + (i + 1) + ". notun yolunun üstüne krater düşürüyor; yol kraterden geçemez.");
-                level.Meteors.Add(craters);
-            }
-            if (level.Meteors.Select(m => string.Join(";", m)).Distinct().Count() < level.Meteors.Count)
-                throw new DataFormatError("\"meteorlar\" içinde aynı düzen iki kez yazılmış; değişen meteorda düzenler farklı olmalı.");
-        }
-
-        static List<Cell> ReadCraterLayout(Level level, object value, string where)
-        {
-            var rows = value is List<object> list && list.All(r => r is string) ? list.Cast<string>().Select(r => r.Replace(" ", "")).ToList() : null;
-            if (rows == null || rows.Count != level.Rows || rows.Any(r => r.Length != level.Cols))
-                throw new DataFormatError(where + " haritanın boyunda olmalı: " + level.Rows + " satır, her satırda " + level.Cols + " kare.");
-            var craters = new List<Cell>();
-            for (int i = 0; i < rows.Count; i++)
-                for (int col = 0; col < level.Cols; col++)
-                {
-                    char c = rows[i][col];
-                    if (c == EmptyMark) continue;
-                    if (c != CraterMark) throw new DataFormatError(where + " içinde yalnızca " + CraterMark + " (krater) ve " + EmptyMark + " (boş) yazılır; '" + c + "' var.");
-                    var cell = new Cell(col, level.Rows - 1 - i);
-                    if (cell.Equals(level.Robot) || level.Rocks.Contains(cell) || level.Ices.Contains(cell) || level.Craters.Contains(cell)
-                        || level.HotStones.Contains(cell) || level.Crystals.Contains(cell) || (level.Target != null && level.Target.Value.Equals(cell)))
-                        throw new DataFormatError(where + " " + (i + 1) + ". satırda dolu bir kareye krater düşürüyor; krater boş kareye düşer.");
-                    craters.Add(cell);
-                }
-            if (craters.Count == 0) throw new DataFormatError(where + " boş: en az bir krater (" + CraterMark + ") olmalı.");
-            return craters;
         }
 
         static Trail ReadTrail(Level level, object value, int number)

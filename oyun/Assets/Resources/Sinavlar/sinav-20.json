@@ -32,7 +32,18 @@
         "Hayır, else'in altına yalnızca komut yazılır"
       ],
       "dogru": 1,
-      "aciklama": "Evet; else'in içine de if konabilir, her iç katman bir girinti daha içeri yazılır (Bölüm 19 ve 20'deki gibi)."
+      "aciklama": "Evet; else'in içine de if konabilir, her iç katman bir girinti daha içeri yazılır (Bölüm 19'daki gibi)."
+    },
+    {
+      "soru": "for döngüsünde, if/else'ten sonra aynı hizada yazılan if ice_here(): ne zaman çalışır?",
+      "secenekler": [
+        "Her turda, robot hangi yola girerse girsin",
+        "Yalnızca if'in altındaki yol çalıştığında",
+        "Yalnızca else'in altındaki yol çalıştığında",
+        "Döngü bitince, yalnızca bir kez"
+      ],
+      "dogru": 0,
+      "aciklama": "if/else ile aynı hizadaki satır iki yolun da dışındadır; robot kuzeye de çıksa doğuya da kaysa her turda çalışır (Bölüm 20)."
     }
   ]
 }

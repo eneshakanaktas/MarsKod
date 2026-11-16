@@ -13,9 +13,28 @@
     ". . . . . .",
     "R 8 3 7 2 9"
   ],
-  "komutlar": ["move", "collect", "rock_ahead", "panel_power", "repair"],
-  "parcalar": ["move(North)", "move(East)", "repair()", "for i in range(3):", "if panel_power() < 50:"],
-  "konular": ["karşılaştırma", "küçüktür (<)", "panel_power", "repair", "for döngüsü", "if"],
+  "komutlar": [
+    "move",
+    "collect",
+    "rock_ahead",
+    "panel_power",
+    "repair"
+  ],
+  "parcalar": [
+    "move(North)",
+    "move(East)",
+    "repair()",
+    "for i in range(3):",
+    "if panel_power() < 50:"
+  ],
+  "konular": [
+    "karşılaştırma",
+    "küçüktür (<)",
+    "panel_power",
+    "repair",
+    "for döngüsü",
+    "if"
+  ],
   "ipuclari": [
     "Bu sırada beş panel var, bazıları çatlak. Her panelin üstüne gelince gücünü ölç; yalnızca çatlak olanı onar.",
     "`panel_power()` robotun durduğu paneldeki gücü sayı olarak verir. `<` \"küçüktür\" demek: `panel_power() < 50` güç 50'den azsa True olur. Gücü 50'den az olan panel çatlaktır, `repair()` onu onarır.",
@@ -23,15 +42,29 @@
   ],
   "tipik_hatalar": [
     {
-      "kod": ["for i in range(5):", "    move(East)", "    repair()"],
+      "kod": [
+        "for i in range(5):",
+        "    move(East)",
+        "    repair()"
+      ],
       "aciklama": "Ölçmeden her paneli onarmaya çalışmak: ilk panel sağlam (gücü 80), robot durur."
     },
     {
-      "kod": ["for i in range(5):", "    move(East)", "    if panel_power() > 50:", "        repair()"],
+      "kod": [
+        "for i in range(5):",
+        "    move(East)",
+        "    if panel_power() > 50:",
+        "        repair()"
+      ],
       "aciklama": "İşaret ters: > \"büyüktür\" demek. Bu kod sağlam paneli onarmaya çalışır, robot durur."
     },
     {
-      "kod": ["for i in range(5):", "    if panel_power() < 50:", "        repair()", "    move(East)"],
+      "kod": [
+        "for i in range(5):",
+        "    if panel_power() < 50:",
+        "        repair()",
+        "    move(East)"
+      ],
       "aciklama": "Önce ölçüp sonra yürümek: robot ilk turda boş karede durur (panel yok, güç 0), orada onarmaya çalışır."
     }
   ],
@@ -44,5 +77,13 @@
     "    move(East)",
     "    if panel_power() < 50:",
     "        repair()"
-  ]
+  ],
+  "bilgi": {
+    "baslik": "Güç ölçer ve onarım kolu",
+    "metin": [
+      "Robota iki yeni modül takıldı. `panel_power()` robotun durduğu paneldeki gücü sayı olarak verir (panel yoksa 0). Yürümez, yalnızca ölçer.",
+      "`repair()` çatlak paneli onarır. Gücü 50'den az (ama 0'dan çok) olan panel çatlaktır. Sağlam panelde ya da boş karede `repair()` robotu durdurur.",
+      "`<` \"küçüktür\" demek: `panel_power() < 50` güç 50'den azsa Doğru (True) olur. Önce ölç, sonra onar."
+    ]
+  }
 }

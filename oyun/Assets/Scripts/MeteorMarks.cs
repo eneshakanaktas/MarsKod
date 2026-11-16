@@ -4,7 +4,7 @@ using MarsKod.Dunya;
 using UnityEngine;
 
 // Bolge 10 (gece ovasi) tehlikeleri, GECICI gorunus (asil hali 3a'da): meteorun yeni dustugu krater (U, girilmez) ve dumani
-// tuten kizgin goktasi (X, toplanmaz). Kraterler her denemede baska yerde olabilir ("meteorlar"): Show o denemenin kraterlerini kurar.
+// tuten kizgin goktasi (X, toplanmaz). Kraterler her denemede baska yerde olabilir ("duzenler"): Show o denemenin kraterlerini kurar.
 public sealed class MeteorMarks
 {
     static readonly Color Rim = Mats.Hex("#2A2030");

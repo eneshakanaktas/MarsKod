@@ -79,6 +79,8 @@ public partial class Oyun : MonoBehaviour
     Robot robot;
     RobotModel robotModel = Robot.DefaultModel;
     readonly List<IPickup> pickups = new List<IPickup>();
+    Transform layoutRoot;        // denemeye gore degisen nesnelerin kokü (BuildLayout)
+    int builtVersion, shownVersion;   // sahnede kurulu / oynatilan denemenin sirasi (degisen alan)
     // Calisan gunes panelleri (saglam/catlak; kirik olanlar toplanacak oldugu icin pickups'ta)
     readonly Dictionary<Cell, SolarPanel> panels = new Dictionary<Cell, SolarPanel>();
     readonly Dictionary<Cell, DustCloud> dustClouds = new Dictionary<Cell, DustCloud>();
@@ -519,11 +521,7 @@ public partial class Oyun : MonoBehaviour
         levelRoot = Parts.Empty("Level", world);
         var region = Regions.Of(level.Number);
         RegionLook.ForLevel(level.Number).Apply(skyLight, sunLight);
-        pickups.Clear();
-        for (int i = 0; i < level.Ices.Count; i++)
-            pickups.Add(Pickups.Create(level.Item, levelRoot, Pos(level.Ices[i]), i + 1));
-        for (int i = 0; i < level.Crystals.Count; i++)
-            Ice.CreateHazard(levelRoot, Pos(level.Crystals[i]), 20 + i); // toplanmaz: pickups listesinde degil
+        BuildLayout(0);   // buz, kristal, engel, krater: degisen alanda her denemede yeniden kurulur
         for (int i = 0; i < level.HotStones.Count; i++)
             MeteorMarks.HotStone(levelRoot, Pos(level.HotStones[i]), i);   // kizgin goktasi: toplanmaz
         meteorMarks = new MeteorMarks(levelRoot, Pos);
@@ -537,17 +535,9 @@ public partial class Oyun : MonoBehaviour
         foreach (var d in level.Dust)
             dustClouds[d.Key] = DustCloud.Create(levelRoot, Pos(d.Key), 60 + dustSeed++);
         colonyPower.Begin(PowerLampCount);
-        int frostCount = level.Item == Collectible.Ice ? level.Ices.Count : 0; // zemindeki buz izi yalnizca buzun altinda
-        for (int i = 0; i < 6; i++)
-        {
-            var p = i < frostCount ? Pos(level.Ices[i]) : Vector3.zero;
-            ground.SetVector("_Frost" + i, new Vector4(p.x, p.z, 0.45f, i < frostCount ? 1f : 0f));
-        }
-        for (int i = 0; i < level.Rocks.Count; i++)
-            Obstacles.Create(region, level.Number, levelRoot, Pos(level.Rocks[i]), i);
         target = level.Target.HasValue ? Target.Create(levelRoot, Pos(level.Target.Value)) : null;
         Traces.Build(level.Number, levelRoot, new Vector2(AreaHalfX, AreaHalfZ), level.Target.HasValue ? Pos(level.Target.Value) : (Vector3?)null,
-            level.Ices.ConvertAll(c => Pos(c)), TerrainHeight);
+            level.IcesOf(0).ConvertAll(c => Pos(c)), TerrainHeight);
         trailView = level.Trails.Count > 0
             ? new TrailView(levelRoot, Pos, TerrainHeight, RiverBedTraces.ActiveSparrow, RiverBedTraces.LookFor(level.Number), this, level.Trails[0])
             : null;
@@ -564,7 +554,7 @@ public partial class Oyun : MonoBehaviour
         hud.SetOpenWords(MarsKod.Dunya.Suggestions.OpenWords(levels, level.Number));
         hud.SetPieces(level.Pieces, Palette.NewPieces(levels, level.Number));
         bool landingDue = LandingDue;   // 51'e her girisde: giris damgasi roket indikten sonra gelir
-        hud.SetLevel(level.Number, level.Label, level.Title, level.Goal, level.Ices.Count, level.Item, landingDue ? "" : level.Intro);
+        hud.SetLevel(level.Number, level.Label, level.Title, level.Goal, level.IcesOf(0).Count, level.Item, landingDue ? "" : level.Intro);
         if (level.Screen != null) hud.ShowScreen(level.Screen, ScreenView.NameFor(region)); else hud.HideScreen();
         hud.HideNote();
         hud.SetInfo(level.Info, seen: !shotsMode && PlayerPrefs.GetInt(InfoKey(level), 0) == 1);   // gorulmediyse kart kendiliginden acilir
@@ -818,7 +808,7 @@ public partial class Oyun : MonoBehaviour
     }
 
     // Enerji hucresi bolumunde her hucre icin kolonide bir lamba; diger bolumlerde lamba yok
-    int PowerLampCount => level.Item == Collectible.EnergyCell ? level.Ices.Count : 0;
+    int PowerLampCount => level.Item == Collectible.EnergyCell ? level.IcesOf(0).Count : 0;
 
     // Robot baslangic karesine doner; Bolge 4 finalinden sonraki bolumlerde sirtinda Ece'nin kurdelesi var
     void ResetRobot()
@@ -856,6 +846,32 @@ public partial class Oyun : MonoBehaviour
         hud.ResetView();
     }
 
+    // Denemeye gore degisen nesneler (toplanacaklar, kristal, engel, zemindeki buz izi). Degisen alanda ("duzenler") "Calistir"da
+    // oynatilacak denemenin nesneleri kurulur, oncekiler silinir; yoksa bolum acilirken bir kez kurulur. Toplanacaklarin sirasi
+    // dunyadakiyle ayni olmali (Collected.IceIndex).
+    void BuildLayout(int version)
+    {
+        if (layoutRoot != null) Destroy(layoutRoot.gameObject);
+        layoutRoot = Parts.Empty("Duzen", levelRoot);
+        builtVersion = version;
+        var ices = level.IcesOf(version);
+        pickups.Clear();
+        for (int i = 0; i < ices.Count; i++)
+            pickups.Add(Pickups.Create(level.Item, layoutRoot, Pos(ices[i]), i + 1));
+        var crystals = level.CrystalsOf(version);
+        for (int i = 0; i < crystals.Count; i++)
+            Ice.CreateHazard(layoutRoot, Pos(crystals[i]), 20 + i); // toplanmaz: pickups listesinde degil
+        var rocks = level.RocksOf(version);
+        for (int i = 0; i < rocks.Count; i++)
+            Obstacles.Create(Regions.Of(level.Number), level.Number, layoutRoot, Pos(rocks[i]), i);
+        int frostCount = level.Item == Collectible.Ice ? ices.Count : 0; // zemindeki buz izi yalnizca buzun altinda
+        for (int i = 0; i < 6; i++)
+        {
+            var p = i < frostCount ? Pos(ices[i]) : Vector3.zero;
+            ground.SetVector("_Frost" + i, new Vector4(p.x, p.z, 0.45f, i < frostCount ? 1f : 0f));
+        }
+    }
+
     // Kodu motorda aninda calistirir, sonra kaydi oynatir.
     IEnumerator RunProgram()
     {
@@ -868,7 +884,9 @@ public partial class Oyun : MonoBehaviour
         var report = shown.Report;
         versionChanged = TrailRuns.Mixed(runs);
         trailView?.Begin(level.Trails[runs.IndexOf(shown)]);   // degisen yolda her kosu kendi izini gosterir
-        meteorMarks.Show(level.CratersOf(runs.IndexOf(shown)));   // degisen meteorda her kosu kendi kraterlerini
+        shownVersion = runs.IndexOf(shown);
+        if (shownVersion != builtVersion) BuildLayout(shownVersion);   // degisen alanda her kosu kendi buz/kristal/engelini
+        meteorMarks.Show(level.CratersOf(shownVersion));               // ve kraterlerini
 
         // Bitmeyen dongude kaydin sadece basi oynatilir; uzun kayitta bos satirlarda beklenmez.
         int count = report.Halt != null && report.Halt.Reason == "steps" ? Mathf.Min(report.Trace.Count, 40) : report.Trace.Count;
@@ -1173,9 +1191,9 @@ public partial class Oyun : MonoBehaviour
                 {
                     Sound.Collect();
                     pickups[c.IceIndex].Pop();
-                    colonyPower.Deliver(world.TransformPoint(Pos(level.Ices[c.IceIndex])));
+                    colonyPower.Deliver(world.TransformPoint(Pos(level.IcesOf(shownVersion)[c.IceIndex])));
                     hud.SetCollected(c.Total);
-                    Traces.IceCollected(c.Total, level.Ices.Count);
+                    Traces.IceCollected(c.Total, level.IcesOf(shownVersion).Count);
                 }
                 yield return Tween.Wait(c.IceIndex >= 0 ? 0.4f : 0.3f);
                 break;
@@ -1253,8 +1271,11 @@ public partial class Oyun : MonoBehaviour
         yield return Tween.Wait(0.5f);
     }
 
+    // Degisen alanin cumlesi bolgeye gore: Bolge 2 tipi, Bolge 10 meteor
+    string LayoutChangedNote => Regions.Of(level.Number) == Region.PolarIce ? "Bu denemede tipi alanı değiştirdi." : "Bu denemede meteorlar başka yere düştü.";
+
     string VersionChangedNote => level.Notes.Count > 0 ? "Bu denemede not başka bir yol yazıyor."
-        : level.Meteors.Count > 0 ? "Bu denemede meteorlar başka yere düştü."
+        : level.Layouts.Count > 0 ? LayoutChangedNote
         : "Serçe bu sefer başka bir kol gördü.";
 
     // Kod bir izde/notta calisip bu sefer takildiysa oyuncu yolun degistigini bilsin

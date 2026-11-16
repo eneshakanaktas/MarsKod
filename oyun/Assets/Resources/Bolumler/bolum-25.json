@@ -13,9 +13,28 @@
     ". . . 0 . 7",
     "R . 0 . . ."
   ],
-  "komutlar": ["move", "collect", "rock_ahead", "panel_power", "repair"],
-  "parcalar": ["move(North)", "move(East)", "collect()", "for i in range(3):", "if i < 3:", "else:"],
-  "konular": ["döngü sayacı (i)", "karşılaştırma", "küçüktür (<)", "if/else", "for döngüsü"],
+  "komutlar": [
+    "move",
+    "collect",
+    "rock_ahead",
+    "panel_power",
+    "repair"
+  ],
+  "parcalar": [
+    "move(North)",
+    "move(East)",
+    "collect()",
+    "for i in range(3):",
+    "if i < 3:",
+    "else:"
+  ],
+  "konular": [
+    "döngü sayacı (i)",
+    "karşılaştırma",
+    "küçüktür (<)",
+    "if/else",
+    "for döngüsü"
+  ],
   "ipuclari": [
     "Yol önce doğuya, sonra kuzeye gidiyor. Tek bir döngü, hangi turda olduğuna bakarak yön seçebilir.",
     "`for i in range(6):` içindeki `i` bir sayaçtır: ilk turda 0, sonra 1, 2, 3, 4, 5. `if i < 3:` ilk üç turda (0, 1, 2) doğrudur. Bu yoldaki karelerde çalışan panel yok, her karede `collect()` çağırmak güvenli.",
@@ -23,15 +42,35 @@
   ],
   "tipik_hatalar": [
     {
-      "kod": ["for i in range(6):", "    if i < 4:", "        move(East)", "    else:", "        move(North)", "    collect()"],
+      "kod": [
+        "for i in range(6):",
+        "    if i < 4:",
+        "        move(East)",
+        "    else:",
+        "        move(North)",
+        "    collect()"
+      ],
       "aciklama": "Sayaç 0'dan başlar: i < 4 dört tur demek (0, 1, 2, 3). Robot bir kare fazla doğuya gider, köşeyi kaçırır."
     },
     {
-      "kod": ["for i in range(6):", "    if i > 3:", "        move(East)", "    else:", "        move(North)", "    collect()"],
+      "kod": [
+        "for i in range(6):",
+        "    if i > 3:",
+        "        move(East)",
+        "    else:",
+        "        move(North)",
+        "    collect()"
+      ],
       "aciklama": "< yerine >: robot önce kuzeye gider, yol ters döner."
     },
     {
-      "kod": ["for i in range(6):", "    if i < 3:", "        move(East)", "    else:", "        move(North)"],
+      "kod": [
+        "for i in range(6):",
+        "    if i < 3:",
+        "        move(East)",
+        "    else:",
+        "        move(North)"
+      ],
       "aciklama": "collect() unutulmuş: robot doğru yoldan gider ama parçaları toplamaz."
     }
   ],
@@ -47,5 +86,12 @@
     "    else:",
     "        move(North)",
     "    collect()"
-  ]
+  ],
+  "bilgi": {
+    "baslik": "Döngü sayacı: i",
+    "metin": [
+      "`for i in range(6):` döngüsünde `i` bir sayaçtır: ilk turda 0, sonra 1, 2, 3, 4, 5. Sayaç hep 0'dan başlar.",
+      "Sayaca `if` ile bakarak her turda başka bir şey yapabilirsin: `if i < 3:` ilk üç turda (0, 1, 2) Doğru olur."
+    ]
+  }
 }

@@ -62,8 +62,8 @@ Biçim: **Başlık** · görev · **Program (giriş / bitiş)** · **Sahnede**.
 - Sahnede: Araç artık alanın hemen arkasında (yan yatmış, kırmızı ışığı yanıp sönüyor; ufuktaki uzak hâli kaybolur). **İz 1:** aracın yanından başlayan **iki kişilik ayak izi** (iki farklı adım boyu).
 
 ### Bölüm 15 — Ödev 15 · Karışık sıra
-- Görev: 3 buz topla.
-- Program giriş: "Sütunda buz ve kristal karışık. Her karede bak!"
+- Görev: "3 buz · alan değişir". **Alan her denemede değişir (2 düzen, `duzenler`):** tipi karı savurur, buzlar ve kristaller başka karelerde açılır (bilgi kartı anlatır). Kristaller karın altından çıkar: kutup ekibinin "kırmızı olana dokunma" notu (Bölüm 13) anlam kazanır. Tasarım: `docs/superpowers/specs/2026-11-16-bolge-2-degisen-harita-design.md`.
+- Program giriş: "Tipi başladı! Kar her denemede başka yeri açıyor. Her karede bak!"
 - Program bitiş: "Harika tarama! Sırada küçük bir sınav var."
 - Sahnede: **İz 2:** ayak izleri birkaç adım sonra **bitiyor**; orada başka bir aracın geniş tekerlek izleri başlıyor ve uzaklaşıyor. Biri gelip onları almış. (Bu bölgenin asıl cevabı burada sezilir; program hiçbir şey söylemez.)
 
@@ -92,9 +92,9 @@ Biçim: **Başlık** · görev · **Program (giriş / bitiş)** · **Sahnede**.
 - Sahnede: Bölüm bitince araç doğrulur (yan yatmış hâlden dik hâle geçer), farları yanar. Kırmızı yardım ışığı söner: sinyal artık gerekmiyor.
 
 ### Bölüm 20 — Ödev 20 · Su yolu (bölge finali)
-- Görev: 3 buz ve hedef. Araç dik, farları yanık, hedefin hemen arkasında.
-- Program giriş: "Son ödev! Aracı koloniye hazırla."
-- Program bitiş: "Bölge 2 tamamlandı! Tebrikler!"
+- Görev: "3 buz, hedef · değişir". Araç dik, farları yanık, hedefin hemen arkasında. **Alan her denemede değişir (3 düzen):** tipi geri döndü; buzlar, kristaller ve buz blokları (engeller) başka yerde. Yeni soru: robot engel yüzünden doğuya kaydığı karede de buz olabilir, bu yüzden `ice_here()` her adımdan sonra, if/else'in dışında sorulur (19'un kodu yetmez).
+- Program giriş: "Son ödev! Tipi geri döndü. Aracı koloniye hazırla."
+- Program bitiş: "Tipide bile yolunu buldun. Bölge 2 tamamlandı!"
 - **Kapanış sahnesi (~10 sn, atlanabilir):**
   1. Aracın ekranı açılır. Makine yazısı, tek tek beliren harflerle:
      `SON KAYIT — ACİL ALIM — 2 KİŞİ — HEDEF: [VERİ BOZUK]`

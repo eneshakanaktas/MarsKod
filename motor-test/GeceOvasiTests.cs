@@ -4,17 +4,17 @@ using MarsKod.Motor;
 namespace MotorTest;
 
 // Gece ovası (Bölge 10, Bölüm 91-100, and/or/not): göktaşı G toplanır; meteorun yeni düştüğü krater U'ya girilmez
-// (meteor_ahead bakar); kızgın göktaşı X'in üstünden geçilir ama toplanmaz (smoke_here bakar). "meteorlar": her denemede
+// (meteor_ahead bakar); kızgın göktaşı X'in üstünden geçilir ama toplanmaz (smoke_here bakar). "duzenler": her denemede
 // başka yere düşen kraterler; kod her düzende ayrı denenir.
 public class GeceOvasiTests
 {
     const string Empty = "\". . . . . .\"";
 
-    // Robot (0,0); (2,0) göktaşı, (3,0) kızgın taş; meteorlar: 1. düzende (1,1), 2. düzende (1,0)
+    // Robot (0,0); (2,0) göktaşı, (3,0) kızgın taş; düzenler: 1. düzende (1,1), 2. düzende (1,0)
     static Level Plain(string meteors = "[[" + "\". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\", \". U . . . .\", \". . . . . .\"], ["
         + "\". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\", \". U . . . .\"]]", string commands = "\"move\", \"collect\", \"meteor_ahead\", \"smoke_here\"")
         => Level.Parse("{\"numara\": 91, \"baslik\": \"a\", \"gorev\": \"b\", \"harita\": [" + Empty + ", " + Empty + ", " + Empty + ", " + Empty + ", " + Empty + ", \"R . G X . .\"],"
-            + (meteors == null ? "" : " \"meteorlar\": " + meteors + ",") + " \"komutlar\": [" + commands + "], \"konular\": [], \"ipuclari\": [\"x\"], \"cozum\": [\"move(East)\"]}");
+            + (meteors == null ? "" : " \"duzenler\": " + meteors + ",") + " \"komutlar\": [" + commands + "], \"konular\": [], \"ipuclari\": [\"x\"], \"cozum\": [\"move(East)\"]}");
 
     [Fact]
     public void Goktasi_G_ile_yazilir_bolge_10_gece_ovasi()
@@ -79,9 +79,9 @@ public class GeceOvasiTests
 
     [Theory]
     [InlineData("[[\". . . . . .\"]]", "haritanın boyunda")]
-    [InlineData("[[\". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\"]]", "en az bir krater")]
+    [InlineData("[[\". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\"]]", "boş")]
     [InlineData("[[\". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\", \". . U . . .\"]]", "dolu bir kareye")]
-    [InlineData("[[\". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\", \". K . . . .\"]]", "yalnızca U")]
+    [InlineData("[[\". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\", \". Q . . . .\"]]", "yalnızca")]
     [InlineData("[[\". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\", \". U . . . .\"], [\". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\", \". . . . . .\", \". U . . . .\"]]", "aynı düzen")]
     public void Yanlis_meteor_duzeni_anlasilir_mesaj_verir(string meteors, string expected)
     {

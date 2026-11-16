@@ -17,14 +17,14 @@
   "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "for i in range(3):", "if ice_here():"],
   "konular": ["for döngüsü", "if koşulu", "döngü ve koşul sırası", "hedef kare"],
   "ipuclari": [
-    "Önce robotu buzun üstüne kadar yürüt; yolda kristal var ama üstünden geçmek serbest. Sonra bak, topla ve hedefe geç.",
+    "Hedef buzun hemen ötesinde. Önce buzun üstüne kadar yürü; yolda kristal var ama üstünden geçmek serbest.",
     "Yürümeyi `for` tekrarlar, kararı `if` verir. Döngü bittikten sonra, girintisiz olarak `if ice_here():` yaz: yalnızca bir kez bakar.",
-    "`for i in range(4):` altında `move(East)`; sonra girintisiz `if ice_here():` ve altında `collect()`; en sonda hedefe bir `move(East)` daha."
+    "Başlangıç kodundaki döngüden sonra, girintisiz `if ice_here():` ve altında `collect()` yaz; en sonda hedefe bir `move(East)` daha."
   ],
   "tipik_hatalar": [
     {
       "kod": ["for i in range(4):", "    move(East)", "    collect()", "move(East)"],
-      "aciklama": "Döngü her karede collect() çağırır; üçüncü karede kristal var ve robot durur."
+      "aciklama": "İlk tur zararsız (boş karede collect() bir şey yapmaz). İkinci turda robot kristalin üstüne gelir, collect() onu toplamaya çalışır ve robot durur."
     },
     {
       "kod": ["for i in range(4):", "    move(East)", "if ice_here():", "    collect()"],

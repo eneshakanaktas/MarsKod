@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MarsKod.Motor;
 
 namespace MarsKod.Dunya
 {
@@ -15,6 +16,83 @@ namespace MarsKod.Dunya
     {
         public string Title;
         public string Text;
+    }
+
+    /// <summary>Zorunlu bir Python yapısı: kodda nasıl aranır ve yoksa oyuncuya ne söylenir</summary>
+    public sealed class RequiredConstruct
+    {
+        public string Name;
+        /// <summary>Bir cümlenin kendisi bu yapı mı (iç içe olanlar ayrıca gezilir)</summary>
+        public Func<Stmt, bool> Matches;
+        public string Title;
+        public string Text;
+    }
+
+    /// <summary>Zorunlu yapı şartı ("zorunlu_yapilar"): görev bitse bile kodda listedeki yapılardan biri yoksa bölüm geçilmez
+    /// (komutları alt alta yazma kestirmesi). Yeni yapı (while, def...) eklemek = aşağıdaki tabloya bir satır.</summary>
+    public static class RequiredConstructs
+    {
+        static readonly RequiredConstruct[] Known =
+        {
+            new RequiredConstruct
+            {
+                Name = "for", Matches = s => s is For,
+                Title = "Kod bitti, for döngüsü yok",
+                Text = "Görev tamam, ama aynı satırları tekrar tekrar yazdın. Bu bölümde `for` döngüsüyle dene.",
+            },
+            new RequiredConstruct
+            {
+                Name = "if", Matches = s => s is If,
+                Title = "Kod bitti, if yok",
+                Text = "Görev tamam, ama robot hiç sormadan ilerledi. Bu bölümde `if` ile önce kontrol et.",
+            },
+            new RequiredConstruct
+            {
+                Name = "else", Matches = s => s is If i && i.OrElse != null && i.OrElse.Count > 0,
+                Title = "Kod bitti, else yok",
+                Text = "Görev tamam, ama robot yalnızca tek yolu biliyor. Bu bölümde `else` ile öteki durumu da yaz.",
+            },
+        };
+
+        public static IEnumerable<string> Names => Known.Select(c => c.Name);
+
+        public static bool IsKnown(string name) => Known.Any(c => c.Name == name);
+
+        /// <summary>Kodun herhangi bir yerinde (if/for/while/def içleri dahil) geçen bilinen yapıların adları</summary>
+        public static HashSet<string> Used(IEnumerable<Stmt> body)
+        {
+            var used = new HashSet<string>();
+            Collect(body, used);
+            return used;
+        }
+
+        static void Collect(IEnumerable<Stmt> body, HashSet<string> used)
+        {
+            foreach (var stmt in body)
+            {
+                foreach (var construct in Known)
+                    if (construct.Matches(stmt)) used.Add(construct.Name);
+                switch (stmt)
+                {
+                    case If i: Collect(i.Body, used); Collect(i.OrElse, used); break;
+                    case For f: Collect(f.Body, used); Collect(f.OrElse, used); break;
+                    case While w: Collect(w.Body, used); Collect(w.OrElse, used); break;
+                    case FunctionDef d: Collect(d.Body, used); break;
+                }
+            }
+        }
+
+        /// <summary>İstenen yapılardan kodda olmayan ilkinin açıklaması; hepsi varsa (ya da şart yoksa) null</summary>
+        public static RoutineProblem Check(IReadOnlyList<string> required, ISet<string> used)
+        {
+            foreach (var name in required)
+            {
+                if (used.Contains(name)) continue;
+                var construct = Known.First(c => c.Name == name);
+                return new RoutineProblem { Title = construct.Title, Text = construct.Text };
+            }
+            return null;
+        }
     }
 
     public sealed class RoutineRule

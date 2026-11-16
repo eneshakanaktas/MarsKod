@@ -18,7 +18,7 @@
   "konular": ["for döngüsü", "döngüde birden çok komut", "komut sırası"],
   "ipuclari": [
     "Buzlar bir merdiven gibi: her buz bir kare yukarıda ve bir kare sağda. Aynı iki adımı tekrar tekrar atacaksın.",
-    "Döngünün içine birden fazla komut yazabilirsin; her turda hepsi sırayla çalışır. Robotun hemen sağında kaya var, o yüzden önce kuzeye çık.",
+    "Her turda sıra önemli: robotun hemen sağında kaya var, o yüzden turun ilk adımı kuzey olmalı.",
     "`for i in range(5):` altına girintili üç satır yaz: `move(North)`, `move(East)` ve `collect()`."
   ],
   "tipik_hatalar": [
@@ -37,6 +37,10 @@
     {
       "kod": ["for i in range(5):", "    move(North)", "    move(East)", "collect()"],
       "aciklama": "collect() döngünün dışında kaldı: robot beş basamak çıkar ama yalnızca en sonda bir kez toplar."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(North)", "    collect()", "    move(East)"],
+      "aciklama": "collect() erken yazıldı: robot buzun bir kare soluna gelip topluyor, orada buz yok. Önce iki adımı at, sonra topla."
     }
   ],
   "baslangic_kodu": ["for i in range(5):", "    move(North)"],

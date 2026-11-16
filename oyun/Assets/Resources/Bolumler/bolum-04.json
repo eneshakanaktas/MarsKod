@@ -4,13 +4,14 @@
   "etiket": "ÖDEV",
   "gorev": "7 hücre topla",
   "giris": "İki döngü, iki yön.",
+  "zorunlu_yapilar": ["for"],
   "bitis": "Mükemmel! Bir sonraki ödev bir sınav.",
   "harita": [
     "R E E E E .",
     ". . . . E .",
     ". K . . E .",
     ". . . . E .",
-    ". . . . . .",
+    ". . . . K .",
     ". . K . . ."
   ],
   "komutlar": ["move", "collect"],
@@ -18,7 +19,7 @@
   "konular": ["for döngüsü", "art arda döngüler", "girinti"],
   "ipuclari": [
     "Enerji hücreleri iki sıra hâlinde: önce doğuya doğru, sonra güneye doğru. Tek bir döngü ikisini birden yapamaz.",
-    "Bir döngü bitince altına girintisiz yeni bir `for` yazabilirsin; Python önce birincisini, sonra ikincisini tekrarlar. Her sırada kaç hücre olduğunu say.",
+    "Bir döngü bitince altına girintisiz yeni bir `for` yazabilirsin; Python önce birincisini, sonra ikincisini tekrarlar. Her sırada kaç hücre olduğunu say; köşedeki hücreyi yalnızca bir kez say.",
     "İlk döngü `for i in range(4):` ile doğuya gider. Altına, girintisiz ikinci bir `for` yaz; içinde `move(South)` ve `collect()` olsun."
   ],
   "tipik_hatalar": [
@@ -33,6 +34,14 @@
     {
       "kod": ["for i in range(4):", "    move(East)", "    collect()", "for i in range(2):", "    move(South)", "    collect()"],
       "aciklama": "Güneyde 3 hücre var; range(2) bir tanesini bırakır."
+    },
+    {
+      "kod": ["for i in range(4):", "    move(East)", "    collect()", "for i in range(4):", "    move(South)", "    collect()"],
+      "aciklama": "Köşedeki hücreyi iki kez saydın: güneyde 3 hücre var, 4 değil. range(4) robotu kayaya çarptırır."
+    },
+    {
+      "kod": ["move(East)", "collect()", "move(East)", "collect()", "move(East)", "collect()", "move(East)", "collect()", "move(South)", "collect()", "move(South)", "collect()", "move(South)", "collect()"],
+      "aciklama": "Görev tamam ama aynı satırları alt alta yazdın. Bu bölümde `for` döngüsüyle dene."
     },
     {
       "kod": ["for i in range(4):", "    move(East)", "    collect()", "for i in range(3):", "    move(South)", "collect()"],

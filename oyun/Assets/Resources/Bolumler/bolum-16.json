@@ -13,6 +13,15 @@
     "B . B . . .",
     "R K . . . ."
   ],
+  "zorunlu_yapilar": ["else"],
+  "bilgi": {
+    "baslik": "Robot önüne bakmayı öğreniyor",
+    "metin": [
+      "`rock_ahead(East)` robota \"doğudaki karede kaya var mı?\" diye sorar. Robot yürümez, yalnızca bakar. Bakılacak yön parantezin içine yazılır: North, East, South ya da West.",
+      "Alanın kenarı da kaya gibi sayılır: o yönde alan bitiyorsa cevap yine Doğru (True) olur, çünkü oraya yürümek robotu durdurur.",
+      "`else` \"yoksa\" demektir. `if` şartı doğruysa onun altındaki satırlar çalışır; yanlışsa `else`'in altındakiler çalışır. İkisinden yalnızca biri çalışır."
+    ]
+  },
   "komutlar": ["move", "collect", "rock_ahead"],
   "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "if rock_ahead(East):", "else:"],
   "python_kelimeleri": ["else"],
@@ -20,7 +29,7 @@
   "ipuclari": [
     "Robotun hemen doğusunda bir kaya var. Önce ona bakman gerek; oraya kör yürürsen robot durur.",
     "`rock_ahead(East)` \"doğuda bir adım ilerlersem dururum mu?\" diye sorar, True ya da False döner. `if` doğruysa bir şey yap, `else` yanlışsa başka bir şey yap: ikisinden yalnızca biri çalışır.",
-    "`if rock_ahead(East):` altına girintili `move(North)`; girintisiz `else:` altına girintili `move(East)`. Her iki dalın altına da (girintisiz) `collect()` ve yola devam et."
+    "`if rock_ahead(East):` altına girintili `move(North)`; girintisiz `else:` altına girintili `move(East)`. `if/else` bittikten sonra, girintisiz `collect()` yaz. Sonra iki kez `move(East)` ve yine `collect()`."
   ],
   "tipik_hatalar": [
     {
@@ -34,6 +43,10 @@
     {
       "kod": ["if rock_ahead(East):", "    move(North)", "else:", "    move(East)"],
       "aciklama": "collect() unutulmuş; robot doğru kareye gelse de hücreyi toplamaz."
+    },
+    {
+      "kod": ["move(North)", "collect()", "move(East)", "move(East)", "collect()"],
+      "aciklama": "Harita hep aynı olduğu için bu da çalışır, ama bu bölümde kayaya bakarak karar vermeyi öğreniyoruz: if ve else ile yaz."
     }
   ],
   "baslangic_kodu": ["if rock_ahead(East):", "    move(North)"],

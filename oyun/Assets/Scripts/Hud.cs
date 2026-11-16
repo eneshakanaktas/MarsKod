@@ -46,6 +46,7 @@ public class Hud : MonoBehaviour
     VisualElement root, header, card, message, runBtn, stepBtn, glossaryBtn, hintBtn, overlay;
     ScreenBlink blink;
     SkipButton skipButton;
+    AuditBanner auditBanner;   // yalniz izleme denetiminde (-izle) gorunur
     GlossaryView glossary;
     RecordsView recordsView;
     HintPanel hint;
@@ -169,6 +170,8 @@ public class Hud : MonoBehaviour
         root.Add(skipButton);
         blink = new ScreenBlink();
         root.Add(blink);
+        auditBanner = new AuditBanner(fSemi, fMono);   // en ustte: bilgi karti ve sahnelerin de ustunde
+        root.Add(auditBanner);
     }
 
     float SafeTop()
@@ -553,6 +556,15 @@ public class Hud : MonoBehaviour
 
     public void HideMessage() => message.style.display = DisplayStyle.None;
 
+    // Izleme denetimi: oyuncuya gosterilen hata/uyari kutusu acik mi, ve metni ("ETIKET: baslik - metin"; renk etiketleri dahil)
+    public bool MessageOpen => message.style.display == DisplayStyle.Flex;
+    public string MessageSummary => msgTag.text + ": " + msgTitle.text + " - " + msgText.text;
+
+    // Izleme denetimi seridi (AuditBanner): ekranin ust kenarinda deneme bilgisi ve sonucu
+    public void ShowAudit(string info) => auditBanner.Show(info);
+    public void FinishAudit(bool ok) => auditBanner.Finish(ok);
+    public void HideAudit() => auditBanner.Hide();
+
     public void SetCollected(int n)
     {
         int before = collected;
@@ -729,6 +741,10 @@ public class Hud : MonoBehaviour
         infoBtn.style.display = info != null ? DisplayStyle.Flex : DisplayStyle.None;
         if (info != null && !seen) infoCard.Show(info);
     }
+
+    // Izleme denetimi: bilgi karti acik mi, i dugmesi gorunuyor mu
+    public bool InfoCardOpen => infoCard.Open;
+    public bool InfoButtonVisible => infoBtn.style.display == DisplayStyle.Flex;
 
     // i dugmesi: karti tekrar acar
     void OpenInfo()

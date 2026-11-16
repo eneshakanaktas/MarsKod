@@ -4,6 +4,7 @@
   "etiket": "ÖDEV",
   "gorev": "5 hücre topla",
   "giris": "Aynı işi tekrar tekrar yazma: döngü kullan.",
+  "zorunlu_yapilar": ["for"],
   "bitis": "Döngüleri kaptın!",
   "harita": [
     ". . . . . .",
@@ -19,7 +20,7 @@
   "konular": ["komut sırası", "for döngüsü", "girinti"],
   "ipuclari": [
     "Beş kez aynı iki şeyi yapıyorsun: bir kare ilerle, hücreyi topla. Aynı satırları tekrar tekrar yazmak yerine Python'a tekrarlatabilirsin.",
-    "`for i in range(5):` altındaki girintili (içeriden başlayan) satırları 5 kez tekrarlar. Satırın sonundaki iki noktayı unutma.",
+    "`for i in range(5):` altındaki girintili (içeriden başlayan) satırları 5 kez tekrarlar. Satırın sonundaki iki noktayı unutma. (`i` tur sayacıdır; şimdilik olduğu gibi yaz.)",
     "`for i in range(5):` satırının altına, 4 boşluk içeriden `move(East)` ve `collect()` yaz."
   ],
   "tipik_hatalar": [
@@ -34,6 +35,10 @@
     {
       "kod": ["for i in range(5):", "    move(East)", "collect()"],
       "aciklama": "collect() girintisiz olduğu için döngünün dışında kaldı: robot 5 kez ilerler ama yalnızca en sonda bir kez toplar."
+    },
+    {
+      "kod": ["move(East)", "collect()", "move(East)", "collect()", "move(East)", "collect()", "move(East)", "collect()", "move(East)", "collect()"],
+      "aciklama": "Görev tamam ama aynı satırları 5 kez alt alta yazdın. Bu bölümde `for` döngüsüyle tekrarlatman isteniyor."
     },
     {
       "kod": ["for i in range(4):", "    move(East)", "    collect()"],

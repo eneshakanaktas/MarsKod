@@ -13,6 +13,15 @@
     ". . B . . .",
     "R B . . . ."
   ],
+  "zorunlu_yapilar": ["if"],
+  "bilgi": {
+    "baslik": "Robot artık bakıp karar verebilir",
+    "metin": [
+      "Yeni modül: tarama sensörü. `ice_here()` robotun durduğu karede buz olup olmadığına bakar ve Doğru (True) ya da Yanlış (False) cevabı verir. Yalnızca bakar, toplamaz.",
+      "`if` bu cevaba göre karar verir: `if ice_here():` satırının altına girintili yazdığın satırlar yalnızca cevap Doğru ise çalışır. Satırın sonundaki iki nokta (:) ve alttaki 4 boşluk şart.",
+      "Örnek: `if ice_here():` altına `    collect()` yazarsan robot yalnızca buz varsa toplar."
+    ]
+  },
   "komutlar": ["move", "collect", "ice_here"],
   "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "if ice_here():"],
   "python_kelimeleri": ["if"],
@@ -34,6 +43,14 @@
     {
       "kod": ["if ice_here():", "    collect()", "move(East)"],
       "aciklama": "if ilk karede baktı; orada buz yok. Sonra yürüdü ama bir daha bakmadı."
+    },
+    {
+      "kod": ["move(East)", "collect()", "move(North)", "move(East)", "collect()"],
+      "aciklama": "Robot işi yapar ama bu bölümün konusu bakmak: her collect()'ten önce if ice_here(): ile sor. Bu bölümde if'siz çözüm geçmez."
+    },
+    {
+      "kod": ["move(East)", "if ice_here()", "    collect()"],
+      "aciklama": "if satırının sonunda iki nokta (:) yok; Python bu satırı anlamaz."
     }
   ],
   "baslangic_kodu": ["move(East)", "if ice_here():", "    collect()"],

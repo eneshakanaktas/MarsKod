@@ -59,6 +59,8 @@ namespace MarsKod.Dunya
         public readonly Dictionary<string, List<string>> RoutineArguments = new Dictionary<string, List<string>>();
         /// <summary>def ile yazılan rutinlerden içinde değer veren return olanlar (kodun yazısından okunur)</summary>
         public readonly HashSet<string> ReturningRoutines = new HashSet<string>();
+        /// <summary>Kodda (kodun yazısından okunur) geçen bilinen yapılar ("for", "if"; bkz. RequiredConstructs)</summary>
+        public HashSet<string> UsedConstructs = new HashSet<string>();
         /// <summary>Ekran bulmacasında fonksiyonun her satıra verdiği cevap, satır sırasıyla (ekran yoksa boş)</summary>
         public readonly List<ScreenAnswer> ScreenAnswers = new List<ScreenAnswer>();
         /// <summary>Ekran bulmacasında yanlış/eksik cevap; ekran yoksa, hepsi doğruysa ya da kod durduysa null</summary>
@@ -72,7 +74,7 @@ namespace MarsKod.Dunya
         /// <summary>Oyunda bir çalıştırmanın en fazla adımı (bitmeyen döngü bu sınırda durur)</summary>
         public const int DefaultMaxSteps = 20000;
 
-        public static RunReport Execute(string source, World world, int maxSteps = DefaultMaxSteps, RoutineRule routines = null, ScreenPuzzle screen = null)
+        public static RunReport Execute(string source, World world, int maxSteps = DefaultMaxSteps, RoutineRule routines = null, ScreenPuzzle screen = null, IReadOnlyList<string> required = null)
         {
             var report = new RunReport();
             Interpreter interpreter = null;
@@ -84,6 +86,7 @@ namespace MarsKod.Dunya
             {
                 var module = Parser.Parse(source);
                 ReadReturningRoutines(report, module);
+                report.UsedConstructs = RequiredConstructs.Used(module.Body);
                 interpreter = new Interpreter(new InterpreterOptions { MaxSteps = maxSteps, Externals = world.Commands() });
                 // Her adim: onceki satiri kapat, yenisini kayda ac. Ekran cagrilari da ayni yoldan gecer (hata, adim siniri, rutin sayimi).
                 void Follow(IEnumerable<Step> steps)
@@ -116,6 +119,8 @@ namespace MarsKod.Dunya
             if (interpreter != null) ReadDefinedRoutines(report, interpreter.Globals);
             if (!report.Stopped && routines != null && !routines.IsEmpty)
                 report.RoutineProblem = routines.Check(report);
+            if (!report.Stopped && required != null && report.RoutineProblem == null)
+                report.RoutineProblem = RequiredConstructs.Check(required, report.UsedConstructs);
             if (report.Stopped) report.ScreenProblem = null;
             report.Complete = !report.Stopped && world.Complete && report.RoutineProblem == null && report.ScreenProblem == null;
             return report;

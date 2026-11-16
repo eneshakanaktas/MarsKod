@@ -3,7 +3,7 @@
   "baslik": "Kaya engeli",
   "etiket": "ÖDEV",
   "gorev": "2 hücre topla",
-  "giris": "Koloni enerji hücresi istiyor. Etrafa saçılanları topla.",
+  "giris": "Koloni enerji hücresi istiyor. Etrafa saçılanları collect() komutuyla topla.",
   "bitis": "2 hücre! Koloninin ışıkları yanıyor.",
   "harita": [
     ". . . . . .",
@@ -16,7 +16,7 @@
   "komutlar": ["move", "collect"],
   "konular": ["komut sırası", "yönler"],
   "ipuclari": [
-    "İki enerji hücresi var ve aralarında bir kaya duruyor. Robot kayanın içinden geçemez.",
+    "İki enerji hücresi var ve kaya ikisinin de yanında duruyor. Robot kayanın içinden geçemez.",
     "`collect()` robotun durduğu karedeki enerji hücresini toplar. Kayaya çarpmamak için etrafından dolaş.",
     "Birinci hücreyi topladıktan sonra: `move(North)`, `move(East)`, `collect()`."
   ],

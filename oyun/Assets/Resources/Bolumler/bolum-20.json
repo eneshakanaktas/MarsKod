@@ -19,7 +19,7 @@
   "ipuclari": [
     "Yol dik değil: iki kez kayaya takılıp doğuya kaymak, bir yerde de kristali atlamak gerekiyor. Bölüm 18 ve 19'daki aynı döngü burada da çalışır.",
     "Tek bir döngü yeter: her turda önce `rock_ahead(North)` ile önüne bak (kaya varsa doğuya kay), yoksa kuzeye çık ve `ice_here()` ile bakıp buz varsa topla. Kaç tur gerektiğini say: kaç kuzey adımı, kaç doğu kayması var?",
-    "`for i in range(7):` içinde `if rock_ahead(North): move(East) else: move(North)` ve altında (bir girinti daha) `if ice_here(): collect()`. Döngü robotu tam hedefte bırakır."
+    "`for i in range(7):` altına girintili `if rock_ahead(North):` / `    move(East)` / `else:` / `    move(North)`, ve onun altında bir girinti daha içeride `if ice_here():` / `    collect()`. Döngü robotu tam hedefte bırakır."
   ],
   "tipik_hatalar": [
     {
@@ -35,10 +35,17 @@
         "    else:", "        move(North)", "        collect()"
       ],
       "aciklama": "collect() ice_here() ile korunmamış: robot kristal karesinde durur."
+    },
+    {
+      "kod": [
+        "for i in range(8):", "    if rock_ahead(North):", "        move(East)",
+        "    else:", "        move(North)", "        if ice_here():", "            collect()"
+      ],
+      "aciklama": "range(8) bir tur fazla: yedinci turda hedefe varıyorsun, sekizincide önünde alanın sınırı var (rock_ahead True), doğuya kayıp hedefin dışında kalıyorsun. Tur sayısı tam yetmeli."
     }
   ],
   "baslangic_kodu": [
-    "for i in range(7):",
+    "for i in range(3):",
     "    if rock_ahead(North):",
     "        move(East)"
   ],

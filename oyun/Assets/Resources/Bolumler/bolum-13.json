@@ -2,9 +2,9 @@
   "numara": 13,
   "baslik": "Kırmızı kristal",
   "etiket": "ÖDEV",
-  "gorev": "Kristale dokunma",
+  "gorev": "Yalnız 2 buz topla",
   "giris": "Kırmızı kristaller numune değil. Yalnızca buz topla.",
-  "bitis": "Aferin, kristale dokunmadın!",
+  "bitis": "Temiz iş, kristale dokunmadın!",
   "harita": [
     ". . . . . .",
     ". . . . . .",
@@ -13,13 +13,22 @@
     ". . . . . .",
     "R B T B . ."
   ],
+  "zorunlu_yapilar": ["if"],
+  "bilgi": {
+    "baslik": "Kırmızı kristal toplanmaz",
+    "metin": [
+      "Bu bölümde yeni bir nesne var: kırmızı kristal. Robot üstünden geçebilir, ama orada `collect()` çağırırsa kristali toplamaya çalışır ve robot durur. Bu bir oyun kuralı.",
+      "Kristal buz değildir: kristalin üstünde `ice_here()` Yanlış (False) der. Yani `if ice_here():` ile sorarsan `collect()` yalnızca buzda çalışır, kristalde atlanır.",
+      "Bu yüzden her karede önce sor, sonra topla."
+    ]
+  },
   "komutlar": ["move", "collect", "ice_here"],
   "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "if ice_here():"],
   "konular": ["if koşulu", "ice_here", "kristal kuralı"],
   "ipuclari": [
     "Ortadaki karede kırmızı bir kristal var. Robot üstünden geçebilir ama collect() onu toplamaya çalışırsa durur.",
     "`ice_here()` robota \"burada buz var mı?\" diye sorar. `if` ile birlikte: yalnızca buz varsa topla, kristal varsa hiçbir şey yapma.",
-    "Her kareye geldiğinde aynı iki satırı yaz: `if ice_here():` ve altında girintili `collect()`. Önce `move(East)` ile yürümeyi unutma."
+    "Her kareye geldiğinde aynı iki satırı yaz: `if ice_here():` ve altında girintili `collect()`. Başlangıçtaki her `collect()`'in üstüne `if ice_here():` ekle ve `collect()`'i içeri al."
   ],
   "tipik_hatalar": [
     {
@@ -29,6 +38,10 @@
     {
       "kod": ["move(East)", "if ice_here():", "    collect()", "move(East)", "if ice_here():", "    collect()"],
       "aciklama": "Robot kristalin üstünde durdu; üçüncü karedeki buza hiç gitmedi."
+    },
+    {
+      "kod": ["move(East)", "collect()", "move(East)", "move(East)", "collect()"],
+      "aciklama": "Bu sıra, kristalin üstünden collect() çağırmadan geçtiği için çalışır ama bu bölümün dersi başka: kristal ya da buz fark etmeksizin her karede if ice_here(): ile bak. Bu bölümde if'siz çözüm geçmez."
     }
   ],
   "baslangic_kodu": ["# kirmizi olana dokunma! - kutup ekibi", "move(East)", "collect()", "move(East)", "collect()", "move(East)", "collect()"],

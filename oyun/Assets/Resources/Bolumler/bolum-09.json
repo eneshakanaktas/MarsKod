@@ -17,7 +17,7 @@
   "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "for i in range(2):"],
   "konular": ["kod okuma", "hata bulma", "for döngüsü", "girinti"],
   "ipuclari": [
-    "Bu eski bir bakım rutini; neredeyse doğru ama iki yanlışı var. Önce Çalıştır'a bas ve robotun ne yaptığını izle.",
+    "Bu eski bir bakım rutini; neredeyse doğru ama iki yanlışı var. İlk satır (`#` ile başlayan) yalnızca bir nottur, robot onu okumaz. Önce Çalıştır'a bas ve robotun ne yaptığını izle.",
     "Kaç hücre var, döngü kaç tur dönüyor? Bir de `collect()` satırına bak: döngünün içinde mi, dışında mı?",
     "`range(3)` yerine `range(4)` yaz ve `collect()` satırını 4 boşluk içeri al."
   ],

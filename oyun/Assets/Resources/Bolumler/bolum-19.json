@@ -19,7 +19,7 @@
   "ipuclari": [
     "Bu kolonda hem bir kaya hem kırmızı bir kristal var. Kayaya bakmadan yürümek seni durdurur; kristali toplamaya çalışmak da.",
     "Her turda önce `rock_ahead(North)` ile önüne bak: varsa doğuya kay, yoksa kuzeye çık. Kuzeye çıktığın her karede de `ice_here()` ile bak, yalnızca buz varsa topla.",
-    "`for i in range(5):` içinde `if rock_ahead(North): move(East) else: move(North)` sonra (else'in içinde, bir girinti daha) `if ice_here(): collect()`."
+    "`for i in range(5):` altına girintili `if rock_ahead(North):` / `    move(East)` / `else:` / `    move(North)`, ve onun altında bir girinti daha içeride `if ice_here():` / `    collect()`."
   ],
   "tipik_hatalar": [
     {
@@ -29,15 +29,16 @@
     {
       "kod": ["for i in range(4):", "    if rock_ahead(North):", "        move(East)", "    else:", "        move(North)", "        if ice_here():", "            collect()"],
       "aciklama": "range(4) bir tur eksik: en üstteki hücre toplanmadan kalır."
+    },
+    {
+      "kod": ["for i in range(5):", "    if ice_here():", "        collect()", "    if rock_ahead(North):", "        move(East)", "    else:", "        move(North)"],
+      "aciklama": "Önce bakıp sonra yürüyorsun: son turda vardığın karede bakmadan döngü bitiyor. Önce yürü, sonra bak."
     }
   ],
   "baslangic_kodu": [
     "for i in range(5):",
     "    if rock_ahead(North):",
-    "        move(East)",
-    "    else:",
-    "        move(North)",
-    "        if ice_here():"
+    "        move(East)"
   ],
   "cozum": [
     "for i in range(5):",

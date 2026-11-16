@@ -24,15 +24,15 @@
       "aciklama": "rock_ahead(yön) yalnızca bakar: o yönde bir adım ilerlerse robot dururdu mu (kaya ya da alanın sınırı), True/False döner."
     },
     {
-      "soru": "Bir for döngüsünün içinde hem if hem de o if'in içinde başka bir if olabilir mi?",
+      "soru": "Bir for döngüsünün içindeki if/else'in else bölümüne başka bir if yazılabilir mi?",
       "secenekler": [
         "Hayır, bir döngünün içine yalnızca bir if konabilir",
         "Evet; her iç içe geçişte bir girinti daha eklenir",
         "Evet ama girintiye gerek yok",
-        "Yalnızca else ile olabilir"
+        "Hayır, else'in altına yalnızca komut yazılır"
       ],
       "dogru": 1,
-      "aciklama": "if'ler iç içe geçebilir; her katman bir girinti daha içeri yazılır (Bölüm 19'daki gibi)."
+      "aciklama": "Evet; else'in içine de if konabilir, her iç katman bir girinti daha içeri yazılır (Bölüm 19 ve 20'deki gibi)."
     }
   ]
 }

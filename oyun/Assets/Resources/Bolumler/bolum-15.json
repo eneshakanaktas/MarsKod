@@ -2,7 +2,7 @@
   "numara": 15,
   "baslik": "Karışık sıra",
   "etiket": "ÖDEV",
-  "gorev": "3 buz, 2 kristal",
+  "gorev": "3 buz topla",
   "giris": "Sütunda buz ve kristal karışık. Her karede bak!",
   "bitis": "Harika tarama! Sırada küçük bir sınav var.",
   "harita": [
@@ -17,14 +17,14 @@
   "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "for i in range(3):", "if ice_here():"],
   "konular": ["for döngüsü", "if koşulu", "döngünün içinde if", "girinti"],
   "ipuclari": [
-    "Sütunda buzlar ve kristaller karışık. Robot her karede yürüyüp bakmalı, buz varsa toplamalı.",
+    "Buzlar ve kristaller robotun üstündeki sütunda; kuzeye doğru yürüyeceksin.",
     "`for` yürümeyi tekrarlar, `if` her karede karar verir. `if` döngünün içinde olmalı, `collect()` de `if`'in içinde: iki kat girinti.",
     "`for i in range(5):` altında `move(North)` ve `if ice_here():`; onun da altında, bir girinti daha içeride `collect()`."
   ],
   "tipik_hatalar": [
     {
       "kod": ["for i in range(5):", "    move(North)", "    collect()"],
-      "aciklama": "Döngü her karede toplar; ikinci karede kristal var ve robot durur. Önce bakmak gerek."
+      "aciklama": "Her karede toplamaya çalışmak ikinci karedeki kristalde robotu durdurur; toplamadan önce if ice_here(): ile sor."
     },
     {
       "kod": ["for i in range(5):", "    move(North)", "if ice_here():", "    collect()"],
@@ -33,6 +33,10 @@
     {
       "kod": ["for i in range(3):", "    move(North)", "    if ice_here():", "        collect()"],
       "aciklama": "range(3) üç kare yürür; en üstteki buz kalır."
+    },
+    {
+      "kod": ["for i in range(5):", "    move(North)", "    if ice_here():", "    collect()"],
+      "aciklama": "collect() if ile aynı hizada: if'in içi boş kaldı, Python hata verir. collect()'i 8 boşluk içeri al (if'in bir girinti içinde)."
     }
   ],
   "baslangic_kodu": ["for i in range(5):", "    move(North)"],

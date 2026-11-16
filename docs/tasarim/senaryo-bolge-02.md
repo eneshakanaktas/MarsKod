@@ -45,14 +45,14 @@ Biçim: **Başlık** · görev · **Program (giriş / bitiş)** · **Sahnede**.
 - Sahnede: Araç bu bölümde daha yakın; yanında sökülmüş bir panel kapağı karda duruyor (sensör oradan alındı). Program bunun garip olduğunu fark etmez.
 
 ### Bölüm 13 — Ödev 13 · Kırmızı kristal
-- Görev: Kristale dokunma.
+- Görev: Yalnız 2 buz topla.
 - Program giriş: "Kırmızı kristaller numune değil. Yalnızca buz topla."
 - **Başlangıç kodunun ilk satırı:**
   ```python
   # kirmizi olana dokunma! - kutup ekibi
   ```
   Bu yorum, sensörün belleğinde kalmış: kutup ekibinin kendi notu. (Türkçe harfsiz yazılmış: aceleyle, araç klavyesinden.)
-- Program bitiş: "Aferin, kristale dokunmadın!"
+- Program bitiş: "Temiz iş, kristale dokunmadın!"
 - Sahnede: İz yok; uyarıyı kod satırı taşıyor. Bölge 1'deki "# sabah turu - D.A." ile aynı yöntem: oyuncu "kodda başka insanların notları var" diye fark etmeye başlar.
 
 ### Bölüm 14 — Ödev 14 · Önce yürü, sonra bak
@@ -62,7 +62,7 @@ Biçim: **Başlık** · görev · **Program (giriş / bitiş)** · **Sahnede**.
 - Sahnede: Araç artık alanın hemen arkasında (yan yatmış, kırmızı ışığı yanıp sönüyor; ufuktaki uzak hâli kaybolur). **İz 1:** aracın yanından başlayan **iki kişilik ayak izi** (iki farklı adım boyu).
 
 ### Bölüm 15 — Ödev 15 · Karışık sıra
-- Görev: 3 buz, 2 kristal.
+- Görev: 3 buz topla.
 - Program giriş: "Sütunda buz ve kristal karışık. Her karede bak!"
 - Program bitiş: "Harika tarama! Sırada küçük bir sınav var."
 - Sahnede: **İz 2:** ayak izleri birkaç adım sonra **bitiyor**; orada başka bir aracın geniş tekerlek izleri başlıyor ve uzaklaşıyor. Biri gelip onları almış. (Bu bölgenin asıl cevabı burada sezilir; program hiçbir şey söylemez.)
@@ -75,14 +75,14 @@ Biçim: **Başlık** · görev · **Program (giriş / bitiş)** · **Sahnede**.
 
 ### Bölüm 17 — Ödev 17 · İki çatal
 - Görev: 2 buz topla.
-- Program giriş: "Aracın su tankı bulundu! Buzları tanka taşı."
-- Program bitiş: "Tank doluyor: %30."
-- Sahnede: Yan yatmış araç. (Tank göstergesi fikri ertelendi: şimdilik yalnızca program metni "%30 / %60" diyor.)
+- Program giriş: "Aracın su tankı bulundu! Buzları topla, tankı doldur."
+- Program bitiş: "Tank dolu! Su yolu açık."
+- Sahnede: Yan yatmış araç. Su tankı toplanan buz oranında dolar (`WaterTank.cs`); 17'de tamamen dolar.
 
 ### Bölüm 18 — Ödev 18 · Köşeyi dön
 - Görev: 4 buz topla.
 - Program giriş: "Kayayı dolaş, yoluna devam et."
-- Program bitiş: "Tank doluyor: %60."
+- Program bitiş: "Sera için su yolda."
 - Sahnede: **İz 4:** aracın **kapısı açık**, içi karanlık; kapının önünde karda bir **termos**. Kavga yok, dağınıklık yok: sakince inmişler. (Kapı bu bölümden sonra açık kalır.)
 
 ### Bölüm 19 — Ödev 19 · İki duyu bir arada

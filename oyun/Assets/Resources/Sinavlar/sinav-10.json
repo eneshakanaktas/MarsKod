@@ -13,12 +13,12 @@
       "aciklama": "Girintisiz satır döngünün bir parçası değildir; döngü bütün turlarını bitirince, yalnızca bir kez çalışır."
     },
     {
-      "soru": "Aynı satırı (örn. iki move) bir turda tekrar tekrar yazmak yerine ne yapılır?",
+      "soru": "Bir turda iki komutun da çalışmasını istiyorsun (örn. önce move, sonra collect). Ne yaparsın?",
       "secenekler": [
         "Döngünün içine iki satır birden yazılır, ikisi de her turda çalışır",
         "Python buna izin vermez",
-        "İki ayrı dosya açılır",
-        "Satırlar yarıya bölünür"
+        "Her komut için ayrı bir for yazılır",
+        "Komutlar arasına noktalı virgül konur"
       ],
       "dogru": 0,
       "aciklama": "Bir döngünün (for'un) içine birden fazla komut yazılabilir; her turda hepsi sırayla çalışır."

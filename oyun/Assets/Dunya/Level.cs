@@ -14,6 +14,7 @@
 //   İz ("izler"): Serçe'nin gördüğü yön listeleri; varsa scout() açılır, H yazılmaz (hedef izin son karesi). 2-3 iz = değişen yol.
 //   "parametre_sarti": rutinler bilgi (parametre) almalı ve farklı bilgilerle çağrılmalı (Bölge 7).
 //   "donus_sarti": rutinler cevabını return ile vermeli; bir kez çalışması yeter (Bölge 8).
+//   "zorunlu_yapilar": kodda bu yapılar (["for"], ["if"]) olmalı; görev onlarsız da bitse bölüm geçilmez (yeni yapının ilk iki bölümü).
 //   "notlar": read_note() ile okunan yön notları (K G D B, V veri kartı); hedef notun yolunun sonu, H yazılmaz. 2-3 not = değişen not.
 //     Bölge 9'dan: not bir liste de olabilir (["KKD", "DG"]: yol parçaları) ya da {"yazi": ..., "yol": "DDD", "rapor": 5} (yazı yol değilse).
 //   "bilgi": bilgi kartı (yeni bir şey ilk kez göründüğünde açılan açıklama; LevelInfo.cs).
@@ -74,6 +75,8 @@ namespace MarsKod.Dunya
         public int? ExpectedReport;
         /// <summary>Rutin şartı ("rutinler", "rutin_sayisi"); yazılmadıysa şart yok</summary>
         public RoutineRule Routines = RoutineRule.None;
+        /// <summary>Zorunlu yapılar ("zorunlu_yapilar"): kodda bunlar olmadan bölüm geçilmez; boşsa şart yok</summary>
+        public List<string> RequiredConstructs = new List<string>();
         public Cell? Target;
         /// <summary>Bu bölümde açık oyun komutları (move, collect...)</summary>
         public List<string> Commands = new List<string>();
@@ -125,7 +128,7 @@ namespace MarsKod.Dunya
             for (int i = 0; i < VersionCount; i++)
             {
                 var world = CreateWorld(i);
-                runs.Add(new TrailRun(world, ProgramRun.Execute(code, world, routines: Routines, screen: Screen)));
+                runs.Add(new TrailRun(world, ProgramRun.Execute(code, world, routines: Routines, screen: Screen, required: RequiredConstructs)));
             }
             return runs;
         }
@@ -143,7 +146,7 @@ namespace MarsKod.Dunya
         /// <summary>JSON metninden bölümü okur; yanlışta DataFormatError verir (Türkçe, satır numaralı).</summary>
         public static Level Parse(string json)
         {
-            var known = new HashSet<string> { "numara", "baslik", "etiket", "gorev", "giris", "bitis", "harita", "komutlar", "konular", "parcalar", "python_kelimeleri", "ipuclari", "tipik_hatalar", "baslangic_kodu", "cozum", "toz_suresi", "makara_uzunlugu", "rapor", "rutinler", "rutin_sayisi", "parametre_sarti", "donus_sarti", "izler", "ekran", "notlar", "bilgi", "kristal_boyu", "meteorlar" };
+            var known = new HashSet<string> { "numara", "baslik", "etiket", "gorev", "giris", "bitis", "harita", "komutlar", "konular", "parcalar", "python_kelimeleri", "ipuclari", "tipik_hatalar", "baslangic_kodu", "cozum", "toz_suresi", "makara_uzunlugu", "rapor", "rutinler", "rutin_sayisi", "parametre_sarti", "donus_sarti", "zorunlu_yapilar", "izler", "ekran", "notlar", "bilgi", "kristal_boyu", "meteorlar" };
             var d = DataFields.ParseObject(json, known);
 
             var level = new Level
@@ -158,6 +161,7 @@ namespace MarsKod.Dunya
                 StartCode = d.ContainsKey("baslangic_kodu") ? Code(d, "baslangic_kodu") : "",
             };
             if (d.ContainsKey("etiket")) level.Label = Text(d, "etiket");
+            if (d.ContainsKey("zorunlu_yapilar")) level.RequiredConstructs = ReadRequired(d);
             if (d.ContainsKey("giris")) level.Intro = Text(d, "giris");
             if (d.ContainsKey("bitis")) level.Outro = Text(d, "bitis");
             if (level.Number < 1) throw new DataFormatError("\"numara\" 1 ya da daha büyük olmalı.");
@@ -183,6 +187,16 @@ namespace MarsKod.Dunya
             if (d.ContainsKey("python_kelimeleri")) level.PythonWords = TextList(d, "python_kelimeleri");
             if (d.ContainsKey("tipik_hatalar")) level.Mistakes = ReadMistakes(d["tipik_hatalar"]);
             return level;
+        }
+
+        /// <summary>"zorunlu_yapilar": bilinen yapı adları (RequiredConstructs); boş liste ya da bilinmeyen ad hata</summary>
+        static List<string> ReadRequired(Dictionary<string, object> d)
+        {
+            var names = NonEmptyList(d, "zorunlu_yapilar");
+            foreach (var name in names)
+                if (!Dunya.RequiredConstructs.IsKnown(name))
+                    throw new DataFormatError("\"zorunlu_yapilar\" içinde bilinmeyen yapı: \"" + name + "\". Kullanılabilenler: " + string.Join(", ", Dunya.RequiredConstructs.Names) + ".");
+            return names;
         }
 
         /// <summary>"parcalar" yazılmamışsa açık komutlardan düğme satırları: move → dört yön, collect → collect(), report → report(sayac).</summary>

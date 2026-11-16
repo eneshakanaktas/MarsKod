@@ -17,7 +17,7 @@
   "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "for i in range(3):"],
   "konular": ["for döngüsü", "art arda döngüler", "döngüler arasında tek satır"],
   "ipuclari": [
-    "Hücreler iki sıra: alttakini doğuya giderek, üsttekini batıya dönerek topla. Köşede de bir hücre var.",
+    "Hücreler iki sıra: alttakini doğuya giderek, üsttekini batıya dönerek topla. Üst sıra bir hücre daha uzun; sıranın başı doğu ucunda.",
     "İki döngünün arasına girintisiz satırlar yazabilirsin; bunlar yalnızca bir kez çalışır. Köşede yukarı çık ve oradaki hücreyi topla.",
     "Birinci döngüden sonra girintisiz `move(North)` ve `collect()`; sonra `for i in range(5):` altında `move(West)` ve `collect()`."
   ],

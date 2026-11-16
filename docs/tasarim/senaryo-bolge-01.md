@@ -67,7 +67,7 @@ Biçim: **Başlık** (arayüzde) · görev · **Program (giriş / bitiş)** · *
 
 ### Bölüm 6 — Ödev 6 · Atlamalı
 - Görev: 4 hücre topla.
-- Program giriş: "Döngünün içine birden çok komut koyabilirsin."
+- Program giriş: "Bir turda iki adım da atabilirsin: komutları döngünün içine art arda yaz."
 - Program bitiş: "Güzel iş!"
 - Sahnede: **İz 3:** ışıkları yanan kolonide bir kapı ardına kadar açık; içerisi karanlık, kimse çıkmıyor.
 

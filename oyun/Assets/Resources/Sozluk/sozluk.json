@@ -21,7 +21,7 @@
     {
       "baslik": "collect",
       "kelimeler": ["collect"],
-      "aciklama": "Robotun durduğu karedeki nesneyi toplar: enerji hücresi, buz... Karede toplanacak bir şey yoksa hiçbir şey olmaz; önce robotu onun üstüne götür.",
+      "aciklama": "Robotun durduğu karedeki nesneyi toplar: enerji hücresi, buz... Karede toplanacak bir şey yoksa hiçbir şey olmaz; önce robotu onun üstüne götür. Kırmızı kristalin üstünde çağırırsan robot durur; önce ice_here() ile bak.",
       "ornek": [
         "move(East)",
         "collect()    # hücreyi topla"
@@ -30,16 +30,11 @@
     {
       "baslik": "for",
       "kelimeler": ["for", "in"],
-      "aciklama": "Bir işi istediğin kadar tekrarlatır. Altındaki girintili (4 boşluk içeriden başlayan) satırlar her turda bir kez çalışır. Satırın sonundaki iki nokta (:) şart. Bir metnin harflerinde de dolaşır: for harf in \"KKD\": ve bir listenin öğelerinde: for y in yol: Bir döngünün içine başka bir döngü yazılabilir: dıştaki her turda içteki baştan sona çalışır (3 × 4 = 12 tur).",
+      "aciklama": "Bir işi istediğin kadar tekrarlatır. Altındaki girintili (4 boşluk içeriden başlayan) satırlar her turda bir kez çalışır. Satırın sonundaki iki nokta (:) şart. i her turda bir artan sayaçtır; içine birden çok komut yazabilirsin, hepsi her turda çalışır.",
       "ornek": [
         "for i in range(3):",
         "    move(East)   # 3 kez",
-        "    collect()    # 3 kez",
-        "for harf in \"KKD\":",
-        "    print(harf)   # K, K, D",
-        "for satir in range(3):",
-        "    for adim in range(4):",
-        "        move(East)   # 12 kez"
+        "    collect()    # 3 kez"
       ]
     },
     {
@@ -290,11 +285,14 @@
     {
       "baslik": "Liste (list)",
       "kelimeler": ["list"],
-      "aciklama": "Birden çok değeri sırayla tutar: köşeli parantez, aralarında virgül. for ile öğelerinde dolaşılır. Sıra 0'dan başlar: ilk öğe yol[0]. len(yol) kaç öğe olduğunu, x in yol x listede var mı diye verir; append sona ekler. Sondaki virgül hata değildir.",
+      "aciklama": "Birden çok değeri sırayla tutar: köşeli parantez, aralarında virgül. for ile öğelerinde dolaşılır. Sıra 0'dan başlar: ilk öğe yol[0]. len(yol) kaç öğe olduğunu, x in yol x listede var mı diye verir; append sona ekler. Sondaki virgül hata değildir. Bir döngünün içine başka bir döngü yazılabilir (iç içe döngü): dıştaki her turda içteki baştan sona çalışır, yani 3 × 4 = 12 tur. Listenin her öğesi için içeride ayrı bir iş yapmak istediğinde işe yarar.",
       "ornek": [
         "yol = [North, North, East]",
         "for y in yol:",
         "    move(y)",
+        "for satir in range(3):",
+        "    for adim in range(4):",
+        "        move(East)   # 12 kez",
         "ilk = yol[0]   # North",
         "boylar = []",
         "boylar.append(5)   # [5]",

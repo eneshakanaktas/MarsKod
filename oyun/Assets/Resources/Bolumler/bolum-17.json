@@ -3,7 +3,7 @@
   "baslik": "İki çatal",
   "etiket": "ÖDEV",
   "gorev": "2 buz topla",
-  "giris": "Aracın su tankı bulundu! Buzları tanka taşı.",
+  "giris": "Aracın su tankı bulundu! Buzları topla, tankı doldur.",
   "bitis": "Tank dolu! Su yolu açık.",
   "harita": [
     ". . . . . .",
@@ -13,6 +13,7 @@
     "B . K . . .",
     "R K . . . ."
   ],
+  "zorunlu_yapilar": ["else"],
   "komutlar": ["move", "collect", "rock_ahead"],
   "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "if rock_ahead(East):", "else:"],
   "konular": ["if/else", "rock_ahead", "aynı kalıbı iki kez kullanma"],
@@ -36,6 +37,17 @@
         "if rock_ahead(East):", "    move(North)", "else:", "    move(East)"
       ],
       "aciklama": "İkinci çataldan sonra collect() unutulmuş; ikinci hücre toplanmaz."
+    },
+    {
+      "kod": [
+        "if rock_ahead(East):", "    move(North)", "else:", "    move(East)", "collect()",
+        "if rock_ahead(East):", "    move(North)", "else:", "    move(East)", "collect()"
+      ],
+      "aciklama": "İki çatal arasında move(East) yok: robot hâlâ ilk sütunda, ikinci kayayı göremiyor ve kuzeye çıkmadan doğuya yürüyor. Önce ikinci kayaya yaklaş."
+    },
+    {
+      "kod": ["move(North)", "collect()", "move(East)", "move(North)", "collect()"],
+      "aciklama": "Harita hep aynı olduğu için bu da çalışır, ama bu bölümde kayaya bakarak karar vermeyi öğreniyoruz: iki kez if ve else ile yaz."
     }
   ],
   "baslangic_kodu": [

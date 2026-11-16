@@ -17,7 +17,9 @@
   "parcalar": ["move(North)", "move(East)", "move(South)", "move(West)", "collect()", "for i in range(4):"],
   "konular": ["for döngüsü", "art arda döngüler", "komut sırası", "hedef kare"],
   "ipuclari": [
-    "Yolu parçalara böl: kayaya kadar bir sıra hücre, kayanın etrafından bir adım, sonra ikinci sıra hücre ve en sonda hedef."
+    "Yolu parçalara böl: kayaya kadar bir sıra hücre, bir sıra yukarı çıkış, sonra üst sırada ikinci sıra hücre ve en sonda hedef.",
+    "Alt sırada kayaya kadar 2 hücre var. Kayaya çarpmadan önce `move(North)` ile bir sıra yukarı çık; üst sırada 3 hücre var. Hedef kare bir sıra daha yukarıda.",
+    "`for i in range(2):` ile başla (içine `move(East)` ve `collect()`), sonra `move(North)`; üst sıra için `range(3)`; en sonda yine `move(North)`."
   ],
   "tipik_hatalar": [
     {

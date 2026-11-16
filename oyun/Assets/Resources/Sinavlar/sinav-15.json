@@ -33,6 +33,17 @@
       ],
       "dogru": 2,
       "aciklama": "Kristalin üstünden geçilebilir ama collect() onu toplamaya çalışır ve robot durur; önce ice_here() ile bakmak gerekir."
+    },
+    {
+      "soru": "if ice_here(): satırı for döngüsünün içine (girintili) yazılırsa ne olur?",
+      "secenekler": [
+        "Her turda bir kez çalışır: robot her yeni karede yeniden bakar",
+        "Yalnızca bir kez, en başta çalışır",
+        "Hiç çalışmaz",
+        "Döngü bir tur eksik döner"
+      ],
+      "dogru": 0,
+      "aciklama": "Döngünün içindeki satırlar her turda çalışır; if içerideyse robot her karede yeniden karar verir. Dışında olsaydı yalnızca bir kez, döngü bitince bakardı."
     }
   ]
 }

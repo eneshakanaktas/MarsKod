@@ -225,7 +225,7 @@ public partial class Oyun : MonoBehaviour
         var a = System.Environment.GetCommandLineArgs();
         for (int i = 0; i < a.Length; i++)
         {
-            if (a[i] == "-shots") { shotsMode = suppressQuiz = true; ListenWhileUnfocused(); }
+            if (a[i] == "-shots" || a[i] == "-izle") { shotsMode = suppressQuiz = true; ListenWhileUnfocused(); }
             if (a[i] == "-robot" && i + 1 < a.Length && a[i + 1] == "oyuncak") robotModel = RobotModel.Toy;
             if (a[i] == "-robot" && i + 1 < a.Length && a[i + 1] == "gezgin") robotModel = RobotModel.Rover;
         }
@@ -307,7 +307,7 @@ public partial class Oyun : MonoBehaviour
             if (a[i] == "-bolum") int.TryParse(a[i + 1], out start);
         LoadLevel(Mathf.Clamp(levels.FindIndex(l => l.Number == start), 0, levels.Count - 1));
 
-        bool shotsArg = System.Array.IndexOf(a, "-shots") >= 0;
+        bool shotsArg = System.Array.IndexOf(a, "-shots") >= 0 || System.Array.IndexOf(a, "-izle") >= 0;
         bool showOpening = start == 1 && !shotsArg && PlayerPrefs.GetInt("acilis_gorundu", 0) == 0;
         if (System.Array.IndexOf(a, "-acilis") >= 0) showOpening = true; // test icin: her zaman goster
         if (showOpening)
@@ -329,6 +329,7 @@ public partial class Oyun : MonoBehaviour
                 StartCoroutine(scenes ? (stationOnly ? StationSceneShots(a[i + 1]) : SceneShots(a[i + 1], riverOnly))
                     : finale ? FinaleShots(a[i + 1]) : Shots(a[i + 1]));
             }
+        if (TryReadWatchRange(a, out int watchFirst, out int watchLast)) StartCoroutine(WatchAudit(watchFirst, watchLast));   // -izle (Oyun.IzlemeDenetimi.cs)
     }
 
     // Arka plan animasyonlari (ayar, bolum secme ekraninda): kapaliyken gokyuzu duraganlasir, telefon daha az yorulur

@@ -28,7 +28,7 @@
     },
     {
       "kod": ["for i in range(3):", "    move(North)", "    collect()", "for i in range(2):", "    move(East)", "    collect()", "move(North)", "move(North)"],
-      "aciklama": "Hücreler ikişer kare arayla: ikinci döngüde her turda iki kez move(East) gerek."
+      "aciklama": "range(2) ve tek move(East) robotu yalnızca ilk hücreye götürür; sonra kuzeye giderken kayaya çarpar, doğudaki hücre kalır."
     },
     {
       "kod": ["for i in range(4):", "    move(North)", "    collect()", "for i in range(2):", "    move(East)", "    move(East)", "    collect()", "move(North)"],

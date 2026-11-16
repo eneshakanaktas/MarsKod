@@ -16,7 +16,7 @@
   "komutlar": ["move"],
   "konular": ["komut sırası", "yönler"],
   "ipuclari": [
-    "Hedef kare robotun 3 kare doğusunda, 1 kare kuzeyinde.",
+    "Hedef kare robotun 3 kare doğusunda (ekranda sağında), 1 kare kuzeyinde (ekranda yukarısında). Köşedeki pusula yönleri gösterir.",
     "`move(East)` robotu doğuya bir kare götürür, `move(North)` kuzeye. Robot satırları yukarıdan aşağıya sırayla yapar.",
     "Üç kez `move(East)`, sonra bir kez `move(North)`."
   ],
@@ -24,6 +24,10 @@
     {
       "kod": ["move(east)", "move(east)", "move(east)", "move(north)"],
       "aciklama": "Yönler büyük harfle başlar: east değil East. Python büyük-küçük harfi ayırır."
+    },
+    {
+      "kod": ["move East", "move East", "move East", "move North"],
+      "aciklama": "Yön parantezin içine yazılır: move(East). Parantezsiz `move East` Python'da yazım hatasıdır (SyntaxError: invalid syntax)."
     },
     {
       "kod": ["move(East)", "move(East)", "move(East)"],

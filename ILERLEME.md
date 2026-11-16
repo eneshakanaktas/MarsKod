@@ -1,5 +1,7 @@
 ﻿# İlerleme Notu — MarsKod (geçici isim)
 
+**Enes 2026-11-16: Enes döndü. Sezon 1 çıkış öncesi denetim + güzelleştirme (Bölüm 1-100, bölüm bölüm, 1'den başlayarak) üzerinde çalışıyor (dal yok, `main`). Ekip kararı: yeni mekanikten önce ilk 100 bölüm elden geçirilir. Ragıp: bölüm dosyalarına/ipuçlarına dokunacaksan önce Enes'e sor.**
+
 **Ragıp 2026-11-14: Enes bir süre çalışamayacak; Enes dönene kadar Bölge 8-10'un tamamını (görünüş, sonraki bölgeler, tüm kararlar) Ragıp üstleniyor (dal yok, `main`). İlk iş: Bölge 8 · 3a görünüş yapım planı.**
 
 **Ragıp (Claude yürüttü), 2026-11-15 (GitHub'a yüklendi) — Ragıp "durmadan çalış, kararları sen ver, gelince söyle" dedi. Yapılanlar:**

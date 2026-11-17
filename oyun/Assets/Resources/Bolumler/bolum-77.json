@@ -42,6 +42,13 @@
       {"girdi": "Defne Aras — kapsül: hazır", "cevap": true}
     ]
   },
+  "bilgi": {
+    "baslik": "Metnin içinde ara: in",
+    "metin": [
+      "`\"Aras\" in satir` şunu sorar: satırın içinde Aras geçiyor mu? Geçiyorsa `True`, geçmiyorsa `False` verir.",
+      "Satırın tamamını `==` ile karşılaştırma: tek satıra uyar. `in` ise satır hangisi olursa olsun içinde arar. Harfler birebir aranır, büyük A ile küçük a farklıdır."
+    ]
+  },
   "komutlar": [],
   "parcalar": ["def aras_mi(satir):", "return \"Aras\" in satir"],
   "konular": ["metin", "in", "True/False döndüren fonksiyon"],

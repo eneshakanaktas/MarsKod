@@ -14,6 +14,13 @@
     ". . . . . K"
   ],
   "toz_suresi": [2, 3, 2],
+  "bilgi": {
+    "baslik": "Rutine bilgi kutusu ver",
+    "metin": [
+      "Rutinin parantezine bir bilgi kutusu (parametre) yazabilirsin: `def git(yon):`. Kutu sayesinde rutin her çağrıda başka bir şey öğrenir.",
+      "Çağırırken kutuya değeri koyarsın: `git(South)`, `git(East)`. Rutinin içinde kutunun adını kullan: `move(yon)`. Böylece yön yön ayrı rutin yazmak yerine tek rutin yeter."
+    ]
+  },
   "komutlar": ["move", "collect", "dust_here", "wait"],
   "rutinler": ["git"],
   "parametre_sarti": true,

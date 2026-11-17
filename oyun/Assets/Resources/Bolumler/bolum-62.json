@@ -13,18 +13,32 @@
     ". K K K . .",
     "R K . . . ."
   ],
-  "izler": [["North", "North", "East", "East", "East"]],
+  "izler": [
+    ["North", "North", "East", "East", "East"],
+    ["North", "North", "East", "East", "North"]
+  ],
+  "bilgi": {
+    "baslik": "Serçe yukarıdan bakar",
+    "metin": [
+      "Robot kanyon dibinden izi seçemez; Serçe yukarıdan görür. `scout()` Serçe'ye sorar ve izin o anki yönünü verir: `North`, `East`, `South` ya da `West`.",
+      "Cevabı doğrudan rutine verebilirsin: `git(scout())`. Dikkat: `scout()` sormaktır; parantezsiz `scout` yalnızca komutun adıdır. Her denemede iz başka yöne gidebilir, o yüzden yönü ezberleme, Serçe'ye sor."
+    ]
+  },
   "komutlar": ["move", "scout"],
   "rutinler": ["git"],
   "parametre_sarti": true,
   "parcalar": ["def git(yon):", "git(scout())", "move(yon)", "scout()", "for i in range(3):"],
   "konular": ["fonksiyon", "parametre", "komutun sonucunu kullanmak"],
   "ipuclari": [
-    "Aşağıdan iki kol aynı görünüyor; izleri yalnızca Serçe yukarıdan görür. Serçe 5 adımlık iz görüyor.",
+    "Aşağıdan yollar aynı görünüyor; izleri yalnızca Serçe yukarıdan görür. İz her denemede başka yöne gidebilir; Serçe 5 adımlık iz görüyor.",
     "`scout()` Serçe'ye sorar ve izin yönünü verir (örn. `East`). Bu cevabı doğrudan rutine verebilirsin: `git(scout())`.",
     "`def git(yon):` altına `    move(yon)`. Sonra `for i in range(5):` altına `    git(scout())`."
   ],
   "tipik_hatalar": [
+    {
+      "kod": ["def git(yon):", "    move(yon)", "git(North)", "git(North)", "git(East)", "git(East)", "git(East)"],
+      "aciklama": "İlk denemedeki yolu ezberledin: bir sonraki denemede iz başka yöne gidiyor. Yönü kendin yazma, Serçe'ye sor: git(scout())."
+    },
     {
       "kod": ["def git(yon):", "    move(yon)", "for i in range(5):", "    git(scout)"],
       "aciklama": "Parantezsiz scout komutun kendisidir, cevabı değil; robot ona yön diye bakar ve anlamaz. Serçe'ye sormak için scout()."

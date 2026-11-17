@@ -47,5 +47,12 @@
     "tur()",
     "adim()",
     "move(North)"
-  ]
+  ],
+  "bilgi": {
+    "baslik": "Rutin içinde rutin",
+    "metin": [
+      "Bir rutin başka bir rutini çağırabilir: büyük iş (`tur`) küçük işi (`adim`) kullanır. `tur()` çalışınca içindeki `adim()` çağrıları da çalışır.",
+      "Çağrılan rutin, çağıran çalışmadan önce tanımlanmış olmalı. En güvenlisi: önce bütün `def` satırlarını yaz, sonra çağır."
+    ]
+  }
 }

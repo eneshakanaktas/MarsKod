@@ -54,5 +54,12 @@
     "    toplam += panel_power()",
     "report(toplam)",
     "move(North)"
-  ]
+  ],
+  "bilgi": {
+    "baslik": "Rutinin kendi kutuları var",
+    "metin": [
+      "Rutinin içinde açılan kutu yalnızca o rutinin içinde yaşar; ana koddaki `toplam` ile aynı kutu değildir. Rutinin içinde `toplam += ...` yazarsan Python \"bu kutuya henüz değer verilmedi\" diye hata verir.",
+      "Toplamı ana kodda tut: rutin yürüsün, `toplam += panel_power()` satırı ana kodda, rutini çağırdığın yerde dursun."
+    ]
+  }
 }

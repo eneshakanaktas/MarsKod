@@ -19,6 +19,18 @@
       "secenekler": ["Satırları kopyalamak", "Bir rutin yazıp gereken her yerde çağırmak", "Hepsini tek döngüye koymak", "Hiçbiri, olmaz"],
       "dogru": 1,
       "aciklama": "Döngü aynı şeyi arka arkaya yapar; rutin ise gereken her yerde, araya başka adımlar girerek çağrılabilir."
+    },
+    {
+      "soru": "Rutinin içinde ana koddaki toplam değişkenine += ile eklemeye çalışırsan ne olur?",
+      "secenekler": ["Toplam doğru artar", "Python hata verir: rutin kendi içinde ayrı bir toplam arar", "Toplam sıfırlanır", "Rutin hiç çalışmaz"],
+      "dogru": 1,
+      "aciklama": "Rutinin kutuları kendine aittir. Toplamı ana kodda tut, rutini çağırdığın yerde ekle."
+    },
+    {
+      "soru": "Bir kare ya boştur (panel_power() 0 verir) ya çatlak panelidir (50'den küçük). if/elif'te önce hangisini sormalısın?",
+      "secenekler": ["Önce panel_power() < 50", "Önce panel_power() == 0", "Fark etmez", "İkisini de elif'siz yazmalıyım"],
+      "dogru": 1,
+      "aciklama": "elif sırayla sorar ve ilk doğru kolu çalıştırır. 0 de 50'den küçük olduğu için önce == 0 sorulmazsa boş karede repair() çalışır."
     }
   ]
 }

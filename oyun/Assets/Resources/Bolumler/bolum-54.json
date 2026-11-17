@@ -26,7 +26,7 @@
   "tipik_hatalar": [
     {
       "kod": ["def toz_gec():", "    move(North)", "    wait()", "toz_gec()", "toz_gec()", "collect()", "move(East)", "move(East)", "toz_gec()", "toz_gec()", "collect()", "move(East)", "toz_gec()", "move(East)", "collect()"],
-      "aciklama": "Tek wait() yetmez: toz birkaç tur sürer; tozsuz karede de wait() robotu durdurur. Sorarak bekle: while dust_here()."
+      "aciklama": "Tek wait() yetmez: toz birkaç tur sürer, robot hâlâ tozdayken yürümeye çalışıp durur. Sorarak bekle: while dust_here()."
     },
     {
       "kod": ["move(North)", "while dust_here():", "    wait()", "move(North)", "collect()", "move(East)", "move(East)", "move(North)", "while dust_here():", "    wait()", "move(North)", "collect()", "move(East)", "move(North)", "while dust_here():", "    wait()", "move(East)", "collect()"],

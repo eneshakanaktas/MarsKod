@@ -19,6 +19,18 @@
       "secenekler": ["def satırıyla aynı hizada", "def satırından 4 boşluk içeride", "Hepsi tek satırda", "Tırnak içinde"],
       "dogru": 1,
       "aciklama": "Rutinin adımları, döngüdeki gibi girintiyle (4 boşluk) yazılır; girinti bitince rutin de biter."
+    },
+    {
+      "soru": "Üç yerde aynı iş yapılacak ama aralarında farklı yürüyüşler var. Ne kullanırsın?",
+      "secenekler": ["for i in range(3) döngüsü", "İşi rutine koyup üç yerde çağırırım", "Aynı satırları üç kez kopyalarım", "Hiçbiri olmaz"],
+      "dogru": 1,
+      "aciklama": "Döngü tekrarları arka arkaya yapar. Araya başka adımlar girince rutini gereken yerde çağırmak gerekir."
+    },
+    {
+      "soru": "Rutinin içine if yazarsan ne olur?",
+      "secenekler": ["Rutin hiç çalışmaz", "if, rutin her çağrıldığında robotun o anki durumuna göre çalışır", "if yalnızca ilk çağrıda çalışır", "Python hata verir"],
+      "dogru": 1,
+      "aciklama": "Rutinin içindeki if her çağrıda yeniden sorulur: panel_bak() her panelde o panelin gücüne bakar."
     }
   ]
 }

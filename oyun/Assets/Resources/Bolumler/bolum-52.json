@@ -46,5 +46,12 @@
     "sabah_turu()",
     "sabah_turu()",
     "sabah_turu()"
-  ]
+  ],
+  "bilgi": {
+    "baslik": "Rutin: adımlara ad ver",
+    "metin": [
+      "`def sabah_turu():` birkaç adımı tek bir ada bağlar. Adımlar altına 4 boşluk içeride yazılır. Tanımlamak robotu yürütmez, yalnızca öğretir.",
+      "Robot adımları `sabah_turu()` yazınca yapar. Rutin, çağrılmadan önce tanımlanmalı: önce `def`, sonra çağrı."
+    ]
+  }
 }

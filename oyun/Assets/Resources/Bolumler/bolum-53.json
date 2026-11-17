@@ -48,5 +48,12 @@
     "raftan_al()",
     "move(East)",
     "raftan_al()"
-  ]
+  ],
+  "bilgi": {
+    "baslik": "Döngü mü, rutin mi?",
+    "metin": [
+      "Döngü aynı şeyi arka arkaya tekrarlar. Tekrarların arasına başka adımlar giriyorsa döngü olmaz; adımları bir rutine koy ve gereken yerde çağır.",
+      "Rutin başladığı yere dönmeli: `raftan_al()` kuzeye uzanıp toplar ve güneye geri çekilir, böylece robot raf sırasından çıkmaz."
+    ]
+  }
 }

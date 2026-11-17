@@ -13,6 +13,14 @@
     ". . . . . .",
     "R K . . . ."
   ],
+  "bilgi": {
+    "baslik": "Yazıyı harf harf oku",
+    "metin": [
+      "Tırnak içindeki yazıya metin denir: `rota = \"KKDDDKKB\"`. `for harf in rota:` metnin harflerini sırayla `harf` kutusuna koyar, her harf için bir tur döner.",
+      "Harfin ne olduğuna `if harf == \"K\":` ile bakarsın (iki eşittir: karşılaştırma). Harf tırnak içinde yazılır; tırnaksız K bir ad sayılır. Her harfe uygun yönde `move` ekle."
+    ]
+  },
+  "zorunlu_yapilar": ["for", "if"],
   "komutlar": ["move"],
   "parcalar": ["for harf in rota:", "if harf == \"K\":", "elif harf == \"D\":", "elif harf == \"B\":", "move(North)", "move(East)", "move(West)"],
   "python_kelimeleri": ["str"],

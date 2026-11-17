@@ -13,6 +13,13 @@
     ". K . . . .",
     "R . . . . ."
   ],
+  "bilgi": {
+    "baslik": "Rutin cevap verir: return",
+    "metin": [
+      "Şimdiye kadar rutinler bir iş yaptı (yürüdü, onardı). Bir rutin ayrıca cevap da verebilir: `return 3` dersen rutini çağırdığın yere 3 gelir. `koridor()` yazdığın yerde artık 3 vardır.",
+      "Cevabı kullanmak için rutini parantezle çağır: `range(koridor())`. Parantezsiz `koridor` rutinin kendisidir, cevabı değil. `print` ise ekrana yazar ama cevap vermez."
+    ]
+  },
   "komutlar": ["move", "collect"],
   "rutinler": ["koridor"],
   "donus_sarti": true,

@@ -92,5 +92,15 @@
     "    toplam += cable_length()",
     "    collect()",
     "report(toplam)"
-  ]
+  ],
+  "zorunlu_yapilar": [
+    "degisken"
+  ],
+  "bilgi": {
+    "baslik": "Ölç, sonra topla: cable_length",
+    "metin": [
+      "`cable_length()` robotun durduğu karedeki makaranın uzunluğunu metre olarak verir. Makara yerdeyken ölçülür: `collect()` ile alınca karede makara kalmaz ve cevap 0 olur.",
+      "Toplam tutmak için `toplam += cable_length()` yaz: kutudaki sayıya her makaranın uzunluğu eklenir. Önce ölç, sonra topla."
+    ]
+  }
 }

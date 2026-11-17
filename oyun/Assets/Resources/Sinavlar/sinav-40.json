@@ -33,6 +33,17 @@
       ],
       "dogru": 1,
       "aciklama": "Soru her turun başında sorulur. Turun ortasında durum değişse bile tur sonuna kadar çalışır; soru bir sonraki turun başında yeniden sorulur."
+    },
+    {
+      "soru": "Her adımda parça toplamak için collect() nereye yazılır?",
+      "secenekler": [
+        "while döngüsünün dışına, en alta",
+        "while döngüsünün içine, move ile aynı hizaya",
+        "while döngüsünün üstüne",
+        "collect() döngüde kullanılamaz"
+      ],
+      "dogru": 1,
+      "aciklama": "Döngünün içindeki satırlar her turda çalışır: robot her adımdan sonra toplar. Döngünün dışına yazarsan yalnızca bitince, son karede bir kez çalışır; aradaki parçalar kalır."
     }
   ]
 }

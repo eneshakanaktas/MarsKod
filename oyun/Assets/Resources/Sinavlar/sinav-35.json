@@ -33,6 +33,17 @@
       ],
       "dogru": 1,
       "aciklama": "if, doğruysa altındakini bir kez çalıştırır ve geçer. while ise soruyu tekrarlar; toz birden fazla tur sürüyorsa beklemeyi sürdürür."
+    },
+    {
+      "soru": "İç içe while'da içteki while (toz beklemesi) nereye yazılır?",
+      "secenekler": [
+        "Dıştaki while'ın altına, girintisiz",
+        "Dıştaki while'ın içine, move ile aynı hizada ve bir girinti içeriden",
+        "Dıştaki while'ın üstüne",
+        "İç içe while yazılamaz"
+      ],
+      "dogru": 1,
+      "aciklama": "İçteki while, dıştakinin gövdesinin bir parçasıdır: move ile aynı hizada durur, kendi gövdesi (wait) bir girinti daha içeridedir. Böylece robot her adımdan sonra toz varsa bekler."
     }
   ]
 }

@@ -33,6 +33,17 @@
       ],
       "dogru": 0,
       "aciklama": "Döngünün içindeki her satır her turda çalışır; sayac = 0 da her turda kutuyu sıfırlar. Sıfırlama döngüden önce bir kez yapılır."
+    },
+    {
+      "soru": "cable_length() >= 50 ile cable_length() > 50 arasındaki fark nedir? (Tam 50 metrelik bir makara için)",
+      "secenekler": [
+        "İkisi de bu makarayı sayar",
+        ">= bu makarayı sayar, > saymaz",
+        "> bu makarayı sayar, >= saymaz",
+        "İkisi de bu makarayı saymaz"
+      ],
+      "dogru": 1,
+      "aciklama": ">= \"büyük ya da eşit\" demektir, 50 de dahildir. > ise yalnızca 50'den büyükleri sayar; tam 50 metrelik makara dışarıda kalır."
     }
   ]
 }

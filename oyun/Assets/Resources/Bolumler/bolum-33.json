@@ -28,7 +28,7 @@
     },
     {
       "kod": ["while not rock_ahead(North):", "    move(North)", "    move(East)"],
-      "aciklama": "İki hareket aynı döngünün içinde: robot çapraz gider ve kayaya çarpar. İkinci döngüyü ayrı yaz."
+      "aciklama": "İki hareket aynı döngünün içinde: robot çapraz gider, kayanın önünde döngü biter ve robot ortada kalır. İkinci döngüyü ayrı yaz."
     },
     {
       "kod": ["while not rock_ahead(North):", "    move(North)"],

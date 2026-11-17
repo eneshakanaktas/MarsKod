@@ -54,6 +54,19 @@ namespace MarsKod.Dunya
             },
             new RequiredConstruct
             {
+                Name = "while", Matches = s => s is While,
+                Title = "Kod bitti, while yok",
+                Text = "Görev tamam, ama robot sormadan, saydığın sayılarla ilerledi. Bu bölümde `while` ile önce sor.",
+            },
+            new RequiredConstruct
+            {
+                // degisken: "sayac = 0" ya da "toplam += 1" gibi bir atama (Assign / AugAssign)
+                Name = "degisken", Matches = s => s is Assign || s is AugAssign,
+                Title = "Kod bitti, değişken yok",
+                Text = "Görev tamam, ama sayıyı kendin yazdın. Bu bölümde bir değişken kurup robota saydır: `sayac = 0` ve `sayac += 1`.",
+            },
+            new RequiredConstruct
+            {
                 // elif, ayrıştırıcıda "else içinde tek if" olarak durur (Parser.IfStatement)
                 Name = "elif", Matches = s => s is If i && i.OrElse != null && i.OrElse.Count == 1 && i.OrElse[0] is If,
                 Title = "Kod bitti, elif yok",

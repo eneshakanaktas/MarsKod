@@ -47,5 +47,15 @@
     "    wait()",
     "for i in range(4):",
     "    move(East)"
-  ]
+  ],
+  "zorunlu_yapilar": [
+    "while"
+  ],
+  "bilgi": {
+    "baslik": "Toz bulutu: while",
+    "metin": [
+      "Robot toz bulutunun içindeyken yürüyemez; `wait()` bir tur bekletir, bulut biraz incelir. Bulutun kaç tur süreceğini bilemezsin.",
+      "`while` \"... olduğu sürece tekrarla\" demektir: her turdan önce soruyu yeniden sorar. `while dust_here():` altına `wait()` yazarsan robot toz geçene kadar bekler, kaç tur sürdüğü fark etmez."
+    ]
+  }
 }

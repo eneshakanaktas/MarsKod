@@ -77,5 +77,15 @@
     "    collect()",
     "    sayac += 1",
     "report(sayac)"
-  ]
+  ],
+  "zorunlu_yapilar": [
+    "degisken"
+  ],
+  "bilgi": {
+    "baslik": "Değişken: aklında tutmak",
+    "metin": [
+      "Değişken, içine bir sayı koyup saklayabildiğin bir kutudur. `sayac = 0` \"sayac adında bir kutu aç, içine 0 koy\" demektir; `sayac += 1` kutudaki sayıyı bir artırır.",
+      "`report(sayac)` kutudaki sayıyı antene gönderir. Sayıyı kendin yazmak yerine robota saydır: kutuyu döngüden önce bir kez aç, döngünün içinde artır."
+    ]
+  }
 }

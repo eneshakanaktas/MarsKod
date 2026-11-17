@@ -38,5 +38,15 @@
   "cozum": [
     "while not rock_ahead(East):",
     "    move(East)"
-  ]
+  ],
+  "zorunlu_yapilar": [
+    "while"
+  ],
+  "bilgi": {
+    "baslik": "Tersine çevir: not",
+    "metin": [
+      "`not` cevabı tersine çevirir: `not True` False olur, `not False` True olur.",
+      "`rock_ahead(East)` \"doğuda engel var mı?\" diye sorar. `while not rock_ahead(East):` ise \"doğuda engel yokken\" demektir: yol açık olduğu sürece tekrarlar."
+    ]
+  }
 }

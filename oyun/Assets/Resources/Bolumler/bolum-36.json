@@ -29,7 +29,7 @@
     },
     {
       "kod": ["while not rock_ahead(North):", "    move(North)", "    while dust_here():", "        wait()", "while not rock_ahead(East):", "    move(East)", "    while dust_here():", "        wait()"],
-      "aciklama": "Sıra ters: kuzeyde kaya var, robot yanlış satırdan doğuya döner."
+      "aciklama": "Sıra ters: robot kuzeyde ilk kayanın önünde durur, doğuya o satırdan gider ve orada da kayaya takılır; hedefe varamaz."
     }
   ],
   "baslangic_kodu": [

@@ -42,7 +42,7 @@
   "ipuclari": [
     "Yolda iki toz bulutu var; ne kadar süreceklerini bilmiyorsun. Anten, toplam kaç kez beklediğini öğrenmek istiyor.",
     "Her wait() yaptığında sayacı bir artır. Sayaç while'ın içinde olmalı, yoksa her bulut yalnızca bir kez sayılır.",
-    "`while dust_here():` altında hem `wait()` hem `bekleme += 1`. İki bulut aynı kalıpla geçilir: `for i in range(2):` içinde `move(East)`, bekleme döngüsü, `move(East)`."
+    "`while dust_here():` altında hem `wait()` hem `bekleme += 1`. İki bulut aynı kalıpla geçilir: `for i in range(2):` içinde `move(East)`, bekleme döngüsü, `move(East)`. Döngüden sonra hedefe bir `move(East)` daha, en sonda `report(bekleme)`."
   ],
   "tipik_hatalar": [
     {

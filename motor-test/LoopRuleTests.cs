@@ -108,9 +108,9 @@ public class LoopRuleTests
     [Fact]
     public void Bilinmeyen_yapi_adi_bolum_dosyasinda_hata_verir()
     {
-        string text = LevelFile(3).Replace("\"zorunlu_yapilar\": [\"for\"]", "\"zorunlu_yapilar\": [\"while\"]");
+        string text = LevelFile(3).Replace("\"zorunlu_yapilar\": [\"for\"]", "\"zorunlu_yapilar\": [\"def\"]");
         var e = Assert.Throws<DataFormatError>(() => Level.Parse(text));
-        Assert.Contains("while", e.Message);
+        Assert.Contains("def", e.Message);
         Assert.Contains("for, if, else", e.Message);
     }
 

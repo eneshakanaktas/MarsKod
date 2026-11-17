@@ -28,7 +28,7 @@
       "aciklama": "if yalnızca bir kez bekler: ilk bulut iki tur sürüyor, robot hâlâ tozdayken yürümeye çalışır."
     },
     {
-      "kod": ["for i in range(5):", "    move(East)", "    wait()"],
+      "kod": ["for i in range(5):", "    move(East)", "    wait()", "    wait()"],
       "aciklama": "Her adımdan sonra sormadan beklemek: tozsuz karede wait() boşuna bekler, robot durur."
     },
     {

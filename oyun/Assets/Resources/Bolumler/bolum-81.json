@@ -13,6 +13,14 @@
     ". . S . . .",
     ". . R . . ."
   ],
+  "bilgi": {
+    "baslik": "Liste: öğeler virgülle",
+    "metin": [
+      "Liste, birkaç şeyi sırayla tutan bir kutudur. Köşeli parantezle yazılır, öğeler virgülle ayrılır: `yol = [North, North, East]`.",
+      "`for y in yol:` listenin öğelerini sırayla `y` kutusuna koyar, her öğe için bir tur döner. Robotun yolunu tek tek yazmak yerine listeye koyup döngüyle yürütürsün."
+    ]
+  },
+  "zorunlu_yapilar": ["for"],
   "komutlar": ["move", "collect"],
   "parcalar": ["yol = [North, North, North, East, East]", "for y in yol:", "move(y)", "collect()"],
   "python_kelimeleri": ["list"],

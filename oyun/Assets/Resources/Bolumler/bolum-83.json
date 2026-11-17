@@ -15,6 +15,13 @@
   ],
   "kristal_boyu": [5, 8, 12, 7, 9],
   "rapor": 12,
+  "bilgi": {
+    "baslik": "Listeye ekle, en büyüğü bul",
+    "metin": [
+      "Boş bir liste `boylar = []` diye kurulur. `boylar.append(5)` listenin sonuna 5 ekler; nokta, \"bu listeye şunu yap\" demektir. Listeyi döngüden önce bir kez kur.",
+      "`max(boylar)` listedeki en büyük sayıyı verir. Antene tek sayı gönderilir: `report(max(boylar))`."
+    ]
+  },
   "komutlar": ["move", "collect", "crystal_size", "report"],
   "parcalar": ["for y in yol:", "move(y)", "boylar.append(crystal_size())", "collect()", "report(max(boylar))"],
   "python_kelimeleri": ["max"],

@@ -34,6 +34,17 @@
       ],
       "dogru": 2,
       "aciklama": "en_uzun yalnızca daha uzun bir makara gelince değişir; böylece sonunda gördüğün en uzun makara kalır."
+    },
+    {
+      "soru": "Toz beklemesi ve makara toplama döngüsünün içine report(toplam) yazarsan ne olur?",
+      "secenekler": [
+        "Hiçbir şey olmaz, sonuç aynı",
+        "İlk makaradan sonra antene eksik toplam gider ve anten durdurur",
+        "Robot daha hızlı toplar",
+        "Toplam sıfırlanır"
+      ],
+      "dogru": 1,
+      "aciklama": "report her turda çalışır: ilk makaradan sonra antene yalnızca o ana kadarki toplam gider. Rapor, toplama bitince bir kez gönderilir."
     }
   ]
 }

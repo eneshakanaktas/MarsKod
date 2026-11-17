@@ -101,5 +101,12 @@
     "kalan -= cable_length()",
     "collect()",
     "report(kalan)"
-  ]
+  ],
+  "bilgi": {
+    "baslik": "Eksilt: -=",
+    "metin": [
+      "`+=` kutudaki sayıya ekler, `-=` ise çıkarır. `kalan = 300` ile başla, her makarada `kalan -= cable_length()` yaz: kutuda anten için hâlâ eksik olan kablo kalır.",
+      "Önce ölç, sonra topla: `collect()` makarayı yerden alır, ardından ölçersen 0 gelir. Sonda `report(kalan)` eksiği antene bildirir."
+    ]
+  }
 }

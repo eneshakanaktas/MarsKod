@@ -86,5 +86,12 @@
     "        en_uzun = u",
     "    collect()",
     "report(en_uzun)"
-  ]
+  ],
+  "bilgi": {
+    "baslik": "En büyüğü aklında tut",
+    "metin": [
+      "İki kutu kullan: `u` şu anki makarayı, `en_uzun` şimdiye kadarki en uzunu tutsun. `en_uzun = 0` ile başla.",
+      "Her makarada `u = cable_length()` ile ölç; `if u > en_uzun:` ise `en_uzun = u` yap. Daha uzun gelmediyse kutu değişmez. Sonunda `report(en_uzun)`."
+    ]
+  }
 }

@@ -13,6 +13,13 @@
     ". K . C . H",
     ". . . . . K"
   ],
+  "bilgi": {
+    "baslik": "Sayıyı yazmazsan 1 olsun",
+    "metin": [
+      "Bilgi kutusuna başlangıç değeri verebilirsin: `def git(yon, kac=1):`. Çağırırken sayıyı yazmazsan kutu 1 olur: `git(East)`.",
+      "Yazarsan yazdığın sayı geçerli olur: `git(South, 3)`. Böylece kısa adımlar kısa, uzun adımlar uzun yazılır."
+    ]
+  },
   "komutlar": ["move", "collect", "panel_power", "repair"],
   "rutinler": ["git"],
   "parametre_sarti": true,

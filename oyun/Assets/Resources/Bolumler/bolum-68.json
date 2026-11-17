@@ -17,6 +17,13 @@
     ["East", "East", "North", "West", "West", "North", "East", "East", "North"],
     ["West", "West", "North", "East", "East", "North", "West", "West", "North"]
   ],
+  "bilgi": {
+    "baslik": "Rutin başka rutini çağırır",
+    "metin": [
+      "Bir rutinin içinden başka bir rutini çağırabilirsin: `kol` içinde `git(yon, 2)` yazmak gibi. Önce küçük rutini (`git`), sonra onu kullanan büyük rutini (`kol`) tanımla.",
+      "Büyük rutin aldığı bilgiyi küçüğe aktarır: `kol(yon)` içinde `git(yon, 2)`. Böylece iş küçük parçalara bölünür."
+    ]
+  },
   "komutlar": ["move", "scout"],
   "rutin_sayisi": 2,
   "parametre_sarti": true,

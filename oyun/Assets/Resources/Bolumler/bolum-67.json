@@ -14,18 +14,25 @@
     "R . . . . K"
   ],
   "toz_suresi": [3, 2],
-  "izler": [["North", "East", "North", "East", "East", "North", "North", "East"]],
+  "izler": [
+    ["North", "East", "North", "East", "East", "North", "North", "East"],
+    ["North", "North", "East", "East", "North", "East", "North", "West"]
+  ],
   "komutlar": ["move", "scout", "dust_here", "wait"],
   "rutinler": ["git"],
   "parametre_sarti": true,
   "parcalar": ["def git(yon):", "move(yon)", "while dust_here():", "wait()", "git(scout())", "for i in range(4):"],
   "konular": ["fonksiyon", "parametre", "döngü içinde fonksiyon"],
   "ipuclari": [
-    "Yan kanyon kıvrım kıvrım: neredeyse her adımda yol ayrılıyor. Serçe 8 adımlık iz görüyor; her adımda ona sor.",
+    "Yan kanyon kıvrım kıvrım: neredeyse her adımda yol ayrılıyor. İz her denemede başka yöne gidebilir; Serçe 8 adımlık iz görüyor, her adımda ona sor.",
     "Soruyu döngüye koy: her turda `git(scout())`. Yolda toz da var; beklemeyi rutinin içine al, her adımda kendiliğinden çalışsın.",
     "`def git(yon):`, `    move(yon)`, `    while dust_here():`, `        wait()`. Sonra `for i in range(8):` altına `    git(scout())`."
   ],
   "tipik_hatalar": [
+    {
+      "kod": ["def git(yon):", "    move(yon)", "    while dust_here():", "        wait()", "git(North)", "git(East)", "git(North)", "git(East)", "git(East)", "git(North)", "git(North)", "git(East)"],
+      "aciklama": "İlk denemedeki yolu ezberledin: bir sonraki denemede iz başka yöne gidiyor. Yönü kendin yazma, Serçe'ye sor: git(scout())."
+    },
     {
       "kod": ["def git(yon):", "    move(yon)", "for i in range(8):", "    git(scout())"],
       "aciklama": "Yolda toz var: rutin beklemeden yürümeye çalışır. Tozda yol görünmez; while dust_here(): ile bekle."

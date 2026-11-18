@@ -4,7 +4,7 @@
   "gorev": "Gerçek sinyali bul",
   "etiket": "BÖLGE 10 · GECE OVASI",
   "giris": "Sol 1.107 · Sığınaktan sinyal",
-  "bitis": "Gerçek sinyal: 3 · Mesaj açılıyor",
+  "bitis": "Gerçek sinyal: 5 · Mesaj açılıyor",
   "harita": [
     ". . . . . .",
     ". . . . . .",
@@ -53,6 +53,22 @@
       },
       {
         "girdi": "KAPI8610",
+        "cevap": true
+      },
+      {
+        "girdi": "1234567",
+        "cevap": false
+      },
+      {
+        "girdi": "SERCE1107",
+        "cevap": true
+      },
+      {
+        "girdi": "SIGINAK",
+        "cevap": false
+      },
+      {
+        "girdi": "KORBACAK9",
         "cevap": true
       }
     ]

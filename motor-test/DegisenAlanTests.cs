@@ -155,9 +155,9 @@ public class DegisenAlanTests
 
     static bool PlainRun(Level level, string code, int version) => ProgramRun.Execute(code, level.CreateWorld(version)).Complete;
 
-    // Bölge 10'da ezberle geçilen bölümler (bu işte bulundu, Bölge 10 başka birinin bölgesi: düzeltmek ayrı karar, ILERLEME.md'de).
+    // Ezberle geçildiği bilinen ve henüz düzeltilmemiş bölümler (2026-11-18: 92, 93, 96, 100 düzeltildi, liste boş).
     // Düzeltilen bölüm listeden çıkarılır; Bilinen_ezber_acigi_listesi_guncel test'i listeyi güncel tutar.
-    static readonly int[] KnownMemorizable = { 92, 93, 96, 100 };
+    static readonly int[] KnownMemorizable = { };
 
     static IEnumerable<Level> ChangingLevelList() =>
         Directory.GetFiles(BolumDizini, "*.json").Select(f => Level.Parse(File.ReadAllText(f))).Where(l => l.Layouts.Count > 1).OrderBy(l => l.Number);

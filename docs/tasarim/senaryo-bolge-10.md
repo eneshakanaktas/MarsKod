@@ -38,14 +38,14 @@ Sol iki bölümde bir artar (Bölge 9 sol 1.102'de bitti). Etiket **"BÖLGE 10 �
 | 96 Yağmur yoğunlaşır | Sol 1.105 · Yağmur yoğunlaşır | Göktaşı: 2 · Kızgın: 2 | `tehlikeli` + `smoke_here` birlikte, 3 meteor düzeni. |
 | 97 Kapının silueti | Sol 1.106 · Kapının silueti | Volkanın eteğinde: bir kapı | Okuyan robot: not yol parçaları listesi, iç içe döngü, `yon`, kızgın taşa dokunmamak. 3 not. |
 | 98 Sessizlik | Sol 1.106 · Sessizlik | Yağmur dindi | Büyük, sakin bölüm, tek ipucu: `satir_tara` rutini + iç içe döngü + `not smoke_here()`. |
-| 99 Sığınaktan sinyal | Sol 1.107 · Sığınaktan sinyal | Gerçek sinyal: 3 · Mesaj açılıyor | **Ekran bulmacası (ANTEN):** `gercek_mi(kod)`: en az 8 karakter **ve** en az bir rakam **ve** gürültü listesinde değil. 9 kod; 3'ü gerçek. |
+| 99 Sığınaktan sinyal | Sol 1.107 · Sığınaktan sinyal | Gerçek sinyal: 5 · Mesaj açılıyor | **Ekran bulmacası (ANTEN):** `gercek_mi(kod)`: en az 8 karakter **ve** en az bir rakam **ve** gürültü listesinde değil. 13 kod; 5'i gerçek (ezber kapalı: gizli kodlar çok, kuralı sınayan yakın gürültüler var). |
 | 100 İki saat | Sol 1.107 · İki saat | Anten ışığı: bir kez · Söz | Son yürüyüş, orta zorluk: `tehlikeli` ile antene var, göktaşlarını topla. 2 düzen. Sonra final sahnesi (3b). |
 
 Sınavlar: `sinav-95` (`and/or/not` doğruluk tablosu, `not` ile `!=`), **`sinav-100` = Sezon 1 büyük sınavı** (9 soru: `range`, sayaç, `while`, `return`, `len`, `liste[2]`, iç içe döngü, şifre koşulu, `or`).
 
 ## 99'un kodları (gizli iz)
 
-Görünen: `DEFNE861` (gerçek), `KKKKKKKK`, `4821`. Gizli: `00000000`, `SIGINAK1` (gerçek), `BKM7`, `12345678`, `ARAS-ECE`, `KAPI8610` (gerçek). Gerçek üç kodun ikisinde **861** var (göç günü, kapı kodu; Perde 3'te sığınak kapısının kodu). `BKM7` ve `ARAS-ECE` gürültü ama tanıdık: antene dolan, kolonideki eski kayıtların parçaları. Kimse açıklamaz.
+Görünen: `DEFNE861` (gerçek), `KKKKKKKK`, `4821`. Gizli: `00000000`, `SIGINAK1` (gerçek), `BKM7`, `12345678`, `ARAS-ECE`, `KAPI8610` (gerçek), `1234567` (kısa), `SERCE1107` (gerçek; Serçe + Sol 1.107), `SIGINAK` (rakamsız), `KORBACAK9` (gerçek). Gerçek kodlardan ikisinde **861** var (göç günü, kapı kodu; Perde 3'te sığınak kapısının kodu). `BKM7` ve `ARAS-ECE` gürültü ama tanıdık: antene dolan, kolonideki eski kayıtların parçaları. Kimse açıklamaz.
 
 ## İzler ve gizli ayrıntılar
 

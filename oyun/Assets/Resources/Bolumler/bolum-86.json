@@ -13,6 +13,14 @@
     "R S . S S .",
     ". . . . . ."
   ],
+  "bilgi": {
+    "baslik": "Döngünün içinde döngü",
+    "metin": [
+      "Bir döngünün içine başka bir döngü yazabilirsin. Dıştaki döngü her döndüğünde, içteki baştan sona çalışır: `for satir in range(3):` içinde `for adim in range(4):` varsa içteki toplam 3 × 4 = 12 tur döner.",
+      "İçerideki satırları dört boşluk daha içeri yaz; Python hangi komutun hangi döngüye ait olduğunu girintiden anlar. Bir satırı tarayıp başa dönmek, tek bir 'satır' işi olur; onu satır sayısı kadar tekrarlarsın."
+    ]
+  },
+  "zorunlu_yapilar": ["for"],
   "komutlar": ["move", "collect"],
   "parcalar": ["for satir in range(3):", "for adim in range(4):", "move(East)", "collect()", "move(North)", "move(West)"],
   "konular": ["iç içe döngü", "tarama"],

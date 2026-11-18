@@ -30,6 +30,7 @@
       "rapor": 3
     }
   ],
+  "zorunlu_yapilar": ["for"],
   "komutlar": ["read_note", "report"],
   "parcalar": ["for satir in harita:", "for kare in satir:", "if kare == \"T\":", "sayac += 1", "report(sayac)"],
   "konular": ["iç içe döngü", "metin listesi", "sayaç", "değişen not"],

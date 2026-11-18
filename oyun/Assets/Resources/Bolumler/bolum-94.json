@@ -31,6 +31,13 @@
       ". . . . . ."
     ]
   ],
+  "bilgi": {
+    "baslik": "Biri yeter: or",
+    "metin": [
+      "`or` iki şartı birleştirir ama `and`'den farklıdır: biri `True` ise sonuç `True` olur. İkisi de `False` ise `False` olur.",
+      "Örnek: `meteor_ahead(yon) or rock_ahead(yon)` önde krater ya da kaya varsa `True` verir, yani o yön tehlikelidir. Bu kontrolü bir rutine koyup `return` ile cevap verebilirsin."
+    ]
+  },
   "komutlar": ["move", "meteor_ahead", "rock_ahead"],
   "rutinler": ["tehlikeli"],
   "donus_sarti": true,

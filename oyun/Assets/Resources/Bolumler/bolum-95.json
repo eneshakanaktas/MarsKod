@@ -13,6 +13,7 @@
     "X . . . . .",
     "R . . . . ."
   ],
+  "zorunlu_yapilar": ["for", "if"],
   "komutlar": ["move", "collect", "smoke_here"],
   "bilgi": {
     "baslik": "Bazı taşlar hâlâ kızgın",

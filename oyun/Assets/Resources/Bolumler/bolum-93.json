@@ -31,6 +31,13 @@
       ". U . . . ."
     ]
   ],
+  "bilgi": {
+    "baslik": "İki şart birden: and",
+    "metin": [
+      "Bazen tek şart yetmez: önde hem krater hem kaya olmamalı. `and` iki şartı birleştirir; ikisi de `True` ise sonuç `True` olur, biri bile `False` ise `False`.",
+      "Örnek: `not meteor_ahead(East) and not rock_ahead(East)` yalnız doğuda krater de kaya da yoksa `True` verir. Yani doğuya güvenle gidebilirsin."
+    ]
+  },
   "komutlar": ["move", "meteor_ahead", "rock_ahead"],
   "parcalar": ["for i in range(10):", "if not meteor_ahead(East) and not rock_ahead(East):", "else:", "move(East)", "move(North)"],
   "python_kelimeleri": ["and"],

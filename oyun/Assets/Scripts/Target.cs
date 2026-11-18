@@ -38,6 +38,7 @@ public class Target : MonoBehaviour
         // isiktan bagimsiz duz renk: los safakta da parlak turuncu okunur (hologram isaret gibi)
         markMat = Mats.Unlit(Warm);
         marker = Parts.Empty("Marker", transform);
+        marker.gameObject.AddComponent<Airborne>();   // bilerek havada suzulur
         // iki kristal ucu uca: yere bakan bir elmas
         var gem = MeshFactory.Crystal(0.12f, 0.03f, 0.17f);
         Parts.Add("Top", marker, gem, markMat, Vector3.zero, outline: false);

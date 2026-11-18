@@ -849,6 +849,9 @@ public class Hud : MonoBehaviour
 
     // Olcum icin (-arayuz yok): arayuz cizilmez ama yerlesimi durur, sahnenin kamera hesabi degismez
     public void HideForMeasurement() => root.visible = false;
+    // Gorsel denetim (Oyun.GorselDenetim.cs): yandan cekimlerde arayuz tamamen saydam (kendi gorunurlugu olan dugmeler dahil);
+    // yerlesim degismez
+    public void SetAuditHidden(bool hidden) => root.style.opacity = hidden ? 0f : 1f;
 
     // Sahneler (Bolge 6) surerken alttaki kod karti (klavye, dugmeler dahil) tamamen kapanir: ekranin tamami sahnenin olur
     public void SetCardVisible(bool visible)

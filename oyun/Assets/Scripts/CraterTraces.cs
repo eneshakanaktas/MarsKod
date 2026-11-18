@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 // Bolge 3 (kraterli duzluk, Bolum 21-30) hikaye izleri: docs/tasarim/senaryo-bolge-03.md.
@@ -13,13 +14,13 @@ public static class CraterTraces
     // Ece'nin boyasi; Bolge 4'teki turkuaz direk numarasi ve kurdele de bu renk (senaryo-bolge-04.md)
     public static readonly Color EceColor = Mats.Hex("#2FC4B8");
 
-    public static void Build(int levelNumber, Transform parent, Vector2 areaHalf)
+    public static void Build(int levelNumber, Transform parent, Vector2 areaHalf, Func<float, float, float> groundHeight)
     {
         float back = areaHalf.y + 0.55f;
         switch (levelNumber)
         {
-            case 21: Traces.StormDebris(parent, new Vector3(-1.5f, 0f, back + 0.2f)); CableReel(parent, new Vector3(1.2f, 0f, back)); break;
-            case 22: Traces.StormDebris(parent, new Vector3(-1.5f, 0f, back + 0.2f)); PartsCrate(parent, new Vector3(1.0f, 0f, back)); break;
+            case 21: Traces.StormDebris(parent, new Vector3(-1.5f, 0f, back + 0.2f), groundHeight); CableReel(parent, new Vector3(1.2f, 0f, back)); break;
+            case 22: Traces.StormDebris(parent, new Vector3(-1.5f, 0f, back + 0.2f), groundHeight); PartsCrate(parent, new Vector3(1.0f, 0f, back)); break;
         }
         if (levelNumber >= ShedNearLevel && levelNumber <= LastLevel)
             Shed(parent, new Vector3(1.1f, 0f, areaHalf.y + 0.9f), 1.5f, levelNumber);

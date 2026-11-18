@@ -309,7 +309,7 @@ public partial class Oyun : MonoBehaviour
             if (a[i] == "-bolum") int.TryParse(a[i + 1], out start);
         LoadLevel(Mathf.Clamp(levels.FindIndex(l => l.Number == start), 0, levels.Count - 1));
 
-        bool shotsArg = System.Array.IndexOf(a, "-shots") >= 0 || System.Array.IndexOf(a, "-izle") >= 0;
+        bool shotsArg = System.Array.IndexOf(a, "-shots") >= 0 || System.Array.IndexOf(a, "-izle") >= 0 || System.Array.IndexOf(a, "-incele") >= 0;
         bool showOpening = start == 1 && !shotsArg && PlayerPrefs.GetInt("acilis_gorundu", 0) == 0;
         if (System.Array.IndexOf(a, "-acilis") >= 0) showOpening = true; // test icin: her zaman goster
         if (showOpening)
@@ -332,6 +332,9 @@ public partial class Oyun : MonoBehaviour
                     : finale ? FinaleShots(a[i + 1]) : Shots(a[i + 1]));
             }
         if (TryReadWatchRange(a, out int watchFirst, out int watchLast)) StartCoroutine(WatchAudit(watchFirst, watchLast));   // -izle (Oyun.IzlemeDenetimi.cs)
+        for (int i = 0; i < a.Length - 3; i++)   // -incele <ilk> <son> <klasor> (Oyun.GorselDenetim.cs)
+            if (a[i] == "-incele" && int.TryParse(a[i + 1], out int auditFirst) && int.TryParse(a[i + 2], out int auditLast))
+                StartCoroutine(VisualAudit(auditFirst, auditLast, a[i + 3]));
     }
 
     // Arka plan animasyonlari (ayar, bolum secme ekraninda): kapaliyken gokyuzu duraganlasir, telefon daha az yorulur
@@ -622,7 +625,7 @@ public partial class Oyun : MonoBehaviour
 
     void LateUpdate()
     {
-        if (shot.Active) shot.Apply(); else FitCamera();
+        if (shot.Active) shot.Apply(); else if (!inspecting) FitCamera();
         stars = Mathf.MoveTowards(stars, starsTarget, Time.deltaTime * 2.5f);
         Shader.SetGlobalFloat("_StarsOn", stars);
     }

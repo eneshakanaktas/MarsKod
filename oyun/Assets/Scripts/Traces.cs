@@ -33,7 +33,7 @@ public static class Traces
         Func<float, float, float> groundHeight)
     {
         rover = PolarTraces.Build(levelNumber, parent, areaHalf);
-        CraterTraces.Build(levelNumber, parent, areaHalf);
+        CraterTraces.Build(levelNumber, parent, areaHalf, groundHeight);
         Dune = DuneTraces.Build(levelNumber, parent, areaHalf, targetPos);
         Antenna = AntennaTraces.Build(levelNumber, parent, areaHalf);
         CanyonTraces.Build(levelNumber, parent, areaHalf, targetPos, itemPositions, groundHeight);
@@ -43,10 +43,10 @@ public static class Traces
         ResetBackdrop(levelNumber);
         switch (levelNumber)
         {
-            case 3: Helmet(parent, new Vector3(areaHalf.x + 0.26f, 0f, -areaHalf.y + 0.6f)); break;
-            case 4: WheelTracks(parent, areaHalf); break;
-            case 8: StormDebris(parent, new Vector3(-(areaHalf.x + 0.3f), 0f, areaHalf.y * 0.3f)); break;
-            case 10: if (targetPos.HasValue) RadioMast(parent, targetPos.Value); break;
+            case 3: Helmet(parent, new Vector3(areaHalf.x + 0.26f, 0f, -areaHalf.y + 0.6f), groundHeight); break;
+            case 4: WheelTracks(parent, areaHalf, groundHeight); break;
+            case 8: StormDebris(parent, new Vector3(-(areaHalf.x + 0.3f), 0f, areaHalf.y * 0.3f), groundHeight); break;
+            case 10: if (targetPos.HasValue) RadioMast(parent, targetPos.Value, groundHeight); break;
         }
     }
 
@@ -100,38 +100,61 @@ public static class Traces
     public static void RoverDrivenAway() => rover?.DrivenAway();
 
     // Bolum 10 (bolge finali): hedefteki telsiz diregi; tepesindeki isik yanip soner (kapanis sahnesinde anlam kazanir).
-    static void RadioMast(Transform parent, Vector3 p)
+    // Bolum 10: koloninin telsiz diregi. Hedef kare "telsiz direginin dibi" (senaryo-bolge-01.md): direk hedefin hemen arkasinda
+    // (kuzey, alanin kenarinin biraz disinda) durur ve robottan uzundur: kapanistaki SOS isigi robotun basinin ustunde gorunur.
+    // (Once hedefin tam ortasindaydi: robot diregin icine giriyor, kapanistaki isik robotun govdesinde kaliyordu.)
+    const float MastBehindTarget = 0.62f, MastHeight = 1.1f;
+
+    static void RadioMast(Transform parent, Vector3 target, Func<float, float, float> groundHeight)
     {
         var metal = Mats.Lit(Mats.Hex("#5A5660"), 0.4f);
-        var mast = Parts.Empty("Telsiz", parent);
-        mast.localPosition = p;
-        Parts.Add("Direk", mast, MeshFactory.RoundedCylinder(0.025f, 0.5f, 0.008f, 10), metal, new Vector3(0f, 0.25f, 0f), outline: false);
-        Parts.Add("Kol", mast, MeshFactory.RoundedBox(new Vector3(0.18f, 0.015f, 0.015f), 0.006f), metal, new Vector3(0f, 0.46f, 0f), outline: false);
-        var lamp = Parts.Add("Isik", mast, MeshFactory.Sphere(0.028f, 8, 12), null, new Vector3(0f, 0.53f, 0f), outline: false, castShadow: false);
+        var mast = Parts.Empty("Iz-Telsiz", parent);
+        mast.localPosition = target + Vector3.forward * MastBehindTarget;
+        Parts.Add("Taban", mast, MeshFactory.RoundedCylinder(0.07f, 0.04f, 0.012f, 16), metal, new Vector3(0f, 0.02f, 0f));
+        Parts.Add("Direk", mast, MeshFactory.RoundedCylinder(0.025f, MastHeight, 0.008f, 10), metal, new Vector3(0f, MastHeight * 0.5f, 0f));
+        Parts.Add("Kol", mast, MeshFactory.RoundedBox(new Vector3(0.22f, 0.015f, 0.015f), 0.006f), metal, new Vector3(0f, MastHeight - 0.05f, 0f), outline: false);
+        var lamp = Parts.Add("Isik", mast, MeshFactory.Sphere(0.032f, 8, 12), null, new Vector3(0f, MastHeight + 0.03f, 0f), outline: false, castShadow: false);
         Blinker.Attach(lamp, Mats.Hex("#FF4A3A"), 0.8f, 0f);
+        GroundPlacement.SitOnGround(mast, groundHeight, 0.01f);
     }
 
     // Bolum 3: devrik kask. Yarim kure govde (yana devrilmis) + onundeki koyu siperlik seridi.
-    static void Helmet(Transform parent, Vector3 p)
+    // Bolum 3: yere dusmus kask. Devrik yatar, boyun halkasi alandan disari, cam yuzu yukari ve kameraya doner (oyun acisindan
+    // kask oldugu anlasilsin; once kure + kucuk siperlikti, ustten duz gri top gibi gorunuyordu). Zemine oturur (yarisi gomuluydu).
+    static void Helmet(Transform parent, Vector3 p, Func<float, float, float> groundHeight)
     {
         var shell = Mats.Lit(Mats.Hex("#C9C2B0"), 0.3f);
-        var visor = Mats.Lit(Mats.Hex("#23222A"), 0.15f);
+        var glass = Mats.Lit(Mats.Hex("#1E1D26"), 0.9f);
+        var ring = Mats.Lit(Mats.Hex("#5A5862"), 0.5f);
         var root = Parts.Empty("Iz-Kask", parent);
         root.localPosition = p;
-        root.localRotation = Quaternion.Euler(78f, 35f, 0f); // yana devrilmis, acik agzi yana bakar
-        var dome = Parts.Add("Govde", root, MeshFactory.Sphere(0.15f, 10, 18), shell, Vector3.zero);
-        dome.localScale = new Vector3(1f, 1f, 0.78f);
-        Parts.Add("Siperlik", root, MeshFactory.RoundedBox(new Vector3(0.22f, 0.05f, 0.08f), 0.02f), visor, new Vector3(0f, 0.02f, 0.13f));
+        // dik kask: boyun -y, cam yuzu +z. Yana devrilir (boyun alanin disina, +x), cam yuzu yukari kalkar ve kameraya (-z) doner.
+        root.localRotation = Quaternion.AngleAxis(200f, Vector3.up) * Quaternion.AngleAxis(-40f, Vector3.right) * Quaternion.AngleAxis(-80f, Vector3.forward);
+        // iki kurenin kesistigi cam kenari puruzsuz olsun diye sik bolunmus
+        Parts.Add("Govde", root, MeshFactory.Sphere(0.15f, 24, 40), shell, Vector3.zero);
+        // cam kabuktan belirgin one cikar: iki yuzey neredeyse ust uste kesisince kenar titriyordu
+        var visor = Parts.Add("Cam", root, MeshFactory.Sphere(0.15f, 24, 40), glass, new Vector3(0f, 0.012f, 0.085f), outline: false);
+        visor.localScale = new Vector3(0.8f, 0.64f, 0.6f);
+        Parts.Add("BoyunHalkasi", root, MeshFactory.RoundedCylinder(0.11f, 0.04f, 0.012f), ring, new Vector3(0f, -0.13f, 0f));
+        GroundPlacement.SitOnGround(root, groundHeight, 0.02f);
     }
 
-    // Bolum 4: koloniden (kuzey, +z) dagların oldugu yone uzanan cift tekerlek izi; donen iz yok.
-    static void WheelTracks(Transform parent, Vector2 areaHalf)
+    // Bolum 4: koloniden cikan arac izleri; hepsi ayni yone, ufuktaki daglara gider (senaryo-bolge-01.md). Izler zemini izler ve
+    // uzaklastikca zeminle ayni kuralla arka plana karisir (once duz cubuktular: zemin kivrilinca kalkip gokyuzunun ustune ciziliyordu).
+    const float TrackStartZ = -6f, TrackEndZ = 21f, TrackStep = 0.3f, TrackGauge = 0.18f, TrackWidth = 0.07f, TrackLift = 0.01f;
+
+    static void WheelTracks(Transform parent, Vector2 areaHalf, Func<float, float, float> groundHeight)
     {
-        var mat = Mats.Lit(Mats.Hex("#4A2A20"), 0.08f);
-        float x = areaHalf.x + 0.3f, length = areaHalf.y * 2f + 3f, z = 1f;
-        foreach (float ox in new[] { -0.09f, 0.09f })
-            Parts.Add("Iz-Tekerlek", parent, MeshFactory.RoundedBox(new Vector3(0.07f, 0.012f, length), 0.02f), mat,
-                new Vector3(x + ox, 0.006f, z), outline: false, castShadow: false);
+        var mat = Oyun.FarRockMat("#4A2A20");
+        foreach (var (x0, phase) in new[] { (areaHalf.x + 0.35f, 0f), (areaHalf.x + 1.15f, 1.7f), (areaHalf.x + 2.0f, 3.1f) })
+        foreach (float wheel in new[] { -0.5f, 0.5f })
+        {
+            var path = new List<Vector2>();
+            for (float z = TrackStartZ; z <= TrackEndZ; z += TrackStep)
+                path.Add(new Vector2(x0 + wheel * TrackGauge + 0.2f * Mathf.Sin(z * 0.17f + phase), z));
+            Parts.Add("Iz-Tekerlek", parent, GroundPlacement.Ribbon(path, TrackWidth, groundHeight, TrackLift), mat, Vector3.zero,
+                outline: false, castShadow: false);
+        }
     }
 
     // Bolge acilisi: kara ekranda gosterilecek satirlar (bolgenin ilk bolumu degilse null)
@@ -147,24 +170,80 @@ public static class Traces
         levelNumber == NightPlainTraces.FirstLevel ? NightPlainTraces.TransitionLines : null;
 
     // Bolum 8 (ve Bolum 21-22): firtinanin izi: devrilmis gunes paneli, kuma gomulu kablo, kayalarin yanina yigilmis kum.
-    public static void StormDebris(Transform parent, Vector3 p)
-    {
-        var panelMat = Mats.Lit(Mats.Hex("#17232F"), 0.55f);
-        var frameMat = Mats.Lit(Mats.Hex("#8A8A92"), 0.3f);
-        var cableMat = Mats.Lit(Mats.Hex("#232323"), 0.2f);
-        var sandMat = Mats.Lit(Mats.Hex("#8B5A42"), 0.15f);
+    // Panel kameraya donuk devrik durur (yuzundeki hucre cizgileri ve cerceve okunsun), alt kenari kuma gomulu; kum yumusak tumsek;
+    // kablo kivrilarak alana dogru uzanir, yer yer kuma girip cikar. Hepsi zemine oturur. (Once panelin dortte ucu topragin
+    // altindaydi, kum yuvarlatilmis bir kutu, kablo duz bir cubuktu: oyun acisindan pembe-gri bir kare gibi gorunuyordu.)
+    const float PanelWidth = 0.5f, PanelDepth = 0.32f, PanelTilt = 32f, PanelYaw = 25f, PanelSink = 0.04f;
+    const float CableLength = 0.75f, CableRadius = 0.016f;
+    const int CableSegments = 9;
 
+    public static void StormDebris(Transform parent, Vector3 p, Func<float, float, float> groundHeight)
+    {
+        DebrisPanel(parent, p, Mats.Lit(Mats.Hex("#1B2C3E"), 0.75f), Mats.Lit(Mats.Hex("#9A9AA2"), 0.35f), groundHeight);
+        DebrisSand(parent, p, Mats.Lit(Mats.Hex("#8A5440"), 0.05f), groundHeight);
+        DebrisCable(parent, p, Mats.Lit(Mats.Hex("#2A2A2E"), 0.25f), groundHeight);
+    }
+
+    static void DebrisPanel(Transform parent, Vector3 p, Material face, Material frame, Func<float, float, float> groundHeight)
+    {
         var panel = Parts.Empty("Iz-Panel", parent);
         panel.localPosition = p;
-        panel.localRotation = Quaternion.Euler(58f, 20f, 8f); // devrilmis, yarisi kuma gommus
-        Parts.Add("Panel", panel, MeshFactory.RoundedBox(new Vector3(0.5f, 0.02f, 0.32f), 0.015f), panelMat, Vector3.zero);
-        Parts.Add("Cerceve", panel, MeshFactory.RoundedBox(new Vector3(0.52f, 0.015f, 0.04f), 0.01f), frameMat, new Vector3(0f, 0f, 0.15f));
+        // yuzu yukari ve kameraya (guneye) donuk devrik: guney kenari asagida, kuma gomulu
+        panel.localRotation = Quaternion.AngleAxis(PanelYaw, Vector3.up) * Quaternion.AngleAxis(-PanelTilt, Vector3.right);
+        float w = PanelWidth, d = PanelDepth;
+        Parts.Add("Yuz", panel, MeshFactory.RoundedBox(new Vector3(w, 0.02f, d), 0.008f), face, Vector3.zero);
+        foreach (float z in new[] { -d * 0.5f, d * 0.5f })
+            Parts.Add("Cerceve", panel, MeshFactory.RoundedBox(new Vector3(w + 0.02f, 0.028f, 0.02f), 0.008f), frame, new Vector3(0f, 0.004f, z), outline: false);
+        foreach (float x in new[] { -w * 0.5f, w * 0.5f })
+            Parts.Add("Cerceve", panel, MeshFactory.RoundedBox(new Vector3(0.02f, 0.028f, d), 0.008f), frame, new Vector3(x, 0.004f, 0f), outline: false);
+        // hucre cizgileri: panel oldugu buradan anlasilir
+        foreach (float x in new[] { -w / 6f, w / 6f })
+            Parts.Add("Cizgi", panel, MeshFactory.RoundedBox(new Vector3(0.008f, 0.024f, d), 0.003f), frame, new Vector3(x, 0.002f, 0f), outline: false);
+        Parts.Add("Cizgi", panel, MeshFactory.RoundedBox(new Vector3(w, 0.024f, 0.008f), 0.003f), frame, new Vector3(0f, 0.002f, 0f), outline: false);
+        GroundPlacement.SitOnGround(panel, groundHeight, PanelSink);
+    }
 
-        var cable = Parts.Add("Iz-Kablo", parent, MeshFactory.RoundedCylinder(0.018f, 0.7f, 0.006f, 10), cableMat,
-            p + new Vector3(-0.1f, -0.008f, -0.35f), outline: false);
-        cable.localRotation = Quaternion.Euler(0f, 24f, 90f);
+    // Panelin gomulu (guney) kenarina yigilmis kum: basik, zemin renginde iki tumsek (tek duzgun tumsek yastik gibi duruyordu)
+    static readonly (Vector3 offset, Vector3 scale)[] SandDrifts =
+    {
+        (new Vector3(-0.06f, 0f, -PanelDepth * 0.5f), new Vector3(1.9f, 0.26f, 0.75f)),
+        (new Vector3(0.17f, 0f, -PanelDepth * 0.5f - 0.05f), new Vector3(1.1f, 0.2f, 0.6f)),
+    };
 
-        Parts.Add("Iz-Kum", parent, MeshFactory.RoundedBox(new Vector3(0.6f, 0.1f, 0.5f), 0.22f), sandMat,
-            p + new Vector3(-0.25f, 0.02f, 0.35f), outline: false);
+    static void DebrisSand(Transform parent, Vector3 p, Material sand, Func<float, float, float> groundHeight)
+    {
+        var turn = Quaternion.AngleAxis(PanelYaw, Vector3.up);
+        var drifts = Parts.Empty("Iz-Kum", parent);
+        foreach (var (offset, scale) in SandDrifts)
+        {
+            var mound = Parts.Add("Tumsek", drifts, MeshFactory.Sphere(0.15f, 10, 18), sand, p + turn * offset, outline: false);
+            mound.localRotation = turn;
+            mound.localScale = scale;
+            GroundPlacement.SitOnGround(mound, groundHeight, 0.025f);
+        }
+    }
+
+    // Panelden alana dogru kivrilarak uzanan kablo; yer yer kuma girer, yer yer ustunde gorunur
+    static void DebrisCable(Transform parent, Vector3 p, Material mat, Func<float, float, float> groundHeight)
+    {
+        var cable = Parts.Empty("Iz-Kablo", parent);
+        var toArea = new Vector3(-p.x, 0f, -p.z).normalized;
+        var side = new Vector3(toArea.z, 0f, -toArea.x);
+        var start = p + toArea * (PanelWidth * 0.4f);
+        var segment = MeshFactory.RoundedCylinder(CableRadius, 1f, CableRadius * 0.9f, 10);
+        Vector3 Point(int i)
+        {
+            float t = (float)i / CableSegments;
+            var q = start + toArea * (t * CableLength) + side * (0.08f * Mathf.Sin(t * Mathf.PI * 2f));
+            q.y = groundHeight(q.x, q.z) + 0.006f + 0.014f * Mathf.Sin(t * Mathf.PI * 3f);
+            return q;
+        }
+        for (int i = 0; i < CableSegments; i++)
+        {
+            Vector3 a = Point(i), b = Point(i + 1);
+            var piece = Parts.Add("Parca", cable, segment, mat, (a + b) * 0.5f, outline: false);
+            piece.localRotation = Quaternion.FromToRotation(Vector3.up, b - a);
+            piece.localScale = new Vector3(1f, Vector3.Distance(a, b) + CableRadius, 1f);
+        }
     }
 }

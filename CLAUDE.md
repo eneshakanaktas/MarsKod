@@ -33,7 +33,7 @@ Yapım planı: `docs/superpowers/plans/2026-09-25-marskod-yapim-plani.md`.
 - Motor ve dünya kuralları saf C#'tır (UnityEngine kullanmaz); Unity açmadan `dotnet test` ile test edilir. Unity C# 9 kullanır: motorda daha yeni C# özellikleri ve .NET Standard 2.1'de olmayan kitaplıklar kullanılmaz (`motor-test` bunu derlerken yakalar).
 - `Library/`, `Build/`, `Temp/`, `Logs/`, `UserSettings/` üretilen klasörlerdir; git'e girmez.
 - Her dosyanın yanındaki `.meta` dosyası onunla birlikte taşınır/silinir (Unity bağlantıları onunla kurar).
-- Boyut önemli (Ragıp): telefon paketini küçük tut; büyük doku/model eklemeden önce sor. Hazır model/doku eklerken ticari kullanım lisansını kontrol et.
+- Boyut (Ragıp + Enes, 2026-11-18): kalite önce gelir; kaliteli olacaksa telefon paketi 300-500 MB'a kadar kabul. Gereksiz şeyi yine pakete koyma. Hazır model/doku eklerken ticari kullanım lisansını kontrol et.
 
 ## Genel kurallar
 - Ekipte kodlama bilgisi yok; her zaman sade Türkçe açıkla, jargon kullanma.

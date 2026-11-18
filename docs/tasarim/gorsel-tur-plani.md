@@ -7,7 +7,7 @@
 Oyunun "programcı işi" görünümünden kurtulması. Şu an oyunda hiç 3B model yok (`oyun/Assets` 4 MB), her şey koddan basit şekillerle kuruluyor; kodda post-processing (ışık parlaması, renk tonu) yok. Görsel hedef: `docs/referanslar/BENIOKU.md` (tombul, pürüzsüz, oyuncak gibi, ince dış çizgi, low-poly, sade ama premium).
 
 ## Boyut kararı (Enes)
-Boyut artık ana sorun değil: kaliteli olacaksa telefon paketi 300-500 MB olabilir. **Ragıp'a haber verilmeli** (CLAUDE.md'deki "telefon paketini küçük tut" kuralı Ragıp'ın; kural birlikte güncellenir). Lisans kontrolü kuralı aynen geçerli.
+Boyut artık ana sorun değil: kaliteli olacaksa telefon paketi 300-500 MB olabilir. **Ragıp onayladı (2026-11-18)**; CLAUDE.md'deki kural güncellendi. Lisans kontrolü kuralı aynen geçerli. Tahmin: Sezon 1 temizlenmiş hâliyle ~50-110 MB; Play Store ana paket sınırı (~200 MB) aşılırsa Play Asset Delivery / Unity "Split Application Binary" ile bölünür (o zaman güncel kurallar kontrol edilir).
 
 ## Seçilenler
 | Araç / paket | Rol | Durum |

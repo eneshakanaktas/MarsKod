@@ -9,7 +9,8 @@
     "token-optimizer@alexgreensh-token-optimizer": true,
     "unity@claude-plugins-official": true,
     "unity@awesome-gamedev-agent-skills": true,
-    "disciplines@awesome-gamedev-agent-skills": true
+    "disciplines@awesome-gamedev-agent-skills": true,
+    "claude-code-setup@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "ui-ux-pro-max-skill": {

@@ -1,0 +1,143 @@
+Mono path[0] = 'C:/Users/ragip/MarsKod/oyun/Build/Win/MarsKod_Data/Managed'
+Mono config path = 'C:/Users/ragip/MarsKod/oyun/Build/Win/MonoBleedingEdge/etc'
+CodeReloadManager initialized
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+Initialize engine version: 6000.6.3f1 (45d8eee7de74)
+[EntityIdStore] init: VM path (explicit commit), pageSize=4096, blockCount=1048576, entitiesPerBlock=256, slots reserved=4294967296 bytes
+[Subsystems] Discovering subsystems at path C:/Users/ragip/MarsKod/oyun/Build/Win/MarsKod_Data/UnitySubsystems
+GfxDevice: creating device client; kGfxThreadingModeClientWorkerJobs
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: NVIDIA GeForce GTX 1650 Ti with Max-Q Design (ID=0x1f95)
+    Vendor:   NVIDIA
+    VRAM:     3935 MB
+    Driver:   32.0.16.1714
+Begin MonoManager ReloadAssembly
+- Finished resetting the current domain, in  0.018 seconds
+[Physics::Module] Selected backend (deferred post-plugins).
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+<RI> Initializing input.
+Using Windows.Gaming.Input
+UnloadTime: 5.885500 ms
+GRAFIK: Full | secenekler: varsayilan | arka plan olcegi 1 | ekran 450x975 | NVIDIA GeForce GTX 1650 Ti with Max-Q Design (Direct3D11) | olcek 1 msaa 4 hdr True
+ICU Data not available: falling back to minimal text segmentation (basic line breaking rules only, emoji sequences may not render correctly). The data is automatically assigned to the PanelSettings in the editor if the advanced text option is enabled in the project settings. It will not be present on PanelSettings created at runtime, so make sure the build contains at least one PanelSettings asset to get full international text support.
+No ICU data provided. Falling back to minimal text segmentation (basic line breaking rules only, emoji sequences may not render correctly).
+Shader 'Hidden/Universal Render Pipeline/GaussianDepthOfField' is not supported or has been stripped from the build (in 'DepthOfFieldGaussianPostProcessPass'). PostProcessing render passes will not execute.
+Shader 'Hidden/Universal Render Pipeline/GaussianDepthOfField' is not supported or has been stripped from the build (in 'DepthOfFieldGaussianPostProcessPass'). PostProcessing render passes will not execute.
+Shader 'Hidden/Universal Render Pipeline/BokehDepthOfField' is not supported or has been stripped from the build (in 'DepthOfFieldBokehPostProcessPass'). PostProcessing render passes will not execute.
+Shader 'Hidden/Universal Render Pipeline/PaniniProjection' is not supported or has been stripped from the build (in 'PaniniProjectionPostProcessPass'). PostProcessing render passes will not execute.
+KARE: 0 kare/sn | en uzun 4169 ms | islemci — ms | ekran karti — ms | performans kapali
+KARE: 48 kare/sn | en uzun 139 ms | islemci 19 ms | ekran karti 2 ms | performans kapali
+KARE: 58 kare/sn | en uzun 54 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 58 kare/sn | en uzun 42 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 21 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 59 kare/sn | en uzun 33 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 59 kare/sn | en uzun 36 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 59 kare/sn | en uzun 34 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 56 kare/sn | en uzun 41 ms | islemci 18 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 57 kare/sn | en uzun 34 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 52 kare/sn | en uzun 41 ms | islemci 19 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 58 kare/sn | en uzun 54 ms | islemci 18 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 18 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 58 kare/sn | en uzun 51 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 59 kare/sn | en uzun 32 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 57 kare/sn | en uzun 47 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 59 kare/sn | en uzun 30 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 1 ms | performans kapali
+KARE: 60 kare/sn | en uzun 17 ms | islemci 17 ms | ekran karti 2 ms | performans kapali
+SAHNE DENETIMI (yalniz Bolge 8): TAMAM
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input Polling Thread exited.
+Input System module state changed to: Shutdown.
+CodeReloadManager destroyed

@@ -112,8 +112,15 @@ public static class StationTraces
         WallDrawings.Paint(wallFace, levelNumber == DrawingsFirstLevel ? 3 : 5, 873);
 
     // 80 kapanisinin hatira kesmesi: 75'in koridoru (ayni oda, ayni 5 cizim) ayni yerde, 80'in esyalari gizli. CorridorSet.Hide geri alir.
+    // Hatira kadrajinda tavan lambasi ust yazilarin ("+30 XP" satiri) arkasina giriyordu: bu kesmede lamba mercekleri gizli,
+    // oda isigi (Tavan-Isigi) ve duvar bandi yerinde kalir.
     public static CorridorSet ShowCorridor(Transform levelRoot, Vector2 areaHalf, Func<float, float, float> ground) =>
-        CorridorSet.Show(levelRoot, root => PaintDrawings(DrawingsSecondLevel, BuildRoom(DrawingsSecondLevel, root, areaHalf, ground).BackWallFace));
+        CorridorSet.Show(levelRoot, root =>
+        {
+            var room = BuildRoom(DrawingsSecondLevel, root, areaHalf, ground);
+            foreach (var lamp in room.Lamps) lamp.enabled = false;
+            return PaintDrawings(DrawingsSecondLevel, room.BackWallFace);
+        });
 
     // 73 bitti: onarilan guc kutulariyla tavan lambalari kirpisarak yanar (Tekrar'da ResetBackdrop losa dondurur)
     public static void LightsOn(int levelNumber, Light sky, Light sun)

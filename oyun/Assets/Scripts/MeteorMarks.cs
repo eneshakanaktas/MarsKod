@@ -10,11 +10,12 @@ public sealed class MeteorMarks
     static readonly Color Rim = Mats.Hex("#2A2030");
     // Renkler Bolge 10 paletinden (docs/superpowers/plans/2026-11-15-bolge-9-10-gorunus.md): kor akkor-fusya (turuncu Defne'nin
     // oklarina ayrili), tas grafit
-    static readonly Color Ember = Mats.Hex("#FF3FA4");
+    public static readonly Color Ember = Mats.Hex("#FF3FA4");
     static readonly Color StoneDark = Mats.Hex("#2B2B2E");
 
     readonly Transform root;
     readonly Func<Cell, Vector3> pos;
+    Transform current;   // bu denemenin kraterleri
 
     public MeteorMarks(Transform parent, Func<Cell, Vector3> pos)
     {
@@ -22,12 +23,24 @@ public sealed class MeteorMarks
         this.pos = pos;
     }
 
+    /// <summary>Sahnedeki kraterlerin koku (duzen gecisi yeni kraterleri buradan alir)</summary>
+    public Transform Current => current;
+
     /// <summary>Bu denemenin kraterlerini kurar (oncekiler silinir)</summary>
     public void Show(IEnumerable<Cell> craters)
     {
-        for (int i = root.childCount - 1; i >= 0; i--) UnityEngine.Object.Destroy(root.GetChild(i).gameObject);
+        if (current != null) UnityEngine.Object.Destroy(current.gameObject);
+        current = Parts.Empty("Duzen", root);
         int seed = 0;
-        foreach (var cell in craters) Crater(root, pos(cell), seed++);
+        foreach (var cell in craters) Crater(current, pos(cell), seed++);
+    }
+
+    /// <summary>Duzen gecisi icin: sahnedeki kraterleri birakir (sonraki Show onlari silmez); gecis bitince LayoutGust siler</summary>
+    public Transform Release()
+    {
+        var released = current;
+        current = null;
+        return released;
     }
 
     // Krater: yere yassi koyu bir halka (kenari kalkik toprak) + ortasinda kor gibi parlayan cukur

@@ -4,7 +4,7 @@
   "gorev": "En büyük boyu bildir",
   "etiket": "BÖLGE 9 · TUZ GÖLÜ",
   "giris": "Sol 1.099 · Kayıt 5",
-  "bitis": "En büyük kristal: 12 cm",
+  "bitis": "En büyük kristal: {rapor} cm",
   "harita": [
     ". . . . . .",
     ". . . . . .",
@@ -13,8 +13,8 @@
     "R . . . . .",
     ". . . . . ."
   ],
-  "kristal_boyu": [5, 8, 12, 7, 9],
-  "rapor": 12,
+  "kristal_boyu": [[5, 8, 12, 7, 9], [10, 6, 4, 14, 3]],
+  "rapor": [12, 14],
   "bilgi": {
     "baslik": "Listeye ekle, en büyüğü bul",
     "metin": [

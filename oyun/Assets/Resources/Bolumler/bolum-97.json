@@ -19,8 +19,6 @@
     ["KK", "DD", "G", "DD"]
   ],
   "komutlar": ["move", "collect", "read_note", "smoke_here"],
-  "rutinler": ["yon"],
-  "donus_sarti": true,
   "parcalar": ["for parca in read_note():", "for harf in parca:", "move(yon(harf))", "if not smoke_here():", "collect()"],
   "konular": ["read_note", "iç içe döngü", "not", "değişen not"],
   "ipuclari": [

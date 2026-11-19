@@ -5,7 +5,8 @@
 // Harita "resim gibi" yazılır: her satır bir sıra, en üstteki satır kuzey (alanın arkası).
 //   R robot   B buz   E enerji hücresi   C nehir çakılı   V veri kartı   K kaya   T tehlikeli kristal   H hedef kare   . boş     (aradaki boşluklar önemsizdir)
 //   0-9 güneş paneli: rakam gücün onda biri (7 → gücü 70). 0 kırık panel (parçası toplanır), 1-4 çatlak (onarılır), 5-9 sağlam.
-//   Z toz bulutu: kaç beklemede dağılacağı "toz_suresi" listesinde, haritadaki okuma sırasıyla (üst satırdan, soldan sağa).
+//   Z toz bulutu: kaç beklemede dağılacağı "toz_suresi" listesinde, haritadaki okuma sırasıyla (üst satırdan, soldan sağa);
+//     deneme başına liste ([[3], [5]]) = her denemede başka süre; "kristal_boyu" ve "rapor" da öyle yazılabilir (AttemptFile.cs).
 //   M kablo makarası: uzunlukları (metre) "makara_uzunlugu" listesinde, aynı okuma sırasıyla. "rapor": antenin report() ile beklediği sayı.
 //   S tuz kristali: boyları (santimetre) "kristal_boyu" listesinde, aynı okuma sırasıyla (crystal_size() ölçer; Bölge 9).
 //   G göktaşı (toplanır), U meteorun yeni düştüğü krater (girilmez; meteor_ahead() bakar), X kızgın göktaşı (üstünden geçilir,
@@ -49,6 +50,8 @@ namespace MarsKod.Dunya
         public string Intro = "";
         /// <summary>Bölüm sonu ekranında görünen program metni (boş olabilir)</summary>
         public string Outro = "";
+        /// <summary>Bitiş yazısında antenin beklediği sayının yeri: "Toplam boy: {rapor} cm" (cevap denemeye göre değişebilir)</summary>
+        public const string ReportSlot = "{rapor}";
         public int Cols, Rows;
         public Cell Robot;
         /// <summary>Toplanacak nesnelerin kareleri (türü Item; tarihsel adı Ices)</summary>
@@ -66,14 +69,20 @@ namespace MarsKod.Dunya
         public List<Layout> Layouts = new List<Layout>();
         /// <summary>Güneş panelleri ve güçleri (kırık olanlar gücü 0 ile burada, parçaları Ices'ta)</summary>
         public Dictionary<Cell, int> Panels = new Dictionary<Cell, int>();
-        /// <summary>Toz bulutları ve kaç beklemede dağılacakları</summary>
+        /// <summary>Toz bulutları ve kaç beklemede dağılacakları (değişen süreli bölümde ilk deneme)</summary>
         public Dictionary<Cell, int> Dust = new Dictionary<Cell, int>();
+        /// <summary>Her denemede başka toz süresi (AttemptFile, A2); boşsa her denemede Dust</summary>
+        public List<Dictionary<Cell, int>> DustVersions = new List<Dictionary<Cell, int>>();
         /// <summary>Kablo makaraları ve uzunlukları (metre); makaralar Ices'ta da var (toplanırlar)</summary>
         public Dictionary<Cell, int> Reels = new Dictionary<Cell, int>();
-        /// <summary>Tuz kristallerinin boyları (santimetre); kristaller Ices'ta da var (toplanırlar)</summary>
+        /// <summary>Tuz kristallerinin boyları (santimetre); kristaller Ices'ta da var (toplanırlar). Değişen boylu bölümde ilk deneme</summary>
         public Dictionary<Cell, int> CrystalSizes = new Dictionary<Cell, int>();
-        /// <summary>Antenin report() ile beklediği sayı; null ise rapor istenmez</summary>
+        /// <summary>Her denemede başka kristal boyları (AttemptFile, A3); boşsa her denemede CrystalSizes</summary>
+        public List<Dictionary<Cell, int>> CrystalSizeVersions = new List<Dictionary<Cell, int>>();
+        /// <summary>Antenin report() ile beklediği sayı; null ise rapor istenmez. Deneme başına yazıldıysa ilk deneme</summary>
         public int? ExpectedReport;
+        /// <summary>Her denemede başka rapor (AttemptFile, A3); boşsa her denemede ExpectedReport</summary>
+        public List<int> ReportVersions = new List<int>();
         /// <summary>Rutin şartı ("rutinler", "rutin_sayisi"); yazılmadıysa şart yok</summary>
         public RoutineRule Routines = RoutineRule.None;
         /// <summary>Zorunlu yapılar ("zorunlu_yapilar"): kodda bunlar olmadan bölüm geçilmez; boşsa şart yok</summary>
@@ -99,8 +108,8 @@ namespace MarsKod.Dunya
         /// <summary>Robotun okuyacağı notlar (Bölge 8'den); birden çoksa değişen not: kod her notta denenir. Hedef notun yolunun sonu.</summary>
         public List<Note> Notes = new List<Note>();
 
-        /// <summary>Kaç sürümde denenir: iz, not ya da düzen sayısı (hiçbiri yoksa 1)</summary>
-        public int VersionCount => Math.Max(1, Math.Max(Math.Max(Trails.Count, Notes.Count), Layouts.Count));
+        /// <summary>Kaç sürümde denenir: iz, not, düzen, toz süresi, kristal boyu ya da rapor deneme sayısı (hiçbiri yoksa 1)</summary>
+        public int VersionCount => Math.Max(1, Math.Max(Math.Max(Trails.Count, Notes.Count), Math.Max(Math.Max(Layouts.Count, DustVersions.Count), Math.Max(CrystalSizeVersions.Count, ReportVersions.Count))));
 
         /// <summary>Bilgi kartı (yeni bir şey ilk kez göründüğünde); yoksa null</summary>
         public LevelInfo Info;
@@ -115,8 +124,8 @@ namespace MarsKod.Dunya
         public World CreateWorld(int version = 0)
         {
             var note = Notes.Count > 0 ? Notes[version] : null;
-            return new World(Cols, Rows, Robot, IcesOf(version), RocksOf(version), note != null ? note.Route.End : Target, Commands, CrystalsOf(version), Panels, Dust, Reels,
-                note?.Report ?? ExpectedReport, Trails.Count > 0 ? Trails[version] : null, note, CrystalSizes, CratersOf(version), HotStones);
+            return new World(Cols, Rows, Robot, IcesOf(version), RocksOf(version), note != null ? note.Route.End : Target, Commands, CrystalsOf(version), Panels, DustOf(version), Reels,
+                note?.Report ?? ReportOf(version), Trails.Count > 0 ? Trails[version] : null, note, CrystalSizesOf(version), CratersOf(version), HotStones);
         }
 
         // Bir denemedeki nesneler: haritadakiler (hep aynı, önde) ve (varsa) o denemenin düzeninden gelenler
@@ -124,6 +133,15 @@ namespace MarsKod.Dunya
         public List<Cell> RocksOf(int version) => With(Rocks, layout => layout.Rocks, version);
         public List<Cell> CrystalsOf(int version) => With(Crystals, layout => layout.Crystals, version);
         public List<Cell> CratersOf(int version) => With(Craters, layout => layout.Craters, version);
+        public Dictionary<Cell, int> DustOf(int version) => DustVersions.Count > 0 ? DustVersions[version] : Dust;
+        public Dictionary<Cell, int> CrystalSizesOf(int version) => CrystalSizeVersions.Count > 0 ? CrystalSizeVersions[version] : CrystalSizes;
+        public int? ReportOf(int version) => ReportVersions.Count > 0 ? ReportVersions[version] : ExpectedReport;
+        /// <summary>Bu denemenin bitiş yazısı ({rapor} yerine o denemede antenin beklediği sayı)</summary>
+        public string OutroOf(int version)
+        {
+            var report = Notes.Count > 0 && Notes[version].Report != null ? (int?)Notes[version].Report : ReportOf(version);
+            return Outro.Replace(ReportSlot, report?.ToString() ?? "");
+        }
 
         List<Cell> With(List<Cell> mapCells, Func<Layout, List<Cell>> pick, int version) =>
             Layouts.Count > 0 ? mapCells.Concat(pick(Layouts[version])).ToList() : mapCells;
@@ -153,7 +171,7 @@ namespace MarsKod.Dunya
         /// <summary>JSON metninden bölümü okur; yanlışta DataFormatError verir (Türkçe, satır numaralı).</summary>
         public static Level Parse(string json)
         {
-            var known = new HashSet<string> { "numara", "baslik", "etiket", "gorev", "giris", "bitis", "harita", "komutlar", "konular", "parcalar", "python_kelimeleri", "ipuclari", "tipik_hatalar", "baslangic_kodu", "cozum", "toz_suresi", "makara_uzunlugu", "rapor", "rutinler", "rutin_sayisi", "parametre_sarti", "donus_sarti", "zorunlu_yapilar", "izler", "ekran", "notlar", "bilgi", "kristal_boyu", LayoutFile.Field };
+            var known = new HashSet<string> { "numara", "baslik", "etiket", "gorev", "giris", "bitis", "harita", "komutlar", "konular", "parcalar", "python_kelimeleri", "ipuclari", "tipik_hatalar", "baslangic_kodu", "cozum", AttemptFile.DustField, "makara_uzunlugu", "rapor", "rutinler", "rutin_sayisi", "parametre_sarti", "donus_sarti", "zorunlu_yapilar", "izler", "ekran", "notlar", "bilgi", "kristal_boyu", LayoutFile.Field };
             var d = DataFields.ParseObject(json, known);
 
             var level = new Level
@@ -181,15 +199,26 @@ namespace MarsKod.Dunya
             if (level.Screen != null && d.ContainsKey("izler"))
                 throw new DataFormatError("\"ekran\" olan bölümde \"izler\" yazılmaz: robot yürümez.");
             var dustCells = ReadMap(level, TextList(d, "harita"), hasOtherTask: d.ContainsKey("izler") || d.ContainsKey("notlar") || d.ContainsKey(LayoutFile.Field) || d.ContainsKey("rapor") || level.Screen != null);
-            ReadDust(level, dustCells, d.ContainsKey("toz_suresi") ? IntList(d, "toz_suresi") : new List<int>());
-            ReadSizes(level, d, "makara_uzunlugu", Collectible.CableReel, "M", "kablo makarası", "uzunluk (metre)", level.Reels);
+            var dust = AttemptFile.ReadCellValues(d, AttemptFile.DustField, dustCells, "toz bulutu", DustMark.ToString(), "bekleme sayısı (kaç beklemede dağılacağı)");
+            level.Dust = dust[0];
+            if (dust.Count > 1) level.DustVersions = dust;
+            var reels = ReadSizes(level, d, AttemptFile.ReelField, Collectible.CableReel, "M", "kablo makarası", "uzunluk (metre)");
+            if (reels.Count > 1) throw new DataFormatError("\"" + AttemptFile.ReelField + "\" deneme başına yazılamaz; düz liste yaz, örn. [40, 70].");
+            level.Reels = reels[0];
             if (level.Commands.Contains("crystal_size") || d.ContainsKey("kristal_boyu"))   // boy yalnız ölçülen bölümde gerekir
-                ReadSizes(level, d, "kristal_boyu", Collectible.SaltCrystal, "S", "tuz kristali", "boy (santimetre)", level.CrystalSizes);
+            {
+                var sizes = ReadSizes(level, d, AttemptFile.CrystalField, Collectible.SaltCrystal, "S", "tuz kristali", "boy (santimetre)");
+                level.CrystalSizes = sizes[0];
+                if (sizes.Count > 1) level.CrystalSizeVersions = sizes;
+            }
             ReadNotes(level, d);
             LayoutFile.Read(level, d);
             ReadReport(level, d);
             ReadTrails(level, d);
             ReadRoutines(level, d);
+            AttemptFile.CheckCounts(level);
+            if (level.Outro.Contains(ReportSlot) && level.ExpectedReport == null && !level.Notes.Any(n => n.Report != null))
+                throw new DataFormatError("\"bitis\" içinde " + ReportSlot + " var ama bölümde \"rapor\" yok; yerine yazılacak sayı bulunamaz.");
             level.Pieces = d.ContainsKey("parcalar") ? NonEmptyList(d, "parcalar") : DerivePieces(level.Commands);
             if (d.ContainsKey("python_kelimeleri")) level.PythonWords = TextList(d, "python_kelimeleri");
             if (d.ContainsKey("tipik_hatalar")) level.Mistakes = ReadMistakes(d["tipik_hatalar"]);
@@ -227,7 +256,7 @@ namespace MarsKod.Dunya
             return list;
         }
 
-        /// <summary>Haritayı okur; toz bulutlarının karelerini okuma sırasıyla döndürür (süreleri ReadDust bağlar).</summary>
+        /// <summary>Haritayı okur; toz bulutlarının karelerini okuma sırasıyla döndürür (süreleri AttemptFile bağlar).</summary>
         /// <param name="hasOtherTask">Görev haritada değil: Serçe'nin izi, not, rapor ya da ekran bulmacası var</param>
         static List<Cell> ReadMap(Level level, List<string> rows, bool hasOtherTask)
         {
@@ -298,34 +327,10 @@ namespace MarsKod.Dunya
             return dustCells;
         }
 
-        /// <summary>Her toz bulutuna (okuma sırasıyla) "toz_suresi" listesindeki bekleme sayısını bağlar.</summary>
-        static void ReadDust(Level level, List<Cell> cells, List<int> durations)
-        {
-            if (durations.Count != cells.Count)
-                throw new DataFormatError("Haritada " + cells.Count + " toz bulutu (" + DustMark + ") var ama \"toz_suresi\" listesinde " + durations.Count
-                    + " sayı var. Her bulut için bir sayı yaz (kaç beklemede dağılacağı), haritadaki sırayla: üst satırdan başla, soldan sağa.");
-            for (int i = 0; i < cells.Count; i++)
-            {
-                if (durations[i] < 1) throw new DataFormatError("\"toz_suresi\" içindeki sayılar 1 ya da daha büyük olmalı (" + (i + 1) + ". sayı " + durations[i] + ").");
-                level.Dust[cells[i]] = durations[i];
-            }
-        }
-
         /// <summary>Ölçülen nesnelere (kablo makarası, tuz kristali) okuma sırasıyla listedeki ölçüyü bağlar: "makara_uzunlugu" → Reels,
         /// "kristal_boyu" → CrystalSizes. Haritada o nesne varsa liste zorunlu (kristalde yalnız crystal_size açıksa), yoksa yazılmaz.</summary>
-        static void ReadSizes(Level level, Dictionary<string, object> d, string field, Collectible item, string mark, string name, string unit, Dictionary<Cell, int> sizes)
-        {
-            var values = d.ContainsKey(field) ? IntList(d, field) : new List<int>();
-            var cells = level.Item == item ? level.Ices : new List<Cell>();
-            if (values.Count != cells.Count)
-                throw new DataFormatError("Haritada " + cells.Count + " " + name + " (" + mark + ") var ama \"" + field + "\" listesinde " + values.Count
-                    + " sayı var. Her biri için bir " + unit + " yaz, haritadaki sırayla: üst satırdan başla, soldan sağa.");
-            for (int i = 0; i < cells.Count; i++)
-            {
-                if (values[i] < 1) throw new DataFormatError("\"" + field + "\" içindeki sayılar 1 ya da daha büyük olmalı (" + (i + 1) + ". sayı " + values[i] + ").");
-                sizes[cells[i]] = values[i];
-            }
-        }
+        static List<Dictionary<Cell, int>> ReadSizes(Level level, Dictionary<string, object> d, string field, Collectible item, string mark, string name, string unit) =>
+            AttemptFile.ReadCellValues(d, field, level.Item == item ? level.Ices : new List<Cell>(), name, mark, unit);
 
         /// <summary>"rapor": antenin beklediği sayı. report komutu açıksa zorunlu (her not kendi "rapor"unu yazdıysa yazılmaz), kapalıysa yazılmaz.</summary>
         static void ReadReport(Level level, Dictionary<string, object> d)
@@ -341,7 +346,10 @@ namespace MarsKod.Dunya
                 throw new DataFormatError(open
                     ? "\"komutlar\" içinde \"report\" var ama \"rapor\" yok; antenin beklediği sayıyı yaz (örn. \"rapor\": 3)."
                     : "\"rapor\" yazılmış ama \"komutlar\" içinde \"report\" yok; rapor gönderilemez.");
-            if (open) level.ExpectedReport = Int(d, "rapor");
+            if (!open) return;
+            var reports = AttemptFile.ReadReports(d);
+            level.ExpectedReport = reports[0];
+            if (reports.Count > 1) level.ReportVersions = reports;
         }
 
         /// <summary>"izler": Serçe'nin gördüğü izler. scout komutu açıksa zorunlu, kapalıysa yazılmaz. Her iz robotun

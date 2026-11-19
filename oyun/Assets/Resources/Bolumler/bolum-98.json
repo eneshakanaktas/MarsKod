@@ -14,11 +14,10 @@
     ". . . . . ."
   ],
   "komutlar": ["move", "collect", "smoke_here"],
-  "rutinler": ["satir_tara"],
   "parcalar": ["def satir_tara():", "for adim in range(4):", "move(East)", "if not smoke_here():", "collect()", "move(North)", "move(West)", "for satir in range(3):", "satir_tara()"],
   "konular": ["rutin", "iç içe döngü", "not", "pekiştirme"],
   "ipuclari": [
-    "Yağmur dindi. Ovayı satır satır tara, kızgın olmayan taşları topla. Bir satırı tarayan işi `satir_tara` rutini yapsın."
+    "Yağmur dindi. Ovayı satır satır tara, kızgın olmayan taşları topla. Bir satırı tarayan işi bir rutin (örn. `satir_tara`) yapabilir."
   ],
   "tipik_hatalar": [
     {

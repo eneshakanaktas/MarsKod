@@ -112,6 +112,8 @@ public partial class Oyun : MonoBehaviour
     // Adim adim modu: her satirdan sonra ⏭ basisini bekler (stepRequested: bir satir daha calissin)
     bool stepMode, stepRequested;
     MeteorMarks meteorMarks;   // Bolge 10: o denemenin kraterleri (her denemede baska yerde olabilir)
+    LayoutGust layoutGust;     // degisen alanda suren duzen gecisi (yoksa null)
+    Coroutine layoutStep;      // oyuncunun oklarla baslattigi duzen gecisi (yoksa null)
     int trailTurn;       // degisen yolda her Calistir'da siradaki iz oynatilir (TrailRuns.Pick)
     bool versionChanged;   // son kosuda kod bir izde/notta calisip digerinde takildi: mesajin basinda soylenir
     float stars = 1f, starsTarget = 1f;
@@ -255,6 +257,7 @@ public partial class Oyun : MonoBehaviour
         hud.StepPressed += OnStep;
         hud.CodeChanged += OnCodeChanged;
         hud.ResetPressed += ResetLevel;
+        hud.LayoutStepped += StepLayout;
         // Sol ustteki dugme bolum secme ekranini acar
         hud.MenuPressed += ShowMenu;
         hud.RecordsPressed += () => { hud.HideLevelSelect(); hud.ShowRecords(RecordEntries()); };
@@ -309,7 +312,8 @@ public partial class Oyun : MonoBehaviour
             if (a[i] == "-bolum") int.TryParse(a[i + 1], out start);
         LoadLevel(Mathf.Clamp(levels.FindIndex(l => l.Number == start), 0, levels.Count - 1));
 
-        bool shotsArg = System.Array.IndexOf(a, "-shots") >= 0 || System.Array.IndexOf(a, "-izle") >= 0 || System.Array.IndexOf(a, "-incele") >= 0;
+        bool shotsArg = System.Array.IndexOf(a, "-shots") >= 0 || System.Array.IndexOf(a, "-izle") >= 0 || System.Array.IndexOf(a, "-incele") >= 0
+            || System.Array.IndexOf(a, "-duzenler") >= 0;
         bool showOpening = start == 1 && !shotsArg && PlayerPrefs.GetInt("acilis_gorundu", 0) == 0;
         if (System.Array.IndexOf(a, "-acilis") >= 0) showOpening = true; // test icin: her zaman goster
         if (showOpening)
@@ -335,6 +339,9 @@ public partial class Oyun : MonoBehaviour
         for (int i = 0; i < a.Length - 3; i++)   // -incele <ilk> <son> <klasor> (Oyun.GorselDenetim.cs)
             if (a[i] == "-incele" && int.TryParse(a[i + 1], out int auditFirst) && int.TryParse(a[i + 2], out int auditLast))
                 StartCoroutine(VisualAudit(auditFirst, auditLast, a[i + 3]));
+        for (int i = 0; i < a.Length - 3; i++)   // -duzenler <ilk> <son> <klasor> (Oyun.DuzenDenetimi.cs)
+            if (a[i] == "-duzenler" && int.TryParse(a[i + 1], out int layoutFirst) && int.TryParse(a[i + 2], out int layoutLast))
+                StartCoroutine(LayoutAudit(layoutFirst, layoutLast, a[i + 3]));
     }
 
     // Arka plan animasyonlari (ayar, bolum secme ekraninda): kapaliyken gokyuzu duraganlasir, telefon daha az yorulur
@@ -514,6 +521,7 @@ public partial class Oyun : MonoBehaviour
         closingSkip.Stop();
         if (program != null) StopCoroutine(program);
         program = null;
+        FinishLayoutSwitch();
         running = false; done = false; complete = false;
         stepMode = false; stepRequested = false;
         trailTurn = 0;
@@ -558,6 +566,7 @@ public partial class Oyun : MonoBehaviour
         hud.SetPieces(level.Pieces, Palette.NewPieces(levels, level.Number));
         bool landingDue = LandingDue;   // 51'e her girisde: giris damgasi roket indikten sonra gelir
         hud.SetLevel(level.Number, level.Label, level.Title, level.Goal, level.IcesOf(0).Count, level.Item, landingDue ? "" : level.Intro);
+        hud.SetLayouts(level.Layouts.Count, LayoutName);
         if (level.Screen != null) hud.ShowScreen(level.Screen, ScreenView.NameFor(region)); else hud.HideScreen();
         hud.HideNote();
         hud.SetInfo(level.Info, seen: !shotsMode && PlayerPrefs.GetInt(InfoKey(level), 0) == 1);   // gorulmediyse kart kendiliginden acilir
@@ -712,6 +721,7 @@ public partial class Oyun : MonoBehaviour
 
     void OnRun()
     {
+        if (layoutStep != null) return;   // oyuncunun baslattigi duzen gecisi bitmeden kod calismaz
         if (running)
         {
             // adim adim modunda "Devam": kalan satirlar normal hizda
@@ -736,6 +746,7 @@ public partial class Oyun : MonoBehaviour
     // (normal hizda calisirken basilirsa o satirdan sonra durur).
     void OnStep()
     {
+        if (layoutStep != null) return;   // oyuncunun baslattigi duzen gecisi bitmeden kod calismaz
         if (running) { stepMode = true; stepRequested = true; return; }
         if (done && complete) return;
         StartProgram(stepping: true);
@@ -830,6 +841,7 @@ public partial class Oyun : MonoBehaviour
         closingSkip.Stop();
         if (program != null) StopCoroutine(program);
         program = null;
+        FinishLayoutSwitch();
         running = false; done = false; complete = false;
         stepMode = false; stepRequested = false;
         ResetRobot();
@@ -875,6 +887,67 @@ public partial class Oyun : MonoBehaviour
         }
     }
 
+    // Degisen alanin oklari: kod calismiyorken sahne oteki duzene gecer (bitmis kosu varsa once sahne sifirlanir)
+    void StepLayout(int direction)
+    {
+        int count = level.Layouts.Count;
+        if (running || layoutStep != null || count < 2) return;
+        if (done) ResetLevel();
+        int version = ((builtVersion + direction) % count + count) % count;
+        layoutStep = StartCoroutine(StepLayoutRoutine(version));
+    }
+
+    IEnumerator StepLayoutRoutine(int version)
+    {
+        hud.SetLayoutLocked(true);
+        yield return SwitchLayout(version);
+        hud.SetLayoutLocked(false);
+        layoutStep = null;
+    }
+
+    // Sahnedeki duzeni verilen duzene gecirir: yenisi kurulur, eskisi gecis bitene dek durur (LayoutGust ikisini birlikte oynatir).
+    // Animasyonlar kapaliysa gecis aninda olur.
+    IEnumerator SwitchLayout(int version)
+    {
+        EndLayoutGust();
+        var changed = LayoutDiff.ChangedCells(level, builtVersion, version);
+        var oldRoots = new[] { layoutRoot, meteorMarks.Release() };
+        layoutRoot = null;   // BuildLayout eski duzeni silmesin
+        BuildLayout(version);
+        meteorMarks.Show(level.CratersOf(version));
+        hud.ShowLayout(version);
+        var changedSpots = changed.ConvertAll(c => Pos(c));
+        layoutGust = new LayoutGust(levelRoot, oldRoots, new[] { layoutRoot, meteorMarks.Current }, changedSpots);
+        if (animationsOn)
+            yield return Regions.Of(level.Number) == Region.NightPlain ? layoutGust.Meteors(MeteorMarks.Ember) : layoutGust.Snow(new Vector2(AreaHalfX, AreaHalfZ));
+        EndLayoutGust();
+        CellGlow.Play(levelRoot, changedSpots, LayoutGlowColor);   // degisen kareler kisa sure parlar
+    }
+
+    // Degisen alanin bolgeye gore adi ve parlama rengi: Bolge 2 tipi (buz mavisi), Bolge 10 meteor (kor)
+    bool MeteorLayouts => Regions.Of(level.Number) == Region.NightPlain;
+    string LayoutName => MeteorLayouts ? "METEOR" : "TİPİ";
+    Color LayoutGlowColor => MeteorLayouts ? MeteorMarks.Ember : Mats.Hex("#A9E6F5");
+
+    // Gecisin topaklarini ve eski duzeni siler; sahne yeni duzenin son haliyle kalir
+    void EndLayoutGust()
+    {
+        layoutGust?.Finish();
+        layoutGust = null;
+    }
+
+    // Suren gecisi yarida keser (bolum degisirken, Tekrar'da)
+    void FinishLayoutSwitch()
+    {
+        if (layoutStep != null)
+        {
+            StopCoroutine(layoutStep);
+            layoutStep = null;
+            hud.SetLayoutLocked(false);
+        }
+        EndLayoutGust();
+    }
+
     // Kodu motorda aninda calistirir, sonra kaydi oynatir.
     IEnumerator RunProgram()
     {
@@ -888,8 +961,10 @@ public partial class Oyun : MonoBehaviour
         versionChanged = TrailRuns.Mixed(runs);
         trailView?.Begin(level.Trails[runs.IndexOf(shown)]);   // degisen yolda her kosu kendi izini gosterir
         shownVersion = runs.IndexOf(shown);
-        if (shownVersion != builtVersion) BuildLayout(shownVersion);   // degisen alanda her kosu kendi buz/kristal/engelini
-        meteorMarks.Show(level.CratersOf(shownVersion));               // ve kraterlerini
+        // degisen alanda her kosu kendi buz/kristal/engelini ve kraterlerini (yalniz duzen degisen bolumde; toz suresi degisen
+        // bolumde sahnede degisen bir sey yok, bulutlar o denemenin suresiyle incelir)
+        if (level.Layouts.Count > 1 && shownVersion != builtVersion) yield return SwitchLayout(shownVersion);
+        if (level.Layouts.Count > 1) hud.ShowLayout(shownVersion);
 
         // Bitmeyen dongude kaydin sadece basi oynatilir; uzun kayitta bos satirlarda beklenmez.
         int count = report.Halt != null && report.Halt.Reason == "steps" ? Mathf.Min(report.Trace.Count, 40) : report.Trace.Count;
@@ -963,7 +1038,7 @@ public partial class Oyun : MonoBehaviour
                 xpLine = "+" + earned + " XP · " + Xp.Name(kind) + " ile çözdün";
             }
             else xpLine = Xp.Name(kind) + " ile çözdün · bu XP daha önce alındı";
-            hud.SetDone(HasNext, xpLine, xp.NextBetterText(level.Number, kind), level.Outro);
+            hud.SetDone(HasNext, xpLine, xp.NextBetterText(level.Number, kind), level.OutroOf(shownVersion));
             hud.HideNote();   // bitis yazilari notun kartinin yerine gelir
             bool perde1Finale = level.Number == Bolge5SonBolum && HasNext;
             if (perde1Finale) hud.HoldNext();
@@ -1277,9 +1352,19 @@ public partial class Oyun : MonoBehaviour
     // Degisen alanin cumlesi bolgeye gore: Bolge 2 tipi, Bolge 10 meteor
     string LayoutChangedNote => Regions.Of(level.Number) == Region.PolarIce ? "Bu denemede tipi alanı değiştirdi." : "Bu denemede meteorlar başka yere düştü.";
 
-    string VersionChangedNote => level.Notes.Count > 0 ? "Bu denemede not başka bir yol yazıyor."
-        : level.Layouts.Count > 0 ? LayoutChangedNote
-        : "Serçe bu sefer başka bir kol gördü.";
+    // Kod bir denemede calisip bu sefer takildiysa: bu denemede ne degisti (birden cok sey degisebilir: 90'da not ve kristal boylari)
+    string VersionChangedNote
+    {
+        get
+        {
+            var changes = new List<string>();
+            if (level.Notes.Count > 0) changes.Add("not başka bir yol yazıyor");
+            if (level.CrystalSizeVersions.Count > 0) changes.Add("kristallerin boyu farklı");
+            if (level.DustVersions.Count > 0) changes.Add("toz başka bir süre sürdü");
+            if (changes.Count > 0) return "Bu denemede " + string.Join(" ve ", changes) + ".";
+            return level.Layouts.Count > 0 ? LayoutChangedNote : "Serçe bu sefer başka bir kol gördü.";
+        }
+    }
 
     // Kod bir izde/notta calisip bu sefer takildiysa oyuncu yolun degistigini bilsin
     void ShowFailure(string header, string title, string text, string detail, bool error)

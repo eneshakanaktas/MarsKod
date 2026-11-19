@@ -47,6 +47,7 @@ public static class OyunBuild
         Make("Decal", "MarsKod/Decal", null);
         Make("Ground", "MarsKod/Ground", null);
         Make("FarRock", "MarsKod/FarRock", null);
+        Make("Particle", "MarsKod/Particle", null);
         KeepEmission();
     }
 

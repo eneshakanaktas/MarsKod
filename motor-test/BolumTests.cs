@@ -58,11 +58,15 @@ public class BolumTests
             Assert.True(level.Goal.Length <= 22, n + ": gorev çok uzun (" + level.Goal.Length + " harf)");
         }
         Assert.StartsWith("Tuz kristali: " + Load("bolum-81.json").Ices.Count + " ", Load("bolum-81.json").Outro);
-        Assert.StartsWith("Toplam boy: " + Load("bolum-82.json").ExpectedReport + " cm", Load("bolum-82.json").Outro);
-        Assert.Equal("En büyük kristal: " + Load("bolum-83.json").ExpectedReport + " cm", Load("bolum-83.json").Outro);
-        Assert.StartsWith("Farklı boy: " + Load("bolum-85.json").ExpectedReport + " ", Load("bolum-85.json").Outro);
+        // 82, 83, 85, 90: boylar her denemede değişir (A3); bitiş yazısı o denemenin cevabını gösterir
+        foreach (var (file, start) in new[] { ("bolum-82.json", "Toplam boy: "), ("bolum-83.json", "En büyük kristal: "), ("bolum-85.json", "Farklı boy: "), ("bolum-90.json", "En büyük kristal: ") })
+        {
+            var level = Load(file);
+            for (int v = 0; v < level.VersionCount; v++)
+                Assert.StartsWith(start + level.ReportOf(v) + " ", level.OutroOf(v));
+        }
+        Assert.Equal("En büyük kristal: 12 cm", Load("bolum-83.json").OutroOf(0));
         Assert.StartsWith("Kırmızı kristal: " + Load("bolum-88.json").Crystals.Count + " ", Load("bolum-88.json").Outro);
-        Assert.StartsWith("En büyük kristal: " + Load("bolum-90.json").ExpectedReport + " cm", Load("bolum-90.json").Outro);
         // 85: Defne'nin yarım listesi başlangıç kodunun ilk satırı (senaryo-perde-2.md, harfi harfine)
         Assert.StartsWith("yanimiza_al = [\"su\", \"ilac\", \"battaniye\", \"Ece'nin defteri\", ]\n", Load("bolum-85.json").StartCode.Replace("\r\n", "\n"));
     }

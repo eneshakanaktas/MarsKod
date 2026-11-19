@@ -19,8 +19,6 @@
     ["North", "North", "East", "East", "North", "East", "North", "West"]
   ],
   "komutlar": ["move", "scout", "dust_here", "wait"],
-  "rutinler": ["git"],
-  "parametre_sarti": true,
   "parcalar": ["def git(yon):", "move(yon)", "while dust_here():", "wait()", "git(scout())", "for i in range(4):"],
   "konular": ["fonksiyon", "parametre", "döngü içinde fonksiyon"],
   "ipuclari": [
@@ -40,10 +38,6 @@
     {
       "kod": ["def git(yon):", "    move(yon)", "    while dust_here():", "        wait()", "for i in range(7):", "    git(scout())"],
       "aciklama": "İz 8 adım: robot izin sonuna bir adım kala durur."
-    },
-    {
-      "kod": ["def git():", "    move(scout())", "    while dust_here():", "        wait()", "for i in range(8):", "    git()"],
-      "aciklama": "Robot izi yürür ama git'in bilgi kutusu yok: Serçe'nin cevabını rutine parametre olarak ver."
     }
   ],
   "cozum": [

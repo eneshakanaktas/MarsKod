@@ -74,11 +74,14 @@ namespace MarsKod.Dunya
             throw new DataFormatError("\"" + key + "\" bir metin listesi olmalı, örn. [\"birinci\", \"ikinci\"].");
         }
 
-        public static List<int> IntList(Dictionary<string, object> d, string key)
+        public static List<int> IntList(Dictionary<string, object> d, string key) => IntListOf(Field(d, key), "\"" + key + "\"");
+
+        /// <summary>Tam sayı listesi (tırnaksız); where hata mesajında alanın adı</summary>
+        public static List<int> IntListOf(object v, string where)
         {
-            if (Field(d, key) is List<object> list && list.All(x => x is double n && n == Math.Floor(n) && Math.Abs(n) < 1e6))
+            if (v is List<object> list && list.All(x => x is double n && n == Math.Floor(n) && Math.Abs(n) < 1e6))
                 return list.Select(x => (int)(double)x).ToList();
-            throw new DataFormatError("\"" + key + "\" tam sayılardan oluşan bir liste olmalı (tırnaksız), örn. [3, 5].");
+            throw new DataFormatError(where + " tam sayılardan oluşan bir liste olmalı (tırnaksız), örn. [3, 5].");
         }
 
         /// <summary>Kod, her satırı ayrı bir metin olan liste olarak yazılır (okunması kolay); tek metin de kabul edilir.</summary>

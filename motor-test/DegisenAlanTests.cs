@@ -8,9 +8,9 @@ namespace MotorTest;
 // Kod her düzende ayrı denenir; bölüm, kod hepsinde çalışınca biter. Bölge 2 sınavları (15, 20) ve Bölge 10 bu kalıbı kullanır.
 public class DegisenAlanTests
 {
-    static Level Load(int number) => Level.Parse(File.ReadAllText(Path.Combine(BolumDizini, "bolum-" + number + ".json")));
+    internal static Level Load(int number) => Level.Parse(File.ReadAllText(Path.Combine(BolumDizini, "bolum-" + number + ".json")));
 
-    static string BolumDizini
+    internal static string BolumDizini
     {
         get
         {
@@ -133,7 +133,9 @@ public class DegisenAlanTests
     // ---- ezber denetimi ----
 
     // Çözümün bir düzendeki yürüyüşü, koşulsuz yazılmış hâli: yalnızca move(...) ve collect() alt alta
-    static string Memorized(Level level, int version)
+    // Bir denemede çözümün yaptığı her şey koşulsuz yazılınca: yürüyüş, toplama, bekleme, rapor (ezber kod; DegisenTozTests ve
+    // DegisenOlcuTests de kullanır)
+    internal static string Memorized(Level level, int version)
     {
         var world = level.CreateWorld(version);
         var report = ProgramRun.Execute(level.Solution, world);   // bölümün rutin/ekran şartları ezber için aranmaz
@@ -143,17 +145,19 @@ public class DegisenAlanTests
             {
                 if (e is Moved m) code.AppendLine("move(" + m.Direction + ")");
                 else if (e is Collected c && c.IceIndex >= 0) code.AppendLine("collect()");
+                else if (e is Waited) code.AppendLine("wait()");
+                else if (e is ReportSent r) code.AppendLine("report(" + r.Value + ")");
             }
         return code.ToString();
     }
 
-    static string Why(Level level, string code, int v)
+    internal static string Why(Level level, string code, int v)
     {
         var r = ProgramRun.Execute(code, level.CreateWorld(v));
         return "halt=" + r.Halt?.Reason + " rule=" + r.Rule?.Title + " err=" + r.Error?.Message;
     }
 
-    static bool PlainRun(Level level, string code, int version) => ProgramRun.Execute(code, level.CreateWorld(version)).Complete;
+    internal static bool PlainRun(Level level, string code, int version) => ProgramRun.Execute(code, level.CreateWorld(version)).Complete;
 
     // Ezberle geçildiği bilinen ve henüz düzeltilmemiş bölümler (2026-11-18: 92, 93, 96, 100 düzeltildi, liste boş).
     // Düzeltilen bölüm listeden çıkarılır; Bilinen_ezber_acigi_listesi_guncel test'i listeyi güncel tutar.

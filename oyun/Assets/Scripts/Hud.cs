@@ -25,6 +25,8 @@ public class Hud : MonoBehaviour
     public event Action<int> RecordPicked;   // Kayitlar sayfasindan secilen kaydin numarasi
     // Oyuncu ampule basti (hangi ipucunun gorunecegine Oyun.cs karar verir)
     public event Action HintPressed;
+    // Degisen alanin oklarina basildi: -1 onceki duzen, +1 sonraki (hangi duzene gecilecegine Oyun.cs karar verir)
+    public event Action<int> LayoutStepped;
 
     static readonly Color Accent = Mats.Hex("#E07A5F");
     static readonly Color Ink = Mats.Hex("#E9E4EE");
@@ -74,6 +76,7 @@ public class Hud : MonoBehaviour
     KeyboardTier tier = KeyboardTier.Orta;
     Label chapter, title, runText, msgTag, msgTitle, msgText, msgOriginal, xpTotalLabel, xpDoneLabel, xpNextLabel, outroLabel, introText;
     VisualElement dotsRow;
+    LayoutSwitcher layoutSwitcher;   // degisen alanda "◀ ALAN 1/2 ▶"
     IVisualElementScheduledItem chapterRewrite;   // RewriteChapter suruyorsa (ResetView durdurur)
     Icon starIcon, soundIcon;
     bool soundOn = true;
@@ -243,6 +246,10 @@ public class Hud : MonoBehaviour
         dotsRow.style.marginTop = 16;
         BuildDots();
         center.Add(dotsRow);
+
+        layoutSwitcher = new LayoutSwitcher(fSemi, HeaderText, glass);
+        layoutSwitcher.Stepped += direction => LayoutStepped?.Invoke(direction);
+        center.Add(layoutSwitcher);
 
         xpDoneLabel = Text("", fSemi, 32, HeaderText);
         xpDoneLabel.style.marginTop = 14;
@@ -588,8 +595,16 @@ public class Hud : MonoBehaviour
         runBtn.style.opacity = running && !paused ? 0.6f : 1f;
         stepBtn.style.display = DisplayStyle.Flex;
         editor.ReadOnly = running; // calisirken kod degistirilemez
+        layoutSwitcher.SetLocked(running);
         if (running) hint.Hide();
     }
+
+    // ---- Degisen alan (duzenler): gosterge ve oklar ----
+    public void SetLayouts(int count, string name) => layoutSwitcher.Setup(count, name);
+    public void ShowLayout(int index) => layoutSwitcher.Show(index);
+    public void SetLayoutLocked(bool on) => layoutSwitcher.SetLocked(on);
+    public bool LayoutSwitcherVisible => layoutSwitcher.Visible;   // goruntu denetimi
+    public string LayoutText => layoutSwitcher.Text;
 
     // hasNext: sonraki bolum varsa dugme "Sonraki bolum" olur.
     // xpLine: "+50 XP · Orta ile çözdün" gibi (Xp mantığı Oyun.cs'te kurulur, burada yalnızca gösterilir).

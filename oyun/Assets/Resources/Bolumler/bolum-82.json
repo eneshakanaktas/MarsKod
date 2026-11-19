@@ -4,7 +4,7 @@
   "gorev": "Toplam boyu bildir",
   "etiket": "BÖLGE 9 · TUZ GÖLÜ",
   "giris": "Sol 1.098 · Ufuk kayboluyor",
-  "bitis": "Toplam boy: 27 cm · Gökyüzü yerde",
+  "bitis": "Toplam boy: {rapor} cm · Gökyüzü yerde",
   "harita": [
     ". . . . . .",
     ". . . . . .",
@@ -13,8 +13,8 @@
     ". . . S . .",
     ". . . R . ."
   ],
-  "kristal_boyu": [6, 4, 9, 3, 5],
-  "rapor": 27,
+  "kristal_boyu": [[6, 4, 9, 3, 5], [3, 8, 5, 7, 1]],
+  "rapor": [27, 24],
   "zorunlu_yapilar": ["for"],
   "komutlar": ["move", "collect", "crystal_size", "report"],
   "bilgi": {
@@ -32,6 +32,10 @@
     "Döngünün içinde `toplam += crystal_size()` / `collect()`; döngüden sonra, girintisiz `report(toplam)`."
   ],
   "tipik_hatalar": [
+    {
+      "kod": ["yol = [North, North, West, West, North]", "for y in yol:", "    move(y)", "    collect()", "report(27)"],
+      "aciklama": "Cevabı bir denemede gördün ama kristallerin boyu her denemede değişir: öteki denemede toplam 27 değil. Sayıyı yazma, ölçtür: toplam += crystal_size()"
+    },
     {
       "kod": ["yol = [North, North, West, West, North]", "toplam = 0", "for y in yol:", "    move(y)", "    collect()", "    toplam += crystal_size()", "report(toplam)"],
       "aciklama": "Önce toplandı, sonra ölçüldü: toplanan kristalin boyu 0. Önce ölç, sonra topla."

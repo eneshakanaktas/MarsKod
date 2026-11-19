@@ -13,7 +13,7 @@
     ". . . . . .",
     "R Z . . . H"
   ],
-  "toz_suresi": [3],
+  "toz_suresi": [[3], [5]],
   "komutlar": ["move", "collect", "rock_ahead", "dust_here", "wait"],
   "parcalar": ["move(East)", "wait()", "for i in range(3):", "while dust_here():"],
   "python_kelimeleri": ["while"],

@@ -31,15 +31,15 @@ Sol sayısı iki bölümde bir artar (Bölge 8 sol 1.097'de bitti). Etiket hepsi
 | Bölüm | Giriş damgası | Bitiş damgası | Olan · ders |
 |---|---|---|---|
 | 81 Tuz gölünün kıyısı | Sol 1.098 · Tuz gölünün kıyısı | Tuz kristali: 5 · Ufuk: bembeyaz | Kıyı. İlk liste: `yol = [North, ...]`, `for y in yol:`. |
-| 82 Ufuk kayboluyor | Sol 1.098 · Ufuk kayboluyor | Toplam boy: 27 cm · Gökyüzü yerde | `crystal_size()` açılır (yeni komut; bilgi kartı). Listedeki yolu yürü, boyları topla, `report`. |
-| 83 Kayıt 5 | Sol 1.099 · Kayıt 5 | En büyük kristal: 12 cm | Bölüm başında Kayıt 5. `append` + `max`. |
+| 82 Ufuk kayboluyor | Sol 1.098 · Ufuk kayboluyor | Toplam boy: {rapor} cm · Gökyüzü yerde (27 ya da 24; boylar her denemede değişir, A3) | `crystal_size()` açılır (yeni komut; bilgi kartı). Listedeki yolu yürü, boyları topla, `report`. |
+| 83 Kayıt 5 | Sol 1.099 · Kayıt 5 | En büyük kristal: {rapor} cm (12 ya da 14; A3) | Bölüm başında Kayıt 5. `append` + `max`. |
 | 84 Tuzla çevrili oklar | Sol 1.099 · Tuzla çevrili oklar | İlk ok tuzla çevrili · Biri okları korumuş | `read_note()` artık liste verir (bilgi kartı). İlk ok `oklar[0]` yön, okların sayısı `len(oklar)` adım. 2 not. |
-| 85 Yarım kalmış liste | Sol 1.100 · Yarım kalmış liste | Farklı boy: 4 · Liste yarım kalmış | Başlangıç kodunda Defne'nin yarım listesi. `in` / `not in` + `append` + `len`: kaç farklı boy (bilgi kartı: sondaki virgül hata değil). |
+| 85 Yarım kalmış liste | Sol 1.100 · Yarım kalmış liste | Farklı boy: {rapor} · Liste yarım kalmış (4 ya da 3; A3) | Başlangıç kodunda Defne'nin yarım listesi. `in` / `not in` + `append` + `len`: kaç farklı boy (bilgi kartı: sondaki virgül hata değil). |
 | 86 Tuza gömülü | Sol 1.100 · Tuza gömülü | Bulundu: oyuncak astronot · Çantaya | İç içe döngüye giriş: gölü satır satır tara. Oyuncak astronot taranan karelerden birinde (3a). |
 | 87 Kristaller sıraya | Sol 1.101 · Kristaller sıraya | Not: gölün haritası · Sayıldı | Not gölün küçük haritası (satır listesi); iç içe döngüyle `T`'leri say, `report`. 3 not, her birinde anten başka sayı bekler. |
 | 88 Volkan belirginleşir | Sol 1.101 · Volkan belirginleşir | Kırmızı kristal: 4 · Dokunulmadı | Tarama + `if crystal_size() > 0:`; kırmızı kristaller toplanmaz. |
 | 89 Gölün ortası | Sol 1.102 · Gölün ortası | Her yön aynı · Yalnız oklar | Not yol parçalarının listesi; dış döngü parçalar, iç döngü harfler. 3 not. |
-| 90 Karşı kıyı | Sol 1.102 · Karşı kıyı | En büyük kristal: 11 cm · Sonraki: gece ovası | Final: parça listesi + ölç + listeye ekle + `max`; bir notta yol kırmızı kristalden geçer. 3 not. |
+| 90 Karşı kıyı | Sol 1.102 · Karşı kıyı | En büyük kristal: {rapor} cm · Sonraki: gece ovası (11, 12 ya da 10; A3) | Final: parça listesi + ölç + listeye ekle + `max`; bir notta yol kırmızı kristalden geçer. 3 not. |
 
 Sınavlar: `sinav-85` (`liste[0]`, `len`, `append`, sondaki virgül, `in`), `sinav-90` (iç içe döngüde kaç tur: 3 × 4 = 12; iç ile dış döngünün sırası; `parcalar[0][1]`).
 

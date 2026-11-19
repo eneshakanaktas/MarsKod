@@ -19,8 +19,6 @@
     ["K", "DDDD", "KKKK", "B"]
   ],
   "komutlar": ["move", "read_note"],
-  "rutinler": ["yon"],
-  "donus_sarti": true,
   "parcalar": ["for parca in read_note():", "for harf in parca:", "move(yon(harf))"],
   "konular": ["iç içe döngü", "metin listesi", "read_note", "değişen not"],
   "ipuclari": [

@@ -4,7 +4,7 @@
   "gorev": "Karşı kıyıya geç",
   "etiket": "BÖLGE 9 · TUZ GÖLÜ",
   "giris": "Sol 1.102 · Karşı kıyı",
-  "bitis": "En büyük kristal: 11 cm · Sonraki: gece ovası",
+  "bitis": "En büyük kristal: {rapor} cm · Sonraki: gece ovası",
   "harita": [
     "K . . . K .",
     ". . . . . .",
@@ -13,16 +13,14 @@
     "S . T . K .",
     "R . . . . ."
   ],
-  "kristal_boyu": [6, 11, 4, 9, 5],
-  "rapor": 11,
+  "kristal_boyu": [[6, 11, 4, 9, 5], [7, 3, 4, 12, 5], [8, 6, 10, 3, 5]],
+  "rapor": [11, 12, 10],
   "notlar": [
     ["KKK", "DD", "KK"],
     ["KKK", "DD", "GGG", "D"],
     ["KKK", "DD", "DDD", "K"]
   ],
   "komutlar": ["move", "collect", "read_note", "crystal_size", "report"],
-  "rutinler": ["yon"],
-  "donus_sarti": true,
   "parcalar": ["boylar = []", "for parca in read_note():", "for harf in parca:", "move(yon(harf))", "if crystal_size() > 0:", "boylar.append(crystal_size())", "collect()", "report(max(boylar))"],
   "konular": ["iç içe döngü", "liste", "append", "max", "read_note", "değişen not", "bölge finali"],
   "ipuclari": [

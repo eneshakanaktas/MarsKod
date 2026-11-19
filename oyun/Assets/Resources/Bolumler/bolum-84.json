@@ -24,8 +24,6 @@
     }
   ],
   "komutlar": ["move", "read_note"],
-  "rutinler": ["yon"],
-  "donus_sarti": true,
   "bilgi": {
     "baslik": "Not artık bir liste",
     "metin": [

@@ -13,7 +13,7 @@
     ". . . . . .",
     "R Z . Z Z H"
   ],
-  "toz_suresi": [2, 4, 1],
+  "toz_suresi": [[2, 4, 1], [4, 1, 3]],
   "komutlar": ["move", "collect", "rock_ahead", "dust_here", "wait"],
   "parcalar": ["move(East)", "wait()", "for i in range(3):", "while dust_here():", "if dust_here():"],
   "konular": ["while döngüsü", "if ile while farkı", "for döngüsü", "dust_here", "wait"],
@@ -23,6 +23,10 @@
     "`for i in range(5):` içinde `move(East)`, altında `while dust_here():` → `wait()`."
   ],
   "tipik_hatalar": [
+    {
+      "kod": ["move(East)", "wait()", "wait()", "move(East)", "move(East)", "wait()", "wait()", "wait()", "wait()", "move(East)", "wait()", "move(East)"],
+      "aciklama": "Beklemeleri saymak bir denemede tutar ama toz her denemede başka süre sürer: öteki denemede robot tozdayken yürür. Sayma, sor: while dust_here():"
+    },
     {
       "kod": ["for i in range(5):", "    move(East)", "    if dust_here():", "        wait()"],
       "aciklama": "if yalnızca bir kez bekler: ilk bulut iki tur sürüyor, robot hâlâ tozdayken yürümeye çalışır."

@@ -13,7 +13,7 @@
     ". . K . . .",
     "R K . . . ."
   ],
-  "toz_suresi": [3, 2],
+  "toz_suresi": [[3, 2], [1, 4]],
   "komutlar": ["move", "collect", "rock_ahead", "dust_here", "wait"],
   "parcalar": ["move(North)", "move(East)", "wait()", "while not rock_ahead(North):", "while dust_here():"],
   "konular": ["while döngüsü", "döngü sorusu turun başında", "iç içe while", "rock_ahead"],

@@ -4,7 +4,7 @@
   "gorev": "Farklı boyları say",
   "etiket": "BÖLGE 9 · TUZ GÖLÜ",
   "giris": "Sol 1.100 · Yarım kalmış liste",
-  "bitis": "Farklı boy: 4 · Liste yarım kalmış",
+  "bitis": "Farklı boy: {rapor} · Liste yarım kalmış",
   "harita": [
     ". . . . . .",
     ". S S S . .",
@@ -13,8 +13,8 @@
     ". R . . . .",
     ". . . . . ."
   ],
-  "kristal_boyu": [5, 3, 7, 3, 5, 4, 7],
-  "rapor": 4,
+  "kristal_boyu": [[5, 3, 7, 3, 5, 4, 7], [6, 2, 6, 8, 2, 6, 6]],
+  "rapor": [4, 3],
   "komutlar": ["move", "collect", "crystal_size", "report"],
   "bilgi": {
     "baslik": "Yarım kalmış bir liste",

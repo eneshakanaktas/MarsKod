@@ -13,7 +13,7 @@
     ". . . . . .",
     ". . . . . ."
   ],
-  "toz_suresi": [4],
+  "toz_suresi": [[4], [2]],
   "komutlar": ["move", "collect", "rock_ahead", "dust_here", "wait"],
   "parcalar": ["move(East)", "collect()", "wait()", "while not rock_ahead(East):", "while dust_here():"],
   "konular": ["while döngüsü", "iç içe while", "collect", "dust_here"],

@@ -1,5 +1,20 @@
 ﻿# İlerleme Notu — MarsKod (geçici isim)
 
+## AÇIK İŞLER (herkes oturum başında okur; iş bitince satırı sil, yeni sorun çıkınca buraya ekle)
+Kural (Enes, 2026-11-19): "Açık", "ertelendi", "ayrı büyük iş", "X'e not" denen her şey günlük notun içinde bırakılmaz, bu tabloya da yazılır. Bir denetim/bölge "bitti" denmeden bu tabloya bakılır ve kalanlar kişiye söylenir.
+
+| # | İş | Bölümler | Durum / sahibi |
+|---|---|---|---|
+| A1 | Değişen haritada öteki düzenler önceden görünmüyor; düzen değişince yalnız yazı çıkıyor (kar savrulması / meteor düşüşü yok). Enes 2026-11-16: "önceden görünsün" | 15, 20, 91-100 | Enes, 2026-11-19 başladı |
+| A2 | Toz süresi hep aynı: oyuncu sayıp ezberle geçebiliyor | 31-40, 51 | Enes, sırada |
+| A3 | Rakamı ölçmeden yazarak geçiliyor (sabit harita/liste) | 74, 77, 79, 82, 83, 85, 88, 90 | Enes, sırada |
+| A4 | Zorunlu yapı şartları (rutin, parametre, `donus_sarti`) 2 bölümden uzun sürüyor; Enes kararı: kural "geldiği bölüm + sonraki", hikâye gerektirirse uzayabilir, Claude bölüm bölüm karar verir | 52-100 | Enes, sırada |
+| A5 | Bölüm 76: kamera geniş açıda siyah duvarların dışını gösteriyor | 76 | Enes, görsel denetimde |
+| A6 | Telefon testleri (`telefon-denemesi.md`) | Bölge 1-10 | telefon bulununca |
+| A7 | Sezon 1 görsel denetimi | 11-100 kaldı | Enes |
+
+**Enes 2026-11-19: Açık işler A1-A4 üzerinde çalışıyor (dal: `main`).** Başkası aynı işe başlamasın.
+
 **Ragıp 2026-11-18 (devam, GitHub'a yüklendi): (1) Paket yeniden üretildi, `-izle 91 100` TAMAM (47 deneme): 92/93/96/99/100 değişiklikleri oyunda çözümleri bozmadı. (2) 80 kapanışı koridor hatırasında tavan lambası "+30 XP" yazısına biniyordu → hatıra kesmesinde lamba camları gizlendi (`StationTraces.ShowCorridor`; oda ışığı ve duvar bandı yerinde). `-sahneler -bolge8` TAMAM, `s80-3-satir` karesinde yazı temiz. Eski açık sorun kapandı. Not: lamba hatıra sahnesinde hiç görünmüyor; kalmasını isteyen kamera kaymasıyla ayrıca çözer (Opus). Sıradaki: Bölge 9-10 görünüşü (Enes'in görsel yönü netleşince).**
 
 **Ragıp 2026-11-18 (GitHub'a yüklendi): Bölge 10 ezber açığı KAPANDI (Bölüm 92, 93, 96, 100) + Bölüm 99 şifre ödevi sertleştirildi.** Sorun: iki düzenin yolları birbirinin kraterine hiç değmediği için biri ötekinde de geçiyordu. Çözüm: düzenlere karşılıklı krater eklendi (92: düzen 1'e (4,2); 93: düzen 1'e (4,0); 96: düzen 1'e (4,1); 100: düzen 1'e (3,1); yalnız `duzenler`, çözüm ve haritalar aynı). `DegisenAlanTests.KnownMemorizable` listesi boşaltıldı, `dotnet test` **1873 geçti**. 99: gizli kodlar 4 arttı (`1234567`, `SERCE1107` gerçek, `SIGINAK`, `KORBACAK9` gerçek; 13 kod, 5 gerçek), bitiş damgası "Gerçek sinyal: 5", `senaryo-bolge-10.md` güncellendi; ezber için artık 5 gerçek kodun hepsini bilmek gerek (gizli olanlar ekranda görünmez; şifre ödevi tamamen kapanmadı, kod listesi ezberlenebilir ama sınanan kural çeşitleri arttı). **Denenmedi:** paket üretilmedi, `-izle 92 100` koşturulmadı (yalnız bölüm dosyaları + test; kraterler oyunda yeni yerlerde görünür, ışın/yerleşim denetimi Enes'in görsel turunda). Enes'e not: bölüm dosyalarına dokunuldu (92, 93, 96, 99, 100). **Sıradaki:** Bölge 9-10 görünüşü (Enes'in görsel yönü netleşince; Opus 5.5 · high) ya da Enes'le görsel tur sırası konuşulsun.**

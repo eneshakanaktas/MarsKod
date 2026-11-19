@@ -60,6 +60,7 @@ Her işin başında önerilen "model · efor" ikilisini tek satırla ve gerekçe
 
 ## İlerleme notu (kritik)
 Kökteki `ILERLEME.md`'yi oturum başında oku; her önemli adımdan sonra ve oturum sonunda güncelle (ne yapıldı, nerede kalındı, sıradaki adım, açık sorular). Kısa tut, eski girdileri özetle.
+- **AÇIK İŞLER tablosu (kritik, Enes 2026-11-19):** `ILERLEME.md`'nin en üstündeki tablo tek açık iş listesidir. Oturum başı özetinde tablodaki işler de söylenir. "Açık / ertelendi / ayrı büyük iş / X'e not" denen her şey bu tabloya yazılır (günlük notta kaybolmasın); biten iş tablodan silinir. Bir denetim, bölge ya da sezon "bitti" denmeden önce tablo okunur ve kalanlar kişiye açıkça söylenir.
 
 ## Ekip döngüsü (projede birden fazla kişi çalışır: kullanıcı, Hamza, Ragıp)
 1. Açılış: Kişi kendini tanıtır ("Merhaba, ben Ragıp"). Tanıtmazsa ilk iş adını sor.

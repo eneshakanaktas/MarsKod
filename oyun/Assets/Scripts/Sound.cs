@@ -63,6 +63,10 @@ public static class Sound
     public static void Sos() => Play(Get("sos", () => Morse("... --- ...", 880f)), 0.5f);
     // 70 finali (K6): Kivilcim duvara yururken ruzgar yavasca yukselir; yazi okununca Hush onu bir anda keser (tam sessizlik)
     public static void Wind() => Play(Get("wind", () => Breeze(12f)), 0.3f);
+    // bolum girisi (LevelArrival): yere dusen parcanin tok sesi, volkan patlamasi, buyuyen kristal/isinlanan kart
+    public static void Thud() => Play(Get("thud", () => Buzz(82f, 0.09f)), 0.4f);
+    public static void Eruption() => Play(Get("eruption", () => Rumble(1.8f)), 0.55f);
+    public static void Shimmer() => Play(Get("shimmer", () => Chime(new[] { 1046f, 1318f, 1568f }, 0.05f)), 0.22f);
 
     // Calan her sesi aninda keser; sonraki sesler normal calar
     public static void Hush() { if (source != null) source.Stop(); }

@@ -77,21 +77,8 @@ public class ColonyPower : MonoBehaviour
     static Vector3 Bezier(Vector3 a, Vector3 b, Vector3 c, float t)
         => Vector3.Lerp(Vector3.Lerp(a, b, t), Vector3.Lerp(b, c, t), t);
 
-    // Lambanin ekrandaki yerine bakan, sahnenin cok gerisinde bir nokta (arka plan "fotografi" ile ayni olcek ve kayma: MarsPictureUV'nin tersi)
-    Vector3 LampWorld(int lamp)
-    {
-        Vector4 picture = Shader.GetGlobalVector("_Picture");
-        float horizon = Shader.GetGlobalFloat("_Horizon");
-        float aspect = cam.pixelWidth / (float)cam.pixelHeight;
-        var uv = new Vector2(lamps[lamp].x / aspect + 0.5f, horizon + lamps[lamp].y);
-        Vector2 n = (uv * 2f - Vector2.one) * Mathf.Max(picture.x, 1e-3f) + new Vector2(0f, picture.y);
-        Vector2 screen = (n * 0.5f + Vector2.one * 0.5f) * new Vector2(cam.pixelWidth, cam.pixelHeight);
-        var ray = cam.ScreenPointToRay(screen);
-        // gercek ufuk ekranin disinda: bu bakis bir yerde zemine degir; top zeminin icine girmesin diye ondan once durur
-        float distance = cam.farClipPlane * 0.8f;
-        if (new Plane(Vector3.up, Vector3.zero).Raycast(ray, out float ground)) distance = Mathf.Min(distance, ground * 0.85f);
-        return ray.GetPoint(distance);
-    }
+    // Lambanin ekrandaki yerine bakan, sahnenin cok gerisinde bir nokta (SkyPicture)
+    Vector3 LampWorld(int lamp) => SkyPicture.WorldPoint(cam, lamps[lamp].x, lamps[lamp].y);
 
     void Apply()
     {

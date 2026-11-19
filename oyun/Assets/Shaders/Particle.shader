@@ -1,10 +1,12 @@
 // Parcacik tanesi (kar, kivilcim, toz): yumusak kenarli yuvarlak nokta. Rengi ve saydamligi parcacik sisteminden gelir
 // (tane basina renk); resim dosyasi gerekmez. _Core: ortadaki dolu kismin yaricapi (0 = cok yumusak, 0.9 = sert kenarli).
+// _DstBlend: 10 = normal saydam (kar, toz), 1 = isik gibi parlayan (kivilcim, parilti; ustuste binince parlar).
 Shader "MarsKod/Particle"
 {
     Properties
     {
         _Core ("Dolu orta (0-1)", Float) = 0.35
+        [HideInInspector] _DstBlend ("Karisim", Float) = 10
     }
     SubShader
     {
@@ -12,7 +14,7 @@ Shader "MarsKod/Particle"
         Pass
         {
             Tags { "LightMode"="SRPDefaultUnlit" }
-            Blend SrcAlpha OneMinusSrcAlpha
+            Blend SrcAlpha [_DstBlend]
             ZWrite Off
             Cull Off
 

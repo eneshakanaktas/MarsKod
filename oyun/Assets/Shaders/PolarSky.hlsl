@@ -2,6 +2,7 @@
 // Mars'ta gun batimi mavidir: gunes uzak buz ucurumlarinin ardina batarken cevresi mavi parlar, gokyuzunun geri kalani los.
 // Ufukta kat kat buz ucurumlari (Mars kutbundaki katmanli buz), onlerinde duz buz ovasi. Ovada saplanip kalmis bir aracin
 // yardim isigi yanip soner, ondan sinyal halkalari yayilir (Bolum 10'da telsizin yakaladigi sinyal). Koloni burada gorunmez.
+// Gokte kutup isigi (aurora) yavasca dalgalanir: Mars'ta da gorulur (Perseverance 2024'te yesil aurora cekti).
 #ifndef MARSKOD_POLAR_INCLUDED
 #define MARSKOD_POLAR_INCLUDED
 
@@ -57,6 +58,20 @@ float polarRoverShape(float2 q)
     return d;
 }
 
+// Kutup isigi: ufkun ustunde, dibi parlak yesil, yukari dogru camgobegi-mora solan perdeler. Perdenin alt kenari yavasca dalgalanir,
+// icinde dikey isik sutunlari kayar; yer yer acilip kapanir. Gunesin parlak cevresinde soner (gunes onu bastirir).
+float3 polarAurora(float2 sp, float y, float t, float dSun)
+{
+    float edge = _Horizon + 0.035 + 0.022 * sin(sp.x * 5.0 + t * 0.21) + 0.018 * (fbm(float2(sp.x * 2.2 + t * 0.045, 3.1)) - 0.5);
+    float h = y - edge;
+    float curtain = smoothstep(-0.004, 0.006, h) * exp(-max(h, 0.0) / 0.085);
+    float rays = 0.45 + 0.55 * smoothstep(0.3, 0.8, vnoise2(float2(sp.x * 70.0 + 9.0 * fbm(float2(sp.x * 3.0, t * 0.08)), t * 0.35)));
+    float open = smoothstep(0.25, 0.55, vnoise2(float2(sp.x * 1.7 - t * 0.03, 11.0)));
+    float pulse = 0.75 + 0.25 * sin(t * 0.5 + sp.x * 3.0);
+    float3 tint = lerp(float3(0.22, 0.95, 0.55), float3(0.35, 0.45, 0.95), smoothstep(0.0, 0.09, h));
+    return tint * curtain * rays * open * pulse * 0.85 * (1.0 - exp(-dSun * 5.0));
+}
+
 float3 PolarBackdrop(float2 suv)
 {
     float2 uv = MarsPictureUV(suv);
@@ -80,6 +95,8 @@ float3 PolarBackdrop(float2 suv)
     float starMask = smoothstep(0.15, 0.55, skyT) * (1.0 - exp(-dSun * 3.0));
     float3 starCol = lerp(float3(1.0, 0.95, 0.9), float3(0.85, 0.9, 1.0), vnoise2(uv * 40.0));
     col += starCol * stars(uv, 0.10 + 0.25 * smoothstep(0.4, 1.0, skyT), 14.0, 3.0, 1.0) * starMask * _StarsOn;
+    col += polarAurora(sp, uv.y, t, dSun);
+    col += shootingStar(sp, t, 15.0, 0.83, onePx) * starMask * _StarsOn;
     col += float3(0.30, 0.52, 0.95) * exp(-dSun * 11.0) * 0.9 + float3(0.16, 0.28, 0.55) * exp(-dSun * 3.5) * 0.35;
     float disc = 1.0 - smoothstep(0.0105 - pixel, 0.0105 + pixel, length(sp - sunPos));
     col = lerp(col, float3(0.92, 0.97, 1.0), disc);

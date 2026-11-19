@@ -759,6 +759,10 @@ public class Hud : MonoBehaviour
 
     // Izleme denetimi: bilgi karti acik mi, i dugmesi gorunuyor mu
     public bool InfoCardOpen => infoCard.Open;
+    // Sahnenin onunu kapatan bir pencere acik mi (gecis yazisi, bilgi karti, kayit, sinav, bolum secme): bolum girisi
+    // (LevelArrival) bunlar kapanana kadar bekler, oyuncu gosteriyi kacirmasin
+    public bool StageCovered => opening.style.display == DisplayStyle.Flex || infoCard.Open || quiz.Open
+        || recording.style.display == DisplayStyle.Flex || levelSelect.style.display == DisplayStyle.Flex;
     public bool InfoButtonVisible => infoBtn.style.display == DisplayStyle.Flex;
 
     // i dugmesi: karti tekrar acar

@@ -105,6 +105,7 @@ float3 CraterBackdrop(float2 suv)
     float starMask = smoothstep(0.12, 0.5, skyT) * (1.0 - exp(-dSun * 3.0)) * (1.0 - rise);
     float3 starCol = lerp(float3(1.0, 0.93, 0.88), float3(0.85, 0.9, 1.0), vnoise2(uv * 40.0));
     col += starCol * stars(uv, 0.08 + 0.25 * smoothstep(0.4, 1.0, skyT), 14.0, 7.0, 1.0) * starMask * _StarsOn;
+    col += shootingStar(sp, t, 13.0, 0.61, onePx) * starMask * _StarsOn;
 
     // Ince buz bulutlari: ufkun ustunde yatay seritler, alttan safakla boyanir; cok yavas kayar
     float cb = (uv.y - (_Horizon + 0.055)) / 0.05;

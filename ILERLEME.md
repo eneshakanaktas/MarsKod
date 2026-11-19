@@ -1,6 +1,17 @@
 ﻿# İlerleme Notu — MarsKod (geçici isim)
 
-**Ragıp 2026-11-19 (Enes'le ortak karar): Bölge 1-10 için yeni animasyonlar + yeni çizimler (görsel zenginleştirme) üzerinde çalışıyor (dal: `main`; Bölge 2'den başlıyor, Enes'in görsel denetim bittiği yerden).** Başkası aynı işe başlamasın.
+**Ragıp 2026-11-19 (Enes'le ortak karar): Bölge 1-10 için yeni animasyonlar + yeni çizimler (canlı çevre, bölüm girişi) üzerinde çalışıyor (dal: `main`).** Başkası aynı işe başlamasın. İlk sürüm GitHub'da; devam ediyor.
+
+**Ragıp 2026-11-19 (gün sonu, GitHub'a yüklendi): Bölüm girişi gösterileri (Bölge 1-10).** Ragıp'ın isteği: parçalar bölüm başında temaya uygun gelsin. 1 meteor yağmuru (parçalar + kayalar), 2 buz yerden büyür, 3 toz rüzgârı savurur, 4 kumdan fırlar, 5 makaralar yuvarlanır, 6 kanyondan düşer, 7 nehrin hayali akıp çakılları bırakır, 8 ışınla belirir, 9 tuz kristali büyür, 10 **volkan patlar, lav topları tahtaya yayılır**. Çalıştır'a basınca anında biter; pencere açıkken bekler; denetim turlarında oynamaz. Kod `LevelArrival.cs`, `ArrivalShows.cs`, `VolcanoSky.cs`, `SkyPicture.cs` (koloni lambalarıyla ortak), `Hud.StageCovered`; belge `canli-cevre.md` "Bölüm girişi". `-canli 5 95 -adim 10` TAMAM (60 kare/sn; 1, 2, 10 kare kare bakıldı). Windows + Android paketi üretildi (Hamza telefonda deneyecek). **Denenmedi:** `-izle`/`-sahneler` (gösteri denetim modunda kapalı, çözüm kodu değişmedi); 3-9 gösterileri kare kare tek tek incelenmedi (çalıştı, hata yok). **Sıradaki:** Hamza'nın telefon izlenimi (akıcılık, gösteri süresi), Ragıp oyunda bakıp yoğunluk/süre ayarı; yeni çizimi olmayan bölgelere (4, 6, 7, 8, 9) hareketli nesneler.
+
+**Ragıp 2026-11-19 (akşam, GitHub'a yüklendi): Canlı çevre + oyun hissi, Bölge 1-10'un hepsinde ilk sürüm.** Belge `docs/tasarim/canli-cevre.md`. Yalnız görünüş (bölüm dosyası, dünya kuralı değişmedi; `dotnet test` gerekmedi).
+- **Oyun hissi (her bölge, `PlayFx.cs`):** robot kareye varınca altından bölge renginde toz/kar kalkar, çarpınca toz + kıvılcım, toplayınca/onarınca parıltı saçılır, bölüm bitince üç dalga kutlama parıltısı.
+- **Canlı çevre (`AmbientLife.cs`, ortak parçalar `AmbientPieces.cs`, nesneler `AmbientProps.cs`, `Pennant.cs`):** 1 toz zerreleri + toz hortumu; 2 kar yağışı, savrulan kar, buz parıltısı, **kutup ışığı** (PolarSky.hlsl), kutup ekibinin hava direği (dönen rüzgâr ölçer, flama, lamba) + buz kuleleri; 3 şafak zerreleri, rüzgâr çorabı + küçük rüzgâr türbini; 4 kum savrulması + iki toz hortumu; 5 rüzgâr çorabı; 6-7 güneşte parlayan zerreler (7'de sabah sisi); 8 lamba ışığında toz; 9 altın tuz parıltısı; 10 sık kayan yıldız + kor taşları ve kıvılcımlar. Kayan yıldız ortak (`MarsSky.hlsl shootingStar`; 1, 2, 3, 10).
+- "Arka plan animasyonları" kapalıyken çevre durur (donmuş gökte kayan yıldız görünmez: `_SkyMotion`); performans modunda tane ~yarı.
+- **Yeni denetim `-canli`** (kare serisi; `Oyun.CanliCevreDenetimi.cs`, CLAUDE.md'de): 10 bölgede 60 kare/sn. `-incele` ölçümünde yeni nesneler uyarı vermedi (çıkan 25/35/45/55/65/75 uyarıları eskiden var: kulübe, kum, anten, Serçe, istasyon odası).
+- Görüntüden düzeltilenler: uzak toz hortumu havada asılı görünüyordu (öne alındı, dibine toz eteği); Bölge 3'te kulübenin arkasından yükselen hortum baca dumanı gibi okunuyordu (sol yarıya alındı); tuz gölünde beyaz parıltı görünmüyordu (altın, yalnız yakın zemin).
+- **Denenmedi:** `-sahneler` turları ve `-izle` (sahne/çözüm kodu değişmedi; yalnız `Oyun.Play`'e efekt çağrıları eklendi). Telefonda denenmedi (A6).
+- **Sıradaki:** yeni çizimi olmayan bölgelere (4, 6, 7, 8, 9) hareketli nesneler; Ragıp oyunda bakıp beğenmediği yoğunlukları söyler (sayılar her bölge dosyasının başında).
 
 ## AÇIK İŞLER (herkes oturum başında okur; iş bitince satırı sil, yeni sorun çıkınca buraya ekle)
 Kural (Enes, 2026-11-19): "Açık", "ertelendi", "ayrı büyük iş", "X'e not" denen her şey günlük notun içinde bırakılmaz, bu tabloya da yazılır. Bir denetim/bölge "bitti" denmeden bu tabloya bakılır ve kalanlar kişiye söylenir.
@@ -12,7 +23,7 @@ Kural (Enes, 2026-11-19): "Açık", "ertelendi", "ayrı büyük iş", "X'e not" 
 | A3 | Rakamı ölçmeden yazarak geçiliyor (sabit harita/liste) | 74, 77, 79, 82, 83, 85, 88, 90 | Enes, 2026-11-19: 82, 83, 85, 90 yapıldı (boy + cevap her denemede değişir). **Bilerek bırakıldı (Enes onayı):** 74 (panel gücü sahnede ışıkla görünüyor, okumak ezber değil), 88 (ezber 12 karelik elle yol; düzeltmek için yeri değişen + ölçülen nesne gerekir, kazanç az), 77 ve 79 (hikâyeye bağlı: 77 listesinde yalnız Ece/Defne Aras; 79 kaydı oyuncunun kodunda) |
 | A4 | Zorunlu yapı şartları (rutin, parametre, `donus_sarti`) 2 bölümden uzun sürüyor; Enes kararı: kural "geldiği bölüm + sonraki", hikâye gerektirirse uzayabilir, Claude bölüm bölüm karar verir | 52-100 | Enes, 2026-11-19: yapıldı (aşağıdaki girdi) |
 | A5 | Bölüm 76: kamera geniş açıda siyah duvarların dışını gösteriyor | 76 | Enes, görsel denetimde |
-| A6 | Telefon testleri (`telefon-denemesi.md`) | Bölge 1-10 | telefon bulununca |
+| A6 | Telefon testleri (`telefon-denemesi.md`); + canlı çevre telefonda akıcı mı (kar, toz hortumu, parıltı; performans modunda tane yarıya iner) | Bölge 1-10 | telefon bulununca |
 | A7 | Sezon 1 görsel denetimi | 11-100 kaldı | Enes (A1-A4 bitince) |
 | A8 | Hazır asset'ler (KayKit modelleri, efekt paketleri; Asset Store'dan Enes indirir) ve görsel yön | tüm oyun | Enes 2026-11-19: ertelendi, sıra A1-A4 → A7 → A8 |
 

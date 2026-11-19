@@ -18,6 +18,7 @@ public class BackdropCache : MonoBehaviour
     static readonly int TexId = Shader.PropertyToID("_BackdropTex");
     static readonly int ScreenId = Shader.PropertyToID("_SkyScreen");
     static readonly int SkyTimeId = Shader.PropertyToID("_SkyTime");
+    static readonly int MotionId = Shader.PropertyToID("_SkyMotion");
     static readonly int NowId = Shader.PropertyToID("_SkyNow");
 
     Material material;
@@ -53,6 +54,7 @@ public class BackdropCache : MonoBehaviour
         set
         {
             animated = value;
+            Shader.SetGlobalFloat(MotionId, value ? 1f : 0f);   // kayan yildiz gibi gecici seyler donmus gokyuzunde gorunmez (MarsSky.hlsl)
             settleUntil = 0f;   // acilinca hemen yenilensin, kapaninca son hali kalsin
             nextAnimatedBake = 0f;
         }
@@ -140,7 +142,8 @@ public class BackdropCache : MonoBehaviour
             Shader.PropertyToID("_TraceDoor"), Shader.PropertyToID("_TraceGreenhouse"), Shader.PropertyToID("_TraceLeaf"),
             Shader.PropertyToID("_PolarRoverHere"), Shader.PropertyToID("_PowerLampCount"), Shader.PropertyToID("_Sunrise"),
             Shader.PropertyToID("_SceneCamera"), Shader.PropertyToID("_RiverScene"), Shader.PropertyToID("_StationScene"),
-            Shader.PropertyToID("_SaltScene"), Shader.PropertyToID("_NightScene"),
+            Shader.PropertyToID("_SaltScene"), Shader.PropertyToID("_NightScene"), Shader.PropertyToID("_VolcanoBurst"),
+            Shader.PropertyToID("_SkyMotion"),
         };
         static readonly int[] VectorIds =
         {

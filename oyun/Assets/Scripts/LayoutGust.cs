@@ -85,15 +85,8 @@ public sealed class LayoutGust
 
     static float Range(System.Random rnd, float min, float max) => min + (max - min) * (float)rnd.NextDouble();
 
-    static void Emit(ParticleSystem ps, System.Random rnd, Vector3 position, Vector3 velocity, float size, float life, Color color)
-    {
-        var p = new ParticleSystem.EmitParams
-        {
-            position = position, velocity = velocity, startSize = size, startLifetime = life, startColor = color,
-            rotation = Range(rnd, 0f, 360f),
-        };
-        ps.Emit(p, 1);
-    }
+    static void Emit(ParticleSystem ps, System.Random rnd, Vector3 position, Vector3 velocity, float size, float life, Color color) =>
+        ParticleFx.Emit(ps, position, velocity, size, life, color, Range(rnd, 0f, 360f));
 
     // Kar bandi bu x'teki nesnenin ustunden ne kadar gecti (0 = henuz gelmedi, 1 = gecti)
     static float Covered(float band, float x) => Mathf.SmoothStep(0f, 1f, (band - x) / BandWidth + 0.5f);

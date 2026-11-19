@@ -76,6 +76,30 @@ float sdSeg(float2 p, float2 a, float2 b, float r)
 }
 float glowDot(float2 sp, float2 c, float px) { float d = length(sp - c) * _SkyScreen.y; return exp(-d * d / (px * px)); }
 
+// Kayan yildiz (canli cevre, 2026-11-19): her donguda bir kez, gokyuzunun ust kisminda kisa, egik, sonen bir cizgi.
+// period: iki kayan yildiz arasi (sn), seed: bolgeye gore baska yer/zaman. Animasyon kapaliyken (_SkyMotion = 0) hic gorunmez:
+// donmus gokyuzunde yarim kalmis bir cizgi asili kalmasin.
+float _SkyMotion;
+float3 shootingStar(float2 sp, float t, float period, float seed, float onePx)
+{
+    const float dur = 0.75;
+    float cycle = floor(t / period + seed);
+    float k = frac(t / period + seed) * period;
+    float prog = saturate(k / dur);
+    float side = hash11(cycle * 5.3 + seed) > 0.5 ? 1.0 : -1.0;
+    float2 dir = normalize(float2(side * lerp(0.7, 1.0, hash11(cycle * 1.7 + seed)), -lerp(0.3, 0.55, hash11(cycle * 2.9 + seed))));
+    float2 start = float2(lerp(-0.22, 0.22, hash11(cycle * 3.1 + seed)) - side * 0.06, _Horizon + lerp(0.10, 0.19, hash11(cycle * 7.7 + seed)));
+    float2 head = start + dir * 0.13 * prog;
+    float2 d = sp - head;
+    float along = dot(d, -dir);                       // 0 kafada, arkaya dogru artar
+    float across = abs(d.x * dir.y - d.y * dir.x);
+    float tail = 0.045 * (0.4 + prog);
+    float streak = step(0.0, along) * (1.0 - smoothstep(0.0, tail, along)) * (1.0 - smoothstep(0.5 * onePx, 1.6 * onePx, across));
+    float headGlow = exp(-dot(d, d) / (4.0 * onePx * onePx));
+    float on = step(k, dur) * sin(prog * 3.14159) * _SkyMotion;
+    return float3(1.0, 0.95, 0.88) * (streak * 1.3 + headGlow * 0.8) * on;
+}
+
 // ---------- gokyuzu ----------
 float3 skyColor(float t)
 {
@@ -750,6 +774,7 @@ float3 PlainBackdrop(float2 suv)
     // yukari ciktikca siklasir
     float density = 0.16 + 0.32 * smoothstep(0.35, 1.0, skyT);
     col += starCol * stars(uv, density, 14.0, 0.0, 1.0) * starMask * _StarsOn;
+    col += shootingStar(sp, t, 11.0, 0.37, onePx) * starMask * _StarsOn;   // ara sira kayan yildiz (safak oncesi)
 
     // Yavasca gecen uydu
     float sat = frac(t / 70.0);

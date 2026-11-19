@@ -7,6 +7,7 @@
 #define MARSKOD_NIGHT_INCLUDED
 
 float _NightScene;
+float _VolcanoBurst;   // bolum girisi (LevelArrival, VolcanoSky.cs): 0 kapali, 0-1 patlamanin ilerleyisi
 
 static const float3 NIGHT_PLAIN = float3(0.20, 0.15, 0.23);    // ufuk dibindeki ova: zeminin uzaktaki rengi (koyu murdum-gri)
 static const float2 NIGHT_EARTH = float2(-0.115, 0.10);         // Dunya: x, ufka gore yukseklik (sol dugmelerin sagi, basligin alti; volkanin solu)
@@ -70,6 +71,28 @@ float3 nightMeteors(float2 sp, float t, float pixel)
     return c;
 }
 
+// Volkan patlamasi (bolum girisi): agizda kizil parlama, yukari fiskiran ve geri dusen lav damlalari. b: patlamanin ilerleyisi (0-1)
+static const float NIGHT_VOLCANO_TOP = 0.084;
+float3 nightEruption(float2 sp, float b, float sc)
+{
+    float2 top = float2(NIGHT_VOLCANO_X, _Horizon + NIGHT_VOLCANO_TOP);
+    float flare = sin(saturate(b) * 3.14159);
+    float3 lava = float3(1.0, 0.42, 0.10);
+    float3 c = lava * (glowDot(sp, top, 5.0 * sc) * 1.8 + glowDot(sp, top, 20.0 * sc) * 0.55) * flare;
+    [unroll] for (int i = 0; i < 16; i++)
+    {
+        float fi = i;
+        float start = hash11(fi * 7.31) * 0.45;
+        float k = saturate((b - start) / 0.5);
+        float ang = lerp(-0.75, 0.75, hash11(fi * 3.71));
+        float speed = lerp(0.07, 0.15, hash11(fi * 5.13));
+        float2 p = top + float2(sin(ang) * speed * k, cos(ang) * speed * k - 0.22 * k * k);
+        float alive = step(0.001, k) * (1.0 - step(0.999, k));
+        c += lerp(lava, float3(1.0, 0.85, 0.5), hash11(fi * 2.3)) * glowDot(sp, p, 1.8 * sc) * 1.4 * alive;
+    }
+    return c;
+}
+
 float3 NightBackdrop(float2 suv)
 {
     float2 uv = MarsPictureUV(suv);
@@ -77,6 +100,7 @@ float3 NightBackdrop(float2 suv)
     float x = (uv.x - 0.5) * aspect;
     float picturePx = _SkyScreen.y * max(_Picture.x, 1e-3);
     float pixel = 1.5 / picturePx;
+    float onePx = 1.0 / picturePx;
     float2 sp = float2(x, uv.y);
     float t = _SkyTime;
     float sc = _SkyScreen.y / 1170.0;
@@ -89,6 +113,7 @@ float3 NightBackdrop(float2 suv)
     float starMask = smoothstep(0.05, 0.3, skyT);
     float3 starCol = lerp(float3(1.0, 0.95, 0.98), float3(0.92, 1.0, 0.95), vnoise2(uv * 30.0));
     col += starCol * stars(uv, 0.18 + 0.25 * band + 0.15 * smoothstep(0.4, 1.0, skyT), 12.0, 7.0, 1.0) * starMask * _StarsOn;
+    col += (shootingStar(sp, t, 5.0, 0.53, onePx) + shootingStar(sp, t, 8.0, 0.29, onePx)) * starMask * _StarsOn;   // meteor yagmuru gecesi: sik kayan yildiz
     col += float3(0.10, 0.06, 0.12) * band * starMask * 0.6;
 
     col += nightAurora(sp, t);
@@ -111,7 +136,10 @@ float3 NightBackdrop(float2 suv)
     float doorOn = _NightScene > 1.5 ? 1.0 : 0.0;
     volcano = lerp(volcano, float3(0.035, 0.02, 0.04), (1.0 - smoothstep(-pixel, pixel, dDoor)) * doorOn);
     volcano += NIGHT_AURORA_SOFT * exp(-pow(dDoor / (pixel * 1.2), 2.0)) * 0.35 * doorOn;
+    // patlarken yamaclardan lav iner gibi tepesi kizarir
+    volcano += float3(0.75, 0.18, 0.05) * exp(-max(_Horizon + NIGHT_VOLCANO_TOP - uv.y, 0.0) / 0.025) * sin(saturate(_VolcanoBurst) * 3.14159);
     col = lerp(col, volcano, mV);
+    col += nightEruption(sp, _VolcanoBurst, sc);
 
     // Ova: ufukta murdum-gri, asagi koyulasir; ufkun dibinde kutup isiginin soluk yesil yansimasi
     float depth = max(_Horizon - uv.y, 0.0);

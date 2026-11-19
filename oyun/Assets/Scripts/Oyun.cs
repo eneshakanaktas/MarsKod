@@ -86,6 +86,9 @@ public partial class Oyun : MonoBehaviour
     readonly Dictionary<Cell, DustCloud> dustClouds = new Dictionary<Cell, DustCloud>();
     // Enerji hucresi bolumlerinde koloninin guc lambalari
     ColonyPower colonyPower;
+    PlayFx playFx;             // adim tozu, carpma, toplama parıltısı, bitis kutlamasi (PlayFx.cs)
+    AmbientLife ambientLife;
+    LevelArrival arrival;      // bolum girisi: parcalar bolgenin gosterisiyle gelir (LevelArrival.cs, ArrivalShows.cs)   // bolgenin canli cevresi: kar, toz hortumu, kayan yildiz... (AmbientLife.cs)
     // Isiklar: renkleri bolgeye gore (RegionLook)
     Light skyLight, sunLight;
     Target target;
@@ -240,6 +243,8 @@ public partial class Oyun : MonoBehaviour
         ApplyGraphics();
         GraphicsQuality.Changed += ApplyGraphics;
         BuildBoard();
+        playFx = PlayFx.Create(world);
+        ambientLife = AmbientLife.Create(world, new Vector2(AreaHalfX, AreaHalfZ), TerrainHeight, FarRockMat);
 
         robot = Robot.Create(world, robotModel);
         colonyPower = ColonyPower.Create(world, cam);
@@ -313,7 +318,7 @@ public partial class Oyun : MonoBehaviour
         LoadLevel(Mathf.Clamp(levels.FindIndex(l => l.Number == start), 0, levels.Count - 1));
 
         bool shotsArg = System.Array.IndexOf(a, "-shots") >= 0 || System.Array.IndexOf(a, "-izle") >= 0 || System.Array.IndexOf(a, "-incele") >= 0
-            || System.Array.IndexOf(a, "-duzenler") >= 0;
+            || System.Array.IndexOf(a, "-duzenler") >= 0 || System.Array.IndexOf(a, "-canli") >= 0;
         bool showOpening = start == 1 && !shotsArg && PlayerPrefs.GetInt("acilis_gorundu", 0) == 0;
         if (System.Array.IndexOf(a, "-acilis") >= 0) showOpening = true; // test icin: her zaman goster
         if (showOpening)
@@ -342,6 +347,7 @@ public partial class Oyun : MonoBehaviour
         for (int i = 0; i < a.Length - 3; i++)   // -duzenler <ilk> <son> <klasor> (Oyun.DuzenDenetimi.cs)
             if (a[i] == "-duzenler" && int.TryParse(a[i + 1], out int layoutFirst) && int.TryParse(a[i + 2], out int layoutLast))
                 StartCoroutine(LayoutAudit(layoutFirst, layoutLast, a[i + 3]));
+        StartLiveAuditIfAsked(a);   // -canli <ilk> <son> <klasor> (Oyun.CanliCevreDenetimi.cs)
     }
 
     // Arka plan animasyonlari (ayar, bolum secme ekraninda): kapaliyken gokyuzu duraganlasir, telefon daha az yorulur
@@ -352,6 +358,7 @@ public partial class Oyun : MonoBehaviour
     void SetAnimations(bool on)
     {
         animationsOn = on;
+        ambientLife.Animated = on;
         backdropCache.Animated = on && !GraphicsQuality.Performance;
         hud.SetAnimations(on);
     }
@@ -532,6 +539,8 @@ public partial class Oyun : MonoBehaviour
         levelRoot = Parts.Empty("Level", world);
         var region = Regions.Of(level.Number);
         RegionLook.ForLevel(level.Number).Apply(skyLight, sunLight);
+        ambientLife.Show(region, level.Number, StationTraces.IsIndoor(level.Number));
+        playFx.SetRegion(region);
         BuildLayout(0);   // buz, kristal, engel, krater: degisen alanda her denemede yeniden kurulur
         for (int i = 0; i < level.HotStones.Count; i++)
             MeteorMarks.HotStone(levelRoot, Pos(level.HotStones[i]), i);   // kizgin goktasi: toplanmaz
@@ -571,6 +580,7 @@ public partial class Oyun : MonoBehaviour
         hud.HideNote();
         hud.SetInfo(level.Info, seen: !shotsMode && PlayerPrefs.GetInt(InfoKey(level), 0) == 1);   // gorulmediyse kart kendiliginden acilir
         var transition = Traces.TransitionLines(level.Number);
+        StartArrival();
         if (landingDue) canyonScenes.PrepareLanding();
         if (!shotsMode && transition != null) hud.ShowTransition(transition, landingDue ? (System.Action)StartLanding : () => { });
         else if (landingDue) StartLanding();
@@ -722,6 +732,7 @@ public partial class Oyun : MonoBehaviour
     void OnRun()
     {
         if (layoutStep != null) return;   // oyuncunun baslattigi duzen gecisi bitmeden kod calismaz
+        arrival?.Finish();   // bolum girisi suruyorsa aninda biter, parcalar yerine oturur
         if (running)
         {
             // adim adim modunda "Devam": kalan satirlar normal hizda
@@ -747,6 +758,7 @@ public partial class Oyun : MonoBehaviour
     void OnStep()
     {
         if (layoutStep != null) return;   // oyuncunun baslattigi duzen gecisi bitmeden kod calismaz
+        arrival?.Finish();
         if (running) { stepMode = true; stepRequested = true; return; }
         if (done && complete) return;
         StartProgram(stepping: true);
@@ -835,6 +847,7 @@ public partial class Oyun : MonoBehaviour
 
     void ResetLevel()
     {
+        arrival?.Finish();
         canyonScenes.Restore();
         riverScenes.Restore();
         stationScenes.Restore();
@@ -868,23 +881,45 @@ public partial class Oyun : MonoBehaviour
     {
         if (layoutRoot != null) Destroy(layoutRoot.gameObject);
         layoutRoot = Parts.Empty("Duzen", levelRoot);
+        arrival = layoutRoot.gameObject.AddComponent<LevelArrival>();
         builtVersion = version;
         var ices = level.IcesOf(version);
         pickups.Clear();
         for (int i = 0; i < ices.Count; i++)
             pickups.Add(Pickups.Create(level.Item, layoutRoot, Pos(ices[i]), i + 1));
+        TagArrivals(0, ArrivalKind.Pickup);
+        int tagged = layoutRoot.childCount;
         var crystals = level.CrystalsOf(version);
         for (int i = 0; i < crystals.Count; i++)
             Ice.CreateHazard(layoutRoot, Pos(crystals[i]), 20 + i); // toplanmaz: pickups listesinde degil
+        TagArrivals(tagged, ArrivalKind.Hazard);
+        tagged = layoutRoot.childCount;
         var rocks = level.RocksOf(version);
         for (int i = 0; i < rocks.Count; i++)
             Obstacles.Create(Regions.Of(level.Number), level.Number, layoutRoot, Pos(rocks[i]), i);
+        TagArrivals(tagged, ArrivalKind.Obstacle);
         int frostCount = level.Item == Collectible.Ice ? ices.Count : 0; // zemindeki buz izi yalnizca buzun altinda
         for (int i = 0; i < 6; i++)
         {
             var p = i < frostCount ? Pos(ices[i]) : Vector3.zero;
             ground.SetVector("_Frost" + i, new Vector4(p.x, p.z, 0.45f, i < frostCount ? 1f : 0f));
         }
+    }
+
+    // Duzenin from'dan sonraki cocuklari bolum girisine (LevelArrival) bu turle katilir
+    void TagArrivals(int from, ArrivalKind kind)
+    {
+        for (int c = from; c < layoutRoot.childCount; c++) arrival.Add(layoutRoot.GetChild(c), kind);
+    }
+
+    // Bolum girisi (LevelArrival): parcalar bolgenin gosterisiyle gelir; pencere (bilgi karti, gecis yazisi) ya da 51'in roket inisi
+    // surerken bekler. Denetim turlarinda yok (nesneler hemen yerinde olmali); -canli turunda var.
+    void StartArrival()
+    {
+        if (shotsMode && !liveAuditing) return;
+        var region = Regions.Of(level.Number);
+        var stage = new ArrivalStage { AreaHalf = new Vector2(AreaHalfX, AreaHalfZ), Cam = cam, Look = RegionFx.For(region), Height = TerrainHeight };
+        arrival.Begin(ArrivalShows.For(region), stage, () => hud.StageCovered || landing != null);
     }
 
     // Degisen alanin oklari: kod calismiyorken sahne oteki duzene gecer (bitmis kosu varsa once sahne sifirlanir)
@@ -909,6 +944,7 @@ public partial class Oyun : MonoBehaviour
     // Animasyonlar kapaliysa gecis aninda olur.
     IEnumerator SwitchLayout(int version)
     {
+        arrival?.Finish();
         EndLayoutGust();
         var changed = LayoutDiff.ChangedCells(level, builtVersion, version);
         var oldRoots = new[] { layoutRoot, meteorMarks.Release() };
@@ -1046,7 +1082,11 @@ public partial class Oyun : MonoBehaviour
             bool quiet = StationScenes.QuietEnding(level.Number);   // 78: sessiz anlama, dans yok
             if (quiet) Sound.Quiet(); else Sound.Celebrate();
             Traces.LevelDone(level.Number);
-            if (!quiet) yield return robot.Celebrate();
+            if (!quiet)
+            {
+                StartCoroutine(playFx.Celebrate(robot.transform.localPosition));
+                yield return robot.Celebrate();
+            }
             yield return RegionClosing();   // Bolge 1-5 kapanislari (Oyun.KapanisAtlama.cs)
             if (level.Number == CanyonTraces.SparrowRepairLevel) yield return canyonScenes.FirstFlightWithSkip(level);
             if (level.Number == CanyonTraces.LastLevel) yield return canyonScenes.DescentWithSkip(level);
@@ -1254,11 +1294,13 @@ public partial class Oyun : MonoBehaviour
                 Sound.Move();
                 yield return Face(m.Direction);
                 yield return robot.MoveTo(Pos(m.To));
+                playFx.Step(robot.transform.localPosition);
                 trailView?.Stepped(m.To);   // robot yeni kareye varinca: kum onun altinda savrulur, izler o zaman belirir
                 break;
             case Blocked b:
                 Sound.Bump();
                 yield return Face(b.Direction);
+                playFx.Bump(robot.transform.localPosition + robot.transform.forward * 0.4f);
                 yield return robot.Bump();
                 break;
             case Collected c:
@@ -1269,6 +1311,7 @@ public partial class Oyun : MonoBehaviour
                 {
                     Sound.Collect();
                     pickups[c.IceIndex].Pop();
+                    playFx.Collect(Pos(level.IcesOf(shownVersion)[c.IceIndex]));
                     colonyPower.Deliver(world.TransformPoint(Pos(level.IcesOf(shownVersion)[c.IceIndex])));
                     hud.SetCollected(c.Total);
                     Traces.IceCollected(c.Total, level.IcesOf(shownVersion).Count);
@@ -1300,6 +1343,7 @@ public partial class Oyun : MonoBehaviour
             case Repaired rp:
                 StartCoroutine(robot.Collect());
                 Sound.Collect();
+                playFx.Collect(Pos(rp.At));
                 if (panels.TryGetValue(rp.At, out var repaired)) yield return repaired.Repair();
                 yield return Tween.Wait(0.15f);
                 break;

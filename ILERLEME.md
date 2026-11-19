@@ -1,5 +1,7 @@
 ﻿# İlerleme Notu — MarsKod (geçici isim)
 
+**Ragıp 2026-11-19 (Enes'le ortak karar): Bölge 1-10 için yeni animasyonlar + yeni çizimler (görsel zenginleştirme) üzerinde çalışıyor (dal: `main`; Bölge 2'den başlıyor, Enes'in görsel denetim bittiği yerden).** Başkası aynı işe başlamasın.
+
 ## AÇIK İŞLER (herkes oturum başında okur; iş bitince satırı sil, yeni sorun çıkınca buraya ekle)
 Kural (Enes, 2026-11-19): "Açık", "ertelendi", "ayrı büyük iş", "X'e not" denen her şey günlük notun içinde bırakılmaz, bu tabloya da yazılır. Bir denetim/bölge "bitti" denmeden bu tabloya bakılır ve kalanlar kişiye söylenir.
 
